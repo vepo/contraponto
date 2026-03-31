@@ -1,0 +1,1 @@
+INSERT INTO tb_posts(slug) VALUES ('hello-world');
