@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.post;
 
+import io.quarkus.qute.Template;
+import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -14,17 +16,18 @@ import jakarta.ws.rs.core.MediaType;
 public class PostEndpoint {
 
     private final PostRepository postRepository;
+    private final Template post;
 
     @Inject
-    public PostEndpoint(PostRepository postRepository) {
+    public PostEndpoint(PostRepository postRepository, Template post) {
         this.postRepository = postRepository;
+        this.post = post;
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public String post(@PathParam("id") String slug) {
-        return this.postRepository.findBySlug(slug)
-                                  .map(Post::toString)
-                                  .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug)));
+    public TemplateInstance post(@PathParam("id") String slug) {
+        return post.data("post", this.postRepository.findBySlug(slug)
+                                                    .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug))));
     }
 }
