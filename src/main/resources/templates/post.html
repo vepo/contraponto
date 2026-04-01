@@ -1,10 +1,23 @@
 <html>
+    <head>
+        <link rel="stylesheet" href="/style/post.css"/>
+    </head>
     <body>
-        <h1>{post.title}</h1>
-        <div>{post.publishedAt}</div>
-        <div>{post.updatedAt}</div>
-        <article>
-        {post.content}
-        </article>
+        <div class="header">
+            <div class="logo">
+                <img src="/images/sidebar.svg" />
+            </div>
+        </div>
+        <div class="content">
+            <h1>{post.title}</h1>
+            <div class="byline">By {post.author}</div>
+            <div class="metadata">
+                <div>Published: {post.publishedAt}</div>
+                <div>Updated: {post.updatedAt}</div>
+            </div>
+            <article>
+                {post.content}
+            </article>
+        </div>
     </body>
 </html>

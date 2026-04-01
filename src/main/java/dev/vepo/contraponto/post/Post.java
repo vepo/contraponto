@@ -23,8 +23,11 @@ public class Post {
     @Column(nullable = false, unique = true)
     private String slug;
 
-    @Column
+    @Column(nullable = false)
     private String title;
+
+    @Column
+    private String author;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -67,6 +70,14 @@ public class Post {
         this.title = title;
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
     public String getContent() {
         return content;
     }
@@ -99,7 +110,6 @@ public class Post {
         this.updatedAt = updatedAt;
     }
 
-
     @Override
     public int hashCode() {
         return Objects.hash(id);
@@ -109,7 +119,7 @@ public class Post {
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        } else if (obj == null || getClass() != obj.getClass() ) {
+        } else if (obj == null || getClass() != obj.getClass()) {
             return false;
         } else {
             Post other = (Post) obj;
