@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 @Entity
@@ -26,8 +27,15 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
+    @Lob
+    @Column(nullable = true)
+    private byte[] cover;
+
     @Column
     private String author;
+
+    @Column
+    private String description;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -70,12 +78,28 @@ public class Post {
         this.title = title;
     }
 
+    public byte[] getCover() {
+        return cover;
+    }
+
+    public void setCover(byte[] cover) {
+        this.cover = cover;
+    }
+
     public String getAuthor() {
         return author;
     }
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getContent() {

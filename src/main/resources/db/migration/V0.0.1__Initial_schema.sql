@@ -3,6 +3,8 @@ CREATE TABLE tb_posts (
     slug              VARCHAR(255) NOT NULL UNIQUE,
     author            VARCHAR(255) NOT NULL,
     title             VARCHAR(255),
+    cover             OID,
+    description       VARCHAR(512) NOT NULL,
     content           TEXT NOT NULL,
     published         BOOLEAN NOT NULL DEFAULT FALSE,
     created_at        TIMESTAMP(6) NOT NULL,

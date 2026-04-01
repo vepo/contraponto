@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.home;
 
+import java.time.LocalDateTime;
+
 import dev.vepo.contraponto.post.PostRepository;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -13,7 +15,7 @@ import jakarta.ws.rs.core.MediaType;
 @Path("/")
 @ApplicationScoped
 public class HomeEndpoint {
-     private final PostRepository postRepository;
+    private final PostRepository postRepository;
     private final Template home;
 
     @Inject
@@ -25,6 +27,7 @@ public class HomeEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance post() {
-        return home.data("posts", this.postRepository.findNewest(10));
+        return home.data("posts", this.postRepository.findNewest(10))
+                   .data("currentYear", LocalDateTime.now().getYear());
     }
 }
