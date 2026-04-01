@@ -174,3 +174,116 @@ hr:after {
     gap: 0.25rem;
   }
 }
+
+/* Header styles */
+.site-header {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.header-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Navigation buttons */
+.nav-left,
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.menu-button,
+.search-button,
+.write-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #242424;
+    transition: color 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.menu-button:hover,
+.search-button:hover,
+.write-button:hover {
+    color: #1a8917;
+}
+
+.write-button span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Logo styling */
+.logo {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.logo a {
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: color 0.2s ease;
+}
+
+.logo a:hover {
+    color: #1a8917;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 0 16px;
+        height: 56px;
+    }
+    
+    .logo {
+        font-size: 20px;
+    }
+    
+    .write-button span {
+        display: none;
+    }
+    
+    .nav-left,
+    .nav-right {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 18px;
+    }
+    
+    .menu-button,
+    .search-button {
+        padding: 6px;
+    }
+    
+    .menu-button svg,
+    .search-button svg,
+    .write-button svg {
+        width: 20px;
+        height: 20px;
+    }
+}

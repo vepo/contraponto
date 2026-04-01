@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.post;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -21,9 +22,15 @@ public class PostRepository {
     }
 
     public Optional<Post> findBySlug(String slug) {
-        return this.entityManager.createQuery("FROM Post WHERE slug = :slug", Post.class)
+        return this.entityManager.createQuery("FROM Post WHERE published = TRUE AND slug = :slug", Post.class)
                                  .setParameter("slug", slug)
                                  .getResultStream()
                                  .findFirst();
+    }
+
+    public List<Post> findNewest(int limit) {
+        return this.entityManager.createQuery("FROM Post WHERE published = TRUE ORDER BY publishedAt", Post.class)
+                                 .setMaxResults(limit)
+                                 .getResultList();
     }
 }
