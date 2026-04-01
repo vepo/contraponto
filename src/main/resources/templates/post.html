@@ -7,7 +7,7 @@
         <header class="site-header">
             <div class="header-container">
                 <div class="nav-left">
-                    <button class="icon-btn" aria-label="Menu">
+                    <button class="icon-btn" aria-label="Menu" id="menuBtn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -19,17 +19,14 @@
                 </div>
                 
                 <div class="nav-right">
-                    <button class="icon-btn" aria-label="Search">
+                    <button class="icon-btn" aria-label="Search" id="searchBtn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </button>
-                    <button class="icon-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        <span>Write</span>
-                    </button>
+                    
+                    <!-- Auth section - populated by JavaScript -->
+                    <div id="authSection"></div>
                 </div>
             </div>
         </header>
@@ -82,5 +79,48 @@
                 </div>
             </div>
         </footer>
+
+        <!-- Auth Modal (same as home.html) -->
+        <div id="authModal" class="modal">
+            <div class="modal__container">
+                <div class="modal__header">
+                    <h2 class="modal__title" id="modalTitle">Sign In</h2>
+                    <button class="modal__close" id="closeModalBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal__body">
+                    <div id="authError" class="error-message" style="display: none;"></div>
+                    <div id="authSuccess" class="success-message" style="display: none;"></div>
+                    
+                    <form id="authForm" class="auth-form">
+                        <div id="signupFields" style="display: none;">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" autocomplete="name"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required autocomplete="email"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required autocomplete="current-password"/>
+                        </div>
+                        <button type="submit" class="auth-form__submit" id="submitBtn">Sign In</button>
+                    </form>
+                    
+                    <div class="auth-form__switch">
+                        <span id="switchText">Don't have an account?</span>
+                        <button type="button" id="switchModeBtn">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="/js/auth.js"></script>
     </body>
 </html>

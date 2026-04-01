@@ -31,7 +31,7 @@ public class PostEndpoint {
     public TemplateInstance post(@PathParam("id") String slug) {
         return post.data("post", this.postRepository.findBySlug(slug)
                                                     .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug))))
-                                                    
+
                    .data("currentYear", LocalDateTime.now().getYear());
     }
 }
