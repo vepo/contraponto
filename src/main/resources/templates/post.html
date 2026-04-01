@@ -1,12 +1,13 @@
 <html>
     <head>
-        <link rel="stylesheet" href="/style/post.css"/>
+        <link rel="stylesheet" href="/style/main.css"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </head>
     <body>
         <header class="site-header">
             <div class="header-container">
                 <div class="nav-left">
-                    <button class="menu-button" aria-label="Menu">
+                    <button class="icon-btn" aria-label="Menu">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -18,12 +19,12 @@
                 </div>
                 
                 <div class="nav-right">
-                    <button class="search-button" aria-label="Search">
+                    <button class="icon-btn" aria-label="Search">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </button>
-                    <button class="write-button">
+                    <button class="icon-btn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -32,16 +33,54 @@
                 </div>
             </div>
         </header>
-        <div class="content">
-            <h1>{post.title}</h1>
-            <div class="byline">By {post.author}</div>
-            <div class="metadata">
-                <div>Published: {post.publishedAt}</div>
-                <div>Updated: {post.updatedAt}</div>
+
+        <main class="article-page">
+            <div class="container-narrow">
+                <h1 class="article-page__title">{post.title}</h1>
+                <div class="article-page__byline">By {post.author}</div>
+                <div class="article-page__metadata">
+                    <div>Published: {post.publishedAt}</div>
+                    {#if post.updatedAt}
+                    <div>Updated: {post.updatedAt}</div>
+                    {/if}
+                </div>
+                <article class="article-page__content">
+                    {post.content.raw}
+                </article>
             </div>
-            <article>
-                {post.content.raw}
-            </article>
-        </div>
+        </main>
+
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer__grid">
+                    <div class="footer__logo">
+                        <a href="/">contraponto</a>
+                        <p>Counterpoint in every story.</p>
+                    </div>
+                    <div class="footer__links">
+                        <div class="footer__column">
+                            <h4>Explore</h4>
+                            <a href="/archive">Archive</a>
+                            <a href="/topics">Topics</a>
+                            <a href="/about">About</a>
+                        </div>
+                        <div class="footer__column">
+                            <h4>Connect</h4>
+                            <a href="/newsletter">Newsletter</a>
+                            <a href="/submit">Submit a story</a>
+                            <a href="/contact">Contact</a>
+                        </div>
+                        <div class="footer__column">
+                            <h4>Legal</h4>
+                            <a href="/privacy">Privacy</a>
+                            <a href="/terms">Terms</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer__bottom">
+                    <p>&copy; {currentYear} contraponto. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
     </body>
 </html>

@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.post;
 
+import java.time.LocalDateTime;
+
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,6 +30,8 @@ public class PostEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance post(@PathParam("id") String slug) {
         return post.data("post", this.postRepository.findBySlug(slug)
-                                                    .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug))));
+                                                    .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug))))
+                                                    
+                   .data("currentYear", LocalDateTime.now().getYear());
     }
 }

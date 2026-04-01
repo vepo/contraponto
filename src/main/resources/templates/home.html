@@ -1,13 +1,13 @@
 <html>
     <head>
-        <link rel="stylesheet" href="/style/home.css"/>
+        <link rel="stylesheet" href="/style/main.css"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </head>
     <body>
         <header class="site-header">
             <div class="header-container">
                 <div class="nav-left">
-                    <button class="menu-button" aria-label="Menu">
+                    <button class="icon-btn" aria-label="Menu">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -19,12 +19,12 @@
                 </div>
                 
                 <div class="nav-right">
-                    <button class="search-button" aria-label="Search">
+                    <button class="icon-btn" aria-label="Search">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </button>
-                    <button class="write-button">
+                    <button class="icon-btn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -35,60 +35,58 @@
         </header>
 
         <main>
-            <!-- Featured section (first/latest post) -->
             {#if posts.size > 0}
             <section class="featured">
                 <div class="container">
-                    <article class="featured-article">
-                        <div class="featured-content">
-                            <div class="featured-category">{posts[0].category ?: "Featured"}</div>
-                            <h1 class="featured-title">
+                    <div class="featured__grid">
+                        <div class="featured__content">
+                            <div class="featured__category">{posts[0].category ?: "Featured"}</div>
+                            <h1 class="featured__title">
                                 <a href="/post/{posts[0].slug}">{posts[0].title}</a>
                             </h1>
-                            <div class="featured-excerpt">{posts[0].excerpt ?: posts[0].content.truncate(160).raw}</div>
+                            <div class="featured__excerpt">{posts[0].description.raw}</div>
                             <div class="article-meta">
-                                <span class="author">{posts[0].author ?: "Editorial Staff"}</span>
-                                <span class="dot">•</span>
+                                <span class="article-meta__author">{posts[0].author ?: "Editorial Staff"}</span>
+                                <span class="article-meta__dot">•</span>
                                 <time datetime="{posts[0].publishedAt}">{posts[0].publishedAt.formatDate}</time>
-                                <span class="dot">•</span>
-                                <span class="read-time">{posts[0].readTime ?: "5 min read"}</span>
+                                <span class="article-meta__dot">•</span>
+                                <span>{posts[0].readTime ?: "5 min read"}</span>
                             </div>
                         </div>
                         {#if posts[0].cover}
-                        <div class="featured-image">
+                        <div class="featured__image">
                             <img src="{posts[0].cover}" alt="{posts[0].title}"/>
                         </div>
                         {/if}
-                    </article>
+                    </div>
                 </div>
             </section>
             {/if}
 
-            <!-- Grid layout for remaining posts -->
             <div class="container">
                 <div class="posts-grid">
                     {#for post in posts}
                         {#if post_index > 0}
-                        <article class="post-card">
+                        <article class="article-card">
                             {#if post.cover}
-                            <div class="post-card-image">
+                            <div class="article-card__image">
                                 <a href="/post/{post.slug}">
                                     <img src="{post.cover}" alt="{post.title}"/>
                                 </a>
                             </div>
                             {/if}
-                            <div class="post-card-content">
-                                <div class="post-category">{post.category ?: "Article"}</div>
-                                <h2 class="post-title">
+                            <div class="article-card__content">
+                                <div class="article-card__category">{post.category ?: "Article"}</div>
+                                <h2 class="article-card__title">
                                     <a href="/post/{post.slug}">{post.title}</a>
                                 </h2>
-                                <p class="post-excerpt">{post.excerpt ?: post.content.truncate(120).raw}</p>
+                                <p class="article-card__excerpt">{post.description}</p>
                                 <div class="article-meta">
-                                    <span class="author">{post.author ?: "Editorial Staff"}</span>
-                                    <span class="dot">•</span>
+                                    <span class="article-meta__author">{post.author ?: "Editorial Staff"}</span>
+                                    <span class="article-meta__dot">•</span>
                                     <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
-                                    <span class="dot">•</span>
-                                    <span class="read-time">{post.readTime ?: "4 min read"}</span>
+                                    <span class="article-meta__dot">•</span>
+                                    <span>{post.readTime ?: "4 min read"}</span>
                                 </div>
                             </div>
                         </article>
@@ -96,44 +94,42 @@
                     {/for}
                 </div>
 
-                <!-- Load more button (optional) -->
                 {#if posts.size > 6}
                 <div class="load-more">
-                    <button class="load-more-btn">Load more</button>
+                    <button class="btn">Load more</button>
                 </div>
                 {/if}
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="site-footer">
             <div class="container">
-                <div class="footer-content">
-                    <div class="footer-logo">
+                <div class="footer__grid">
+                    <div class="footer__logo">
                         <a href="/">contraponto</a>
                         <p>Counterpoint in every story.</p>
                     </div>
-                    <div class="footer-links">
-                        <div class="footer-column">
+                    <div class="footer__links">
+                        <div class="footer__column">
                             <h4>Explore</h4>
                             <a href="/archive">Archive</a>
                             <a href="/topics">Topics</a>
                             <a href="/about">About</a>
                         </div>
-                        <div class="footer-column">
+                        <div class="footer__column">
                             <h4>Connect</h4>
                             <a href="/newsletter">Newsletter</a>
                             <a href="/submit">Submit a story</a>
                             <a href="/contact">Contact</a>
                         </div>
-                        <div class="footer-column">
+                        <div class="footer__column">
                             <h4>Legal</h4>
                             <a href="/privacy">Privacy</a>
                             <a href="/terms">Terms</a>
                         </div>
                     </div>
                 </div>
-                <div class="footer-bottom">
+                <div class="footer__bottom">
                     <p>&copy; {currentYear} contraponto. All rights reserved.</p>
                 </div>
             </div>
