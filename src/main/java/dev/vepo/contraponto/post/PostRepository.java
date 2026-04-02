@@ -23,8 +23,8 @@ public class PostRepository {
 
     public Optional<Post> findBySlug(String slug) {
         return this.entityManager.createQuery("""
-                                              FROM Post 
-                                              WHERE published = TRUE AND 
+                                              FROM Post
+                                              WHERE published = TRUE AND
                                                     slug = :slug
                                               """, Post.class)
                                  .setParameter("slug", slug)
@@ -34,8 +34,8 @@ public class PostRepository {
 
     public List<Post> findNewest(int limit) {
         return this.entityManager.createQuery("""
-                                              FROM Post 
-                                              WHERE published = TRUE 
+                                              FROM Post
+                                              WHERE published = TRUE
                                               ORDER BY publishedAt DESC
                                               """, Post.class)
                                  .setMaxResults(limit)
