@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <link rel="stylesheet" href="/style/main.css"/>
@@ -33,14 +34,26 @@
 
         <main class="article-page">
             <div class="container-narrow">
+                <!-- Imagem de capa -->                
+                {#if post.cover}
+                <div class="article-page__cover">
+                    <img src="{post.cover.url}" alt="{post.title}" class="article-page__cover-image"/>
+                </div>
+                {/if}
+                
                 <h1 class="article-page__title">{post.title}</h1>
-                <div class="article-page__byline">By {post.author}</div>
+                
+                <div class="article-page__byline">
+                    By {post.author}
+                </div>
+                
                 <div class="article-page__metadata">
-                    <div>Published: {post.publishedAt}</div>
-                    {#if post.updatedAt}
-                    <div>Updated: {post.updatedAt}</div>
+                    <div>Published: {post.publishedAt.formatDate}</div>
+                    {#if post.updatedAt && post.updatedAt != post.publishedAt}
+                    <div>Updated: {post.updatedAt.formatDate}</div>
                     {/if}
                 </div>
+                
                 <article class="article-page__content">
                     {post.content.raw}
                 </article>

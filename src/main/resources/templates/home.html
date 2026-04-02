@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <meta name="csrf-token" content="{{csrfToken}}">
@@ -53,7 +54,7 @@
                         </div>
                         {#if posts[0].cover}
                         <div class="featured__image">
-                            <img src="{posts[0].cover}" alt="{posts[0].title}"/>
+                            <img src="{posts[0].cover.url}" alt="{posts[0].title}"/>
                         </div>
                         {/if}
                     </div>
@@ -69,7 +70,7 @@
                             {#if post.cover}
                             <div class="article-card__image">
                                 <a href="/post/{post.slug}">
-                                    <img src="{post.cover}" alt="{post.title}"/>
+                                    <img src="{post.cover.url}" alt="{post.title}"/>
                                 </a>
                             </div>
                             {/if}

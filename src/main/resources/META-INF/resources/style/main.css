@@ -1005,3 +1005,43 @@ hr:after {
     gap: 6px;
   }
 }
+
+/* Adicionar ao final do src/main/resources/META-INF/resources/style/main.css */
+
+/* Article Cover Image */
+.article-page__cover {
+    margin: 2rem 0 2rem 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.article-page__cover-image {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.article-page__cover-image:hover {
+    transform: scale(1.02);
+}
+
+/* Responsive adjustments for cover image */
+@media (max-width: 768px) {
+    .article-page__cover {
+        margin: 1rem 0 1.5rem 0;
+    }
+    
+    .article-page__cover-image {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .article-page__cover-image {
+        max-height: 200px;
+    }
+}

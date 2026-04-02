@@ -6,12 +6,15 @@ import java.util.Objects;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import dev.vepo.contraponto.image.Image;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -27,9 +30,9 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
-    @Lob
-    @Column(nullable = true)
-    private byte[] cover;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cover_id")
+    private Image cover;
 
     @Column
     private String author;
@@ -78,11 +81,11 @@ public class Post {
         this.title = title;
     }
 
-    public byte[] getCover() {
+    public Image getCover() {
         return cover;
     }
 
-    public void setCover(byte[] cover) {
+    public void setCover(Image cover) {
         this.cover = cover;
     }
 
