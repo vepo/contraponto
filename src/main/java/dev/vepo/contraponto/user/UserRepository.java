@@ -21,10 +21,14 @@ public class UserRepository {
     }
 
     public boolean existsByEmail(String email) {
-        Long count = entityManager.createQuery("SELECT COUNT(u) FROM User u WHERE email = :email", Long.class)
-                                  .setParameter("email", email)
-                                  .getSingleResult();
-        return count > 0;
+        return entityManager.createQuery("""
+                                         SELECT id
+                                         FROM User
+                                         WHERE email = :email
+                                         """, Long.class)
+                            .setParameter("email", email)
+                            .getResultStream()
+                            .count() > 0l;
     }
 
     @Transactional

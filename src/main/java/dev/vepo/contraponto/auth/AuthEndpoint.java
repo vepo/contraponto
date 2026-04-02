@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.auth;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +125,65 @@ public class AuthEndpoint {
         // In a real implementation, you might want to invalidate the token
         // Since JWT is stateless, just return success
         return Response.ok(new SuccessResponse("Logged out successfully")).build();
+    }
+
+    @POST
+    @Path("/refresh")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response refresh(@Valid RefreshTokenRequest request) {
+        try {
+            if (request.refreshToken() == null || request.refreshToken().isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                               .entity(new ErrorResponse("Refresh token is required"))
+                               .build();
+            }
+
+            // Validate refresh token
+            JsonWebToken refreshToken = jwtService.validateRefreshToken(request.refreshToken());
+
+            if (refreshToken == null) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                               .entity(new ErrorResponse("Invalid or expired refresh token"))
+                               .build();
+            }
+
+            // Extract user ID from token
+            String userIdStr = refreshToken.getSubject();
+            Long userId;
+            try {
+                userId = Long.parseLong(userIdStr);
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                               .entity(new ErrorResponse("Invalid token subject"))
+                               .build();
+            }
+
+            // Find user
+            User user = userRepository.findById(userId);
+            if (user == null || !user.isActive()) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                               .entity(new ErrorResponse("User not found or inactive"))
+                               .build();
+            }
+
+            // Generate new tokens
+            String newToken = jwtService.generateToken(user);
+            String newRefreshToken = jwtService.generateRefreshToken(user);
+
+            // Prepare response
+            AuthResponse response = new AuthResponse(newToken,
+                                                     newRefreshToken,
+                                                     new AuthResponse.UserInfo(user.getId(), user.getName(), user.getEmail()));
+
+            logger.info("Token refreshed for user: " + user.getEmail());
+            return Response.ok(response).build();
+        } catch (Exception e) {
+            logger.error("Error during token refresh!", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                           .entity(new ErrorResponse("Error refreshing token"))
+                           .build();
+        }
     }
 
     // Error and Success response classes
