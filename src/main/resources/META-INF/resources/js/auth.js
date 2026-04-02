@@ -83,7 +83,6 @@ class AuthManager {
         if (errorDiv) errorDiv.style.display = 'none';
         if (successDiv) successDiv.style.display = 'none';
 
-        this.isSignupMode = false;
         this.updateModalForMode();
     }
 
@@ -341,8 +340,8 @@ class AuthManager {
             // Render login/signup buttons in a container
             authSection.innerHTML = `
             <div class="auth-buttons">
-                <button class="auth-btn auth-btn--signup" id="signupBtn">Sign Up</button>
-                <button class="auth-btn auth-btn--login" id="loginBtn">Sign In</button>
+                <button class="auth-btn auth-btn-signup" id="signupBtn">Sign Up</button>
+                <button class="auth-btn auth-btn-login" id="loginBtn">Sign In</button>
             </div>
         `;
 

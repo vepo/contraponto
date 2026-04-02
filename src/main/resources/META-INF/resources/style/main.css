@@ -597,21 +597,21 @@ hr:after {
   border-radius: 30px;
 }
 
-.auth-btn--login {
+.auth-btn-login {
   background: var(--color-primary);
   color: white;
 }
 
-.auth-btn--login:hover {
+.auth-btn-login:hover {
   background: var(--color-primary-dark);
   color: white;
 }
 
-.auth-btn--signup {
+.auth-btn-signup {
   border: 1px solid var(--color-border);
 }
 
-.auth-btn--signup:hover {
+.auth-btn-signup:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
@@ -918,26 +918,26 @@ hr:after {
   white-space: nowrap;
 }
 
-.auth-btn--login {
+.auth-btn-login {
   background: var(--color-primary);
   color: white;
   border: 1px solid var(--color-primary);
 }
 
-.auth-btn--login:hover {
+.auth-btn-login:hover {
   background: var(--color-primary-dark);
   border-color: var(--color-primary-dark);
   color: white;
   transform: translateY(-1px);
 }
 
-.auth-btn--signup {
+.auth-btn-signup {
   background: transparent;
   border: 1px solid var(--color-border);
   color: var(--color-text);
 }
 
-.auth-btn--signup:hover {
+.auth-btn-signup:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
   background: var(--color-bg-offset);
