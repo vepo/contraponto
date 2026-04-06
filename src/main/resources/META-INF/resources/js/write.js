@@ -23,8 +23,6 @@ class WriteEditor {
             
             this.setupEventListeners();
             this.setupToolbar();
-            this.setupCoverUpload();
-            this.setupSlugGeneration();
             this.loadExistingPost();
             this.updateUserMenu();
         } else {
@@ -121,122 +119,6 @@ class WriteEditor {
         
         // Trigger input event
         textarea.dispatchEvent(new Event('input'));
-    }
-    
-    setupCoverUpload() {
-        const coverArea = document.getElementById('coverArea');
-        const coverInput = document.getElementById('coverInput');
-        const coverPlaceholder = document.getElementById('coverPlaceholder');
-        const coverPreview = document.getElementById('coverPreview');
-        const coverImage = document.getElementById('coverImage');
-        const removeCoverBtn = document.getElementById('removeCoverBtn');
-        
-        if (coverArea) {
-            coverArea.addEventListener('click', () => {
-                coverInput.click();
-            });
-        }
-        
-        if (coverInput) {
-            coverInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    await this.uploadCover(file);
-                }
-            });
-        }
-        
-        if (removeCoverBtn) {
-            removeCoverBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.removeCover();
-            });
-        }
-    }
-    
-    async uploadCover(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        this.showToast('Uploading cover image...');
-        
-        try {
-            const response = await window.authManager.authenticatedFetch('/api/images', {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (response.ok) {
-                const image = await response.json();
-                document.getElementById('coverId').value = image.id;
-                this.updateCoverPreview(image.url);
-                this.showToast('Cover image uploaded!', 'success');
-            } else {
-                const error = await response.json();
-                this.showToast(error.error || 'Failed to upload image', 'error');
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            this.showToast('Failed to upload image', 'error');
-        }
-    }
-    
-    updateCoverPreview(url) {
-        const coverPlaceholder = document.getElementById('coverPlaceholder');
-        const coverPreview = document.getElementById('coverPreview');
-        const coverImage = document.getElementById('coverImage');
-        
-        if (coverImage) {
-            coverImage.src = url;
-        }
-        
-        if (coverPlaceholder) coverPlaceholder.style.display = 'none';
-        if (coverPreview) coverPreview.style.display = 'block';
-    }
-    
-    removeCover() {
-        document.getElementById('coverId').value = '';
-        
-        const coverPlaceholder = document.getElementById('coverPlaceholder');
-        const coverPreview = document.getElementById('coverPreview');
-        
-        if (coverPlaceholder) coverPlaceholder.style.display = 'flex';
-        if (coverPreview) coverPreview.style.display = 'none';
-    }
-    
-    setupSlugGeneration() {
-        const titleInput = document.getElementById('title');
-        const slugInput = document.getElementById('slug');
-        const slugPreview = document.getElementById('slugPreview');
-        
-        if (titleInput && slugInput) {
-            titleInput.addEventListener('input', () => {
-                if (!slugInput.value || slugInput.value === this.generateSlug(titleInput.value)) {
-                    const slug = this.generateSlug(titleInput.value);
-                    slugInput.value = slug;
-                    if (slugPreview) {
-                        slugPreview.textContent = `/post/${slug}`;
-                    }
-                }
-            });
-        }
-        
-        if (slugInput && slugPreview) {
-            slugInput.addEventListener('input', () => {
-                if (slugPreview) {
-                    slugPreview.textContent = `/post/${slugInput.value}`;
-                }
-            });
-        }
-    }
-    
-    generateSlug(text) {
-        return text
-            .toLowerCase()
-            .trim()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
     }
     
     async loadExistingPost() {

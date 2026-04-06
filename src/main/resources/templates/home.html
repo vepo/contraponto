@@ -7,33 +7,7 @@
         <title>contraponto</title>
     </head>
     <body>
-        <header class="site-header">
-            <div class="header-container">
-                <div class="nav-left">
-                    <button class="icon-btn" aria-label="Menu" id="menuBtn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="logo">
-                    <a href="/">contraponto</a>
-                </div>
-                
-                <div class="nav-right">
-                    <button class="icon-btn" aria-label="Search" id="searchBtn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                    
-                    <!-- Auth section - populated by JavaScript -->
-                    <div id="authSection"></div>
-                </div>
-            </div>
-        </header>
-
+        {#include components/header /}
         <main>
             {#if posts.size > 0}
             <section class="featured">
@@ -102,38 +76,7 @@
             </div>
         </main>
 
-        <footer class="site-footer">
-            <div class="container">
-                <div class="footer__grid">
-                    <div class="footer__logo">
-                        <a href="/">contraponto</a>
-                        <p>Counterpoint in every story.</p>
-                    </div>
-                    <div class="footer__links">
-                        <div class="footer__column">
-                            <h4>Explore</h4>
-                            <a href="/archive">Archive</a>
-                            <a href="/topics">Topics</a>
-                            <a href="/about">About</a>
-                        </div>
-                        <div class="footer__column">
-                            <h4>Connect</h4>
-                            <a href="/newsletter">Newsletter</a>
-                            <a href="/submit">Submit a story</a>
-                            <a href="/contact">Contact</a>
-                        </div>
-                        <div class="footer__column">
-                            <h4>Legal</h4>
-                            <a href="/privacy">Privacy</a>
-                            <a href="/terms">Terms</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer__bottom">
-                    <p>&copy; {currentYear} contraponto. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
+        {#include components/footer /}
 
         <!-- Auth Modal -->
         <div id="authModal" class="modal">

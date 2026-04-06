@@ -1,0 +1,29 @@
+<header class="site-header">
+    <div class="header-container">
+        <div class="nav-left">
+            <button class="icon-btn" aria-label="Menu" id="menuBtn">
+                <img src="/images/sidebar.svg" />
+            </button>
+        </div>
+        
+        <div class="logo">
+            <a href="/">contraponto</a>
+        </div>
+        
+        <div class="nav-right">
+            <button class="icon-btn" aria-label="Search" id="searchBtn">
+                <img src="/images/search.svg" />
+            </button>
+            {#insert}                
+            {/insert}
+            {#if write.or(true)}
+                <button type="button" class="btn-header" id="saveDraftBtn">
+                    <img src="/images/write.svg" />
+                    Write
+                </button>
+            {/if}
+            <!-- Auth section - populated by JavaScript -->
+            <div id="authSection"></div>
+        </div>
+    </div>
+</header>

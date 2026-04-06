@@ -892,6 +892,33 @@ hr:after {
   gap: 12px;
 }
 
+.btn-header {
+    padding: 6px 20px;
+    border-radius: 30px;
+    font-family: 'Inter', Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: #1a8917;
+    color: white;
+    white-space: nowrap;
+    /* Add these for proper alignment */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-header:hover {
+    background: #0f6e0d;
+}
+
+.btn-header img {
+  max-height: 16px;
+  vertical-align: top;
+}
+
 /* Auth buttons container */
 .auth-buttons {
   display: flex;
