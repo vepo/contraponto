@@ -113,6 +113,14 @@ public class Post {
         this.content = content;
     }
 
+    public void setPublished(boolean published) {
+        this.published = published;
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
