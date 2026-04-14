@@ -21,7 +21,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 
 @Provider
-@Secured // This filter will run for all endpoints annotated with @Secured
+@Secured
 @Priority(Priorities.AUTHENTICATION)
 public class JwtAuthenticationFilter implements ContainerRequestFilter {
 
@@ -37,43 +37,60 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        // Get the Authorization header
         String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
-        // Check if the Authorization header is present
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            logger.warn("Missing or invalid Authorization header for: {}", requestContext.getUriInfo().getPath());
-            abortWithUnauthorized(requestContext, "Missing or invalid authorization header");
+            // Don't abort for public endpoints - let them pass without authentication
+            // Only abort if this is a protected endpoint
+            if (isProtectedEndpoint(requestContext)) {
+                logger.warn("Missing or invalid Authorization header for protected endpoint: {}",
+                            requestContext.getUriInfo().getPath());
+                abortWithUnauthorized(requestContext, "Missing or invalid authorization header");
+            }
             return;
         }
 
-        // Extract the token
         String token = authorizationHeader.substring(BEARER_PREFIX.length()).trim();
 
         try {
-            // Validate and parse the token
             JsonWebToken validatedToken = jwtParser.parse(token);
 
-            // Check if token is expired
-            if (validatedToken.getExpirationTime() < System.currentTimeMillis()) {
+            if (validatedToken.getExpirationTime() < System.currentTimeMillis() / 1000) {
                 logger.warn("Expired token for subject: {}", validatedToken.getSubject());
                 abortWithUnauthorized(requestContext, "Token has expired");
                 return;
             }
 
-            // Create a new SecurityContext with the validated token
             SecurityContext originalContext = requestContext.getSecurityContext();
             SecurityContext newContext = createSecurityContext(validatedToken, originalContext.isSecure());
             requestContext.setSecurityContext(newContext);
 
+            // Also set the JWT token in the request context for CDI injection
+            requestContext.setProperty("jwt", validatedToken);
+
             logger.debug("Successfully authenticated user: {}", validatedToken.getName());
         } catch (ParseException e) {
             logger.error("Failed to parse JWT token: {}", e.getMessage());
-            abortWithUnauthorized(requestContext, "Invalid token");
+            if (isProtectedEndpoint(requestContext)) {
+                abortWithUnauthorized(requestContext, "Invalid token");
+            }
         } catch (Exception e) {
             logger.error("Unexpected error during token validation: {}", e.getMessage(), e);
-            abortWithUnauthorized(requestContext, "Authentication failed");
+            if (isProtectedEndpoint(requestContext)) {
+                abortWithUnauthorized(requestContext, "Authentication failed");
+            }
         }
+    }
+
+    private boolean isProtectedEndpoint(ContainerRequestContext requestContext) {
+        // Check if the endpoint is annotated with @Secured
+        // This is a simplified check - you might want to implement a more robust method
+        String path = requestContext.getUriInfo().getPath();
+        return !path.startsWith("/api/auth/") &&
+                !path.startsWith("/style/") &&
+                !path.startsWith("/js/") &&
+                !path.equals("/") &&
+                !path.startsWith("/post/");
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext, String message) {
@@ -92,7 +109,6 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
 
             @Override
             public boolean isUserInRole(String role) {
-                // Check if the token has the required role
                 Set<String> groups = token.getGroups();
                 return groups != null && groups.contains(role);
             }

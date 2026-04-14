@@ -250,6 +250,9 @@ class AuthManager {
             const data = await response.json();
 
             if (response.ok) {
+                if ( data && data.user && data.user.sessionId) {
+                    document.cookie = `__session=${data.user.sessionId}`;
+                }
                 this.storeSession(data);
                 this.showSuccess('Successfully signed in!');
 

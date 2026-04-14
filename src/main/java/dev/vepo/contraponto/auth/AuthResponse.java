@@ -50,13 +50,15 @@ public class AuthResponse {
 
     public static class UserInfo {
         private Long id;
+        private String sessionId;
         private String name;
         private String email;
 
         public UserInfo() {}
 
-        public UserInfo(Long id, String name, String email) {
+        public UserInfo(Long id, String sessionId, String name, String email) {
             this.id = id;
+            this.sessionId = sessionId;
             this.name = name;
             this.email = email;
         }
@@ -68,6 +70,14 @@ public class AuthResponse {
 
         public void setId(Long id) {
             this.id = id;
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+        
+        public void setSessionId(String sessionId) {
+            this.sessionId = sessionId;
         }
 
         public String getName() {

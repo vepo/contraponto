@@ -1,5 +1,9 @@
 package dev.vepo.contraponto.auth;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +17,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/auth")
@@ -25,14 +30,17 @@ public class AuthEndpoint {
     private final UserRepository userRepository;
     private final PasswordService passwordService;
     private final JwtService jwtService;
+    private final SessionManager sessionManager;
 
     @Inject
     public AuthEndpoint(UserRepository userRepository,
                         PasswordService passwordService,
-                        JwtService jwtService) {
+                        JwtService jwtService,
+                        SessionManager sessionManager) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.jwtService = jwtService;
+        this.sessionManager = sessionManager;
     }
 
     @POST
@@ -56,13 +64,21 @@ public class AuthEndpoint {
             String refreshToken = jwtService.generateRefreshToken(user);
 
             // Prepare response
-            AuthResponse response = new AuthResponse(
-                                                     token,
+            var sessionId = this.sessionManager.login(token, user);
+            AuthResponse response = new AuthResponse(token,
                                                      refreshToken,
-                                                     new AuthResponse.UserInfo(user.getId(), user.getName(), user.getEmail()));
-
-            logger.info("User registered successfully: " + user.getEmail());
-            return Response.ok(response).build();
+                                                     new AuthResponse.UserInfo(user.getId(),
+                                                                               sessionId,
+                                                                               user.getName(), user.getEmail()));
+            logger.info("User registered successfully: {}", user);
+            return Response.ok(response)
+                           .cookie(new NewCookie.Builder("__session").value(sessionId)
+                                                                     .expiry(Date.from(LocalDateTime.now()
+                                                                                                    .plusHours(1)
+                                                                                                    .atZone(ZoneId.systemDefault())
+                                                                                                    .toInstant()))
+                                                                     .build())
+                           .build();
         } catch (Exception e) {
             logger.error("Error during signup!", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -104,13 +120,23 @@ public class AuthEndpoint {
             String refreshToken = jwtService.generateRefreshToken(user);
 
             // Prepare response
-            AuthResponse response = new AuthResponse(
-                                                     token,
+            var sessionId = this.sessionManager.login(token, user);
+            AuthResponse response = new AuthResponse(token,
                                                      refreshToken,
-                                                     new AuthResponse.UserInfo(user.getId(), user.getName(), user.getEmail()));
+                                                     new AuthResponse.UserInfo(user.getId(),
+                                                                               sessionId,
+                                                                               user.getName(), user.getEmail()));
 
-            logger.info("User logged in: " + user.getEmail());
-            return Response.ok(response).build();
+            logger.info("User logged in: {}", user);
+            logger.info("User registered successfully: {}", user);
+            return Response.ok(response)
+                           .cookie(new NewCookie.Builder("__session").value(sessionId)
+                                                                     .expiry(Date.from(LocalDateTime.now()
+                                                                                                    .plusHours(1)
+                                                                                                    .atZone(ZoneId.systemDefault())
+                                                                                                    .toInstant()))
+                                                                     .build())
+                           .build();
         } catch (Exception e) {
             logger.error("Error during login!", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -171,10 +197,13 @@ public class AuthEndpoint {
             String newToken = jwtService.generateToken(user);
             String newRefreshToken = jwtService.generateRefreshToken(user);
 
+            var sessionId = this.sessionManager.login(newToken, user);
             // Prepare response
             AuthResponse response = new AuthResponse(newToken,
                                                      newRefreshToken,
-                                                     new AuthResponse.UserInfo(user.getId(), user.getName(), user.getEmail()));
+                                                     new AuthResponse.UserInfo(user.getId(),
+                                                                               sessionId,
+                                                                               user.getName(), user.getEmail()));
 
             logger.info("Token refreshed for user: " + user.getEmail());
             return Response.ok(response).build();

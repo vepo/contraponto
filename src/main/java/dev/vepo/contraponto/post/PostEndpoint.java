@@ -2,6 +2,7 @@ package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
 
+import dev.vepo.contraponto.shared.infra.UserContext.UserInfo;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,11 +20,13 @@ public class PostEndpoint {
 
     private final PostRepository postRepository;
     private final Template post;
+    private final UserInfo userInfo;
 
     @Inject
-    public PostEndpoint(PostRepository postRepository, Template post) {
+    public PostEndpoint(PostRepository postRepository, Template post, UserInfo userInfo) {
         this.postRepository = postRepository;
         this.post = post;
+        this.userInfo = userInfo;
     }
 
     @GET
@@ -31,7 +34,7 @@ public class PostEndpoint {
     public TemplateInstance post(@PathParam("id") String slug) {
         return post.data("post", this.postRepository.findBySlug(slug)
                                                     .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug))))
-
-                   .data("currentYear", LocalDateTime.now().getYear());
+                   .data("currentYear", LocalDateTime.now().getYear())
+                   .data("user", userInfo);
     }
 }
