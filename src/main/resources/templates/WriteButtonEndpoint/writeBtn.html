@@ -1,0 +1,11 @@
+{#if user.isAuthenticated}
+	<button type="button" 
+			class="btn-header" 
+			data-hx-get="/write"
+			hx-select="main"
+			hx-target="main"
+			hx-replace-url="/write">
+		<img src="/images/write.svg" />
+		Write
+	</button>
+{/if}

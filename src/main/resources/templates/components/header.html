@@ -21,18 +21,10 @@
             </button>
             {#insert}
             {/insert}
-            {#if user.isAuthenticated}
-                <button type="button" 
-                        class="btn-header" 
-                        data-hx-get="/write"
-                        hx-select="main"
-                        hx-target="main"
-                        hx-replace-url="/write">
-                    <img src="/images/write.svg" />
-                    Write
-                </button>
-            {/if}
-            <div id="menu-container" hx-get="/components/menu" hx-trigger="loggedIn from:body" >
+            <div hx-get="/components/write-btn" hx-trigger="loggedIn from:body, loggedOut from:body">
+                {#include WriteButtonEndpoint/writeBtn /}
+            </div>
+            <div id="menu-container" hx-get="/components/menu" hx-trigger="loggedIn from:body, loggedOut from:body">
                 {#include MenuEndpoint/menu /}
             </div>
         </div>
