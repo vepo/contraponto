@@ -4,8 +4,14 @@
 			data-hx-get="/write"
 			hx-select="main"
 			hx-target="main"
-			hx-replace-url="/write">
+			hx-replace-url="/write"
+			data-disable-pattern="^/write">
 		<img src="/images/write.svg" />
-		Write
+		Escrever
+	</button>
+	<button type="button" 
+			class="btn-header"
+			data-disable-pattern="^(?!\/write$).*">
+		Publicar
 	</button>
 {/if}

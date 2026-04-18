@@ -5,10 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.UserRepository;
-import io.vertx.core.http.HttpServerRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -16,7 +14,6 @@ import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -57,11 +54,11 @@ public class LoginEndpoint {
         String response = """
                           <div hx-swap-oob="true" id="menu-container">%s</div>
                           <script>
-                            document.cookie = '__session=%s; path=/';
                             document.getElementById('authModal').classList.remove('modal--open');
                           </script>
-                          """.formatted(menuHtml, loggedUser.getSessionId());
+                          """.formatted(menuHtml);
         return Response.ok(response)
+                       .header("Set-Cookie", "__session=%s; Path=/".formatted(loggedUser.getSessionId()))
                        .header("HX-Trigger", "loggedIn")
                        .build();
     }

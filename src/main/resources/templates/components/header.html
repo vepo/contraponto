@@ -19,8 +19,6 @@
             <button class="icon-btn" aria-label="Search" id="searchBtn">
                 <img src="/images/search.svg" />
             </button>
-            {#insert}
-            {/insert}
             <div hx-get="/components/write-btn" hx-trigger="loggedIn from:body, loggedOut from:body">
                 {#include WriteButtonEndpoint/writeBtn /}
             </div>

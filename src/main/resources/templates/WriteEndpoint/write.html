@@ -8,16 +8,7 @@
     {/if} - contraponto
     {/include}
     <body class="write-page">
-        {#include components/header write=false}
-        <form id="postForm" hx-post="/write" hx-target="#toast" hx-swap="innerHTML">
-            <input type="hidden" name="postId" value="{#if post.isPresent}{post.get().id}{/if}">
-            <input type="text" name="title" value="{#if post.isPresent}{post.get().title}{/if}">
-            <textarea name="content">{#if post.isPresent}{post.get().content}{/if}</textarea>
-            <button type="submit" name="publish" value="false" class="btn-draft">Save Draft</button>
-            <button type="submit" name="publish" value="true" class="btn-publish">Publish</button>
-        </form>
-        <div id="toast"></div>
-        {/include}
+        {#include components/header /}
         <main class="write-main">
             <div class="write-container">
                 <form id="postForm" class="write-form">
