@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -55,5 +56,10 @@ public class LoggedUserProvider {
 
     public void logout(LoggedUser user) {
         this.sessions.remove(user.getSessionId());
+    }
+
+    public Optional<LoggedUser> find(String sessionId) {
+        return Optional.ofNullable(this.sessions.get(sessionId))
+                       .map(user -> new LoggedUser(user, sessionId));
     }
 }

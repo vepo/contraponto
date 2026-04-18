@@ -11,6 +11,9 @@
 	</button>
 	<button type="button" 
 			class="btn-header"
+			hx-post="/write"
+			hx-include="#postForm"
+			hx-target="main"
 			data-disable-pattern="^(?!\/write$).*">
 		Publicar
 	</button>
