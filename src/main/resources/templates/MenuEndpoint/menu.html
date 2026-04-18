@@ -1,0 +1,55 @@
+{#if user.isAuthenticated}
+<div class="user-menu">
+    <button class="user-menu__button" id="userMenuBtn" aria-label="User menu">
+        <img src="{user.avatarUrl}" alt="{user.name}" class="user-menu__avatar" onerror="this.src='https://ui-avatars.com/api/?name={user.name.toUpperCase().charAt(0)}&background=1a8917&color=fff'"/>
+        <span>{user.firstName}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </button>
+    <div class="user-menu__dropdown" id="userDropdown">
+        <div class="user-menu__header">
+            <div class="user-menu__name">{user.name.escapeHtml}</div>
+            <div class="user-menu__email">{user.email.escapeHtml}</div>
+        </div>
+        <div class="user-menu__items">
+            <a href="/profile" class="user-menu__item" data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21M16 7C16 9.2 14.2 11 12 11C9.8 11 8 9.2 8 7C8 4.8 9.8 3 12 3C14.2 3 16 4.8 16 7Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Profile
+            </a>
+            <a href="/write" class="user-menu__item" data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Write
+            </a>
+            <a href="/dashboard" class="user-menu__item" data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M3 3H21V21H3V3ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H13V17H7V15Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Dashboard
+            </a>
+            <div class="user-menu__divider"></div>
+            <button class="user-menu__item" hx-post="/forms/auth/logout">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M9 21H5C4.5 21 4 20.5 4 20V4C4 3.5 4.5 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Sign out
+          </button>
+        </div>
+    </div>
+</div>
+{#else}
+<div class="auth-buttons">
+  <button class="auth-btn auth-btn-signup"
+          hx-get="/auth/modal?mode=signup"
+          hx-target="#modal-container"
+          hx-swap="innerHTML">Sign Up</button>
+  <button class="auth-btn auth-btn-login"
+          hx-get="/auth/modal?mode=login"
+          hx-target="#modal-container"
+          hx-swap="innerHTML">Sign In</button>
+</div>
+{/if}

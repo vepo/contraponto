@@ -1,0 +1,37 @@
+<div id="authModal" class="modal modal--open">
+  <div class="modal__container">
+    <div class="modal__header">
+      <h2 class="modal__title">{#if mode == 'signup'}Create Account{#else}Sign In{/if}</h2>
+      <button class="modal__close" onclick="this.closest('.modal').remove()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="authError"></div>
+      <form hx-post="/forms/auth/{mode}" hx-target="#authError" hx-swap="innerHTML">
+        {#if mode == 'signup'}
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" required>
+        </div>
+        {/if}
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" required>
+        </div>
+        <button type="submit" class="auth-form__submit">
+          {#if mode == 'signup'}Sign Up{#else}Sign In{/if}
+        </button>
+      </form>
+      <div class="auth-form__switch">
+        {#if mode == 'signup'}
+        Already have an account? <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a>
+        {#else}
+        Don't have an account? <a href="#" hx-get="/auth/modal?mode=signup" hx-target="#modal-container">Sign Up</a>
+        {/if}
+      </div>
+    </div>
+  </div>
+</div>

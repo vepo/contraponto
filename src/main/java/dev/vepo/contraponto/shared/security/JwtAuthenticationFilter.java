@@ -7,7 +7,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.auth.AuthEndpoint;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.annotation.Priority;
@@ -96,7 +95,7 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
     private void abortWithUnauthorized(ContainerRequestContext requestContext, String message) {
         requestContext.abortWith(
                                  Response.status(Response.Status.UNAUTHORIZED)
-                                         .entity(new AuthEndpoint.ErrorResponse(message))
+                                         // .entity(new AuthEndpoint.ErrorResponse(message))
                                          .build());
     }
 

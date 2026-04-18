@@ -36,6 +36,12 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
+/* ========== HTMX ========== */
+
+[data-hx-get]   {
+  cursor: pointer;
+}
+
 /* ========== RESET ========== */
 * {
   margin: 0;

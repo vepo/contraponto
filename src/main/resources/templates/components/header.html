@@ -7,24 +7,34 @@
         </div>
 
         <div class="logo">
-            <a href="/">contraponto</a>
+            <a data-hx-get="/"
+               hx-select="main"
+               hx-target="main"
+               hx-replace-url="/">
+                contraponto
+            </a>
         </div>
 
         <div class="nav-right">
             <button class="icon-btn" aria-label="Search" id="searchBtn">
                 <img src="/images/search.svg" />
             </button>
-            {user}
             {#insert}
             {/insert}
             {#if user.isAuthenticated}
-                <button type="button" class="btn-header" id="saveDraftBtn">
+                <button type="button" 
+                        class="btn-header" 
+                        data-hx-get="/write"
+                        hx-select="main"
+                        hx-target="main"
+                        hx-replace-url="/write">
                     <img src="/images/write.svg" />
                     Write
                 </button>
             {/if}
-            <!-- Auth section - populated by JavaScript -->
-            <div id="authSection"></div>
+            <div id="menu-container" hx-get="/components/menu" hx-trigger="loggedIn from:body" >
+                {#include MenuEndpoint/menu /}
+            </div>
         </div>
     </div>
 </header>

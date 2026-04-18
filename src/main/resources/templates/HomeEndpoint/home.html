@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="csrf-token" content="{{csrfToken}}">
-        <link rel="stylesheet" href="/style/main.css"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>contraponto</title>
-    </head>
+    {#include components/head}
+    contraponto
+    {/include}
     <body>
         {#include components/header /}
         <main>
@@ -14,9 +11,12 @@
                 <div class="container">
                     <div class="featured__grid">
                         <div class="featured__content">
-                            <div class="featured__category">{posts[0].category ?: "Featured"}</div>
+                            <div class="featured__category">Featured</div>
                             <h1 class="featured__title">
-                                <a href="/post/{posts[0].slug}">{posts[0].title}</a>
+                                <a data-hx-get="/post/{posts[0].slug}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-replace-url="/post/{posts[0].slug}">{posts[0].title}</a>
                             </h1>
                             <div class="featured__excerpt">{posts[0].description.raw}</div>
                             <div class="article-meta">
@@ -24,7 +24,7 @@
                                 <span class="article-meta__dot">•</span>
                                 <time datetime="{posts[0].publishedAt}">{posts[0].publishedAt.formatDate}</time>
                                 <span class="article-meta__dot">•</span>
-                                <span>{posts[0].readTime ?: "5 min read"}</span>
+                                <span>{posts[0].content.readTime}</span>
                             </div>
                         </div>
                         {#if posts[0].cover}
@@ -38,41 +38,48 @@
             {/if}
 
             <div class="container">
-                <div class="posts-grid">
-                    {#for post in posts}
-                        {#if post_index > 0}
-                        <article class="article-card">
-                            {#if post.cover}
-                            <div class="article-card__image">
-                                <a href="/post/{post.slug}">
-                                    <img src="{post.cover.url}" alt="{post.title}"/>
-                                </a>
-                            </div>
-                            {/if}
-                            <div class="article-card__content">
-                                <div class="article-card__category">{post.category ?: "Article"}</div>
-                                <h2 class="article-card__title">
-                                    <a href="/post/{post.slug}">{post.title}</a>
-                                </h2>
-                                <p class="article-card__excerpt">{post.description}</p>
-                                <div class="article-meta">
-                                    <span class="article-meta__author">{post.author ?: "Editorial Staff"}</span>
-                                    <span class="article-meta__dot">•</span>
-                                    <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
-                                    <span class="article-meta__dot">•</span>
-                                    <span>{post.readTime ?: "4 min read"}</span>
+                    <div class="posts-grid">
+                        {#for post in posts}
+                            {#if post_index > 0}
+                            <article class="article-card">
+                                {#if post.cover}
+                                <div class="article-card__image">
+                                    <a data-hx-get="/post/{post.slug}"
+                                       hx-select="main"
+                                       hx-target="main"
+                                       hx-replace-url="/post/{post.slug}">
+                                        <img src="{post.cover.url}" alt="{post.title}"/>
+                                    </a>
                                 </div>
-                            </div>
-                        </article>
-                        {/if}
-                    {/for}
-                </div>
+                                {/if}
+                                <div class="article-card__content">
+                                    <div class="article-card__category">Article</div>
+                                    <h2 class="article-card__title">
+                                        <a data-hx-get="/post/{post.slug}"
+                                           hx-select="main"
+                                           hx-target="main"
+                                           hx-replace-url="/post/{post.slug}">{post.title}</a>
+                                    </h2>
+                                    <p class="article-card__excerpt">{post.description}</p>
+                                    <div class="article-meta">
+                                        <span class="article-meta__author">{post.author ?: "Editorial Staff"}</span>
+                                        <span class="article-meta__dot">•</span>
+                                        <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
+                                        <span class="article-meta__dot">•</span>
+                                        <span>{post.content.readTime}</span>
+                                    </div>
+                                </div>
+                            </article>
+                            {/if}
+                        {/for}
+                    </div>
 
-                {#if posts.size > 6}
-                <div class="load-more">
-                    <button class="btn">Load more</button>
-                </div>
-                {/if}
+                    {#if posts.size > 6}
+                    <div class="load-more">
+                        <button class="btn">Load more</button>
+                    </div>
+                    {/if}
+                </article>
             </div>
         </main>
 
@@ -118,7 +125,5 @@
                 </div>
             </div>
         </div>
-
-        <script src="/js/auth.js"></script>
     </body>
 </html>

@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="csrf-token" content="{{csrfToken}}">
-        <link rel="stylesheet" href="/style/main.css"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>{post.title}</title>
-    </head>
+    {#include components/head}
+    {post.title}
+    {/include}
     <body>
         {#include components/header /}
         <main class="article-page">
@@ -78,7 +75,5 @@
                 </div>
             </div>
         </div>
-
-        <script src="/js/auth.js"></script>
     </body>
 </html>
