@@ -22,6 +22,9 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -44,7 +47,8 @@ public class User {
     // Constructors
     public User() {}
 
-    public User(String email, String name, String passwordHash) {
+    public User(String username, String email, String name, String passwordHash) {
+        this.username = username;
         this.email = email;
         this.name = name;
         this.passwordHash = passwordHash;
@@ -58,6 +62,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -115,16 +127,20 @@ public class User {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this)
+        if (obj == this) {
             return true;
-        if (obj == null || getClass() != obj.getClass())
+        }
+
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
-        User other = (User) obj;
+        }
+
+        var other = (User) obj;
         return Objects.equals(other.id, id);
     }
 
     @Override
     public String toString() {
-        return "User[id=%d, email=%s, name=%s]".formatted(id, email, name);
+        return "User[id=%d, username=%s, email=%s, name=%s]".formatted(id, username, email, name);
     }
 }

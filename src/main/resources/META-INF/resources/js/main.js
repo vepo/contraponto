@@ -4,7 +4,35 @@ class MainManager {
         // Bind methods to this instance
         this.redirectIfPathProtected = this.redirectIfPathProtected.bind(this);
         this.disabledElementsBasedOnUrl = this.disabledElementsBasedOnUrl.bind(this);
+        this.bindErrorMessage = this.bindErrorMessage.bind(this);
         this.setupRouteBasedElementsEnabler();
+        this.setupErrorHandler();
+    }
+
+    setupErrorHandler() {
+        htmx.on('htmx:afterRequest', this.bindErrorMessage);
+    }
+
+    bindErrorMessage(evt) {
+        const errorElmSelector = evt.target.attributes.getNamedItem('hx-target-error')
+        if (errorElmSelector) {
+            if (evt.detail.failed) {
+                let msg = "Something bad happened. Please contact site admin";
+                if (evt.detail.xhr.responseText) {
+                    msg = evt.detail.xhr.responseText;
+                }
+
+                const errorElm = document.querySelector(errorElmSelector.value);
+                errorElm.innerHTML = msg;
+                const errorMessages = errorElm.querySelectorAll('.error-message');
+                errorMessages.forEach(elm => elm.style.display = 'block');
+            } else {
+                const errorElm = document.querySelector(errorElmSelector.value);
+                while (parent.firstChild) {
+                    parent.removeChild(parent.firstChild);
+                }
+            }
+        }
     }
 
     /**

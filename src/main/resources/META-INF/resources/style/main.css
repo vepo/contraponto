@@ -880,6 +880,7 @@ hr:after {
   font-family: var(--font-sans);
   font-size: 13px;
   margin-bottom: 16px;
+  display: none;
 }
 
 .success-message {

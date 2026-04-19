@@ -6,25 +6,29 @@
     </div>
     <div class="modal__body">
       <div id="authError"></div>
-      <form hx-post="/forms/auth/{mode}" hx-target="#authError" hx-swap="innerHTML">
+      <form hx-post="/forms/auth/{mode}" hx-target="#authError" hx-target-error="#modal-container .response.error" hx-swap="innerHTML">
         {#if mode == 'signup'}
         <div class="form-group">
           <label>Full Name</label>
           <input type="text" name="name" required>
+          <span class="error-message">Name is required.</span>
         </div>
         {/if}
         <div class="form-group">
           <label>Email</label>
           <input type="email" name="email" required>
+            <div class="error-message">Please enter a valid email address.</div>
         </div>
         <div class="form-group">
           <label>Password</label>
           <input type="password" name="password" required>
+          <div class="error-message">Password is required.</div>
         </div>
-        <button type="submit" class="auth-form__submit">
+        <button type="submit" disabled class="auth-form__submit">
           {#if mode == 'signup'}Sign Up{#else}Sign In{/if}
         </button>
       </form>
+      <div class="response error"></div>
       <div class="auth-form__switch">
         {#if mode == 'signup'}
         Already have an account? <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a>
