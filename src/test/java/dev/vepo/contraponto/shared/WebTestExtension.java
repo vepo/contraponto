@@ -48,6 +48,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         logger.info("Navigate to an empty page...");
+        driver.manage().deleteAllCookies();
         driver.manage().logs().get(LogType.BROWSER).getAll()
               .forEach(logEntry -> logger.info("Browser console: {}", logEntry.getMessage()));
         driver.get("about:blank");

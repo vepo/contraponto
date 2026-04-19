@@ -168,13 +168,13 @@ class SignupTest {
 
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
 
+        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
         var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"name\"]")));
         var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
         // 1. Fill email and password (they will become non‑pristine later)
-        emailInput.sendKeys("test@example.com");
         passwordInput.sendKeys("password123");
 
         // 2. Make the name field non‑pristine:
@@ -187,6 +187,8 @@ class SignupTest {
         // Blur by clicking on email field (or any other)
         emailInput.sendKeys("any-email@example.com");
 
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+
         // Now name field is empty and non‑pristine → error should appear
         WebElement nameError = driver.findElement(cssSelector(".form-group:has(input[name='name']) .error-message.required"));
         assertThat(nameError.isDisplayed()).isTrue();
@@ -195,6 +197,7 @@ class SignupTest {
 
         // 3. Fill name correctly → error disappears, button enabled
         nameInput.sendKeys("Valid Name");
+        usernameInput.sendKeys("validauser");
         await().until(() -> !nameError.isDisplayed());
         await().until(() -> submitBtn.isEnabled());
     }
