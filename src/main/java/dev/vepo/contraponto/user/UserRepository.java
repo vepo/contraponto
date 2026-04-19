@@ -20,6 +20,20 @@ public class UserRepository {
                             .findFirst();
     }
 
+    public Optional<User> findByUsername(String username) {
+        return entityManager.createQuery("FROM User WHERE username = :username", User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
+        return entityManager.createQuery("FROM User WHERE username = :usernameOrEmail OR email = :usernameOrEmail", User.class)
+                            .setParameter("usernameOrEmail", usernameOrEmail)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public boolean existsByEmail(String email) {
         return entityManager.createQuery("""
                                          SELECT id
@@ -27,6 +41,17 @@ public class UserRepository {
                                          WHERE email = :email
                                          """, Long.class)
                             .setParameter("email", email)
+                            .getResultStream()
+                            .count() > 0l;
+    }
+
+    public boolean existsByUsername(String username) {
+        return entityManager.createQuery("""
+                                         SELECT id
+                                         FROM User
+                                         WHERE username = :username
+                                         """, Long.class)
+                            .setParameter("username", username)
                             .getResultStream()
                             .count() > 0l;
     }

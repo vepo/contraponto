@@ -53,52 +53,48 @@ public class SignUpEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
-    public Response signup(@FormParam("name") String name,
+    public Response signup(@FormParam("username") String username,
+                           @FormParam("name") String name,
                            @FormParam("email") String email,
                            @FormParam("password") String password) {
 
         // 1. Basic input validation
-        if (isBlank(name) || isBlank(email) || isBlank(password)) {
-            LOGGER.warn("Signup attempt with missing fields: name={}, email={}, password={}",
-                        isBlank(name), isBlank(email), isBlank(password));
+        if (isBlank(username) || isBlank(name) || isBlank(email) || isBlank(password)) {
             return buildErrorResponse("All fields are required.");
         }
 
-        // 2. Validate email format (simple check)
+        // 2. Validate email format
         if (!email.contains("@") || !email.contains(".")) {
-            LOGGER.warn("Signup attempt with invalid email format: {}", email);
             return buildErrorResponse("Please enter a valid email address.");
         }
 
-        // 3. Check if email already exists
-        if (userRepository.findByEmail(email).isPresent()) {
-            LOGGER.warn("Signup failed - email already registered: {}", email);
+        // 3. Check username length/characters (optional)
+        if (username.length() < 3 || username.length() > 20) {
+            return buildErrorResponse("Username must be between 3 and 20 characters.");
+        }
+
+        // 4. Check uniqueness
+        if (userRepository.existsByUsername(username)) {
+            return buildErrorResponse("Username already taken.");
+        }
+        if (userRepository.existsByEmail(email)) {
             return buildErrorResponse("Email already registered.");
         }
 
-        // 4. Hash the password
+        // 5. Hash password and create user
         String hashedPassword = passwordService.hashPassword(password);
-
-        // 5. Create and persist the new user
         User newUser = new User();
+        newUser.setUsername(username);
         newUser.setName(name);
         newUser.setEmail(email);
         newUser.setPasswordHash(hashedPassword);
-        newUser.setActive(true); // or false if email verification required
+        newUser.setActive(true);
 
-        try {
-            userRepository.save(newUser);
-            LOGGER.info("New user registered successfully: {}", email);
-        } catch (Exception e) {
-            LOGGER.error("Failed to save user: {}", email, e);
-            return buildErrorResponse("Registration failed. Please try again later.");
-        }
+        userRepository.save(newUser);
+        LOGGER.info("New user registered: {}", username);
 
-        // 6. Automatically log the user in
+        // Auto-login
         var loggedUser = loggedUserProvider.login(newUser);
-        LOGGER.debug("User auto-logged in after signup: {}", email);
-
-        // 7. Build success response (same as login)
         String menuHtml = MenuEndpoint.Template.menu(loggedUser).render();
         String responseBody = buildSuccessResponseBody(menuHtml);
 

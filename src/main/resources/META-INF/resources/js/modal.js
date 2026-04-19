@@ -1,7 +1,44 @@
 class ModalManager {
     constructor() {
+        this.configureFormsElements = this.configureFormsElements.bind(this);
         this.setupGlobalValidationListener();
         this.setupModalListener();
+        this.setupForms();
+    }
+
+    setupForms() {
+        document.body.addEventListener('htmx:afterSettle', this.configureFormsElements);
+    }
+
+    configurePristineElement(elm) {
+        if (elm.pristine === undefined) {
+            elm.pristine = true;
+            let hasChanged = false;
+            const inputHandler = () => {
+                hasChanged = true;
+            };
+            const blurHandler = () => {
+                if (hasChanged) {
+                    elm.pristine = false;
+                    // Optionally remove listeners to avoid further changes
+                    elm.removeEventListener('input', inputHandler);
+                    elm.removeEventListener('blur', blurHandler);
+                }
+            };
+            elm.addEventListener('keydown', inputHandler);
+            elm.addEventListener('input', inputHandler);
+            elm.addEventListener('blur', blurHandler);
+        }
+    }
+
+    configureFormsElements(evt) {
+        if (evt.detail.target) {
+            const target = evt.detail.target;
+            for (const input of target.querySelectorAll('input')) {
+                console.log('Input', input);
+                this.configurePristineElement(input);
+            }
+        }
     }
 
     // Global listener – handles validation for any auth modal present in DOM
@@ -11,10 +48,10 @@ class ModalManager {
             if (!modal) return;
 
             const submitBtn = modal.querySelector('button[type="submit"]');
-            const emailInput = modal.querySelector('input[name="email"]');
-            const passwordInput = modal.querySelector('input[name="password"]');
-
-            if (!submitBtn || !emailInput || !passwordInput) return;
+            const inputs = modal.querySelectorAll('input');
+            if (inputs.length == 0 || !submitBtn) {
+                return;
+            }
 
             // Reset all error messages inside the modal
             const allErrors = modal.querySelectorAll('.error-message');
@@ -22,21 +59,69 @@ class ModalManager {
 
             let isValid = true;
 
-            // Email validation
-            const email = emailInput.value.trim();
-            const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
-            if (!email || !emailRegex.test(email)) {
-                isValid = false;
-                const emailError = emailInput.closest('.form-group')?.querySelector('.error-message');
-                if (emailError) emailError.style.display = 'block';
-            }
+            for (const input of inputs) {
+                if (input.required) {
+                    const value = input.value;
+                    if (!value) {
+                        if (!input.pristine) {
+                            const errorMessage = input.closest('.form-group')?.querySelector('.error-message.required');
+                            if (errorMessage) errorMessage.style.display = 'block';
+                        }
+                        isValid = false;
+                    }
+                }
 
-            // Password validation (non‑empty)
-            const password = passwordInput.value;
-            if (!password) {
-                isValid = false;
-                const passwordError = passwordInput.closest('.form-group')?.querySelector('.error-message');
-                if (passwordError) passwordError.style.display = 'block';
+                if (input.hasAttribute('email')) {
+                    const value = input.value;
+                    if (value && value.length > 0) { // value.length == 0 is validated on required
+                        const email = input.value.trim();
+                        const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+                        if (!emailRegex.test(email)) {
+                            if (!input.pristine) {
+                                const errorMessage = input.closest('.form-group')?.querySelector('.error-message.email');
+                                if (errorMessage) errorMessage.style.display = 'block';
+                            }
+                            isValid = false;
+                        }
+                    }
+                }
+
+                if (input.hasAttribute('min-size') || input.hasAttribute('max-size')) {
+                    const value = input.value;
+                    if (value && value.length > 0) { // value.length == 0 is validated on required
+                        const minSize = input.getAttribute('min-size');
+                        if (minSize) {
+                            const minSizeValue = parseInt(minSize);
+                            if (Number.isNaN(minSizeValue)) {
+                                console.warn("'min-value' is NaN", input);
+                            } else {
+                                if (value.trim().length < minSizeValue) {
+                                    if (!input.pristine) {
+                                        const errorMessage = input.closest('.form-group')?.querySelector('.error-message.min-value');
+                                        if (errorMessage) errorMessage.style.display = 'block';
+                                    }
+                                    isValid = false;
+                                }
+                            }
+                        }
+
+                        const maxSize = input.getAttribute('max-size');
+                        if (maxSize) {
+                            const maxSizeValue = parseInt(maxSize);
+                            if (Number.isNaN(maxSizeValue)) {
+                                console.warn("'max-value' is NaN", input);
+                            } else {
+                                if (value.trim().length > maxSizeValue) {
+                                    if (!input.pristine) {
+                                        const errorMessage = input.closest('.form-group')?.querySelector('.error-message.max-value');
+                                        if (errorMessage) errorMessage.style.display = 'block';
+                                    }
+                                    isValid = false;
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             submitBtn.disabled = !isValid;
@@ -57,8 +142,8 @@ class ModalManager {
             if (evt.detail.target.id === "authModal") {
                 // Manually trigger validation to set initial button state
                 const event = new Event('input', { bubbles: true });
-                const emailInput = evt.detail.target.querySelector('input[name="email"]');
-                if (emailInput) emailInput.dispatchEvent(event);
+                const loginInput = evt.detail.target.querySelector('input[name="login"]');
+                if (loginInput) loginInput.dispatchEvent(event);
             }
         });
     }

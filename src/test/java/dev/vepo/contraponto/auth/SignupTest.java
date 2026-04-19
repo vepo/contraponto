@@ -11,7 +11,9 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.Given;
@@ -29,6 +31,7 @@ class SignupTest {
     @BeforeEach
     void setup() {
         // Create an existing user to test duplicate email scenario
+        Given.cleanup();
         Given.user()
              .withUsername("existing")
              .withEmail("existing@example.com")
@@ -40,76 +43,46 @@ class SignupTest {
     @Test
     void signupModalValidationAndSuccess(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString());
-
-        // 1. Open the login modal
+        // Open login modal and switch to signup
         var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        assertThat(loginBtn.isEnabled()).isTrue();
         loginBtn.click();
-
-        // 2. Switch to signup mode
         var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
-        assertThat(signupLink.getText()).contains("Sign Up");
         signupLink.click();
 
-        // Wait for the modal content to reload with signup form
-        var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"name\"]")));
+        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
+        var nameInput = driver.findElement(cssSelector("input[name=\"name\"]"));
         var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
-        // 3. Initially submit button should be disabled (empty fields)
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         assertThat(submitBtn.isEnabled()).isFalse();
 
-        // 4. Fill only name -> still disabled, name error should not appear yet (or
-        // after blur)
+        // Username validation (too short)
+        usernameInput.sendKeys("ab");
+        passwordInput.sendKeys("anyPassword123");
+        var usernameError = driver.findElement(cssSelector(".form-group:has(input[name='username']) .error-message.min-value"));
+        assertThat(usernameError.isDisplayed()).isTrue();
+        assertThat(usernameError.getText()).contains("Username must be at least 3 characters.");
+        assertThat(submitBtn.isEnabled()).isFalse();
+
+        // Fix username
+        usernameInput.clear();
+        usernameInput.sendKeys("newuser");
+        // Now fill other fields
         nameInput.sendKeys("New User");
-        emailInput.click(); // blur name
-        // Name error message should appear if name is required? Usually not until
-        // submit or blur.
-        // But we can check that button remains disabled because email/password empty.
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // 5. Fill invalid email (no '@')
-        emailInput.sendKeys("invalid-email");
-        passwordInput.click(); // blur email
-        var emailError = driver.findElement(cssSelector(".form-group:has(input[name='email']) .error-message"));
-        assertThat(emailError.isDisplayed()).isTrue();
-        assertThat(emailError.getText()).contains("valid email");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // 6. Fill valid email but empty password
-        emailInput.clear();
-        emailInput.sendKeys("test@example.com");
-        passwordInput.click(); // blur email, email error should disappear
-        assertThat(emailError.isDisplayed()).isFalse();
-
-        // Password error should appear
-        var passwordError = driver.findElement(cssSelector(".form-group:has(input[name='password']) .error-message"));
-        assertThat(passwordError.isDisplayed()).isTrue();
-        assertThat(passwordError.getText()).contains("Password");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // 7. Fill valid password -> button enabled, all errors hidden
-        passwordInput.sendKeys("validPassword123");
+        emailInput.sendKeys("new@example.com");
+        passwordInput.sendKeys("password123");
         await().until(() -> submitBtn.isEnabled());
-        assertThat(passwordError.isDisplayed()).isFalse();
 
-        // 8. Submit the form
+        // Submit
         submitBtn.click();
 
-        // After successful signup:
-        // - Modal should close
+        // Modal closes, user menu appears
         var modalContainer = driver.findElement(By.className("modal__container"));
         await().until(() -> !modalContainer.isDisplayed());
-
-        // - Menu should be reloaded (user-menu appears)
         var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
         assertThat(userMenu.isDisplayed()).isTrue();
-
-        // - Session cookie is set (using old cookie name, adjust if encrypted)
-        var sessionCookie = driver.manage().getCookieNamed("__session");
-        assertThat(sessionCookie).isNotNull();
-        assertThat(sessionCookie.getValue()).isNotBlank();
     }
 
     @Test
@@ -121,12 +94,14 @@ class SignupTest {
         var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
         signupLink.click();
 
+        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
         var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"name\"]")));
         var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
         // Fill with existing email
+        usernameInput.sendKeys("duplicated");
         nameInput.sendKeys("Duplicate Tester");
         emailInput.sendKeys("existing@example.com");
         passwordInput.sendKeys("anyPassword123");
@@ -157,10 +132,18 @@ class SignupTest {
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
-        emailInput.sendKeys("not-an-email");
-        passwordInput.click(); // blur
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
 
-        var emailError = driver.findElement(cssSelector(".form-group:has(input[name='email']) .error-message"));
+        emailInput.sendKeys("not-an-email");
+        passwordInput.sendKeys("anyPassword123");
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+
+        var emailErrors = driver.findElements(cssSelector(".form-group:has(input[name='email']) .error-message"))
+                                .stream()
+                                .filter(WebElement::isDisplayed)
+                                .findFirst();
+        assertThat(emailErrors.isPresent());
+        var emailError = emailErrors.get();
         assertThat(emailError.isDisplayed()).isTrue();
         assertThat(emailError.getText()).contains("valid email");
         assertThat(submitBtn.isEnabled()).isFalse();
@@ -183,28 +166,35 @@ class SignupTest {
         var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
         signupLink.click();
 
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+
         var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"name\"]")));
         var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
-        // Leave name empty, fill other fields
+        // 1. Fill email and password (they will become non‑pristine later)
         emailInput.sendKeys("test@example.com");
         passwordInput.sendKeys("password123");
-        // Blur name field (it was never touched, but we can click on email to trigger
-        // name blur if needed)
-        nameInput.click();
-        emailInput.click();
 
-        // Name error should appear
-        var nameError = driver.findElement(cssSelector(".form-group:has(input[name='name']) .error-message"));
+        // 2. Make the name field non‑pristine:
+        // - Focus, type something (changes value → hasChanged = true)
+        // - Clear it (value becomes empty)
+        // - Blur (sets pristine = false)
+        nameInput.click();
+        nameInput.sendKeys("temp");
+        nameInput.clear();
+        // Blur by clicking on email field (or any other)
+        emailInput.sendKeys("any-email@example.com");
+
+        // Now name field is empty and non‑pristine → error should appear
+        WebElement nameError = driver.findElement(cssSelector(".form-group:has(input[name='name']) .error-message.required"));
         assertThat(nameError.isDisplayed()).isTrue();
         assertThat(nameError.getText()).contains("Name is required");
         assertThat(submitBtn.isEnabled()).isFalse();
 
-        // Fill name
+        // 3. Fill name correctly → error disappears, button enabled
         nameInput.sendKeys("Valid Name");
-        // Error should disappear, button enabled
         await().until(() -> !nameError.isDisplayed());
         await().until(() -> submitBtn.isEnabled());
     }

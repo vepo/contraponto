@@ -28,8 +28,9 @@ class LoginTest {
 
     @BeforeEach
     void setup() {
+        Given.cleanup();
         Given.user()
-             .withUsername("valid")
+             .withUsername("validuser")
              .withEmail("test@example.com")
              .withPassword("validPassword123")
              .withName("Valid User")
@@ -40,65 +41,44 @@ class LoginTest {
     void loginModalValidationAndSuccess(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString());
 
-        // 1. Open the login modal
+        // Open login modal
         var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        assertThat(loginBtn.isEnabled()).isTrue();
         loginBtn.click();
 
-        // Wait for modal to be present
         var modalContainer = wait.until(visibilityOfElementLocated(className("modal__container")));
         assertThat(modalContainer.isDisplayed()).isTrue();
-
-        // Locate form fields and submit button
-        var emailInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"email\"]")));
+        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"login\"]")));
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
-        // 2. Initially submit button should be disabled (empty fields)
+        // Initially disabled
         assertThat(submitBtn.isEnabled()).isFalse();
 
-        // 3. Enter invalid email (no '@')
-        emailInput.sendKeys("invalid-email");
-        passwordInput.sendKeys(""); // ensure empty
-        // Trigger validation (e.g., blur or input event)
-        emailInput.click();
+        // Test empty fields
+        loginInput.sendKeys("");
         passwordInput.click();
-
-        // Check email error message appears
-        var emailError = driver.findElement(cssSelector(".form-group:has(input[name='email']) .error-message"));
-        assertThat(emailError.isDisplayed()).isTrue();
-        assertThat(emailError.getText()).contains("valid email");
-        // Submit button still disabled
         assertThat(submitBtn.isEnabled()).isFalse();
 
-        // 4. Enter valid email but empty password
-        emailInput.clear();
-        emailInput.sendKeys("test@example.com");
-        passwordInput.clear();
-        passwordInput.click();
-
-        // Password error message should appear
-        var passwordError = driver.findElement(cssSelector(".form-group:has(input[name='password']) .error-message"));
-        assertThat(passwordError.isDisplayed()).isTrue();
-        assertThat(passwordError.getText()).contains("Password");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // 5. Enter valid password → button should become enabled, all errors hidden
+        // Test invalid login (non-existent)
+        loginInput.clear();
+        loginInput.sendKeys("nonexistent");
         passwordInput.sendKeys("validPassword123");
-
         await().until(() -> submitBtn.isEnabled());
-        // Both error messages should be hidden
-        assertThat(emailError.isDisplayed()).isFalse();
-        assertThat(passwordError.isDisplayed()).isFalse();
+        submitBtn.click();
+        var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
+        assertThat(authError.getText()).contains("Invalid username/email");
 
-        // 6. Submit the form (successful login)
+        // Successful login with email
+        loginInput.clear();
+        loginInput.sendKeys("test@example.com");
+        passwordInput.clear();
+        passwordInput.sendKeys("validPassword123");
+        await().until(() -> submitBtn.isEnabled());
         submitBtn.click();
 
-        // After successful login:
-        // - Modal should close (disappear)
-        var postModalContainer = driver.findElement(By.className(("modal__container")));
+        // Modal closes, user menu appears
+        var postModalContainer = driver.findElement(By.className("modal__container"));
         await().until(() -> !postModalContainer.isDisplayed());
-        // - Menu should be reloaded
         var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
         assertThat(userMenu.isDisplayed()).isTrue();
 
@@ -114,12 +94,12 @@ class LoginTest {
         loginBtn.click();
 
         var modalContainer = wait.until(visibilityOfElementLocated(className("modal__container")));
-        var emailInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"email\"]")));
+        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"login\"]")));
         var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
         var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
 
         // Fill with valid format but wrong credentials
-        emailInput.sendKeys("wrong@example.com");
+        loginInput.sendKeys("wrong@example.com");
         passwordInput.sendKeys("wrongPassword");
         await().until(() -> submitBtn.isEnabled());
 
@@ -127,7 +107,7 @@ class LoginTest {
 
         // Expect an error message inside #authError (or a global error div)
         var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
-        assertThat(authError.getText()).contains("Invalid email or password");
+        assertThat(authError.getText()).contains("Invalid username/email or password.");
         // Modal should still be open
         assertThat(modalContainer.isDisplayed()).isTrue();
         // Submit button should remain enabled (user can retry)

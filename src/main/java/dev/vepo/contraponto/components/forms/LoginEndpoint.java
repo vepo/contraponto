@@ -22,14 +22,14 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class LoginEndpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoginEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoginEndpoint.class);
 
     // Constants for better maintainability
     private static final String SESSION_COOKIE_NAME = "__session";
     private static final String SESSION_COOKIE_PATH = "/";
     private static final String HX_TRIGGER_HEADER = "HX-Trigger";
     private static final String LOGGED_IN_EVENT = "loggedIn";
-    private static final String ERROR_MESSAGE_HTML = "<div class='error-message'>Invalid email or password</div>";
+    private static final String ERROR_MESSAGE_HTML = "<div class='error-message'>%s</div>";
     private static final String MENU_CONTAINER_ID = "menu-container";
     private static final String MODAL_CLOSE_SCRIPT = """
                                                      <script>
@@ -53,29 +53,29 @@ public class LoginEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
-    public Response login(@FormParam("email") String email,
+    public Response login(@FormParam("login") String login,
                           @FormParam("password") String password) {
 
         // Input validation
-        if (isBlank(email) || isBlank(password)) {
-            LOGGER.warn("Login attempt with empty email or password");
-            return buildErrorResponse();
+        if (isBlank(login) || isBlank(password)) {
+            logger.warn("Login attempt with empty email or password");
+            return buildErrorResponse("Login and password are required.");
         }
 
-        return userRepository.findByEmail(email)
+        return userRepository.findByUsernameOrEmail(login)
                              .map(user -> {
                                  boolean passwordValid = passwordService.verifyPassword(password, user.getPasswordHash());
                                  boolean isActive = user.isActive();
 
                                  if (!passwordValid || !isActive) {
-                                     LOGGER.warn("Login failed for user {}: passwordValid={}, active={}",
-                                                 email, passwordValid, isActive);
-                                     return buildErrorResponse();
+                                     logger.warn("Login failed for user {}: passwordValid={}, active={}",
+                                                 login, passwordValid, isActive);
+                                     return buildErrorResponse("Invalid username/email or password.");
                                  }
 
                                  // Successful login
                                  var loggedUser = loggedUserProvider.login(user);
-                                 LOGGER.info("User logged in successfully: {}", email);
+                                 logger.info("User logged in successfully: {}", login);
 
                                  String menuHtml = MenuEndpoint.Template.menu(loggedUser).render();
                                  String responseBody = buildSuccessResponseBody(menuHtml);
@@ -86,8 +86,8 @@ public class LoginEndpoint {
                                                 .build();
                              })
                              .orElseGet(() -> {
-                                 LOGGER.warn("Login failed - user not found: {}", email);
-                                 return buildErrorResponse();
+                                 logger.warn("Login failed - user not found: {}", login);
+                                 return buildErrorResponse("Invalid username/email or password.");
                              });
     }
 
@@ -113,9 +113,9 @@ public class LoginEndpoint {
     /**
      * Returns a consistent error response for authentication failures.
      */
-    private Response buildErrorResponse() {
+    private Response buildErrorResponse(String errorMessage) {
         return Response.status(Status.BAD_REQUEST)
-                       .entity(ERROR_MESSAGE_HTML)
+                       .entity(ERROR_MESSAGE_HTML.formatted(errorMessage))
                        .build();
     }
 

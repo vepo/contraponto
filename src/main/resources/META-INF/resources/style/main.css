@@ -847,6 +847,10 @@ hr:after {
   margin-top: 8px;
 }
 
+.auth-form__submit:disabled {
+    background-color: #888888;
+}
+
 .auth-form__submit:hover {
   background: var(--color-primary-dark);
 }
