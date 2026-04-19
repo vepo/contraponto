@@ -24,11 +24,11 @@
           <input type="password" name="password" required>
           <div class="error-message">Password is required.</div>
         </div>
+        <div class="response error"></div>
         <button type="submit" disabled class="auth-form__submit">
           {#if mode == 'signup'}Sign Up{#else}Sign In{/if}
         </button>
       </form>
-      <div class="response error"></div>
       <div class="auth-form__switch">
         {#if mode == 'signup'}
         Already have an account? <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a>
