@@ -3,9 +3,11 @@ package dev.vepo.contraponto.shared;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
 import dev.vepo.contraponto.auth.PasswordService;
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
@@ -58,10 +60,59 @@ public class Given {
         }
     }
 
+    public static class PostBuilder {
+
+        private String title;
+        private String description;
+        private String content;
+        private String author;
+        private String slug;
+
+        private PostBuilder() {
+            this.title = null;
+            this.description = null;
+            this.content = null;
+            this.author = null;
+            this.slug = null;
+        }
+
+        public PostBuilder withTitle(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public PostBuilder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public PostBuilder withContent(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public PostBuilder withAuthor(String author) {
+            this.author = author;
+            return this;
+        }
+
+        public PostBuilder withSlug(String slug) {
+            this.slug = slug;
+            return this;
+        }
+
+        public void persist() {
+            transaction(() -> inject(EntityManager.class).persist(new Post(title,
+                                                                           slug, description, content, author, true, LocalDateTime.now())));
+        }
+    }
+
     public static void cleanup() {
         transaction(() -> {
             var entityManager = inject(EntityManager.class);
             var query = entityManager.createQuery("DELETE FROM User");
+            query.executeUpdate();
+            query = entityManager.createQuery("DELETE FROM Post");
             query.executeUpdate();
         });
     }
@@ -96,5 +147,9 @@ public class Given {
 
     public static UserBuilder user() {
         return new UserBuilder();
+    }
+
+    public static PostBuilder post() {
+        return new PostBuilder();
     }
 }

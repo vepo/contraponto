@@ -278,6 +278,9 @@
     outline: none;
 }
 
+
+
+.write-editor-toolbar:has(~ .write-form__editor:focus),
 .write-form__editor:focus {
     border-color: #1a8917;
 }

@@ -57,6 +57,18 @@ public class Post {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    public Post() {}
+
+    public Post(String title, String slug, String description, String content, String author, boolean published, LocalDateTime publishedAt) {
+        this.title = title;
+        this.slug = slug;
+        this.description = description;
+        this.content = content;
+        this.author = author;
+        this.published = published;
+        this.publishedAt = publishedAt;
+    }
+
     public Long getId() {
         return id;
     }
