@@ -26,6 +26,16 @@ class HeaderManager {
             }
         });
 
+        document.body.addEventListener('htmx:xhr:loadend', evt => {
+            if (evt && evt.target) {
+                const sourceElm = evt.target;
+                const userDropdown = document.getElementById('userDropdown');
+                if (userDropdown.contains(sourceElm)) {
+                    userDropdown.classList.remove('user-menu__dropdown--open');
+                }
+            }
+        });
+
         // Single delegated keydown handler for Escape
         document.addEventListener('keydown', (evt) => {
             const userDropdown = document.getElementById('userDropdown');
