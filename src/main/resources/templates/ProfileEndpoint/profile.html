@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    My Profile - contraponto
+    {/include}
+    <body>
+        {#include components/header /}
+        <main class="profile-page">
+            <div class="container-narrow">
+                <h1 class="profile-page__title">Profile Settings</h1>
+                
+                <div id="profileMessage"></div>
+                
+                <form class="profile-form" 
+                      hx-post="/profile" 
+                      hx-target="#profileMessage" 
+                      hx-swap="innerHTML">
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" 
+                               value="{user.name}" required>
+                        <div class="error-message">Name is required.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" 
+                               value="{user.email}" required>
+                        <div class="error-message">Valid email is required.</div>
+                        <div class="error-message email-taken">Email already taken.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" required>
+                        <div class="error-message">Current password is required.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newPassword">New Password (optional)</label>
+                        <input type="password" id="newPassword" name="newPassword">
+                        <div class="error-message">Password must be at least 8 characters.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword">
+                        <div class="error-message">Passwords do not match.</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </main>
+        
+        {#include components/footer /}
+    </body>
+</html>
