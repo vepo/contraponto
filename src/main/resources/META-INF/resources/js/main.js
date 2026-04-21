@@ -28,8 +28,8 @@ class MainManager {
                 errorMessages.forEach(elm => elm.style.display = 'block');
             } else {
                 const errorElm = document.querySelector(errorElmSelector.value);
-                while (parent.firstChild) {
-                    parent.removeChild(parent.firstChild);
+                while (errorElm.firstChild) {
+                    errorElm.removeChild(errorElm.firstChild);
                 }
             }
         }

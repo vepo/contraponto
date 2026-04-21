@@ -62,4 +62,8 @@ public class LoggedUserProvider {
         return Optional.ofNullable(this.sessions.get(sessionId))
                        .map(user -> new LoggedUser(user, sessionId));
     }
+
+    public void update(String sessionId, User user) {
+        this.sessions.put(sessionId, user);
+    }
 }

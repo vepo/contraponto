@@ -67,7 +67,7 @@ public class UserRepository {
         return entityManager.merge(user);
     }
 
-    public User findById(long userId) {
-        return entityManager.find(User.class, userId);
+    public Optional<User> findById(long userId) {
+        return Optional.ofNullable(entityManager.find(User.class, userId));
     }
 }

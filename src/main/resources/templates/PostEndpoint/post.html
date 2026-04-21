@@ -34,46 +34,5 @@
         </main>
 
         {#include components/footer /}
-
-        <!-- Auth Modal (same as home.html) -->
-        <div id="authModal" class="modal">
-            <div class="modal__container">
-                <div class="modal__header">
-                    <h2 class="modal__title" id="modalTitle">Sign In</h2>
-                    <button class="modal__close" id="closeModalBtn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="modal__body">
-                    <div id="authError" class="error-message" style="display: none;"></div>
-                    <div id="authSuccess" class="success-message" style="display: none;"></div>
-                    
-                    <form id="authForm" class="auth-form">
-                        <div id="signupFields" style="display: none;">
-                            <div class="form-group">
-                                <label for="name">Full Name</label>
-                                <input type="text" id="name" name="name" autocomplete="name"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required autocomplete="email"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" id="password" name="password" required autocomplete="current-password"/>
-                        </div>
-                        <button type="submit" class="auth-form__submit" id="submitBtn">Sign In</button>
-                    </form>
-                    
-                    <div class="auth-form__switch">
-                        <span id="switchText">Don't have an account?</span>
-                        <button type="button" id="switchModeBtn">Sign Up</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </body>
 </html>

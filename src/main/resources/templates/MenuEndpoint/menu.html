@@ -13,7 +13,12 @@
             <div class="user-menu__email">{user.email.escapeHtml}</div>
         </div>
         <div class="user-menu__items">
-            <a href="/profile" class="user-menu__item" data-nav>
+            <a data-hx-get="/profile"
+			   hx-select="main"
+			   hx-target="main"
+			   hx-replace-url="/profile" 
+               class="user-menu__item" 
+               data-nav>
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
                     <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21M16 7C16 9.2 14.2 11 12 11C9.8 11 8 9.2 8 7C8 4.8 9.8 3 12 3C14.2 3 16 4.8 16 7Z" stroke="currentColor" stroke-width="1.5"/>
                 </svg>
@@ -23,7 +28,8 @@
 			   hx-select="main"
 			   hx-target="main"
 			   hx-replace-url="/write" 
-               class="user-menu__item" data-nav>
+               class="user-menu__item"
+               data-nav>
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
                     <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="1.5"/>
                 </svg>

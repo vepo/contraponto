@@ -1,16 +1,17 @@
 <head>
     <meta name="csrf-token" content="{{csrfToken}}">
+    <link rel="stylesheet" href="/style/fonts.css"/>
     <link rel="stylesheet" href="/style/main.css"/>
     <link rel="stylesheet" href="/style/write.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.js" integrity="sha384-ezjq8118wdwdRMj+nX4bevEi+cDLTbhLAeFF688VK8tPDGeLUe0WoY2MZtSla72F" crossorigin="anonymous"></script>
-    <script src="/js/main.js" async></script>
-    <script src="/js/modal.js" async></script>
-    <script src="/js/authentication.js" async></script>
-    <script src="/js/header.js" async></script>
-    <script src="/js/write.js" async></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/forms.js"></script>
+    <script src="/js/authentication.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/write.js"></script>
     {#if user.isAuthenticated}
-        <meta http-equiv="Set-Cookie" content="__session={user.sessionId}; path=/">
+        <meta http-equiv="Set-Cookie" content="__session={user.sessionId}; path=/; Secure; SameSite=Strict">
     {/if}
     <title>
     {#insert}{/insert}

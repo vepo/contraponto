@@ -1,10 +1,9 @@
 package dev.vepo.contraponto.shared.infra;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import java.util.Optional;
 
 import dev.vepo.contraponto.user.User;
 
@@ -29,6 +28,10 @@ public class LoggedUser {
 
     public User getUser() {
         return this.user;
+    }
+
+    public long getId() {
+        return Optional.ofNullable(user).map(User::getId).orElse(-1l);
     }
 
     public String getName() {

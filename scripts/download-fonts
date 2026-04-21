@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+
+# -------------------------------------------------------------------
+# download_fonts.sh - Download external Google Fonts and update CSS
+# Usage: ./download_fonts.sh input.css [output.css]
+# -------------------------------------------------------------------
+
+set -euo pipefail
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 input.css [output.css]" >&2
+    exit 1
+fi
+
+INPUT_CSS="$1"
+OUTPUT_CSS="${2:-$INPUT_CSS}"
+BACKUP="${INPUT_CSS}.bak"
+
+# Base directory where fonts will be stored (relative to project root)
+BASE_DIR="src/main/resources/META-INF/resources/style/fonts"
+
+# Create base directory if it doesn't exist
+mkdir -p "$BASE_DIR"
+
+# Backup original CSS
+cp "$INPUT_CSS" "$BACKUP"
+
+# Temporary file for the modified CSS
+TEMP_CSS=$(mktemp)
+
+# Temporary file to store URL -> local path mappings (portable replacement for associative array)
+URL_MAP=$(mktemp)
+
+# ------------------------------------------------------------
+# Function to get stored local path for a given URL
+# Returns 0 and prints path if found, returns 1 otherwise
+# ------------------------------------------------------------
+get_stored_path() {
+    local url="$1"
+    local path
+    path=$(grep -F "$url" "$URL_MAP" | cut -d'|' -f2-)
+    if [ -n "$path" ]; then
+        echo "$path"
+        return 0
+    fi
+    return 1
+}
+
+# ------------------------------------------------------------
+# Function to store a URL -> local path mapping
+# ------------------------------------------------------------
+store_url_path() {
+    local url="$1"
+    local path="$2"
+    echo "$url|$path" >> "$URL_MAP"
+}
+
+# ------------------------------------------------------------
+# Function to process a single @font-face block
+# ------------------------------------------------------------
+process_block() {
+    local block="$1"
+    local new_block="$block"
+
+    # Extract font-family (remove quotes, keep original for logging)
+    local font_family
+    font_family=$(echo "$block" | sed -n 's/.*font-family:\s*\([^;]*\);.*/\1/p' | sed "s/^['\"]//;s/['\"]$//")
+    if [ -z "$font_family" ]; then
+        echo "$block"   # no font-family, output unchanged
+        return
+    fi
+
+    # Extract external src URL (only https?://...)
+    local src_url
+    src_url=$(echo "$block" | grep -oP 'src:\s*url\(\K[^)]+' | head -1)
+    if [ -z "$src_url" ]; then
+        echo "$block"   # no external URL, output unchanged
+        return
+    fi
+
+    # Skip if it's already a local path (starts with /style/fonts or similar)
+    if [[ "$src_url" =~ ^/style/fonts/ ]] || [[ "$src_url" =~ ^\.\.?/ ]]; then
+        echo "$block"
+        return
+    fi
+
+    # Check if we've already downloaded this exact URL
+    local stored_path
+    if stored_path=$(get_stored_path "$src_url"); then
+        echo "Reusing already downloaded font: $src_url -> $stored_path" >&2
+        new_block=$(echo "$block" | sed -E "s|src:\s*url\([^)]+\)|src: url('$stored_path')|g")
+        echo "$new_block"
+        return
+    fi
+
+    # Sanitize font name for directory and file base (remove spaces, special chars)
+    local font_name_clean
+    font_name_clean=$(echo "$font_family" | sed 's/ //g' | sed 's/[^a-zA-Z0-9_-]//g')
+
+    # Determine file extension from URL (e.g., .woff2)
+    local ext
+    ext=$(echo "$src_url" | grep -o '\.[^./?]*$' | sed 's/[?].*//')
+    [ -z "$ext" ] && ext=".woff2"   # fallback
+
+    # Build target directory
+    local target_dir="$BASE_DIR/$font_name_clean"
+    mkdir -p "$target_dir"
+
+    # Base filename as required: <fontname>.<ext>
+    local base_filename="${font_name_clean}${ext}"
+    local final_filename="$base_filename"
+    local counter=1
+
+    # Handle filename collisions (multiple variants would overwrite)
+    while [ -e "$target_dir/$final_filename" ]; do
+        final_filename="${font_name_clean}-${counter}${ext}"
+        ((counter++))
+    done
+
+    local local_path="/style/fonts/$font_name_clean/$final_filename"
+    local full_path="$target_dir/$final_filename"
+
+    # Download only if the file does not already exist
+    if [ ! -f "$full_path" ]; then
+        echo "Downloading $src_url -> $full_path" >&2
+        curl -L -o "$full_path" "$src_url" --fail --silent --show-error
+    else
+        echo "File already exists (from previous run): $full_path" >&2
+    fi
+
+    # Remember this URL for future blocks
+    store_url_path "$src_url" "$local_path"
+
+    # Replace the src URL in the block with the local path
+    new_block=$(echo "$block" | sed -E "s|src:\s*url\([^)]+\)|src: url('$local_path')|g")
+
+    echo "$new_block"
+}
+
+# ------------------------------------------------------------
+# Main: read CSS line by line, accumulate @font-face blocks
+# ------------------------------------------------------------
+in_block=0
+block=""
+
+while IFS= read -r line; do
+    if [[ "$line" =~ ^@font-face ]]; then
+        in_block=1
+        block="$line"
+    elif [ $in_block -eq 1 ]; then
+        block="$block"$'\n'"$line"
+        if [[ "$line" =~ } ]]; then
+            process_block "$block" >> "$TEMP_CSS"
+            in_block=0
+            block=""
+        fi
+    else
+        echo "$line" >> "$TEMP_CSS"
+    fi
+done < "$INPUT_CSS"
+
+# If the input didn't end with a newline, ensure last block is processed
+if [ $in_block -eq 1 ] && [ -n "$block" ]; then
+    process_block "$block" >> "$TEMP_CSS"
+fi
+
+# Replace original (or write to output) with the modified CSS
+mv "$TEMP_CSS" "$OUTPUT_CSS"
+
+# Clean up temporary mapping file
+rm -f "$URL_MAP"
+
+echo "Done! Modified CSS written to $OUTPUT_CSS" >&2
+echo "Backup of original saved as $BACKUP" >&2

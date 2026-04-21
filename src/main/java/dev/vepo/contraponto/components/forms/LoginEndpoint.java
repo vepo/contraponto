@@ -18,14 +18,14 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-@Path("/forms/auth/login")
 @ApplicationScoped
+@Path("/forms/auth/login")
 public class LoginEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginEndpoint.class);
 
     // Constants for better maintainability
-    private static final String SESSION_COOKIE_NAME = "__session";
+    public static final String SESSION_COOKIE_NAME = "__session";
     private static final String SESSION_COOKIE_PATH = "/";
     private static final String HX_TRIGGER_HEADER = "HX-Trigger";
     private static final String LOGGED_IN_EVENT = "loggedIn";
@@ -51,8 +51,8 @@ public class LoginEndpoint {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response login(@FormParam("login") String login,
                           @FormParam("password") String password) {
 

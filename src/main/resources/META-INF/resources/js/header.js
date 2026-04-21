@@ -1,16 +1,18 @@
 class HeaderManager {
     constructor() {
         this.init();
+        this.setupHtmxListener();
     }
 
     init() {
         this.setupUserMenu();
-        // No htmx:xhr:loadend listener needed – delegation handles dynamic content
     }
 
     setupUserMenu() {
+        console.log('biding click on body', document.body);
         // Single delegated click handler for both opening and closing
-        document.addEventListener('click', (evt) => {
+        document.body.addEventListener('click', (evt) => {
+            console.log('click on header', evt);
             const userMenuBtn = document.getElementById('userMenuBtn');
             const userDropdown = document.getElementById('userDropdown');
             if (!userMenuBtn || !userDropdown) return;
@@ -26,21 +28,24 @@ class HeaderManager {
             }
         });
 
-        document.body.addEventListener('htmx:xhr:loadend', evt => {
-            if (evt && evt.target) {
-                const sourceElm = evt.target;
-                const userDropdown = document.getElementById('userDropdown');
-                if (userDropdown.contains(sourceElm)) {
-                    userDropdown.classList.remove('user-menu__dropdown--open');
-                }
-            }
-        });
-
-        // Single delegated keydown handler for Escape
         document.addEventListener('keydown', (evt) => {
             const userDropdown = document.getElementById('userDropdown');
             if (evt.key === 'Escape' && userDropdown?.classList.contains('user-menu__dropdown--open')) {
                 userDropdown.classList.remove('user-menu__dropdown--open');
+            }
+        });
+    }
+
+    setupHtmxListener() {
+        // After any HTMX swap that replaces the menu container, ensure the dropdown is closed
+        document.body.addEventListener('htmx:afterSwap', (evt) => {
+            console.log('swap on header', evt)
+            const menuContainer = document.getElementById('menu-container');
+            if (menuContainer && evt.detail.target.contains(menuContainer)) {
+                const userDropdown = document.getElementById('userDropdown');
+                if (userDropdown) {
+                    userDropdown.classList.remove('user-menu__dropdown--open');
+                }
             }
         });
     }
