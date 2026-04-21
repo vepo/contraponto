@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.Given;
@@ -81,6 +80,32 @@ class ProfileTest {
     }
 
     @Test
+    void logoutFromProfileRedirectsToHome(WebDriver driver, WebDriverWait wait) {
+        // 1. Log in as the test user
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+
+        // 2. Navigate directly to the profile page
+        driver.get(testUrl.toString() + "profile");
+
+        // 3. Open the user menu and click logout
+        var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
+        userMenuBtn.click();
+        var logoutBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[hx-post='/forms/auth/logout']")));
+        logoutBtn.click();
+
+        // 4. After logout, the user should be on the home page.
+        // Wait for the "Sign In" button to appear (indicates logged out state)
+        wait.until(visibilityOfElementLocated(className("auth-btn-login")));
+
+        // 5. Assert the URL is the base home URL
+        assertThat(driver.getCurrentUrl()).isEqualTo(testUrl.toString());
+
+        // 6. Assert that the profile form is no longer present in the DOM
+        var profileForm = driver.findElements(cssSelector(".profile-form"));
+        assertThat(profileForm).isEmpty();
+    }
+
+    @Test
     void authenticatedUserCanViewProfile(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
 
@@ -114,8 +139,8 @@ class ProfileTest {
         var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
 
         // Update name and email
-        String newName = "Updated Name";
-        String newEmail = "updated@example.com";
+        var newName = "Updated Name";
+        var newEmail = "updated@example.com";
         nameInput.clear();
         nameInput.sendKeys(newName);
         emailInput.clear();
@@ -202,7 +227,7 @@ class ProfileTest {
         assertThat(successMsg.getText()).contains("Profile updated successfully");
 
         // Logout and login with new password
-        WebElement userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
+        var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
         userMenuBtn.click();
         var logoutBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[hx-post='/forms/auth/logout']")));
         logoutBtn.click();
