@@ -1,0 +1,54 @@
+package dev.vepo.contraponto.components.forms;
+
+import java.util.Objects;
+
+import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.shared.infra.Logged;
+import dev.vepo.contraponto.shared.infra.LoggedUser;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BeanParam;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+@Logged
+@ApplicationScoped
+@Path("/forms/write/draft")
+public class SaveDraftEndpoint {
+
+    private final PostRepository postRepository;
+    private final LoggedUser loggedUser;
+
+    @Inject
+    public SaveDraftEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
+        this.postRepository = postRepository;
+        this.loggedUser = loggedUser;
+    }
+
+    @POST
+    @Transactional
+    @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response save(@BeanParam SaveDraftRequest request) {
+        Post post;
+        if (Objects.nonNull(request.id())) {
+            post = postRepository.findById(request.id()).orElseGet(Post::new);
+        } else {
+            post = new Post();
+        }
+        post.setSlug(request.slug());
+        post.setAuthor(loggedUser.getUsername());
+        post.setTitle(request.title());
+        post.setContent(request.content());
+        post.setDescription(request.description());
+        postRepository.save(post);
+        return Response.ok()
+                       .build();
+    }
+}

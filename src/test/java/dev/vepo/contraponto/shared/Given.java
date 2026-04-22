@@ -101,9 +101,12 @@ public class Given {
             return this;
         }
 
-        public void persist() {
-            transaction(() -> inject(EntityManager.class).persist(new Post(title,
-                                                                           slug, description, content, author, true, LocalDateTime.now())));
+        public Post persist() {
+            return transaction(() -> {
+                var post = new Post(title, slug, description, content, author, true, LocalDateTime.now());
+                inject(EntityManager.class).persist(post);
+                return post;
+            });
         }
     }
 

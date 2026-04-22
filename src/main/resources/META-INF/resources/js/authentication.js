@@ -30,4 +30,7 @@ class ContrapontoAuthentication {
         return null;
     }
 }
-new ContrapontoAuthentication();
+
+document.addEventListener('DOMContentLoaded', () => {
+    new ContrapontoAuthentication();
+});

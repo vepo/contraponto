@@ -9,10 +9,8 @@ class HeaderManager {
     }
 
     setupUserMenu() {
-        console.log('biding click on body', document.body);
         // Single delegated click handler for both opening and closing
         document.body.addEventListener('click', (evt) => {
-            console.log('click on header', evt);
             const userMenuBtn = document.getElementById('userMenuBtn');
             const userDropdown = document.getElementById('userDropdown');
             if (!userMenuBtn || !userDropdown) return;

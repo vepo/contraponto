@@ -11,10 +11,19 @@
 	</button>
 	<button type="button" 
 			class="btn-header"
-			hx-post="/write"
+			hx-post="/write/publish"
 			hx-include="#postForm"
 			hx-target="main"
 			data-disable-pattern="^(?!\/write$).*">
 		Publicar
+	</button>
+	<button id="saveDraft" 
+	        type="button" 
+			class="btn-header"
+			hx-post="/forms//write/draft"
+			hx-include="#postForm"
+			hx-target="main"
+			data-disable-pattern="^(?!\/write$).*">
+		Salvar Rascunho
 	</button>
 {/if}

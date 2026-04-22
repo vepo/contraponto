@@ -85,22 +85,9 @@ public class PostRepository {
     }
 
     @Transactional
-    public Post create(PostRequest request, String author, Image cover) {
-        Post post = new Post();
-        post.setSlug(request.slug());
-        post.setTitle(request.title());
-        post.setAuthor(author);
-        post.setDescription(request.description());
-        post.setContent(request.content());
-        post.setCover(cover);
-        post.setPublished(request.published());
-
-        if (request.published()) {
-            post.setPublishedAt(LocalDateTime.now());
-        }
-
+    public Post save(Post post) {
         entityManager.persist(post);
-        logger.info("Created post: {}", post.getSlug());
+        logger.info("Updated post: {}", post.getSlug());
         return post;
     }
 

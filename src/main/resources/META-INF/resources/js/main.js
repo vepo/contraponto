@@ -7,6 +7,7 @@ class MainManager {
         this.bindErrorMessage = this.bindErrorMessage.bind(this);
         this.setupRouteBasedElementsEnabler();
         this.setupErrorHandler();
+        this.disabledElementsBasedOnUrl();
     }
 
     setupErrorHandler() {

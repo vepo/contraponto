@@ -34,6 +34,10 @@ public class LoggedUser {
         return Optional.ofNullable(user).map(User::getId).orElse(-1l);
     }
 
+    public String getUsername() {
+        return Optional.ofNullable(user).map(User::getUsername).orElse("");
+    }
+
     public String getName() {
         return Optional.ofNullable(user).map(User::getName).orElse("");
     }

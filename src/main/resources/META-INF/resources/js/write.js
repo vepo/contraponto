@@ -2,73 +2,34 @@
 
 class WriteEditor {
     constructor() {
-        this.isAuthenticated = false;
-        this.currentUser = null;
-        this.postId = null;
-        this.isPublished = false;
-        this.init();
+        // this.init();
+        this.setupRichText = this.setupRichText.bind(this);
+        this.setupRichTextButton = this.setupRichTextButton.bind(this);
+        this.commandButtonCallback = this.commandButtonCallback.bind(this);
+        document.body.addEventListener('htmx:afterSettle', this.setupRichText);
+        this.setupRichText();
     }
-    
-    async init() {
-        // Wait for auth to be ready
-        if (window.authManager) {
-            this.isAuthenticated = window.authManager.isAuthenticated;
-            this.currentUser = window.authManager.currentUser;
-            
-            if (!this.isAuthenticated) {
-                // Redirect to home if not authenticated
-                window.location.href = '/';
-                return;
-            }
-            
-            this.setupEventListeners();
-            this.setupToolbar();
-            this.loadExistingPost();
-            this.updateUserMenu();
-        } else {
-            // Wait for authManager to load
-            setTimeout(() => this.init(), 100);
+
+    setupRichText() {
+        const editorToolbar = document.getElementById('editorToolbar');
+        if (editorToolbar) {
+            editorToolbar.querySelectorAll('button').forEach(this.setupRichTextButton);
         }
     }
-    
-    setupEventListeners() {
-        this.saveDraftBtn = document.getElementById('saveDraftBtn');
-        this.publishBtn = document.getElementById('publishBtn');
-        this.postForm = document.getElementById('postForm');
-        this.titleInput = document.getElementById('title');
-        this.slugInput = document.getElementById('slug');
-        
-        if (this.saveDraftBtn) {
-            this.saveDraftBtn.addEventListener('click', () => this.savePost(false));
-        }
-        
-        if (this.publishBtn) {
-            this.publishBtn.addEventListener('click', () => this.savePost(true));
-        }
+
+    setupRichTextButton(commandBtn) {
+        commandBtn.addEventListener('click', this.commandButtonCallback);
     }
-    
-    setupToolbar() {
-        const toolbar = document.getElementById('editorToolbar');
+
+    commandButtonCallback(evt) {
+        const button = evt.target;
+        const command = button.getAttribute('data-command');
         const editor = document.getElementById('content');
-        
-        if (!toolbar || !editor) return;
-        
-        toolbar.addEventListener('click', (e) => {
-            const button = e.target.closest('[data-command]');
-            if (!button) return;
-            
-            const command = button.getAttribute('data-command');
-            this.executeEditorCommand(command, editor);
-        });
-    }
-    
-    executeEditorCommand(command, editor) {
-        const textarea = editor;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selectedText = textarea.value.substring(start, end);
-        const beforeText = textarea.value.substring(0, start);
-        const afterText = textarea.value.substring(end);
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selectedText = editor.value.substring(start, end);
+        const beforeText = editor.value.substring(0, start);
+        const afterText = editor.value.substring(end);
         
         let replacement = '';
         
@@ -110,204 +71,15 @@ class WriteEditor {
                 return;
         }
         
-        textarea.value = beforeText + replacement + afterText;
-        textarea.focus();
+        editor.value = beforeText + replacement + afterText;
+        editor.focus();
         
         // Set cursor position
         const newCursorPos = start + replacement.length;
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        editor.setSelectionRange(newCursorPos, newCursorPos);
         
         // Trigger input event
-        textarea.dispatchEvent(new Event('input'));
-    }
-    
-    async loadExistingPost() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('edit');
-        
-        if (editId) {
-            this.postId = parseInt(editId);
-            await this.fetchPost(this.postId);
-        }
-    }
-    
-    async fetchPost(id) {
-        try {
-            const response = await window.authManager.get(`/api/posts/${id}`);
-            
-            if (response.ok) {
-                const post = await response.json();
-                this.populateForm(post);
-                this.isPublished = post.published;
-            } else if (response.status === 404) {
-                this.showToast('Post not found', 'error');
-            } else if (response.status === 403) {
-                this.showToast('You can only edit your own posts', 'error');
-                setTimeout(() => window.location.href = '/', 2000);
-            }
-        } catch (error) {
-            console.error('Error loading post:', error);
-            this.showToast('Failed to load post', 'error');
-        }
-    }
-    
-    populateForm(post) {
-        document.getElementById('postId').value = post.id;
-        document.getElementById('title').value = post.title;
-        document.getElementById('slug').value = post.slug;
-        document.getElementById('description').value = post.description || '';
-        document.getElementById('content').value = post.content;
-        
-        if (post.cover) {
-            document.getElementById('coverId').value = post.cover.id;
-            this.updateCoverPreview(post.cover.url);
-        }
-        
-        // Update slug preview
-        const slugPreview = document.getElementById('slugPreview');
-        if (slugPreview) {
-            slugPreview.textContent = `/post/${post.slug}`;
-        }
-        
-        // Update button states
-        if (this.publishBtn) {
-            this.publishBtn.textContent = post.published ? 'Update' : 'Publish';
-        }
-        if (this.saveDraftBtn) {
-            this.saveDraftBtn.textContent = post.published ? 'Save Changes' : 'Save Draft';
-        }
-    }
-    
-    async savePost(publish) {
-        const title = document.getElementById('title')?.value.trim();
-        const slug = document.getElementById('slug')?.value.trim();
-        const description = document.getElementById('description')?.value.trim();
-        const content = document.getElementById('content')?.value.trim();
-        const coverId = document.getElementById('coverId')?.value;
-        
-        // Validation
-        if (!title) {
-            this.showToast('Title is required', 'error');
-            document.getElementById('title')?.focus();
-            return;
-        }
-        
-        if (!slug) {
-            this.showToast('Slug is required', 'error');
-            document.getElementById('slug')?.focus();
-            return;
-        }
-        
-        if (!content) {
-            this.showToast('Content is required', 'error');
-            document.getElementById('content')?.focus();
-            return;
-        }
-        
-        // Validate slug format
-        const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-        if (!slugRegex.test(slug)) {
-            this.showToast('Slug can only contain lowercase letters, numbers, and hyphens', 'error');
-            return;
-        }
-        
-        const postData = {
-            title,
-            slug,
-            description,
-            content,
-            published: publish,
-            coverId: coverId ? parseInt(coverId) : null
-        };
-        
-        const isEditing = this.postId !== null;
-        const url = isEditing ? `/api/posts/${this.postId}` : '/api/posts';
-        const method = isEditing ? 'PUT' : 'POST';
-        
-        // Disable buttons
-        this.setButtonsEnabled(false);
-        
-        try {
-            const response = await window.authManager.authenticatedFetch(url, {
-                method: method,
-                body: JSON.stringify(postData)
-            });
-            
-            if (response.ok) {
-                const savedPost = await response.json();
-                this.postId = savedPost.id;
-                
-                const message = publish ? 'Post published!' : 'Draft saved!';
-                this.showToast(message, 'success');
-                
-                // Update URL if creating new post
-                if (!isEditing) {
-                    window.history.pushState({}, '', `/write?edit=${savedPost.id}`);
-                }
-                
-                // Update button text
-                if (publish && this.publishBtn) {
-                    this.publishBtn.textContent = 'Update';
-                }
-                if (this.saveDraftBtn) {
-                    this.saveDraftBtn.textContent = publish ? 'Save Changes' : 'Save Draft';
-                }
-            } else {
-                const error = await response.json();
-                this.showToast(error.error || 'Failed to save post', 'error');
-            }
-        } catch (error) {
-            console.error('Save error:', error);
-            this.showToast('Failed to save post', 'error');
-        } finally {
-            this.setButtonsEnabled(true);
-        }
-    }
-    
-    setButtonsEnabled(enabled) {
-        if (this.saveDraftBtn) this.saveDraftBtn.disabled = !enabled;
-        if (this.publishBtn) this.publishBtn.disabled = !enabled;
-    }
-    
-    updateUserMenu() {
-        const userMenu = document.getElementById('userMenu');
-        const userAvatar = document.getElementById('userAvatar');
-        
-        if (this.currentUser && userAvatar) {
-            const initial = this.currentUser.name.charAt(0).toUpperCase();
-            userAvatar.textContent = initial;
-        }
-        
-        if (userMenu) {
-            const userMenuBtn = document.getElementById('userMenuBtn');
-            const dropdown = document.querySelector('.write-header .user-menu__dropdown');
-            
-            if (userMenuBtn && dropdown) {
-                userMenuBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    dropdown.classList.toggle('user-menu__dropdown--open');
-                });
-                
-                document.addEventListener('click', () => {
-                    dropdown.classList.remove('user-menu__dropdown--open');
-                });
-            }
-        }
-    }
-    
-    showToast(message, type = 'info') {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toastMessage');
-        
-        if (!toast || !toastMessage) return;
-        
-        toastMessage.textContent = message;
-        toast.className = `toast toast--${type}`;
-        toast.style.display = 'block';
-        
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
+        editor.dispatchEvent(new Event('input'));
     }
 }
 
