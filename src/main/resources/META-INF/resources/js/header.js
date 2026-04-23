@@ -21,7 +21,7 @@ class HeaderManager {
             if (isButtonClick) {
                 evt.stopPropagation();
                 userDropdown.classList.toggle('user-menu__dropdown--open');
-            } else if (!isInsideDropdown) {
+            } else if (!isInsideDropdown || evt.target.dataset.hxGet) {
                 userDropdown.classList.remove('user-menu__dropdown--open');
             }
         });

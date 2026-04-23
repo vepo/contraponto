@@ -18,10 +18,11 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -44,11 +45,22 @@ public class WriteEndpoint {
     }
 
     @GET
+    @Path("draft/{draftId}")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance write(@QueryParam("edit") Long editId) {
-        return Template.write(Optional.ofNullable(editId)
-                                      .flatMap(this.postRepository::findById),
+    public TemplateInstance write(@PathParam("draftId") Long draftId) {
+        return Template.write(Optional.ofNullable(draftId)
+                                      .map(postRepository::findById)
+                                      .orElseThrow(() -> new NotFoundException("Draft not found! id=%s".formatted(draftId))),
+                              LocalDateTime.now().getYear(),
+                              loggedUser);
+    }
+
+    @GET
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance write() {
+        return Template.write(Optional.empty(),
                               LocalDateTime.now().getYear(),
                               loggedUser);
     }

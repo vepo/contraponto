@@ -1,6 +1,6 @@
 class MainManager {
     constructor() {
-        this.protectedPaths = ['/write', '/profile'];
+        this.protectedPaths = ['/write', '/profile', '/write/draft/[0-9]+'];
         // Bind methods to this instance
         this.redirectIfPathProtected = this.redirectIfPathProtected.bind(this);
         this.disabledElementsBasedOnUrl = this.disabledElementsBasedOnUrl.bind(this);

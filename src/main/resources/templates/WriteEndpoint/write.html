@@ -14,49 +14,59 @@
                 <form id="postForm" class="write-form">
                     <input type="hidden" name="postId" value="{#if post.isPresent}{post.get().id}{/if}"/>
 
-                    <div class="write-form__group">
-                        <input type="text" id="title" name="title" class="write-form__title"
-                               placeholder="New story title..."
-                               value="{#if post.isPresent}{post.get().title}{/if}"
-                               autocomplete="off"/>
-                    </div>
-
-                    <div class="write-form__group">
-                        <label for="slug">Url</label>
-                        <input type="text" id="slug" name="slug" class="write-form__description"
-                               placeholder="Urlw"
-                               value="{#if post.isPresent}{post.get().slug}{/if}"
-                               autocomplete="off"/>
-                    </div>
-
-                    <div class="write-form__group">
-                        <input type="text" id="description" name="description" class="write-form__description"
-                               placeholder="Short description (optional)"
-                               value="{#if post.isPresent}{post.get().description}{/if}"
-                               autocomplete="off"/>
-                    </div>
-
-                    <div class="write-form__group">
-                        <div class="write-editor-toolbar" id="editorToolbar">
-                            <button type="button" data-command="bold" title="Bold"><strong>B</strong></button>
-                            <button type="button" data-command="italic" title="Italic"><em>I</em></button>
-                            <button type="button" data-command="underline" title="Underline"><u>U</u></button>
-                            <span class="toolbar-separator"></span>
-                            <button type="button" data-command="h2" title="Heading 2">H2</button>
-                            <button type="button" data-command="h3" title="Heading 3">H3</button>
-                            <span class="toolbar-separator"></span>
-                            <button type="button" data-command="ul" title="Bullet List">• List</button>
-                            <button type="button" data-command="ol" title="Numbered List">1. List</button>
-                            <span class="toolbar-separator"></span>
-                            <button type="button" data-command="blockquote" title="Quote">“ Quote</button>
-                            <button type="button" data-command="code" title="Code">&lt;/&gt; Code</button>
-                            <span class="toolbar-separator"></span>
-                            <button type="button" data-command="link" title="Insert Link">🔗 Link</button>
+                        <!-- Title field - vintage style -->
+                        <div class="write-form__group write-form__group--title">
+                            <label for="title" class="write-form__label">Title</label>
+                            <input type="text" id="title" name="title" class="write-form__title"
+                                   placeholder="Story title..."
+                                   value="{#if post.isPresent}{post.get().title}{/if}"
+                                   autocomplete="off"/>
                         </div>
-                        <textarea id="content" name="content" class="write-form__editor"
-                                  placeholder="Write your story here...">{#if post.isPresent}{post.get().content}{/if}</textarea>
-                    </div>
-                </form>
+
+                        <!-- Slug field -->
+                        <div class="write-form__group">
+                            <label for="slug" class="write-form__label">Permalink slug</label>
+                            <input type="text" id="slug" name="slug" class="write-form__slug"
+                                   placeholder="url-friendly-identifier"
+                                   value="{#if post.isPresent}{post.get().slug}{/if}"
+                                   autocomplete="off"/>
+                            <div class="write-form__hint">Used in the post URL (e.g., /post/&lt;your-slug&gt;)</div>
+                        </div>
+
+                        <!-- Description field -->
+                        <div class="write-form__group">
+                            <label for="description" class="write-form__label">Short description</label>
+                            <input type="text" id="description" name="description" class="write-form__description"
+                                   placeholder="A brief excerpt (optional)"
+                                   value="{#if post.isPresent}{post.get().description}{/if}"
+                                   autocomplete="off"/>
+                        </div>
+
+                        <!-- Editor area with toolbar and textarea -->
+                        <div class="write-form__group write-form__group--editor">
+                            <label class="write-form__label">Your story</label>
+                            <div class="write-editor-toolbar" id="editorToolbar">
+                                <button type="button" data-command="bold" title="Bold"><strong>B</strong></button>
+                                <button type="button" data-command="italic" title="Italic"><em>I</em></button>
+                                <button type="button" data-command="underline" title="Underline"><u>U</u></button>
+                                <span class="toolbar-separator"></span>
+                                <button type="button" data-command="h2" title="Heading 2">H2</button>
+                                <button type="button" data-command="h3" title="Heading 3">H3</button>
+                                <span class="toolbar-separator"></span>
+                                <button type="button" data-command="ul" title="Bullet List">• List</button>
+                                <button type="button" data-command="ol" title="Numbered List">1. List</button>
+                                <span class="toolbar-separator"></span>
+                                <button type="button" data-command="blockquote" title="Quote">“ Quote</button>
+                                <button type="button" data-command="code" title="Code">&lt;/&gt; Code</button>
+                                <span class="toolbar-separator"></span>
+                                <button type="button" data-command="link" title="Insert Link">🔗 Link</button>
+                            </div>
+                            <textarea id="content" name="content" class="write-form__editor"
+                                      placeholder="Write your story here... Use the toolbar above for formatting.">{#if post.isPresent}{post.get().content}{/if}</textarea>
+                            <div class="write-form__hint">Markdown formatting supported • Use the toolbar for shortcuts</div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
 

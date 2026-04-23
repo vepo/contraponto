@@ -1127,3 +1127,27 @@ hr:after {
         padding: 1.5rem;
     }
 }
+
+.write-form__label {
+    font-family: 'Georgia', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #5a4a2e;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.write-form__title {
+    font-size: 2.2rem;
+    font-family: 'Times New Roman', serif;
+    border: none;
+    border-bottom: 1px dashed #d4c5a3;
+    background: transparent;
+}
+
+.write-form__editor {
+    background: #fffcf5;
+    border: 1px solid #e0d0b0;
+    font-family: 'Courier New', monospace;
+}

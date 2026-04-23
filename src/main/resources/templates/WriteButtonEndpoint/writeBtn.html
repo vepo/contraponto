@@ -14,7 +14,7 @@
 			hx-post="/write/publish"
 			hx-include="#postForm"
 			hx-target="main"
-			data-disable-pattern="^(?!\/write$).*">
+			data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
 		Publicar
 	</button>
 	<button id="saveDraft" 
@@ -22,8 +22,9 @@
 			class="btn-header"
 			hx-post="/forms//write/draft"
 			hx-include="#postForm"
-			hx-target="main"
-			data-disable-pattern="^(?!\/write$).*">
+			hx-target="#toast"
+			hx-swap="innerHTML"
+			data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
 		Salvar Rascunho
 	</button>
 {/if}

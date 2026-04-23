@@ -105,11 +105,17 @@ class WriteTest {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
 
-        String title = "My Draft Post";
-        String content = "This is the content of my draft post.";
+        var title = "My Draft Post";
+        var slug = "my-post";
+        var description = "This is my post.";
+        var content = "This is the content of my draft post.";
 
         var titleInput = wait.until(visibilityOfElementLocated(cssSelector("#title")));
         titleInput.sendKeys(title);
+        var slugInput = wait.until(visibilityOfElementLocated(cssSelector("#slug")));
+        slugInput.sendKeys(slug);
+        var descriptionInput = wait.until(visibilityOfElementLocated(cssSelector("#description")));
+        descriptionInput.sendKeys(description);
         var contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.sendKeys(content);
 
@@ -118,8 +124,8 @@ class WriteTest {
         saveDraftBtn.click();
 
         // Wait for toast success message
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--success")));
-        assertThat(toast.getText()).contains("Draft saved!");
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+        assertThat(toast.getText()).contains("Draft saved successfully!");
 
         // After saving, URL should contain ?edit= with the new post id
         assertThat(driver.getCurrentUrl()).matches(".*/write\\?edit=\\d+");
