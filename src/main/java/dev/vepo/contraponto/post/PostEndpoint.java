@@ -16,7 +16,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-@Path("post/{id}")
+@Path("post/{slug}")
 @ApplicationScoped
 public class PostEndpoint {
     @CheckedTemplate
@@ -36,7 +36,7 @@ public class PostEndpoint {
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance post(@PathParam("id") String slug) {
+    public TemplateInstance post(@PathParam("slug") String slug) {
         return Template.post(this.postRepository.findBySlug(slug)
                                                 .orElseThrow(() -> new NotFoundException("Post not found! slug=%s".formatted(slug))),
                              LocalDateTime.now().getYear(),

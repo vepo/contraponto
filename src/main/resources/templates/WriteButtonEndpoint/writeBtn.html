@@ -9,9 +9,10 @@
 		<img src="/images/write.svg" />
 		Escrever
 	</button>
-	<button type="button" 
+	<button id="publish"
+	        type="button" 
 			class="btn-header"
-			hx-post="/write/publish"
+			hx-post="/forms/write/publish"
 			hx-include="#postForm"
 			hx-target="main"
 			data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
@@ -20,7 +21,7 @@
 	<button id="saveDraft" 
 	        type="button" 
 			class="btn-header"
-			hx-post="/forms//write/draft"
+			hx-post="/forms/write/draft"
 			hx-include="#postForm"
 			hx-target="#toast"
 			hx-swap="innerHTML"

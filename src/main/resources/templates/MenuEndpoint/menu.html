@@ -14,10 +14,10 @@
         </div>
         <div class="user-menu__items">
             <a data-hx-get="/profile"
-			   hx-select="main"
-			   hx-target="main"
-			   hx-replace-url="/profile" 
-               class="user-menu__item" 
+               hx-select="main"
+               hx-target="main"
+               hx-replace-url="/profile"
+               class="user-menu__item"
                data-nav>
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
                     <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21M16 7C16 9.2 14.2 11 12 11C9.8 11 8 9.2 8 7C8 4.8 9.8 3 12 3C14.2 3 16 4.8 16 7Z" stroke="currentColor" stroke-width="1.5"/>
@@ -25,9 +25,9 @@
                 Profile
             </a>
             <a data-hx-get="/write"
-			   hx-select="main"
-			   hx-target="main"
-			   hx-replace-url="/write" 
+               hx-select="main"
+               hx-target="main"
+               hx-replace-url="/write"
                class="user-menu__item"
                data-nav>
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
@@ -35,7 +35,22 @@
                 </svg>
                 Write
             </a>
-            <a href="/dashboard" class="user-menu__item" data-nav>
+            <a data-hx-get="/drafts"
+               hx-select="main"
+               hx-target="main"
+               hx-replace-url="/drafts"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M4 4H20V20H4V4ZM6 7H18V9H6V7ZM6 11H18V13H6V11ZM6 15H14V17H6V15Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Drafts
+            </a>
+            <a data-hx-get="/dashboard"
+               hx-select="main"
+               hx-target="main"
+               hx-replace-url="/dashboard"
+               class="user-menu__item" data-nav>
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
                     <path d="M3 3H21V21H3V3ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H13V17H7V15Z" stroke="currentColor" stroke-width="1.5"/>
                 </svg>
@@ -47,7 +62,7 @@
                     <path d="M9 21H5C4.5 21 4 20.5 4 20V4C4 3.5 4.5 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" stroke-width="1.5"/>
                 </svg>
                 Sign out
-          </button>
+            </button>
         </div>
     </div>
 </div>

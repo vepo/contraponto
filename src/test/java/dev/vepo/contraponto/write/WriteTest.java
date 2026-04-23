@@ -11,6 +11,8 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -128,7 +130,7 @@ class WriteTest {
         assertThat(toast.getText()).contains("Draft saved successfully!");
 
         // After saving, URL should contain ?edit= with the new post id
-        assertThat(driver.getCurrentUrl()).matches(".*/write\\?edit=\\d+");
+        assertThat(driver.getCurrentUrl()).matches(".*/write/draft/\\d+");
     }
 
     @Test
@@ -136,18 +138,18 @@ class WriteTest {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
 
-        String title = "Published Post";
-        String content = "Published content here.";
+        var title = "Published Post";
+        var content = "Published content here.";
 
         var titleInput = wait.until(visibilityOfElementLocated(cssSelector("#title")));
         titleInput.sendKeys(title);
         var contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.sendKeys(content);
 
-        var publishBtn = driver.findElement(cssSelector("#publishBtn"));
+        var publishBtn = driver.findElement(By.id("publish"));
         publishBtn.click();
 
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--success")));
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
         assertThat(toast.getText()).contains("Post published!");
 
         // Verify we can navigate to the published post
@@ -168,28 +170,35 @@ class WriteTest {
         var postId = Given.post()
                           .withTitle("Original Title")
                           .withSlug("original-title")
+                          .withDescription("Description")
                           .withContent("Original content")
                           .withAuthor(TEST_USER_EMAIL)
                           .persist()
                           .getId();
 
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "write?edit=" + postId);
+        driver.get(testUrl.toString() + "write/draft/" + postId);
 
         var titleInput = wait.until(visibilityOfElementLocated(cssSelector("#title")));
         assertThat(titleInput.getAttribute("value")).isEqualTo("Original Title");
 
+        var slugInput = wait.until(visibilityOfElementLocated(cssSelector("#slug")));
+        assertThat(slugInput.getAttribute("value")).isEqualTo("original-title");
+
         // Edit title and content
         titleInput.clear();
         titleInput.sendKeys("Updated Title");
+
+        slugInput.clear();
+        slugInput.sendKeys("updated-title");
         var contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.clear();
         contentTextarea.sendKeys("Updated content");
 
-        var publishBtn = driver.findElement(cssSelector("#publishBtn"));
+        var publishBtn = driver.findElement(By.id("publish"));
         publishBtn.click();
 
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--success")));
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
         assertThat(toast.getText()).contains("Post published!");
 
         // Verify on the post page
@@ -210,10 +219,10 @@ class WriteTest {
         var contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.sendKeys("Some content");
 
-        var saveDraftBtn = driver.findElement(cssSelector("#saveDraftBtn"));
+        var saveDraftBtn = driver.findElement(By.id("saveDraft"));
         saveDraftBtn.click();
 
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--error")));
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
         assertThat(toast.getText()).contains("Title is required");
     }
 
@@ -225,10 +234,10 @@ class WriteTest {
         var titleInput = driver.findElement(cssSelector("#title"));
         titleInput.sendKeys("No content");
 
-        var saveDraftBtn = driver.findElement(cssSelector("#saveDraftBtn"));
+        var saveDraftBtn = driver.findElement(By.id("saveDraft"));
         saveDraftBtn.click();
 
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--error")));
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
         assertThat(toast.getText()).contains("Content is required");
     }
 
@@ -246,10 +255,10 @@ class WriteTest {
         var contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.sendKeys("Content");
 
-        var publishBtn = driver.findElement(cssSelector("#publishBtn"));
+        var publishBtn = driver.findElement(By.id("publish"));
         publishBtn.click();
 
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--success")));
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
         assertThat(toast.getText()).contains("Post published!");
     }
 
@@ -267,10 +276,10 @@ class WriteTest {
         var contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.sendKeys("Content");
 
-        var publishBtn = driver.findElement(cssSelector("#publishBtn"));
+        var publishBtn = driver.findElement(By.id("publish"));
         publishBtn.click();
 
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast.toast--error")));
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
         assertThat(toast.getText()).contains("Slug can only contain lowercase letters, numbers, and hyphens");
     }
 
@@ -286,15 +295,15 @@ class WriteTest {
         var contentTextarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
         contentTextarea.sendKeys("some text");
         // Select the word "some"
-        contentTextarea.sendKeys(org.openqa.selenium.Keys.HOME);
-        contentTextarea.sendKeys(org.openqa.selenium.Keys.chord(org.openqa.selenium.Keys.SHIFT, org.openqa.selenium.Keys.ARROW_RIGHT,
-                                                                org.openqa.selenium.Keys.ARROW_RIGHT, org.openqa.selenium.Keys.ARROW_RIGHT,
-                                                                org.openqa.selenium.Keys.ARROW_RIGHT));
-
+        contentTextarea.sendKeys(Keys.HOME);
+        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT));
         var boldBtn = driver.findElement(cssSelector("button[data-command='bold']"));
         boldBtn.click();
 
-        String value = contentTextarea.getAttribute("value");
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+
+        contentTextarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
+        var value = contentTextarea.getAttribute("value");
         assertThat(value).contains("**some** text");
     }
 }
