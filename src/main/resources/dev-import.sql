@@ -1,5 +1,6 @@
 -- src/main/resources/dev-import.sql
 -- Create test environment for blog posts about Java and Distributed Systems
+-- Includes published posts and draft posts
 
 -- ============================================
 -- 1. Limpar dados existentes (opcional - para desenvolvimento)
@@ -92,10 +93,30 @@ VALUES
     'https://picsum.photos/id/8/800/600',
     TRUE,
     '2024-01-20 08:00:00'
+),
+(
+    'img-draft-001',
+    'draft-cover-1.jpg',
+    'image/jpeg',
+    123456,
+    '/tmp/contraponto-images/draft-cover-1.jpg',
+    'https://picsum.photos/id/9/800/600',
+    TRUE,
+    '2024-03-10 08:00:00'
+),
+(
+    'img-draft-002',
+    'draft-cover-2.jpg',
+    'image/jpeg',
+    234567,
+    '/tmp/contraponto-images/draft-cover-2.jpg',
+    'https://picsum.photos/id/10/800/600',
+    TRUE,
+    '2024-04-01 08:00:00'
 );
 
 -- ============================================
--- 3. Inserir posts (usando variáveis para evitar subqueries)
+-- 3. Inserir posts publicados
 -- ============================================
 
 DO $$
@@ -119,7 +140,7 @@ BEGIN
     SELECT id INTO v_image_id_7 FROM tb_images WHERE uuid = 'img-observability-007';
     SELECT id INTO v_image_id_8 FROM tb_images WHERE uuid = 'img-loom-008';
 
-    -- Inserir posts
+    -- Inserir posts publicados
     INSERT INTO tb_posts(slug, title, author, description, content, published, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
@@ -584,6 +605,156 @@ Response handleRequest(Request request) throws Exception {
         '2024-01-20 09:00:00', 
         '2024-01-20 09:00:00',
         v_image_id_8
+    );
+END $$;
+
+-- ============================================
+-- 4. Inserir rascunhos (drafts) para teste
+-- ============================================
+
+DO $$
+DECLARE
+    v_image_id_1 BIGINT;
+    v_image_id_2 BIGINT;
+    v_image_id_3 BIGINT;
+    v_image_id_4 BIGINT;
+    v_image_id_5 BIGINT;
+    v_image_id_6 BIGINT;
+    v_image_id_7 BIGINT;
+    v_image_id_8 BIGINT;
+    v_draft_img_1 BIGINT;
+    v_draft_img_2 BIGINT;
+BEGIN
+    -- Buscar IDs das imagens existentes para drafts
+    SELECT id INTO v_image_id_1 FROM tb_images WHERE uuid = 'img-distributed-systems-001';
+    SELECT id INTO v_image_id_2 FROM tb_images WHERE uuid = 'img-microservices-002';
+    SELECT id INTO v_image_id_3 FROM tb_images WHERE uuid = 'img-kafka-003';
+    SELECT id INTO v_image_id_4 FROM tb_images WHERE uuid = 'img-saga-004';
+    SELECT id INTO v_image_id_5 FROM tb_images WHERE uuid = 'img-kubernetes-005';
+    SELECT id INTO v_image_id_6 FROM tb_images WHERE uuid = 'img-grpc-006';
+    SELECT id INTO v_image_id_7 FROM tb_images WHERE uuid = 'img-observability-007';
+    SELECT id INTO v_image_id_8 FROM tb_images WHERE uuid = 'img-loom-008';
+    SELECT id INTO v_draft_img_1 FROM tb_images WHERE uuid = 'img-draft-001';
+    SELECT id INTO v_draft_img_2 FROM tb_images WHERE uuid = 'img-draft-002';
+
+    -- Inserir rascunhos (drafts)
+    INSERT INTO tb_posts(slug, title, author, description, content, published, created_at, updated_at, published_at, cover_id) 
+    VALUES 
+    (
+        'draft-why-java-still-matters-2024', 
+        'Why Java Still Matters in 2024 (Draft)', 
+        'Victor Osório',
+        'A draft exploring Java relevance despite newer languages. Work in progress - expecting to add benchmarks and community insights.', 
+        '<h2>Java in the Age of Polyglot Programming</h2>
+        <p>This is a draft post. I intend to discuss how Java continues to evolve and why it remains a top choice for enterprise systems.</p>
+        
+        <h3>Planned sections:</h3>
+        <ul>
+            <li>Recent language features (Records, Pattern Matching, Switch Expressions)</li>
+            <li>Performance improvements in recent JDKs</li>
+            <li>Ecosystem stability vs. new languages</li>
+            <li>Case studies from large companies</li>
+        </ul>
+        
+        <p>More content coming soon. Check back for updates!</p>', 
+        FALSE, 
+        '2024-03-15 10:00:00', 
+        '2024-03-20 14:30:00', 
+        NULL,
+        v_draft_img_1
+    ),
+    (
+        'draft-graalvm-native-image-spring-boot', 
+        'GraalVM Native Image with Spring Boot: Performance Gains (Draft)', 
+        'Victor Osório',
+        'Analyzing startup time and memory improvements when compiling Spring Boot applications to native executables using GraalVM.', 
+        '<h2>Native Compilation: A Game Changer for Spring Boot?</h2>
+        <p>Draft post exploring GraalVM native image capabilities with Spring Boot 3.x.</p>
+        
+        <h3>What I plan to cover:</h3>
+        <ul>
+            <li>Setup and configuration challenges</li>
+            <li>Startup time benchmarks (cold vs warm)</li>
+            <li>Memory footprint analysis</li>
+            <li>Limitations and workarounds</li>
+        </ul>
+        
+        <p>Need to run more tests and include real-world metrics.</p>', 
+        FALSE, 
+        '2024-03-25 09:15:00', 
+        '2024-03-28 16:20:00', 
+        NULL,
+        v_draft_img_2
+    ),
+    (
+        'draft-testing-distributed-systems', 
+        'Testing Strategies for Distributed Systems (Draft - Early Stage)', 
+        'Victor Osório',
+        'A preliminary draft on testing approaches for microservices: contract testing, integration test environments, and chaos engineering.', 
+        '<h2>Testing Beyond Unit Tests</h2>
+        <p>This is a very early draft. Need to flesh out examples and tools.</p>
+        
+        <h3>Outline:</h3>
+        <ul>
+            <li>Consumer-driven contract testing (Pact)</li>
+            <li>Testcontainers for integration tests</li>
+            <li>Chaos engineering with Chaos Monkey</li>
+            <li>Performance and load testing strategies</li>
+        </ul>
+        
+        <p>Will add code snippets and best practices soon.</p>', 
+        FALSE, 
+        '2024-04-01 11:00:00', 
+        '2024-04-01 11:00:00', 
+        NULL,
+        NULL  -- no cover image for this draft
+    ),
+    (
+        'draft-reactive-java-rxjava-webflux', 
+        'Reactive Java: RxJava vs. Project Reactor (Draft)', 
+        'Victor Osório',
+        'Comparing reactive programming libraries in Java, their performance characteristics, and when to use each.', 
+        '<h2>Reactive Streams in Practice</h2>
+        <p>Draft comparing RxJava 3 and Project Reactor (Spring WebFlux).</p>
+        
+        <h3>Planned content:</h3>
+        <ul>
+            <li>Core concepts (Observables, Flux, Mono)</li>
+            <li>Backpressure handling</li>
+            <li>Performance benchmarks</li>
+            <li>Learning curve and debugging</li>
+        </ul>
+        
+        <p>Code examples and comparison tables are being prepared.</p>', 
+        FALSE, 
+        '2024-04-05 13:30:00', 
+        '2024-04-08 09:45:00', 
+        NULL,
+        v_image_id_6  -- reuse gRPC cover image as placeholder
+    ),
+    (
+        'draft-security-java-microservices', 
+        'Securing Java Microservices: OAuth2, JWT, and mTLS (Draft)', 
+        'Victor Osório',
+        'A comprehensive guide to authentication and authorization patterns in microservices architectures using Spring Security.', 
+        '<h2>Security in Distributed Systems</h2>
+        <p>First draft - need to add configuration examples and best practices.</p>
+        
+        <h3>Topics to cover:</h3>
+        <ul>
+            <li>OAuth2 authorization server setup</li>
+            <li>JWT token validation and revocation</li>
+            <li>Mutual TLS (mTLS) for service-to-service</li>
+            <li>API gateway security policies</li>
+            <li>Secure configuration management</li>
+        </ul>
+        
+        <p>Will include Spring Security 6 examples and Keycloak integration.</p>', 
+        FALSE, 
+        '2024-04-10 15:00:00', 
+        '2024-04-12 11:10:00', 
+        NULL,
+        v_image_id_5  -- reuse Kubernetes cover image
     );
 
 END $$;
