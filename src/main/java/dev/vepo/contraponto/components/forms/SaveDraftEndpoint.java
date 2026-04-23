@@ -43,7 +43,7 @@ public class SaveDraftEndpoint {
                            .header("X-Toast-Duration", "10000") // optional, in milliseconds
                            .build();
         }
-        
+
         if (Objects.isNull(request.title()) || request.title().isBlank()) {
             return Response.ok()
                            .header("X-Toast-Message", "Title is required!")

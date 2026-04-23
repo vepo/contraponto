@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    My Drafts - contraponto
+    {/include}
+    <body>
+        {#include components/header /}
+        <main class="drafts-page">
+            <div class="container-narrow">
+                <h1 class="drafts-page__title">My Drafts</h1>
+                
+                {#if drafts.isEmpty()}
+                <div class="drafts-page__empty">
+                    <p>You don't have any drafts yet.</p>
+                    <a data-hx-get="/write"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-replace-url="/write"
+                       class="btn btn--primary">
+                        Write a new story
+                    </a>
+                </div>
+                {#else}
+                <div class="drafts-list">
+                    {#for draft in drafts}
+                    <article class="draft-card">
+                        <div class="draft-card__content">
+                            <h2 class="draft-card__title">
+                                <a data-hx-get="/write/draft/{draft.id}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-replace-url="/write/draft/{draft.id}">
+                                    {draft.title ?: "Untitled draft"}
+                                </a>
+                            </h2>
+                            {#if draft.description}
+                            <p class="draft-card__excerpt">{draft.description}</p>
+                            {/if}
+                            <div class="draft-card__meta">
+                                <span>Last edited: {draft.updatedAt.formatDate}</span>
+                                {#if draft.slug}
+                                <span>· Slug: {draft.slug}</span>
+                                {/if}
+                            </div>
+                        </div>
+                        <div class="draft-card__actions">
+                            <a data-hx-get="/write/draft/{draft.id}"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-replace-url="/write/draft/{draft.id}"
+                               class="btn btn--small">
+                                Edit
+                            </a>
+                            <button type="button"
+                                    class="btn btn--small btn--danger"
+                                    hx-delete="/api/posts/{draft.id}"
+                                    hx-confirm="Are you sure you want to delete this draft?"
+                                    hx-target="closest .draft-card"
+                                    hx-swap="outerHTML">
+                                Delete
+                            </button>
+                        </div>
+                    </article>
+                    {/for}
+                </div>
+                {/if}
+            </div>
+        </main>
+        
+        {#include components/footer /}
+    </body>
+</html>

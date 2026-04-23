@@ -140,4 +140,8 @@ public class PostRepository {
         query.setParameter("excludeId", excludeId);
         return query.getSingleResult() > 0;
     }
+
+    public List<Post> findDrafts() {
+        return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
+    }
 }
