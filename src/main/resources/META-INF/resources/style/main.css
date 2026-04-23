@@ -1199,9 +1199,17 @@ hr:after {
   gap: 0.5rem;
 }
 
+.drafts-page {
+  padding: 2rem 0 4rem;
+}
+
 .drafts-page__empty {
   text-align: center;
   padding: 3rem 0;
+}
+
+.drafts-page__empty p {
+  margin-bottom: 2rem;
 }
 
 .btn--small {
