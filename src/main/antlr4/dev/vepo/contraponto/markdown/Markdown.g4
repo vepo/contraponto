@@ -4,19 +4,17 @@ document: block* EOF;
 
 block: heading | paragraph;
 
-paragraph: (inline (linebreak | newline))+ inline (
-		linebreak
-		| NEWLINE
-	)
-	| inline (linebreak | NEWLINE);
-linebreak: '  ' NEWLINE;
+paragraph: inline (paragraphBreak inline)* NEWLINE;
+
+paragraphBreak: (linebreak NEWLINE) | NEWLINE;
+linebreak: SPACE SPACE+ NEWLINE;
 heading:
-	H1 inline NEWLINE
-	| H2 inline NEWLINE
-	| H3 inline NEWLINE
-	| H4 inline NEWLINE
-	| H5 inline NEWLINE
-	| H6 inline NEWLINE;
+	H1 inline+ NEWLINE
+	| H2 inline+ NEWLINE
+	| H3 inline+ NEWLINE
+	| H4 inline+ NEWLINE
+	| H5 inline+ NEWLINE
+	| H6 inline+ NEWLINE;
 
 H6: '######' ' '+;
 H5: '#####' ' '+;
@@ -25,14 +23,21 @@ H3: '###' ' '+;
 H2: '##' ' '+;
 H1: '#' ' '+;
 
-inline: (inlineCode | bold | italic | text)+;
+inline: (inlineContent)+ (space inlineContent)*;
+inlineContent: inlineCode | bold | italic | text;
 inlineCode: '`' text+ '`';
-italic: ('*' italicText+ '*') | ('_' italicText+ '_');
-italicText: text+ | bold;
-bold: ('**' text+ '**') | ('__' text+ '__');
-boldtext: text+ | italic;
-text: NON_NEWLINE+ | SPACE NON_NEWLINE+ | NON_NEWLINE+ SPACE | SPACE NON_NEWLINE+ SPACE;
+formattedBold: (italicPlain | text)+ (space ( italicPlain | text))*;
+formattedItalic: (boldPlain | text)+ (space ( boldPlain | text))*;
+bold: ('**' formattedBold+ '**') | ('__' formattedBold+ '__');
+italic: ('*' formattedItalic+ '*') | ('_' formattedItalic+ '_');
+boldPlain: ('**' (text (space text)*)+ '**')
+	| ('__' (text (space text)*)+ '__');
+italicPlain: ('*' (text (space text)*)+ '*')
+	| ('_' (text (space text)*)+ '_');
+text: (NON_NEWLINE+)
+	| (NON_NEWLINE (SPACE | NON_NEWLINE)+ NON_NEWLINE);
+space: SPACE;
 newline: NEWLINE;
+NON_NEWLINE: ~('\r' | '\n' | '#' | '*' | '_' | ' ');
 SPACE: ' ';
-NON_NEWLINE: ~('\r' | '\n' | '#' | '*' | '_'| ' ');
 NEWLINE: '\r'? '\n';

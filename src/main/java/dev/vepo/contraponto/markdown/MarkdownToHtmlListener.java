@@ -6,11 +6,21 @@ import dev.vepo.contraponto.markdown.MarkdownParser.InlineCodeContext;
 import dev.vepo.contraponto.markdown.MarkdownParser.ItalicContext;
 import dev.vepo.contraponto.markdown.MarkdownParser.LinebreakContext;
 import dev.vepo.contraponto.markdown.MarkdownParser.NewlineContext;
+import dev.vepo.contraponto.markdown.MarkdownParser.ParagraphBreakContext;
 import dev.vepo.contraponto.markdown.MarkdownParser.ParagraphContext;
+import dev.vepo.contraponto.markdown.MarkdownParser.SpaceContext;
 import dev.vepo.contraponto.markdown.MarkdownParser.TextContext;
 
 public class MarkdownToHtmlListener extends MarkdownBaseListener {
-    private StringBuilder html = new StringBuilder();
+    private final StringBuilder html;
+    private BoldContext bold;
+    private ItalicContext italic;
+
+    public MarkdownToHtmlListener() {
+        html = new StringBuilder();
+        bold = null;
+        italic = null;
+    }
 
     public String getHtml() {
         return html.toString();
@@ -60,7 +70,7 @@ public class MarkdownToHtmlListener extends MarkdownBaseListener {
 
     @Override
     public void exitLinebreak(LinebreakContext ctx) {
-        emit("<br />\n");
+        emit("<br />");
     }
 
     @Override
@@ -74,23 +84,46 @@ public class MarkdownToHtmlListener extends MarkdownBaseListener {
     }
 
     @Override
+    public void exitParagraphBreak(ParagraphBreakContext ctx) {
+        emit("\n");
+    }
+
+    @Override
+    public void exitSpace(SpaceContext ctx) {
+        emit(" ");
+    }
+
+    @Override
     public void enterBold(BoldContext ctx) {
-        emit("<strong>");
+        if (bold == null) {
+            emit("<strong>");
+            bold = ctx;
+
+        }
     }
 
     @Override
     public void exitBold(BoldContext ctx) {
-        emit("</strong>");
+        if (bold == ctx) {
+            emit("</strong>");
+            bold = null;
+        }
     }
 
     @Override
     public void enterItalic(ItalicContext ctx) {
-        emit("<em>");
+        if (italic == null) {
+            emit("<em>");
+            italic = ctx;
+        }
     }
 
     @Override
     public void exitItalic(ItalicContext ctx) {
-        emit("</em>");
+        if (italic == ctx) {
+            emit("</em>");
+            italic = null;
+        }
     }
 
     @Override
