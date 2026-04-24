@@ -4,20 +4,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+import dev.vepo.contraponto.markdown.MarkdownConverter;
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
 public class TemplateExtensions {
-
-    // @TemplateExtension
-    // public static String or(UserContext.UserInfo user, Object defaultValue) {
-    // return user != null ? user.getName() : String.valueOf(defaultValue);
-    // }
-
-    // @TemplateExtension
-    // public static boolean isAuthenticated(UserContext.UserInfo user) {
-    // return user != null && user.isAuthenticated();
-    // }
 
     @TemplateExtension
     public static String escapeHtml(String value) {
@@ -41,12 +32,14 @@ public class TemplateExtensions {
         }
     }
 
-    // @TemplateExtension
-    // public static String initials(UserContext.UserInfo user) {
-    // if (user == null)
-    // return "";
-    // return user.getInitials();
-    // }
+    @TemplateExtension
+    public static String markdown2Html(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            return "";
+        }
+
+        return MarkdownConverter.convert(content);
+    }
 
     @TemplateExtension
     public static String readTime(String content) {
