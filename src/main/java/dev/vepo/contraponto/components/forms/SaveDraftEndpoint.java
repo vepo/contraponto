@@ -2,6 +2,7 @@ package dev.vepo.contraponto.components.forms;
 
 import java.util.Objects;
 
+import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -23,11 +24,13 @@ import jakarta.ws.rs.core.Response;
 public class SaveDraftEndpoint {
 
     private final PostRepository postRepository;
+    private final ImageRepository imageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public SaveDraftEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
+    public SaveDraftEndpoint(PostRepository postRepository, ImageRepository imageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.imageRepository = imageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -57,6 +60,13 @@ public class SaveDraftEndpoint {
         } else {
             post = new Post();
         }
+
+        // Set cover image if provided
+        if (request.coverId() != null && !request.coverId().isBlank()) {
+            imageRepository.findByUuid(request.coverId())
+                           .ifPresent(post::setCover);
+        }
+
         post.setSlug(request.slug());
         post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());

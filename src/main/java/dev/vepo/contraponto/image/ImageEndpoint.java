@@ -8,7 +8,7 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.shared.security.Secured;
+import dev.vepo.contraponto.shared.infra.Logged;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -31,8 +31,8 @@ public class ImageEndpoint {
     ImageService imageService;
 
     @POST
+    @Logged
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Secured
     public Response uploadImage(@RestForm("file") FileUpload fileUpload) {
         try {
             if (fileUpload == null || fileUpload.fileName() == null || fileUpload.fileName().isEmpty()) {
@@ -78,7 +78,7 @@ public class ImageEndpoint {
 
     @DELETE
     @Path("/{uuid}")
-    @Secured
+    @Logged
     public Response deleteImage(@PathParam("uuid") String uuid) {
         try {
             imageService.deleteImage(uuid);

@@ -2,7 +2,6 @@ package dev.vepo.contraponto.image;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -11,7 +10,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -47,17 +45,10 @@ public class Image {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @PrePersist
-    private void prePersist() {
-        if (uuid == null) {
-            uuid = UUID.randomUUID().toString();
-        }
-    }
-
-    // Constructors
     public Image() {}
 
-    public Image(String filename, String contentType, Long size, String filePath, String url) {
+    public Image(String uuid, String filename, String contentType, Long size, String filePath, String url) {
+        this.uuid = uuid;
         this.filename = filename;
         this.contentType = contentType;
         this.size = size;

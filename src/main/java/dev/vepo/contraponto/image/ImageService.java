@@ -48,24 +48,25 @@ public class ImageService {
             }
 
             // Create storage directory if not exists
-            Path uploadPath = Paths.get(storagePath);
+            var uploadPath = Paths.get(storagePath);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
             // Generate unique filename
-            String extension = getFileExtension(filename);
-            String uniqueFilename = UUID.randomUUID().toString() + extension;
-            Path filePath = uploadPath.resolve(uniqueFilename);
+            var extension = getFileExtension(filename);
+            var imageIdentifier = UUID.randomUUID().toString();
+            var uniqueFilename = imageIdentifier + extension;
+            var filePath = uploadPath.resolve(uniqueFilename);
 
             // Save file
             Files.copy(data, filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Generate URL
-            String url = baseUrl + "/api/images/" + uniqueFilename;
+            var url = baseUrl + "/api/images/" + uniqueFilename;
 
             // Create image entity
-            Image image = new Image(filename, contentType, size, filePath.toString(), url);
+            var image = new Image(imageIdentifier, uniqueFilename, contentType, size, filePath.toString(), url);
             imageRepository.save(image);
 
             logger.info("Image uploaded successfully: {} -> {}", filename, url);

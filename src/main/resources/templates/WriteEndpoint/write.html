@@ -23,6 +23,28 @@
                                    autocomplete="off"/>
                         </div>
 
+                        <!-- Cover Image upload -->
+                        <div class="write-form__group">
+                            <label class="write-form__label">Cover image</label>
+                            <div id="coverUploadArea" class="write-form__cover">
+                                <div class="write-form__cover-placeholder" id="coverPlaceholder">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                        <circle cx="8.5" cy="8.5" r="2.5" />
+                                        <path d="M21 15L16 10L5 21" />
+                                    </svg>
+                                    <span>Click or drag to upload cover image</span>
+                                    <small>JPG, PNG, GIF, WebP up to 10MB</small>
+                                </div>
+                                <div id="coverPreview" style="display: none; position: relative;">
+                                    <img id="coverPreviewImg" src="" alt="Cover preview"/>
+                                    <button type="button" id="removeCoverBtn" class="write-form__cover-remove">✕</button>
+                                </div>
+                                <input type="file" id="coverInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
+                                <input type="hidden" name="coverId" id="coverId" value="">
+                            </div>
+                        </div>
+
                         <!-- Slug field -->
                         <div class="write-form__group">
                             <label for="slug" class="write-form__label">Permalink slug</label>
@@ -60,6 +82,7 @@
                                 <button type="button" data-command="code" title="Code">&lt;/&gt; Code</button>
                                 <span class="toolbar-separator"></span>
                                 <button type="button" data-command="link" title="Insert Link">🔗 Link</button>
+                                <button type="button" data-command="image" title="Insert Image">🖼️ Image</button>
                             </div>
                             <textarea id="content" name="content" class="write-form__editor"
                                       placeholder="Write your story here... Use the toolbar above for formatting.">{#if post.isPresent}{post.get().content}{/if}</textarea>

@@ -72,6 +72,35 @@ class WriteEditor {
                 if (!url) return; // exit early
                 replacement = `[${selectedText || 'link text'}](${url})`;
                 break;
+            case 'image':
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp';
+                fileInput.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    try {
+                        const res = await fetch('/api/images', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+                            body: formData
+                        });
+                        const img = await res.json();
+                        const markdownImage = `![${file.name}](${img.url})`;
+                        // Insert at cursor
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        editor.value = editor.value.substring(0, start) + markdownImage + editor.value.substring(end);
+                        editor.setSelectionRange(start + markdownImage.length, start + markdownImage.length);
+                        editor.dispatchEvent(new Event('input'));
+                    } catch (err) {
+                        alert('Image upload failed');
+                    }
+                };
+                fileInput.click();
+                break;
             default:
                 return;
         }
