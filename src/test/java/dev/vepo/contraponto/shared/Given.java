@@ -49,13 +49,15 @@ public class Given {
             return this;
         }
 
-        public void persist() {
-            transaction(() -> {
+        public User persist() {
+            return transaction(() -> {
                 var entityManager = inject(EntityManager.class);
-                entityManager.persist(new User(requireNonNull(username, "'username' cannot be null"),
-                                               requireNonNull(email, "'email' cannot be null"),
-                                               requireNonNull(name, "'name' cannot be null"),
-                                               inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null"))));
+                var user = new User(requireNonNull(username, "'username' cannot be null"),
+                                    requireNonNull(email, "'email' cannot be null"),
+                                    requireNonNull(name, "'name' cannot be null"),
+                                    inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
+                entityManager.persist(user);
+                return user;
             });
         }
     }
@@ -65,7 +67,7 @@ public class Given {
         private String title;
         private String description;
         private String content;
-        private String author;
+        private User author;
         private String slug;
 
         private PostBuilder() {
@@ -91,7 +93,7 @@ public class Given {
             return this;
         }
 
-        public PostBuilder withAuthor(String author) {
+        public PostBuilder withAuthor(User author) {
             this.author = author;
             return this;
         }
@@ -113,9 +115,9 @@ public class Given {
     public static void cleanup() {
         transaction(() -> {
             var entityManager = inject(EntityManager.class);
-            var query = entityManager.createQuery("DELETE FROM User");
+            var query = entityManager.createQuery("DELETE FROM Post");
             query.executeUpdate();
-            query = entityManager.createQuery("DELETE FROM Post");
+            query = entityManager.createQuery("DELETE FROM User");
             query.executeUpdate();
         });
     }

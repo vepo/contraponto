@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Search results - contraponto
+    {/include}
+    <body>
+        {#include components/header /}
+        <main class="search-page">
+            <div class="container-narrow">
+                <h1 class="search-page__title">Search</h1>
+                
+                <form class="search-form" 
+                      hx-get="/search/results" 
+                      hx-target="#searchResults"
+                      hx-select="#searchResults"
+                      hx-trigger="input changed delay:500ms, search"
+                      hx-swap="outerHTML"
+                      hx-push-url="true">
+                    <div class="search-form__group">
+                        <input type="search" 
+                               name="q" 
+                               class="search-form__input" 
+                               placeholder="Search articles..." 
+                               value="{query}"
+                               autocomplete="off"/>
+                        <button type="submit" class="search-form__button">Search</button>
+                    </div>
+                </form>
+                
+                <div id="searchResults" 
+                     hx-get="/search/results?q={query}&page=1" 
+                     hx-trigger="load"
+                     hx-target="#searchResults"
+                     hx-select="#searchResults"
+                     hx-swap="outerHTML">
+                    <div class="loading-spinner">Loading...</div>
+                </div>
+            </div>
+        </main>
+        
+        {#include components/footer /}
+    </body>
+</html>

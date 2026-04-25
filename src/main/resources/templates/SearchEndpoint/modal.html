@@ -1,0 +1,31 @@
+<div id="searchModal" class="modal modal--open">
+    <div class="modal__container modal__container--search">
+        <div class="modal__header">
+            <h2 class="modal__title">Search</h2>
+            <button class="modal__close" onclick="this.closest('.modal').remove()">✕</button>
+        </div>
+        <div class="modal__body">
+            <form class="search-form" 
+                  hx-get="/search/results" 
+                  hx-target="#modalSearchResults"
+                  hx-select="#searchResults"
+                  hx-trigger="input changed delay:300ms"
+                  hx-push-url="false">
+                <div class="search-form__group">
+                    <input type="search" 
+                           name="q" 
+                           class="search-form__input" 
+                           placeholder="Type to search..."
+                           autocomplete="off"
+                           autofocus/>
+                </div>
+            </form>
+            <div id="modalSearchResults" class="search-results-modal">
+                <!-- Results appear here -->
+            </div>
+            <div class="search-modal__footer">
+                <a href="/search" class="search-modal__advanced">Advanced search →</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Search results - contraponto
+    {/include}
+    <body>
+        {#include components/header /}
+        <main class="search-page">
+            <div class="container-narrow">
+                <h1 class="search-page__title">Search</h1>
+                
+                <form class="search-form" 
+                      hx-get="/search/results" 
+                      hx-target="#searchResults"
+                      hx-select="#searchResults"
+                      hx-swap="outerHTML"
+                      hx-trigger="input changed delay:500ms, search"
+                      hx-push-url="true">
+                    <div class="search-form__group">
+                        <input type="search" 
+                               name="q" 
+                               class="search-form__input" 
+                               placeholder="Search articles..." 
+                               value="{query}"
+                               autocomplete="off"/>
+                        <button type="submit" class="search-form__button">Search</button>
+                    </div>
+                </form>
+                <div id="searchResults">
+                    {#if total == 0}
+                    <div class="search-empty">
+                        <p>No results found for "{query}".</p>
+                    </div>
+                    {#else}
+                    <div class="search-results">
+                        <div class="search-results__header">
+                            Found {total} result{#if total > 1}s{/if} for "{query}"
+                        </div>
+                        <div class="search-results__list">
+                            {#for post in results}
+                            <article class="search-result">
+                                <h2 class="search-result__title">
+                                    <a data-hx-get="/post/{post.slug}"
+                                    hx-select="main"
+                                    hx-target="main"
+                                    hx-replace-url="/post/{post.slug}">
+                                        {post.title}
+                                    </a>
+                                </h2>
+                                <div class="search-result__meta">
+                                    <span class="search-result__author">{post.author.name}</span>
+                                    <span class="search-result__date">{post.publishedAt.formatDate}</span>
+                                </div>
+                                {#if post.description}
+                                <p class="search-result__excerpt">{post.description}</p>
+                                {/if}
+                            </article>
+                            {/for}
+                        </div>
+                        
+                        <!-- Simple pagination (you can enhance with HTMX) -->
+                        {#if results.size() > 0}
+                        <div class="search-pagination">
+                            {#if page > 1}
+                            <button hx-get="/search/results?q={query}&page={page - 1}"
+                                    hx-target="#searchResults"
+                                    hx-select="#searchResults"
+                                    hx-swap="outerHTML"
+                                    class="btn btn--small">
+                                Previous
+                            </button>
+                            {/if}
+                            {#if results.size() == 10}
+                            <button hx-get="/search/results?q={query}&page={page + 1}"
+                                    hx-target="#searchResults"
+                                    hx-select="#searchResults"
+                                    hx-swap="outerHTML"
+                                    class="btn btn--small">
+                                Next
+                            </button>
+                            {/if}
+                        </div>
+                        {/if}
+                    </div>
+                    {/if}
+                </div>
+            </div>
+        </main>
+        
+        {#include components/footer /}
+    </body>
+</html>

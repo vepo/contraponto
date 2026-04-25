@@ -2,6 +2,7 @@ package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -22,6 +23,54 @@ public class PostRepository {
     @Inject
     public PostRepository(EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    public List<Post> search(String query, int limit, int offset) {
+        if (Objects.nonNull(query) && !query.isBlank()) {
+            return entityManager.createQuery("""
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             AND (LOWER(p.title) LIKE LOWER(:query)
+                                                  OR LOWER(p.description) LIKE LOWER(:query)
+                                                  OR LOWER(p.content) LIKE LOWER(:query))
+                                             ORDER BY p.publishedAt DESC
+                                             """, Post.class)
+                                .setParameter("query", "%%%s%%".formatted(query))
+                                .setMaxResults(limit)
+                                .setFirstResult(offset)
+                                .getResultList();
+        } else {
+            return entityManager.createQuery("""
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             ORDER BY p.publishedAt DESC
+                                             """, Post.class)
+                                .setMaxResults(limit)
+                                .setFirstResult(offset)
+                                .getResultList();
+        }
+    }
+
+    public long countSearchResults(String query) {
+        if (Objects.nonNull(query) && !query.isBlank()) {
+            return entityManager.createQuery("""
+                                             SELECT COUNT(p)
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             AND (LOWER(p.title) LIKE LOWER(:query)
+                                                  OR LOWER(p.description) LIKE LOWER(:query)
+                                                  OR LOWER(p.content) LIKE LOWER(:query))
+                                             """, Long.class)
+                                .setParameter("query", "%" + query + "%")
+                                .getSingleResult();
+        } else {
+            return entityManager.createQuery("""
+                                             SELECT COUNT(p)
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             """, Long.class)
+                                .getSingleResult();
+        }
     }
 
     public Optional<Post> findBySlug(String slug) {

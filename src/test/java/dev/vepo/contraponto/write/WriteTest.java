@@ -18,6 +18,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -27,6 +28,7 @@ class WriteTest {
 
     @TestHTTPResource("/")
     URL testUrl;
+    User testUser;
 
     private static final String TEST_USER_EMAIL = "writer@example.com";
     private static final String TEST_USER_PASSWORD = "writerPass123";
@@ -36,12 +38,12 @@ class WriteTest {
     @BeforeEach
     void setup() {
         Given.cleanup();
-        Given.user()
-             .withUsername(TEST_USER_USERNAME)
-             .withEmail(TEST_USER_EMAIL)
-             .withPassword(TEST_USER_PASSWORD)
-             .withName(TEST_USER_NAME)
-             .persist();
+        testUser = Given.user()
+                        .withUsername(TEST_USER_USERNAME)
+                        .withEmail(TEST_USER_EMAIL)
+                        .withPassword(TEST_USER_PASSWORD)
+                        .withName(TEST_USER_NAME)
+                        .persist();
     }
 
     private void login(WebDriver driver, WebDriverWait wait, String email, String password) {
@@ -172,7 +174,7 @@ class WriteTest {
                           .withSlug("original-title")
                           .withDescription("Description")
                           .withContent("Original content")
-                          .withAuthor(TEST_USER_EMAIL)
+                          .withAuthor(testUser)
                           .persist()
                           .getId();
 

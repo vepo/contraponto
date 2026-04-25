@@ -18,6 +18,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -41,6 +42,15 @@ class HomeTest {
              .withName("Home Tester")
              .persist();
 
+        var authors = IntStream.range(1, 9)
+                               .mapToObj(index -> Given.user()
+                                                       .withUsername("user-" + index)
+                                                       .withEmail("user-" + index + "@contraponto.com.br")
+                                                       .withName("Author " + index)
+                                                       .withPassword("homepass123")
+                                                       .persist())
+                               .toArray(User[]::new);
+
         // Create 8 posts to trigger load‑more button (threshold > 6)
         String baseContent = """
                              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
@@ -56,7 +66,7 @@ class HomeTest {
                                         .withSlug("post-" + index)
                                         .withDescription("Description for post " + index)
                                         .withContent(baseContent)
-                                        .withAuthor("Author " + index)
+                                        .withAuthor(authors[index - 1])
                                         .persist());
     }
 
