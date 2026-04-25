@@ -7,6 +7,7 @@ import java.util.Objects;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
+import dev.vepo.contraponto.post.Post;
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
@@ -44,6 +45,15 @@ public class TemplateExtensions {
         }
 
         return renderer.render(parser.parse(content));
+    }
+
+    @TemplateExtension
+    public static String coverUrl(Post post) {
+        if (Objects.nonNull(post) && Objects.nonNull(post.getCover())) {
+            return post.getCover().getUrl();
+        } else {
+            return null;
+        }
     }
 
     @TemplateExtension

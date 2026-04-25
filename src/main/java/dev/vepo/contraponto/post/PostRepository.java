@@ -76,6 +76,7 @@ public class PostRepository {
     public Optional<Post> findBySlug(String slug) {
         return this.entityManager.createQuery("""
                                               FROM Post
+                                              JOIN FETCH author
                                               WHERE published = TRUE AND
                                                     slug = :slug
                                               """, Post.class)

@@ -1474,3 +1474,23 @@ hr:after {
     padding: 3rem 0;
     color: var(--color-text-muted);
 }
+
+/* Edit button on post page */
+.article-page__edit {
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+.btn--edit {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn--edit:hover {
+    background: var(--color-primary-dark);
+    color: white;
+}

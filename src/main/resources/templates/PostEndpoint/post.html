@@ -7,30 +7,42 @@
         {#include components/header /}
         <main class="article-page">
             <div class="container-narrow">
-                <!-- Imagem de capa -->                
+                <!-- Edit button (only for author) -->
+                {#if user.isAuthenticated && user.id == post.author.id}
+                <div class="article-page__edit">
+                    <a data-hx-get="/write/draft/{post.id}"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-replace-url="/write/draft/{post.id}"
+                       class="btn btn--small btn--edit">
+                        ✎ Edit post
+                    </a>
+                </div>
+                {/if}
+
+                <!-- Cover image -->
                 {#if post.cover}
                 <div class="article-page__cover">
                     <img src="{post.cover.url}" alt="{post.title}" class="article-page__cover-image"/>
                 </div>
                 {/if}
-                
+
                 <h1 class="article-page__title">{post.title}</h1>
-                
+
                 <div class="article-page__byline">
                     By {post.author.name}
                 </div>
-                
+
                 <div class="article-page__metadata">
                     <div>Published: {post.publishedAt.formatDate}</div>
                     {#if post.updatedAt && post.updatedAt != post.publishedAt}
                     <div>Updated: {post.updatedAt.formatDate}</div>
                     {/if}
                 </div>
-                
+
                 <article class="article-page__content">
                     {post.content.markdown2Html.raw}
                 </article>
-                <script>hljs.highlightAll();</script>
             </div>
         </main>
 
