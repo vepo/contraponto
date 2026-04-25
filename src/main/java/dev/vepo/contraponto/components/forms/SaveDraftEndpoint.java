@@ -58,7 +58,7 @@ public class SaveDraftEndpoint {
             post = new Post();
         }
         post.setSlug(request.slug());
-        post.setAuthor(loggedUser.getUsername());
+        post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());
         post.setContent(request.content());
         post.setDescription(request.description());

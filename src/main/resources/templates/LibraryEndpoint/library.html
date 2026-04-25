@@ -5,16 +5,16 @@
     {/include}
     <body>
         {#include components/header /}
-        <main class="library-page">
+        <main class="drafts-page">
             <div class="container-narrow">
-                <h1 class="library-page__title">My Library</h1>
-                
+                <h1 class="profile-page__title">My Library</h1>
+
                 <!-- Tabs -->
                 <div class="library-tabs">
                     <button class="library-tab library-tab--active" 
                             data-tab="drafts"
                             hx-get="/library/tab?type=drafts"
-                            hx-target="#postsContainer"
+                            hx-target="#libraryContent"
                             hx-swap="innerHTML"
                             hx-push-url="false">
                         Drafts
@@ -22,20 +22,20 @@
                     <button class="library-tab"
                             data-tab="published"
                             hx-get="/library/tab?type=published"
-                            hx-target="#postsContainer"
+                            hx-target="#libraryContent"
                             hx-swap="innerHTML"
                             hx-push-url="false">
                         Published
                     </button>
                 </div>
 
-                <!-- Container where the post list will be loaded -->
-                <div id="postsContainer" hx-trigger="load" hx-get="/library/tab?type=drafts" hx-swap="innerHTML">
+                <!-- Dynamic content container -->
+                <div id="libraryContent" hx-trigger="load" hx-get="/library/tab?type=drafts" hx-swap="innerHTML">
                     <div class="loading-spinner">Loading...</div>
                 </div>
             </div>
         </main>
-        
+
         {#include components/footer /}
     </body>
 </html>

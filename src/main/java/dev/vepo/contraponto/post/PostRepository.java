@@ -49,16 +49,16 @@ public class PostRepository {
                                  .findFirst();
     }
 
-    public List<Post> findByAuthorAndPublished(String author, boolean published) {
+    public List<Post> findByAuthorAndPublished(long authorId, boolean published) {
         return entityManager.createQuery("""
                                          FROM Post p
-                                         WHERE author = :author AND
+                                         WHERE author.id = :authorId AND
                                                published = :published
 
                                          ORDER BY updatedAt DESC
                                          """,
                                          Post.class)
-                            .setParameter("author", author)
+                            .setParameter("authorId", authorId)
                             .setParameter("published", published)
                             .getResultList();
     }
@@ -88,13 +88,13 @@ public class PostRepository {
                                  .getSingleResult();
     }
 
-    public List<Post> findByAuthor(String author) {
+    public List<Post> findByAuthor(long authorId) {
         return this.entityManager.createQuery("""
                                               FROM Post
-                                              WHERE author = :author
+                                              WHERE author.id = :authorId
                                               ORDER BY createdAt DESC
                                               """, Post.class)
-                                 .setParameter("author", author)
+                                 .setParameter("authorId", authorId)
                                  .getResultList();
     }
 

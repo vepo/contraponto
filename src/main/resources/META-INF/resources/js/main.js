@@ -3,11 +3,11 @@ class MainManager {
         this.protectedPaths = ['/write', '/profile', '/write/draft/[0-9]+'];
         // Bind methods to this instance
         this.redirectIfPathProtected = this.redirectIfPathProtected.bind(this);
-        this.disabledElementsBasedOnUrl = this.disabledElementsBasedOnUrl.bind(this);
+        this.updateUIElements = this.updateUIElements.bind(this);
         this.bindErrorMessage = this.bindErrorMessage.bind(this);
         this.setupRouteBasedElementsEnabler();
         this.setupErrorHandler();
-        this.disabledElementsBasedOnUrl();
+        this.updateUIElements();
     }
 
     setupErrorHandler() {
@@ -41,10 +41,26 @@ class MainManager {
      */
     setupRouteBasedElementsEnabler() {
         htmx.on('loggedOut', this.redirectIfPathProtected);
-        document.body.addEventListener('htmx:afterSwap', this.disabledElementsBasedOnUrl);
+        document.body.addEventListener('htmx:afterSwap', this.updateUIElements);
     }
 
-    disabledElementsBasedOnUrl() {
+    updateUIElements(evt) {
+        if (evt && evt.detail.target.id === 'libraryContent') {
+            // Get the full request path (e.g., "/library/tab?type=published")
+            const requestPath = evt.detail.pathInfo.requestPath;
+            let newActiveValue = null;
+            if (requestPath) {
+                // Parse the query string
+                const url = new URL(requestPath, window.location.origin);
+                newActiveValue = url.searchParams.get('type');
+            }
+            const activeTab = document.querySelector('.library-tab--active');
+            if (activeTab && activeTab.dataset.tab !== newActiveValue) {
+                activeTab.classList.remove('library-tab--active');
+                const newActive = document.querySelector(`.library-tab[data-tab="${newActiveValue}"]`);
+                if (newActive) newActive.classList.add('library-tab--active');
+            }
+        }
         document.querySelectorAll("[data-disable-pattern]")
             .forEach(elm => {
                 const pattern = new RegExp(elm.dataset.disablePattern);
@@ -53,7 +69,7 @@ class MainManager {
                 } else {
                     elm.classList.remove('disabled');
                 }
-            })
+            });
     }
 
     /**

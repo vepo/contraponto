@@ -1,5 +1,8 @@
 package dev.vepo.contraponto.library;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -13,8 +16,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Logged
 @Path("/library")
@@ -51,9 +52,9 @@ public class LibraryEndpoint {
     public TemplateInstance postsTab(@QueryParam("type") String type) {
         List<Post> posts;
         if ("published".equalsIgnoreCase(type)) {
-            posts = postRepository.findByAuthorAndPublished(loggedUser.getUsername(), true);
+            posts = postRepository.findByAuthorAndPublished(loggedUser.getId(), true);
         } else { // drafts
-            posts = postRepository.findByAuthorAndPublished(loggedUser.getUsername(), false);
+            posts = postRepository.findByAuthorAndPublished(loggedUser.getId(), false);
         }
         return Templates.postsList(posts, type);
     }

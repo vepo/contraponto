@@ -141,12 +141,12 @@ BEGIN
     SELECT id INTO v_image_id_8 FROM tb_images WHERE uuid = 'img-loom-008';
 
     -- Inserir posts publicados
-    INSERT INTO tb_posts(slug, title, author, description, content, published, created_at, updated_at, published_at, cover_id) 
+    INSERT INTO tb_posts(slug, title, author_id, description, content, published, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'introduction-to-distributed-systems-java', 
         'Introduction to Distributed Systems with Java', 
-        'Victor Osório',  
+        1,  
         'Learn the fundamental concepts of distributed systems and how Java technologies enable building scalable, fault-tolerant applications.', 
         '## Understanding Distributed Systems in the Java Ecosystem
 
@@ -195,7 +195,7 @@ Stay tuned for hands-on examples using Java RMI, Spring Cloud, and Apache Kafka!
     (
         'microservices-patterns-spring-boot', 
         'Essential Microservices Patterns with Spring Boot', 
-        'Victor Osório',
+        1,
         'Explore battle-tested microservices patterns and learn how to implement them using Spring Boot and Spring Cloud.', 
         '## Designing Robust Microservices with Spring Ecosystem
 
@@ -237,7 +237,7 @@ We''ll build a simple e-commerce system demonstrating how these patterns work to
     (
         'apache-kafka-spring-boot-tutorial', 
         'Building Event-Driven Systems with Apache Kafka and Spring Boot', 
-        'Victor Osório',
+        1,
         'A comprehensive guide to implementing event-driven architectures using Kafka and Spring Boot for real-time data processing.', 
         '## Event-Driven Architecture: The Future of Scalable Systems
 
@@ -288,7 +288,7 @@ We''ll build a real-time order processing system that demonstrates event sourcin
     (
         'distributed-transactions-saga-pattern', 
         'Distributed Transactions: Implementing the Saga Pattern', 
-        'Victor Osório',
+        1,
         'Learn how to maintain data consistency across microservices using the Saga pattern with practical Java implementations.', 
         '## Solving the Distributed Transaction Problem
 
@@ -346,7 +346,7 @@ Learn about timeout handling, retry mechanisms, and monitoring strategies to mak
     (
         'kubernetes-java-microservices-deployment', 
         'Deploying Java Microservices on Kubernetes: A Complete Guide', 
-        'Victor Osório',
+        1,
         'Master the art of deploying and managing Spring Boot microservices in Kubernetes clusters with production-grade configurations.', 
         '## From Development to Production: Java on Kubernetes
 
@@ -406,7 +406,7 @@ We''ll cover memory management for JVM in containers, logging aggregation with E
     (
         'grpc-java-performance-comparison', 
         'gRPC vs REST: Performance Analysis in Java Microservices', 
-        'Victor Osório',
+        1,
         'Deep dive into gRPC performance characteristics compared to traditional REST APIs, with benchmarking results and implementation guides.', 
         '## Is gRPC Worth the Hype? Let''s Measure It
 
@@ -472,7 +472,7 @@ Practical recommendations on when gRPC makes sense and when traditional REST/Gra
     (
         'observability-java-distributed-systems', 
         'Observability in Java Distributed Systems: Metrics, Logs, and Traces', 
-        'Victor Osório',
+        1,
         'Implement comprehensive observability for your Java microservices using OpenTelemetry, Prometheus, and Grafana.', 
         '## Understanding Distributed System Behavior
 
@@ -553,7 +553,7 @@ Learn to set up meaningful alerts based on SLOs and SLIs to proactively detect i
     (
         'virtual-threads-project-loom', 
         'Project Loom: Virtual Threads Revolutionizing Java Concurrency', 
-        'Victor Osório',
+        1,
         'Explore how virtual threads in Java 21 are changing the game for concurrent programming in distributed systems.', 
         '## Concurrency Made Simple: Virtual Threads in Practice
 
@@ -651,12 +651,12 @@ BEGIN
     SELECT id INTO v_draft_img_2 FROM tb_images WHERE uuid = 'img-draft-002';
 
     -- Inserir rascunhos (drafts)
-    INSERT INTO tb_posts(slug, title, author, description, content, published, created_at, updated_at, published_at, cover_id) 
+    INSERT INTO tb_posts(slug, title, author_id, description, content, published, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'draft-why-java-still-matters-2024', 
         'Why Java Still Matters in 2024 (Draft)', 
-        'Victor Osório',
+        1,
         'A draft exploring Java relevance despite newer languages. Work in progress - expecting to add benchmarks and community insights.', 
         '## Java in the Age of Polyglot Programming
 
@@ -679,7 +679,7 @@ More content coming soon. Check back for updates!',
     (
         'draft-graalvm-native-image-spring-boot', 
         'GraalVM Native Image with Spring Boot: Performance Gains (Draft)', 
-        'Victor Osório',
+        1,
         'Analyzing startup time and memory improvements when compiling Spring Boot applications to native executables using GraalVM.', 
         '## Native Compilation: A Game Changer for Spring Boot?
 
@@ -702,7 +702,7 @@ Need to run more tests and include real-world metrics.',
     (
         'draft-testing-distributed-systems', 
         'Testing Strategies for Distributed Systems (Draft - Early Stage)', 
-        'Victor Osório',
+        1,
         'A preliminary draft on testing approaches for microservices: contract testing, integration test environments, and chaos engineering.', 
         '## Testing Beyond Unit Tests
 
@@ -725,7 +725,7 @@ Will add code snippets and best practices soon.',
     (
         'draft-reactive-java-rxjava-webflux', 
         'Reactive Java: RxJava vs. Project Reactor (Draft)', 
-        'Victor Osório',
+        1,
         'Comparing reactive programming libraries in Java, their performance characteristics, and when to use each.', 
         '## Reactive Streams in Practice
 
@@ -748,7 +748,7 @@ Code examples and comparison tables are being prepared.',
     (
         'draft-security-java-microservices', 
         'Securing Java Microservices: OAuth2, JWT, and mTLS (Draft)', 
-        'Victor Osório',
+        1,
         'A comprehensive guide to authentication and authorization patterns in microservices architectures using Spring Security.', 
         '## Security in Distributed Systems
 

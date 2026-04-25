@@ -70,7 +70,7 @@ public class PublishEndpoint {
             post = new Post();
         }
         post.setSlug(request.slug());
-        post.setAuthor(loggedUser.getUsername());
+        post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());
         post.setContent(request.content());
         if (Objects.isNull(request.slug()) || request.slug().isBlank()) {

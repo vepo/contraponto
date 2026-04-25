@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,8 +35,9 @@ public class Post {
     @JoinColumn(name = "cover_id")
     private Image cover;
 
-    @Column
-    private String author;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
     @Column
     private String description;
@@ -59,7 +61,7 @@ public class Post {
 
     public Post() {}
 
-    public Post(String title, String slug, String description, String content, String author, boolean published, LocalDateTime publishedAt) {
+    public Post(String title, String slug, String description, String content, User author, boolean published, LocalDateTime publishedAt) {
         this.title = title;
         this.slug = slug;
         this.description = description;
@@ -101,11 +103,11 @@ public class Post {
         this.cover = cover;
     }
 
-    public String getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 
@@ -176,6 +178,6 @@ public class Post {
 
     @Override
     public String toString() {
-        return "Post[id=%d, slug=%s]".formatted(id, slug);
+        return "Post[id=%d, slug=%s, author=%s]".formatted(id, slug, author);
     }
 }

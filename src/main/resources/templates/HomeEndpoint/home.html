@@ -20,7 +20,7 @@
                             </h1>
                             <div class="featured__excerpt">{posts[0].description.raw}</div>
                             <div class="article-meta">
-                                <span class="article-meta__author">{posts[0].author ?: "Editorial Staff"}</span>
+                                <span class="article-meta__author">{posts[0].author.name}</span>
                                 <span class="article-meta__dot">•</span>
                                 <time datetime="{posts[0].publishedAt}">{posts[0].publishedAt.formatDate}</time>
                                 <span class="article-meta__dot">•</span>
@@ -62,7 +62,7 @@
                                     </h2>
                                     <p class="article-card__excerpt">{post.description}</p>
                                     <div class="article-meta">
-                                        <span class="article-meta__author">{post.author ?: "Editorial Staff"}</span>
+                                        <span class="article-meta__author">{post.author.name}</span>
                                         <span class="article-meta__dot">•</span>
                                         <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
                                         <span class="article-meta__dot">•</span>
