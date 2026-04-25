@@ -49,6 +49,20 @@ public class PostRepository {
                                  .findFirst();
     }
 
+    public List<Post> findByAuthorAndPublished(String author, boolean published) {
+        return entityManager.createQuery("""
+                                         FROM Post p
+                                         WHERE author = :author AND
+                                               published = :published
+
+                                         ORDER BY updatedAt DESC
+                                         """,
+                                         Post.class)
+                            .setParameter("author", author)
+                            .setParameter("published", published)
+                            .getResultList();
+    }
+
     public List<Post> findNewest(int limit) {
         return this.entityManager.createQuery("""
                                               FROM Post

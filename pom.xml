@@ -10,7 +10,6 @@
 
     <properties>
         <selenium.version>4.39.0</selenium.version>
-        <version.antlr4>4.13.2</version.antlr4>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
@@ -110,9 +109,9 @@
             <version>0.4</version>
         </dependency>
         <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <version>${version.antlr4}</version>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.28.0</version>
         </dependency>
         <!-- Test -->
         <dependency>
@@ -152,18 +151,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${version.antlr4}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>

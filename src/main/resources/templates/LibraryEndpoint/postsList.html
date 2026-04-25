@@ -1,0 +1,66 @@
+{#if posts.isEmpty()}
+<div class="library-empty">
+    <p>No {type} posts yet.</p>
+    {#if type == 'drafts'}
+    <a data-hx-get="/write"
+       hx-select="main"
+       hx-target="main"
+       hx-replace-url="/write"
+       class="btn btn--primary">
+        Write a new story
+    </a>
+    {/if}
+</div>
+{#else}
+<div class="posts-list">
+    {#for post in posts}
+    <article class="post-card">
+        <div class="post-card__content">
+            <h2 class="post-card__title">
+                {#if !post.published}
+                <a data-hx-get="/write/draft/{post.id}"
+                   hx-select="main"
+                   hx-target="main"
+                   hx-replace-url="/write/draft/{post.id}">
+                    {post.title ?: "Untitled"}
+                </a>
+                {#else}
+                <a href="/post/{post.slug}" data-hx-get="/post/{post.slug}"
+                   hx-select="main" hx-target="main" hx-replace-url="/post/{post.slug}">
+                    {post.title}
+                </a>
+                {/if}
+            </h2>
+            {#if post.description}
+            <p class="post-card__excerpt">{post.description}</p>
+            {/if}
+            <div class="post-card__meta">
+                <span>Last edited: {post.updatedAt.formatDate}</span>
+                {#if post.published}
+                <span>· Published: {post.publishedAt.formatDate}</span>
+                {/if}
+            </div>
+        </div>
+        <div class="post-card__actions">
+            <a data-hx-get="/write/draft/{post.id}"
+               hx-select="main"
+               hx-target="main"
+               hx-replace-url="/write/draft/{post.id}"
+               class="btn btn--small">
+                Edit
+            </a>
+            {#if !post.published}
+            <button type="button"
+                    class="btn btn--small btn--danger"
+                    hx-delete="/api/posts/{post.id}"
+                    hx-confirm="Are you sure you want to delete this draft?"
+                    hx-target="closest .post-card"
+                    hx-swap="outerHTML">
+                Delete
+            </button>
+            {/if}
+        </div>
+    </article>
+    {/for}
+</div>
+{/if}

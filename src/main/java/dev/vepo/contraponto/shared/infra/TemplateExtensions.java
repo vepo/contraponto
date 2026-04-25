@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-import dev.vepo.contraponto.markdown.MarkdownConverter;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
@@ -32,13 +34,16 @@ public class TemplateExtensions {
         }
     }
 
+    private static final Parser parser = Parser.builder().build();
+    private static final HtmlRenderer renderer = HtmlRenderer.builder().build();
+
     @TemplateExtension
     public static String markdown2Html(String content) {
         if (content == null || content.trim().isEmpty()) {
             return "";
         }
 
-        return MarkdownConverter.convert(content);
+        return renderer.render(parser.parse(content));
     }
 
     @TemplateExtension
