@@ -3,7 +3,11 @@ package dev.vepo.contraponto.view;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.user.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -12,8 +16,13 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ViewRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(ViewRepository.class);
+    private final EntityManager entityManager;
+
     @Inject
-    EntityManager entityManager;
+    public ViewRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     /**
      * Record a view if not already recorded for this user/session in the last N
@@ -41,6 +50,23 @@ public class ViewRepository {
         return entityManager.createQuery("SELECT COUNT(v) FROM View v WHERE v.post = :post", Long.class)
                             .setParameter("post", post)
                             .getSingleResult();
+    }
+
+    @Transactional
+    public void migrateAnonymousViewsToUser(Long userId, String sessionId) {
+        // Update all anonymous views with matching session ID to this user
+        int updated = entityManager.createQuery("""
+                                                UPDATE View v
+                                                SET v.user = :user
+                                                WHERE v.user IS NULL AND v.sessionId = :sessionId
+                                                """)
+                                   .setParameter("user", entityManager.getReference(User.class, userId))
+                                   .setParameter("sessionId", sessionId)
+                                   .executeUpdate();
+
+        if (updated > 0) {
+            logger.info("Migrated {} anonymous views to user ID {}", updated, userId);
+        }
     }
 
     public List<Object[]> getViewCountsForPosts(List<Post> posts) {

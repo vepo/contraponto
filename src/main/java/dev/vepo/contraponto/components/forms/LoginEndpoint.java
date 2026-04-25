@@ -7,6 +7,8 @@ import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.UserRepository;
+import dev.vepo.contraponto.view.SessionIdProvider;
+import dev.vepo.contraponto.view.ViewRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -14,6 +16,8 @@ import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -38,14 +42,17 @@ public class LoginEndpoint {
                                                      """;
 
     private final UserRepository userRepository;
+    private final ViewRepository viewRepository;
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
 
     @Inject
     public LoginEndpoint(UserRepository userRepository,
+                         ViewRepository viewRepository,
                          LoggedUserProvider loggedUserProvider,
                          PasswordService passwordService) {
         this.userRepository = userRepository;
+        this.viewRepository = viewRepository;
         this.loggedUserProvider = loggedUserProvider;
         this.passwordService = passwordService;
     }
@@ -54,7 +61,8 @@ public class LoginEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response login(@FormParam("login") String login,
-                          @FormParam("password") String password) {
+                          @FormParam("password") String password,
+                          @Context HttpHeaders headers) {
 
         // Input validation
         if (isBlank(login) || isBlank(password)) {
@@ -73,12 +81,21 @@ public class LoginEndpoint {
                                      return buildErrorResponse("Invalid username/email or password.");
                                  }
 
+                                 // get anonymous session ID from cookie before login
+                                 var viewCookie = headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE);
+                                 var anonymousSessionId = viewCookie != null ? viewCookie.getValue() : null;
+
                                  // Successful login
                                  var loggedUser = loggedUserProvider.login(user);
                                  logger.info("User logged in successfully: {}", login);
 
-                                 String menuHtml = MenuEndpoint.Template.menu(loggedUser).render();
-                                 String responseBody = buildSuccessResponseBody(menuHtml);
+                                 // migrate anonymous views
+                                 if (anonymousSessionId != null && !anonymousSessionId.isBlank()) {
+                                     viewRepository.migrateAnonymousViewsToUser(loggedUser.getId(), anonymousSessionId);
+                                 }
+
+                                 var menuHtml = MenuEndpoint.Template.menu(loggedUser).render();
+                                 var responseBody = buildSuccessResponseBody(menuHtml);
 
                                  return Response.ok(responseBody)
                                                 .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
