@@ -159,7 +159,7 @@ class FormsManager {
             }
         })
         document.body.addEventListener("htmx:afterSettle", (evt) => {
-            if (evt.detail.target.querySelector('form')) {
+            if (evt && evt.detail.target.querySelector('form')) {
                 // Manually trigger validation to set initial button state
                 const event = new Event('input', { bubbles: true });
                 const firstInput = evt.detail.target.querySelector('form input');

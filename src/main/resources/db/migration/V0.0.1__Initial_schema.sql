@@ -47,3 +47,12 @@ CREATE TABLE tb_posts (
     CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES tb_users(id),
     CONSTRAINT fk_posts_cover_image FOREIGN KEY (cover_id) REFERENCES tb_images(id)
 );
+
+CREATE TABLE tb_views (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES tb_posts(id) ON DELETE CASCADE,
+    user_id BIGINT REFERENCES tb_users(id) ON DELETE SET NULL,
+    session_id VARCHAR(255) NOT NULL,
+    viewed_at TIMESTAMP NOT NULL,
+    CONSTRAINT uk_view_post_user_session UNIQUE (post_id, user_id, session_id)
+);

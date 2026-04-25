@@ -70,7 +70,10 @@
                                    class="recent-list__title">
                                     {post.title}
                                 </a>
-                                <span class="recent-list__meta">Published {post.publishedAt.formatDate}</span>
+                                <div class="recent-list__meta">
+                                    <span>Published {post.publishedAt.formatDate}</span>
+                                    <span>• 👁️ {viewCounts.getOrDefault(post.id, 0)} views</span>
+                                </div>
                             </li>
                             {/for}
                         </ul>
