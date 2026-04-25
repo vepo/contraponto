@@ -3,7 +3,7 @@
     {#include components/head}
     Search results - contraponto
     {/include}
-    <body>
+    <body hx-history-elt>
         {#include components/header /}
         <main class="search-page">
             <div class="container-narrow">
@@ -43,7 +43,7 @@
                                     <a data-hx-get="/post/{post.slug}"
                                     hx-select="main"
                                     hx-target="main"
-                                    hx-replace-url="/post/{post.slug}">
+                                    hx-push-url="/post/{post.slug}">
                                         {post.title}
                                     </a>
                                 </h2>

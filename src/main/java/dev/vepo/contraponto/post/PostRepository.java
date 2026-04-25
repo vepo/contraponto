@@ -85,6 +85,31 @@ public class PostRepository {
                                  .findFirst();
     }
 
+    public long countByAuthorAndPublished(long authorId, boolean published) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.author.id = :authorId
+                                         AND p.published = :published
+                                         """, Long.class)
+                            .setParameter("authorId", authorId)
+                            .setParameter("published", published)
+                            .getSingleResult();
+    }
+
+    public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
+        return entityManager.createQuery("""
+                                         FROM Post p
+                                         WHERE p.author.id = :authorId
+                                         AND p.published = :published
+                                         ORDER BY p.updatedAt DESC
+                                         """, Post.class)
+                            .setParameter("authorId", authorId)
+                            .setParameter("published", published)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
     public Optional<Post> findById(Long id) {
         return Optional.ofNullable(entityManager.find(Post.class, id));
     }

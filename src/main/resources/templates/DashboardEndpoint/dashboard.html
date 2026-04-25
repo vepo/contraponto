@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Dashboard - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="dashboard-page">
+            <div class="container-narrow">
+                <h1 class="dashboard-page__title">Dashboard</h1>
+                
+                <!-- Stats cards -->
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-card__value">{draftsCount}</div>
+                        <div class="stat-card__label">Drafts</div>
+                        <a data-hx-get="/library?tab=drafts"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-push-url="/library"
+                           class="stat-card__link">View all →</a>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__value">{publishedCount}</div>
+                        <div class="stat-card__label">Published posts</div>
+                        <a data-hx-get="/library?tab=published"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-push-url="/library"
+                           class="stat-card__link">View all →</a>
+                    </div>
+                </div>
+
+                <!-- Recent activity -->
+                <div class="dashboard-recent">
+                    <div class="recent-section">
+                        <h2>Recent drafts</h2>
+                        {#if recentDrafts.isEmpty()}
+                        <p class="recent-section__empty">No drafts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first story</a>.</p>
+                        {#else}
+                        <ul class="recent-list">
+                            {#for draft in recentDrafts}
+                            <li class="recent-list__item">
+                                <a data-hx-get="/write/draft/{draft.id}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-push-url="/write/draft/{draft.id}"
+                                   class="recent-list__title">
+                                    {draft.title ?: "Untitled"}
+                                </a>
+                                <span class="recent-list__meta">Updated {draft.updatedAt.formatDate}</span>
+                            </li>
+                            {/for}
+                        </ul>
+                        {/if}
+                    </div>
+
+                    <div class="recent-section">
+                        <h2>Recent published</h2>
+                        {#if recentPublished.isEmpty()}
+                        <p class="recent-section__empty">No published posts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first post</a>.</p>
+                        {#else}
+                        <ul class="recent-list">
+                            {#for post in recentPublished}
+                            <li class="recent-list__item">
+                                <a data-hx-get="/post/{post.slug}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-push-url="/post/{post.slug}"
+                                   class="recent-list__title">
+                                    {post.title}
+                                </a>
+                                <span class="recent-list__meta">Published {post.publishedAt.formatDate}</span>
+                            </li>
+                            {/for}
+                        </ul>
+                        {/if}
+                    </div>
+                </div>
+
+                <!-- Quick action button -->
+                <div class="dashboard-action">
+                    <a data-hx-get="/write"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-push-url="/write"
+                       class="btn btn--primary btn--large">
+                        ✍️ Write a new story
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        {#include components/footer /}
+    </body>
+</html>

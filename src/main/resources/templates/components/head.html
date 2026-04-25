@@ -1,5 +1,9 @@
 <head>
     <meta name="csrf-token" content="{{csrfToken}}">
+    <meta name="htmx-config" content='{"historyCacheSize": 0}'>
+    {#if user.isAuthenticated}
+        <meta http-equiv="Set-Cookie" content="__session={user.sessionId}; path=/; Secure; SameSite=Strict">
+    {/if}
     <link rel="stylesheet" href="/style/fonts.css"/>
     <link rel="stylesheet" href="/style/main.css"/>
     <link rel="stylesheet" href="/style/write.css"/>
@@ -16,9 +20,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/java.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/yaml.min.js"></script>
-    {#if user.isAuthenticated}
-        <meta http-equiv="Set-Cookie" content="__session={user.sessionId}; path=/; Secure; SameSite=Strict">
-    {/if}
     <title>
     {#insert}{/insert}
     </title>

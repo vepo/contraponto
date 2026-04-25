@@ -3,7 +3,7 @@
     {#include components/head}
     {post.title}
     {/include}
-    <body>
+    <body hx-history-elt>
         {#include components/header /}
         <main class="article-page">
             <div class="container-narrow">
@@ -13,7 +13,7 @@
                     <a data-hx-get="/write/draft/{post.id}"
                        hx-select="main"
                        hx-target="main"
-                       hx-replace-url="/write/draft/{post.id}"
+                       hx-push-url="/write/draft/{post.id}"
                        class="btn btn--small btn--edit">
                         ✎ Edit post
                     </a>

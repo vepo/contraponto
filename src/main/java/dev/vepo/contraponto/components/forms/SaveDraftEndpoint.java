@@ -77,7 +77,7 @@ public class SaveDraftEndpoint {
                        .header("X-Toast-Message", "Draft saved successfully!")
                        .header("X-Toast-Type", "Success")
                        .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                       .header("HX-Replace-Url", "/write/draft/%d".formatted(post.getId()))
+                       .header("HX-Push-Url", "/write/draft/%d".formatted(post.getId()))
                        .build();
     }
 }

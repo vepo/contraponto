@@ -5,7 +5,7 @@
     <a data-hx-get="/write"
        hx-select="main"
        hx-target="main"
-       hx-replace-url="/write"
+       hx-push-url="/write"
        class="btn btn--primary">
         Write a new story
     </a>
@@ -20,7 +20,7 @@
                 <a data-hx-get="/write/draft/{post.id}"
                    hx-select="main"
                    hx-target="main"
-                   hx-replace-url="/write/draft/{post.id}">
+                   hx-push-url="/write/draft/{post.id}">
                     {post.title ?: "Untitled"}
                 </a>
             </h2>
@@ -41,7 +41,7 @@
             <a data-hx-get="/write/draft/{post.id}"
                hx-select="main"
                hx-target="main"
-               hx-replace-url="/write/draft/{post.id}"
+               hx-push-url="/write/draft/{post.id}"
                class="btn btn--small">
                 Edit
             </a>
