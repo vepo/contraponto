@@ -57,6 +57,41 @@ public class LoginEndpoint {
         this.passwordService = passwordService;
     }
 
+    /**
+     * Returns a consistent error response for authentication failures.
+     */
+    private Response buildErrorResponse(String errorMessage) {
+        return Response.status(Status.BAD_REQUEST)
+                       .entity(ERROR_MESSAGE_HTML.formatted(errorMessage))
+                       .build();
+    }
+
+    /**
+     * Builds the Set-Cookie header value for the session cookie.
+     */
+    private String buildSessionCookieHeader(String sessionId) {
+        return String.format("%s=%s; Path=%s",
+                             SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_PATH);
+    }
+
+    /**
+     * Builds the HTML response for a successful login. Uses OOB swap to replace the
+     * menu and a script to close the modal.
+     */
+    private String buildSuccessResponseBody(String menuHtml) {
+        return String.format("""
+                             <div hx-swap-oob="true" id="%s">%s</div>
+                             %s
+                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLOSE_SCRIPT);
+    }
+
+    /**
+     * Utility method to check for blank strings (null, empty, or only whitespace).
+     */
+    private boolean isBlank(String str) {
+        return str == null || str.isBlank();
+    }
+
     @POST
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -102,44 +137,6 @@ public class LoginEndpoint {
                                                 .header(HX_TRIGGER_HEADER, LOGGED_IN_EVENT)
                                                 .build();
                              })
-                             .orElseGet(() -> {
-                                 logger.warn("Login failed - user not found: {}", login);
-                                 return buildErrorResponse("Invalid username/email or password.");
-                             });
-    }
-
-    /**
-     * Builds the HTML response for a successful login. Uses OOB swap to replace the
-     * menu and a script to close the modal.
-     */
-    private String buildSuccessResponseBody(String menuHtml) {
-        return String.format("""
-                             <div hx-swap-oob="true" id="%s">%s</div>
-                             %s
-                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLOSE_SCRIPT);
-    }
-
-    /**
-     * Builds the Set-Cookie header value for the session cookie.
-     */
-    private String buildSessionCookieHeader(String sessionId) {
-        return String.format("%s=%s; Path=%s",
-                             SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_PATH);
-    }
-
-    /**
-     * Returns a consistent error response for authentication failures.
-     */
-    private Response buildErrorResponse(String errorMessage) {
-        return Response.status(Status.BAD_REQUEST)
-                       .entity(ERROR_MESSAGE_HTML.formatted(errorMessage))
-                       .build();
-    }
-
-    /**
-     * Utility method to check for blank strings (null, empty, or only whitespace).
-     */
-    private boolean isBlank(String str) {
-        return str == null || str.isBlank();
+                             .orElseGet(() -> buildErrorResponse("Invalid username/email or password."));
     }
 }

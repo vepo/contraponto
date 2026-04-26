@@ -18,14 +18,14 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class LoggedFilter implements ContainerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoggedFilter.class);
+
     private final LoggedUserProvider loggedUserProvider;
 
     @Inject
     public LoggedFilter(LoggedUserProvider loggedUserProvider) {
         this.loggedUserProvider = loggedUserProvider;
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(LoggedFilter.class);
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {

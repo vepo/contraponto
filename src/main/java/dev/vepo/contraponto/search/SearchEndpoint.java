@@ -23,11 +23,11 @@ public class SearchEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance search(String query, List<Post> results, long total, int currentYear, LoggedUser user);
+        public static native TemplateInstance modal();
 
         public static native TemplateInstance results(LoggedUser user, List<Post> results, int page, long total, String query, int currentYear);
 
-        public static native TemplateInstance modal();
+        public static native TemplateInstance search(String query, List<Post> results, long total, int currentYear, LoggedUser user);
     }
 
     private final PostRepository postRepository;
@@ -37,19 +37,6 @@ public class SearchEndpoint {
     public SearchEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.loggedUser = loggedUser;
-    }
-
-    // Main search page
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance searchPage(@QueryParam("q") String query) {
-        List<Post> results = List.of();
-        long total = 0;
-        if (query != null && !query.isBlank()) {
-            results = postRepository.search(query, 20, 0);
-            total = postRepository.countSearchResults(query);
-        }
-        return Templates.search(query, results, total, LocalDateTime.now().getYear(), loggedUser);
     }
 
     // Fragment endpoint for HTMX infinite scroll / load more
@@ -70,5 +57,18 @@ public class SearchEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance searchModal() {
         return Templates.modal();
+    }
+
+    // Main search page
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance searchPage(@QueryParam("q") String query) {
+        List<Post> results = List.of();
+        long total = 0;
+        if (query != null && !query.isBlank()) {
+            results = postRepository.search(query, 20, 0);
+            total = postRepository.countSearchResults(query);
+        }
+        return Templates.search(query, results, total, LocalDateTime.now().getYear(), loggedUser);
     }
 }

@@ -24,6 +24,42 @@ public class ViewRepository {
         this.entityManager = entityManager;
     }
 
+    public long countByPost(Post post) {
+        return entityManager.createQuery("SELECT COUNT(v) FROM View v WHERE v.post = :post", Long.class)
+                            .setParameter("post", post)
+                            .getSingleResult();
+    }
+
+    public List<Object[]> getViewCountsForPosts(List<Post> posts) {
+        if (posts.isEmpty())
+            return List.of();
+        return entityManager.createQuery("""
+                                         SELECT v.post.id, COUNT(v)
+                                         FROM View v
+                                         WHERE v.post IN :posts
+                                         GROUP BY v.post.id
+                                         """, Object[].class)
+                            .setParameter("posts", posts)
+                            .getResultList();
+    }
+
+    @Transactional
+    public void migrateAnonymousViewsToUser(Long userId, String sessionId) {
+        // Update all anonymous views with matching session ID to this user
+        int updated = entityManager.createQuery("""
+                                                UPDATE View v
+                                                SET v.user = :user
+                                                WHERE v.user IS NULL AND v.sessionId = :sessionId
+                                                """)
+                                   .setParameter("user", entityManager.getReference(User.class, userId))
+                                   .setParameter("sessionId", sessionId)
+                                   .executeUpdate();
+
+        if (updated > 0) {
+            logger.info("Migrated {} anonymous views to user ID {}", updated, userId);
+        }
+    }
+
     /**
      * Record a view if not already recorded for this user/session in the last N
      * minutes. We use a unique constraint to prevent duplicates.
@@ -44,41 +80,5 @@ public class ViewRepository {
                      .setParameter("sessionId", sessionId)
                      .setParameter("viewedAt", viewedAt)
                      .executeUpdate();
-    }
-
-    public long countByPost(Post post) {
-        return entityManager.createQuery("SELECT COUNT(v) FROM View v WHERE v.post = :post", Long.class)
-                            .setParameter("post", post)
-                            .getSingleResult();
-    }
-
-    @Transactional
-    public void migrateAnonymousViewsToUser(Long userId, String sessionId) {
-        // Update all anonymous views with matching session ID to this user
-        int updated = entityManager.createQuery("""
-                                                UPDATE View v
-                                                SET v.user = :user
-                                                WHERE v.user IS NULL AND v.sessionId = :sessionId
-                                                """)
-                                   .setParameter("user", entityManager.getReference(User.class, userId))
-                                   .setParameter("sessionId", sessionId)
-                                   .executeUpdate();
-
-        if (updated > 0) {
-            logger.info("Migrated {} anonymous views to user ID {}", updated, userId);
-        }
-    }
-
-    public List<Object[]> getViewCountsForPosts(List<Post> posts) {
-        if (posts.isEmpty())
-            return List.of();
-        return entityManager.createQuery("""
-                                         SELECT v.post.id, COUNT(v)
-                                         FROM View v
-                                         WHERE v.post IN :posts
-                                         GROUP BY v.post.id
-                                         """, Object[].class)
-                            .setParameter("posts", posts)
-                            .getResultList();
     }
 }

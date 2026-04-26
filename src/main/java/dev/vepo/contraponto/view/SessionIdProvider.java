@@ -11,13 +11,6 @@ public class SessionIdProvider {
 
     public static final String VIEW_SESSION_COOKIE = "__view_session";
 
-    public String getOrCreateSessionId(Cookie cookie) {
-        if (cookie != null && cookie.getValue() != null && !cookie.getValue().isBlank()) {
-            return cookie.getValue();
-        }
-        return UUID.randomUUID().toString();
-    }
-
     public NewCookie createSessionCookie(String sessionId) {
         return new NewCookie.Builder(VIEW_SESSION_COOKIE)
                                                          .value(sessionId)
@@ -27,5 +20,12 @@ public class SessionIdProvider {
                                                          .secure(false) // set true in production if using HTTPS
                                                          .sameSite(NewCookie.SameSite.LAX)
                                                          .build();
+    }
+
+    public String getOrCreateSessionId(Cookie cookie) {
+        if (cookie != null && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+            return cookie.getValue();
+        }
+        return UUID.randomUUID().toString();
     }
 }

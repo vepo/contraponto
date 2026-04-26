@@ -24,9 +24,9 @@ import jakarta.ws.rs.core.Response;
 @Path("/forms/write/publish")
 public class PublishEndpoint {
 
+    private final static Pattern INVALID_SLUG_CHARS = Pattern.compile("[^a-z0-9\\-]");
     private final PostRepository postRepository;
     private final LoggedUser loggedUser;
-    private final static Pattern INVALID_SLUG_CHARS = Pattern.compile("[^a-z0-9\\-]");
 
     @Inject
     public PublishEndpoint(PostRepository postRepository, LoggedUser loggedUser) {

@@ -17,12 +17,12 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 @Path("components/write-btn")
 public class WriteButtonEndpoint {
-    private static final Logger logger = LoggerFactory.getLogger(MenuEndpoint.class);
-
     @CheckedTemplate
     public class Template {
         public static native TemplateInstance writeBtn(LoggedUser user);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(MenuEndpoint.class);
 
     private final LoggedUser loggedUser;
 

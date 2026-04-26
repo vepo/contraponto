@@ -30,6 +30,43 @@ public class ImageEndpoint {
     @Inject
     ImageService imageService;
 
+    record ErrorResponse(String error) {}
+
+    @DELETE
+    @Path("/{uuid}")
+    @Logged
+    public Response deleteImage(@PathParam("uuid") String uuid) {
+        try {
+            imageService.deleteImage(uuid);
+            return Response.noContent().build();
+        } catch (Exception e) {
+            logger.error("Failed to delete image: {}", uuid, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                           .entity(new ErrorResponse("Failed to delete image"))
+                           .build();
+        }
+    }
+
+    @GET
+    @Path("/{filename}")
+    @Produces({ "image/jpeg", "image/png", "image/gif", "image/webp" })
+    public Response getImage(@PathParam("filename") String filename) {
+        try {
+            ImageData imageData = imageService.getImage(filename);
+            var cacheControl = new CacheControl();
+            cacheControl.setMaxAge(31536000);
+            cacheControl.setPrivate(false);
+            return Response.ok(imageData.data())
+                           .type(imageData.contentType())
+                           .header("Content-Length", imageData.size())
+                           .cacheControl(cacheControl) // Cache for 1 year
+                           .build();
+        } catch (IOException e) {
+            logger.error("Failed to get image: {}", filename, e);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
     @POST
     @Logged
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -55,41 +92,4 @@ public class ImageEndpoint {
                            .build();
         }
     }
-
-    @GET
-    @Path("/{filename}")
-    @Produces({ "image/jpeg", "image/png", "image/gif", "image/webp" })
-    public Response getImage(@PathParam("filename") String filename) {
-        try {
-            ImageData imageData = imageService.getImage(filename);
-            var cacheControl = new CacheControl();
-            cacheControl.setMaxAge(31536000);
-            cacheControl.setPrivate(false);
-            return Response.ok(imageData.data())
-                           .type(imageData.contentType())
-                           .header("Content-Length", imageData.size())
-                           .cacheControl(cacheControl) // Cache for 1 year
-                           .build();
-        } catch (IOException e) {
-            logger.error("Failed to get image: {}", filename, e);
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-    }
-
-    @DELETE
-    @Path("/{uuid}")
-    @Logged
-    public Response deleteImage(@PathParam("uuid") String uuid) {
-        try {
-            imageService.deleteImage(uuid);
-            return Response.noContent().build();
-        } catch (Exception e) {
-            logger.error("Failed to delete image: {}", uuid, e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity(new ErrorResponse("Failed to delete image"))
-                           .build();
-        }
-    }
-
-    record ErrorResponse(String error) {}
 }

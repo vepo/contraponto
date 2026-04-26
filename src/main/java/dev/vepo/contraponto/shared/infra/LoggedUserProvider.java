@@ -31,6 +31,11 @@ public class LoggedUserProvider {
         this.sessions = Collections.synchronizedMap(new HashMap<>());
     }
 
+    public Optional<LoggedUser> find(String sessionId) {
+        return Optional.ofNullable(this.sessions.get(sessionId))
+                       .map(user -> new LoggedUser(user, sessionId));
+    }
+
     @Produces
     @RequestScoped
     public LoggedUser loadLoggedUser() {
@@ -56,11 +61,6 @@ public class LoggedUserProvider {
 
     public void logout(LoggedUser user) {
         this.sessions.remove(user.getSessionId());
-    }
-
-    public Optional<LoggedUser> find(String sessionId) {
-        return Optional.ofNullable(this.sessions.get(sessionId))
-                       .map(user -> new LoggedUser(user, sessionId));
     }
 
     public void update(String sessionId, User user) {

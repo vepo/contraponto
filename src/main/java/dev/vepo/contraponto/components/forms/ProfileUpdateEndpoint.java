@@ -44,6 +44,18 @@ public class ProfileUpdateEndpoint {
         this.passwordService = passwordService;
     }
 
+    private String buildErrorResponseBody(String message) {
+        return String.format("""
+                             <div class="error-message visible">%s</div>
+                             """, message);
+    }
+
+    private String buildSuccessResponseBody(String message) {
+        return String.format("""
+                             <div class="success-message">%s</div>
+                             """, message);
+    }
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -105,17 +117,5 @@ public class ProfileUpdateEndpoint {
         }
 
         return Response.ok(buildSuccessResponseBody("Profile updated successfully!")).build();
-    }
-
-    private String buildSuccessResponseBody(String message) {
-        return String.format("""
-                             <div class="success-message">%s</div>
-                             """, message);
-    }
-
-    private String buildErrorResponseBody(String message) {
-        return String.format("""
-                             <div class="error-message visible">%s</div>
-                             """, message);
     }
 }

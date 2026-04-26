@@ -22,16 +22,16 @@ import jakarta.ws.rs.core.MediaType;
 @Path("/")
 @ApplicationScoped
 public class HomeEndpoint {
-    private static final Logger logger = LoggerFactory.getLogger(HomeEndpoint.class);
-
     @CheckedTemplate
     class Template {
-        static native TemplateInstance home(Page<Post> posts, LoggedUser user);
-
         static native TemplateInstance featured(Post post);
 
         static native TemplateInstance grid(Page<Post> posts, boolean ignoreFirst);
+
+        static native TemplateInstance home(Page<Post> posts, LoggedUser user);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(HomeEndpoint.class);
 
     private final PostRepository postRepository;
     private final LoggedUser loggedUser;

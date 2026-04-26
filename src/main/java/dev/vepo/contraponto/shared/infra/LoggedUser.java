@@ -12,34 +12,24 @@ public class LoggedUser {
     private final User user;
     private final String sessionId;
 
-    public LoggedUser(User user, String sessionId) {
-        this.user = user;
-        this.sessionId = sessionId;
-    }
-
     public LoggedUser() {
         this.user = null;
         this.sessionId = null;
     }
 
-    public boolean isAuthenticated() {
-        return Objects.nonNull(user);
+    public LoggedUser(User user, String sessionId) {
+        this.user = user;
+        this.sessionId = sessionId;
     }
 
-    public User getUser() {
-        return this.user;
-    }
+    public String getAvatarUrl() {
+        return Optional.ofNullable(user)
+                       .map(User::getName)
+                       // Generate avatar URL using UI Avatars service
+                       .map(name -> "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,
+                                                                                                                                                     StandardCharsets.UTF_8)))
+                       .orElse("");
 
-    public long getId() {
-        return Optional.ofNullable(user).map(User::getId).orElse(-1l);
-    }
-
-    public String getUsername() {
-        return Optional.ofNullable(user).map(User::getUsername).orElse("");
-    }
-
-    public String getName() {
-        return Optional.ofNullable(user).map(User::getName).orElse("");
     }
 
     public String getEmail() {
@@ -51,6 +41,10 @@ public class LoggedUser {
                        .map(User::getName)
                        .map(name -> name.split(" ")[0])
                        .orElse("");
+    }
+
+    public long getId() {
+        return Optional.ofNullable(user).map(User::getId).orElse(-1l);
     }
 
     public String getInitials() {
@@ -66,18 +60,24 @@ public class LoggedUser {
                        .orElse("");
     }
 
-    public String getAvatarUrl() {
-        return Optional.ofNullable(user)
-                       .map(User::getName)
-                       // Generate avatar URL using UI Avatars service
-                       .map(name -> "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,
-                                                                                                                                                     StandardCharsets.UTF_8)))
-                       .orElse("");
-
+    public String getName() {
+        return Optional.ofNullable(user).map(User::getName).orElse("");
     }
 
     public String getSessionId() {
         return Optional.ofNullable(sessionId).orElse("");
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public String getUsername() {
+        return Optional.ofNullable(user).map(User::getUsername).orElse("");
+    }
+
+    public boolean isAuthenticated() {
+        return Objects.nonNull(user);
     }
 
     @Override

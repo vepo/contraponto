@@ -50,6 +50,41 @@ public class SignUpEndpoint {
         this.passwordService = passwordService;
     }
 
+    /**
+     * Returns a consistent error response for signup failures.
+     */
+    private Response buildErrorResponse(String errorMessage) {
+        return Response.status(Status.BAD_REQUEST)
+                       .entity(String.format("<div class='error-message'>%s</div>", errorMessage))
+                       .build();
+    }
+
+    /**
+     * Builds the Set-Cookie header value for the session cookie.
+     */
+    private String buildSessionCookieHeader(String sessionId) {
+        return String.format("%s=%s; Path=%s; HttpOnly; SameSite=Strict",
+                             SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_PATH);
+    }
+
+    /**
+     * Builds the HTML response for a successful signup. Uses OOB swap to replace
+     * the menu and a script to close the modal.
+     */
+    private String buildSuccessResponseBody(String menuHtml) {
+        return String.format("""
+                             <div hx-swap-oob="true" id="%s">%s</div>
+                             %s
+                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLOSE_SCRIPT);
+    }
+
+    /**
+     * Utility method to check for blank strings (null, empty, or only whitespace).
+     */
+    private boolean isBlank(String str) {
+        return str == null || str.isBlank();
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -102,40 +137,5 @@ public class SignUpEndpoint {
                        .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
                        .header(HX_TRIGGER_HEADER, LOGGED_IN_EVENT)
                        .build();
-    }
-
-    /**
-     * Builds the HTML response for a successful signup. Uses OOB swap to replace
-     * the menu and a script to close the modal.
-     */
-    private String buildSuccessResponseBody(String menuHtml) {
-        return String.format("""
-                             <div hx-swap-oob="true" id="%s">%s</div>
-                             %s
-                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLOSE_SCRIPT);
-    }
-
-    /**
-     * Builds the Set-Cookie header value for the session cookie.
-     */
-    private String buildSessionCookieHeader(String sessionId) {
-        return String.format("%s=%s; Path=%s; HttpOnly; SameSite=Strict",
-                             SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_PATH);
-    }
-
-    /**
-     * Returns a consistent error response for signup failures.
-     */
-    private Response buildErrorResponse(String errorMessage) {
-        return Response.status(Status.BAD_REQUEST)
-                       .entity(String.format("<div class='error-message'>%s</div>", errorMessage))
-                       .build();
-    }
-
-    /**
-     * Utility method to check for blank strings (null, empty, or only whitespace).
-     */
-    private boolean isBlank(String str) {
-        return str == null || str.isBlank();
     }
 }

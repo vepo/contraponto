@@ -26,15 +26,31 @@ class LoginTest {
     @TestHTTPResource("/")
     URL testUrl;
 
-    @BeforeEach
-    void setup() {
-        Given.cleanup();
-        Given.user()
-             .withUsername("validuser")
-             .withEmail("test@example.com")
-             .withPassword("validPassword123")
-             .withName("Valid User")
-             .persist();
+    @Test
+    void invalidCredentialsShowsErrorMessage(WebDriver driver, WebDriverWait wait) {
+        driver.get(testUrl.toString());
+        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
+        loginBtn.click();
+
+        var modalContainer = wait.until(visibilityOfElementLocated(className("modal__container")));
+        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"login\"]")));
+        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
+        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
+
+        // Fill with valid format but wrong credentials
+        loginInput.sendKeys("wrong@example.com");
+        passwordInput.sendKeys("wrongPassword");
+        await().until(() -> submitBtn.isEnabled());
+
+        submitBtn.click();
+
+        // Expect an error message inside #authError (or a global error div)
+        var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
+        assertThat(authError.getText()).contains("Invalid username/email or password.");
+        // Modal should still be open
+        assertThat(modalContainer.isDisplayed()).isTrue();
+        // Submit button should remain enabled (user can retry)
+        assertThat(submitBtn.isEnabled()).isTrue();
     }
 
     @Test
@@ -87,30 +103,14 @@ class LoginTest {
         assertThat(sessionCookie).isNotBlank();
     }
 
-    @Test
-    void invalidCredentialsShowsErrorMessage(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var modalContainer = wait.until(visibilityOfElementLocated(className("modal__container")));
-        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"login\"]")));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        // Fill with valid format but wrong credentials
-        loginInput.sendKeys("wrong@example.com");
-        passwordInput.sendKeys("wrongPassword");
-        await().until(() -> submitBtn.isEnabled());
-
-        submitBtn.click();
-
-        // Expect an error message inside #authError (or a global error div)
-        var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
-        assertThat(authError.getText()).contains("Invalid username/email or password.");
-        // Modal should still be open
-        assertThat(modalContainer.isDisplayed()).isTrue();
-        // Submit button should remain enabled (user can retry)
-        assertThat(submitBtn.isEnabled()).isTrue();
+    @BeforeEach
+    void setup() {
+        Given.cleanup();
+        Given.user()
+             .withUsername("validuser")
+             .withEmail("test@example.com")
+             .withPassword("validPassword123")
+             .withName("Valid User")
+             .persist();
     }
 }

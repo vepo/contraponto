@@ -26,66 +26,14 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 class WriteTest {
 
+    private static final String TEST_USER_EMAIL = "writer@example.com";
+    private static final String TEST_USER_PASSWORD = "writerPass123";
+
+    private static final String TEST_USER_USERNAME = "writeruser";
+    private static final String TEST_USER_NAME = "Test Writer";
     @TestHTTPResource("/")
     URL testUrl;
     User testUser;
-
-    private static final String TEST_USER_EMAIL = "writer@example.com";
-    private static final String TEST_USER_PASSWORD = "writerPass123";
-    private static final String TEST_USER_USERNAME = "writeruser";
-    private static final String TEST_USER_NAME = "Test Writer";
-
-    @BeforeEach
-    void setup() {
-        Given.cleanup();
-        testUser = Given.user()
-                        .withUsername(TEST_USER_USERNAME)
-                        .withEmail(TEST_USER_EMAIL)
-                        .withPassword(TEST_USER_PASSWORD)
-                        .withName(TEST_USER_NAME)
-                        .persist();
-    }
-
-    private void login(WebDriver driver, WebDriverWait wait, String email, String password) {
-        driver.get(testUrl.toString());
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='login']")));
-        var passwordInput = driver.findElement(cssSelector("input[name='password']"));
-        var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
-
-        loginInput.sendKeys(email);
-        passwordInput.sendKeys(password);
-        await().until(() -> submitBtn.isEnabled());
-        submitBtn.click();
-
-        // Wait for modal to close and user menu to appear
-        await().until(() -> !driver.findElement(By.id("authModal")).isDisplayed());
-        wait.until(visibilityOfElementLocated(className("user-menu")));
-    }
-
-    // ------------------------------------------------------------------------
-    // Access control tests
-    // ------------------------------------------------------------------------
-
-    @Test
-    void unauthenticatedUserCannotAccessWritePage(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString() + "write");
-
-        // Should be redirected to home or show login modal; we expect the write page
-        // not to load.
-        // A simple check: the write page's main container should not be present.
-        var writeForm = driver.findElements(cssSelector(".write-form"));
-        assertThat(writeForm).isEmpty();
-
-        // Optionally, the login modal may appear (or user remains on home with login
-        // buttons)
-        var loginModal = driver.findElements(By.id("authModal"));
-        if (!loginModal.isEmpty()) {
-            assertThat(loginModal.get(0).isDisplayed()).isTrue();
-        }
-    }
 
     @Test
     void authenticatedUserCanAccessWritePage(WebDriver driver, WebDriverWait wait) {
@@ -100,9 +48,39 @@ class WriteTest {
         assertThat(titleInput.isDisplayed()).isTrue();
     }
 
+    @Test
+    void cannotSavePostWithoutContent(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        var titleInput = driver.findElement(cssSelector("#title"));
+        titleInput.sendKeys("No content");
+
+        var saveDraftBtn = driver.findElement(By.id("saveDraft"));
+        saveDraftBtn.click();
+
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
+        assertThat(toast.getText()).contains("Content is required");
+    }
+
     // ------------------------------------------------------------------------
-    // Creating a new post
+    // Access control tests
     // ------------------------------------------------------------------------
+
+    @Test
+    void cannotSavePostWithoutTitle(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        var contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("Some content");
+
+        var saveDraftBtn = driver.findElement(By.id("saveDraft"));
+        saveDraftBtn.click();
+
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
+        assertThat(toast.getText()).contains("Title is required");
+    }
 
     @Test
     void createNewPostAsDraft(WebDriver driver, WebDriverWait wait) {
@@ -135,34 +113,8 @@ class WriteTest {
         assertThat(driver.getCurrentUrl()).matches(".*/write/draft/\\d+");
     }
 
-    @Test
-    void publishNewPost(WebDriver driver, WebDriverWait wait) {
-        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "write");
-
-        var title = "Published Post";
-        var content = "Published content here.";
-
-        var titleInput = wait.until(visibilityOfElementLocated(cssSelector("#title")));
-        titleInput.sendKeys(title);
-        var contentTextarea = driver.findElement(cssSelector("#content"));
-        contentTextarea.sendKeys(content);
-
-        var publishBtn = driver.findElement(By.id("publish"));
-        publishBtn.click();
-
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
-        assertThat(toast.getText()).contains("Post published!");
-
-        // Verify we can navigate to the published post
-        // The slug is generated from title; we assume it becomes "published-post"
-        driver.get("%s/%s/post/published-post".formatted(testUrl, testUser.getUsername()));
-        var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
-        assertThat(postTitle.getText()).isEqualTo(title);
-    }
-
     // ------------------------------------------------------------------------
-    // Editing an existing post
+    // Creating a new post
     // ------------------------------------------------------------------------
 
     @Test
@@ -209,38 +161,68 @@ class WriteTest {
         assertThat(postTitle.getText()).isEqualTo("Updated Title");
     }
 
+    private void login(WebDriver driver, WebDriverWait wait, String email, String password) {
+        driver.get(testUrl.toString());
+        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
+        loginBtn.click();
+
+        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='login']")));
+        var passwordInput = driver.findElement(cssSelector("input[name='password']"));
+        var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
+
+        loginInput.sendKeys(email);
+        passwordInput.sendKeys(password);
+        await().until(() -> submitBtn.isEnabled());
+        submitBtn.click();
+
+        // Wait for modal to close and user menu to appear
+        await().until(() -> !driver.findElement(By.id("authModal")).isDisplayed());
+        wait.until(visibilityOfElementLocated(className("user-menu")));
+    }
+
+    // ------------------------------------------------------------------------
+    // Editing an existing post
+    // ------------------------------------------------------------------------
+
+    @Test
+    void publishNewPost(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        var title = "Published Post";
+        var content = "Published content here.";
+
+        var titleInput = wait.until(visibilityOfElementLocated(cssSelector("#title")));
+        titleInput.sendKeys(title);
+        var contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys(content);
+
+        var publishBtn = driver.findElement(By.id("publish"));
+        publishBtn.click();
+
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+        assertThat(toast.getText()).contains("Post published!");
+
+        // Verify we can navigate to the published post
+        // The slug is generated from title; we assume it becomes "published-post"
+        driver.get("%s/%s/post/published-post".formatted(testUrl, testUser.getUsername()));
+        var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
+        assertThat(postTitle.getText()).isEqualTo(title);
+    }
+
     // ------------------------------------------------------------------------
     // Validation tests
     // ------------------------------------------------------------------------
 
-    @Test
-    void cannotSavePostWithoutTitle(WebDriver driver, WebDriverWait wait) {
-        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "write");
-
-        var contentTextarea = driver.findElement(cssSelector("#content"));
-        contentTextarea.sendKeys("Some content");
-
-        var saveDraftBtn = driver.findElement(By.id("saveDraft"));
-        saveDraftBtn.click();
-
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
-        assertThat(toast.getText()).contains("Title is required");
-    }
-
-    @Test
-    void cannotSavePostWithoutContent(WebDriver driver, WebDriverWait wait) {
-        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "write");
-
-        var titleInput = driver.findElement(cssSelector("#title"));
-        titleInput.sendKeys("No content");
-
-        var saveDraftBtn = driver.findElement(By.id("saveDraft"));
-        saveDraftBtn.click();
-
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
-        assertThat(toast.getText()).contains("Content is required");
+    @BeforeEach
+    void setup() {
+        Given.cleanup();
+        testUser = Given.user()
+                        .withUsername(TEST_USER_USERNAME)
+                        .withEmail(TEST_USER_EMAIL)
+                        .withPassword(TEST_USER_PASSWORD)
+                        .withName(TEST_USER_NAME)
+                        .persist();
     }
 
     @Test
@@ -285,10 +267,6 @@ class WriteTest {
         assertThat(toast.getText()).contains("Slug can only contain lowercase letters, numbers, and hyphens");
     }
 
-    // ------------------------------------------------------------------------
-    // Toolbar functionality (basic)
-    // ------------------------------------------------------------------------
-
     @Test
     void toolbarBoldButtonWrapsTextWithMarkdown(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
@@ -307,5 +285,27 @@ class WriteTest {
         contentTextarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
         var value = contentTextarea.getAttribute("value");
         assertThat(value).contains("**some** text");
+    }
+
+    // ------------------------------------------------------------------------
+    // Toolbar functionality (basic)
+    // ------------------------------------------------------------------------
+
+    @Test
+    void unauthenticatedUserCannotAccessWritePage(WebDriver driver, WebDriverWait wait) {
+        driver.get(testUrl.toString() + "write");
+
+        // Should be redirected to home or show login modal; we expect the write page
+        // not to load.
+        // A simple check: the write page's main container should not be present.
+        var writeForm = driver.findElements(cssSelector(".write-form"));
+        assertThat(writeForm).isEmpty();
+
+        // Optionally, the login modal may appear (or user remains on home with login
+        // buttons)
+        var loginModal = driver.findElements(By.id("authModal"));
+        if (!loginModal.isEmpty()) {
+            assertThat(loginModal.get(0).isDisplayed()).isTrue();
+        }
     }
 }

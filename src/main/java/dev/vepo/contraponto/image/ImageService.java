@@ -33,6 +33,59 @@ public class ImageService {
     ImageRepository imageRepository;
 
     @Transactional
+    public void deleteImage(String uuid) {
+        Image image = imageRepository.findByUuid(uuid)
+                                     .orElseThrow(() -> new WebApplicationException("Image not found",
+                                                                                    Response.Status.NOT_FOUND));
+
+        // Delete file from disk
+        try {
+            Path filePath = Paths.get(image.getFilePath());
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            logger.warn("Failed to delete image file: {}", image.getFilePath(), e);
+        }
+
+        // Soft delete from database
+        imageRepository.softDelete(uuid);
+
+        logger.info("Image deleted successfully: {}", uuid);
+    }
+
+    private String getFileExtension(String filename) {
+        int lastDot = filename.lastIndexOf('.');
+        if (lastDot > 0) {
+            return filename.substring(lastDot);
+        }
+        return "";
+    }
+
+    public ImageData getImage(String filename) throws IOException {
+        Path filePath = Paths.get(storagePath).resolve(filename);
+
+        if (!Files.exists(filePath)) {
+            throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
+        }
+
+        // Find image metadata in database
+        String uuid = filename.substring(0, filename.lastIndexOf('.'));
+        Image image = imageRepository.findByUuid(uuid)
+                                     .orElseThrow(() -> new WebApplicationException("Image metadata not found",
+                                                                                    Response.Status.NOT_FOUND));
+
+        byte[] data = Files.readAllBytes(filePath);
+        return new ImageData(data, image.getContentType(), image.getSize());
+    }
+
+    private boolean isValidImageType(String contentType) {
+        return contentType != null && (contentType.equals("image/jpeg") ||
+                contentType.equals("image/jpg") ||
+                contentType.equals("image/png") ||
+                contentType.equals("image/gif") ||
+                contentType.equals("image/webp"));
+    }
+
+    @Transactional
     public ImageResponse uploadImage(String filename, String contentType, InputStream data, long size) {
         try {
             // Validate file type
@@ -76,58 +129,5 @@ public class ImageService {
             logger.error("Failed to upload image: {}", filename, e);
             throw new WebApplicationException("Failed to upload image", Response.Status.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    public ImageData getImage(String filename) throws IOException {
-        Path filePath = Paths.get(storagePath).resolve(filename);
-
-        if (!Files.exists(filePath)) {
-            throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
-        }
-
-        // Find image metadata in database
-        String uuid = filename.substring(0, filename.lastIndexOf('.'));
-        Image image = imageRepository.findByUuid(uuid)
-                                     .orElseThrow(() -> new WebApplicationException("Image metadata not found",
-                                                                                    Response.Status.NOT_FOUND));
-
-        byte[] data = Files.readAllBytes(filePath);
-        return new ImageData(data, image.getContentType(), image.getSize());
-    }
-
-    @Transactional
-    public void deleteImage(String uuid) {
-        Image image = imageRepository.findByUuid(uuid)
-                                     .orElseThrow(() -> new WebApplicationException("Image not found",
-                                                                                    Response.Status.NOT_FOUND));
-
-        // Delete file from disk
-        try {
-            Path filePath = Paths.get(image.getFilePath());
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            logger.warn("Failed to delete image file: {}", image.getFilePath(), e);
-        }
-
-        // Soft delete from database
-        imageRepository.softDelete(uuid);
-
-        logger.info("Image deleted successfully: {}", uuid);
-    }
-
-    private boolean isValidImageType(String contentType) {
-        return contentType != null && (contentType.equals("image/jpeg") ||
-                contentType.equals("image/jpg") ||
-                contentType.equals("image/png") ||
-                contentType.equals("image/gif") ||
-                contentType.equals("image/webp"));
-    }
-
-    private String getFileExtension(String filename) {
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot > 0) {
-            return filename.substring(lastDot);
-        }
-        return "";
     }
 }

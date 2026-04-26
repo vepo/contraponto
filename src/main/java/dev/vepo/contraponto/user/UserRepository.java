@@ -13,27 +13,6 @@ public class UserRepository {
     @Inject
     EntityManager entityManager;
 
-    public Optional<User> findByEmail(String email) {
-        return entityManager.createQuery("FROM User WHERE email = :email", User.class)
-                            .setParameter("email", email)
-                            .getResultStream()
-                            .findFirst();
-    }
-
-    public Optional<User> findByUsername(String username) {
-        return entityManager.createQuery("FROM User WHERE username = :username", User.class)
-                            .setParameter("username", username)
-                            .getResultStream()
-                            .findFirst();
-    }
-
-    public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
-        return entityManager.createQuery("FROM User WHERE username = :usernameOrEmail OR email = :usernameOrEmail", User.class)
-                            .setParameter("usernameOrEmail", usernameOrEmail)
-                            .getResultStream()
-                            .findFirst();
-    }
-
     public boolean existsByEmail(String email) {
         return entityManager.createQuery("""
                                          SELECT id
@@ -56,6 +35,31 @@ public class UserRepository {
                             .count() > 0l;
     }
 
+    public Optional<User> findByEmail(String email) {
+        return entityManager.createQuery("FROM User WHERE email = :email", User.class)
+                            .setParameter("email", email)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public Optional<User> findById(long userId) {
+        return Optional.ofNullable(entityManager.find(User.class, userId));
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return entityManager.createQuery("FROM User WHERE username = :username", User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
+        return entityManager.createQuery("FROM User WHERE username = :usernameOrEmail OR email = :usernameOrEmail", User.class)
+                            .setParameter("usernameOrEmail", usernameOrEmail)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     @Transactional
     public User save(User user) {
         entityManager.persist(user);
@@ -65,9 +69,5 @@ public class UserRepository {
     @Transactional
     public User update(User user) {
         return entityManager.merge(user);
-    }
-
-    public Optional<User> findById(long userId) {
-        return Optional.ofNullable(entityManager.find(User.class, userId));
     }
 }

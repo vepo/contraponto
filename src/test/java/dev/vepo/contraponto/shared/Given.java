@@ -15,6 +15,56 @@ import jakarta.persistence.EntityManager;
 
 public class Given {
 
+    public static class PostBuilder {
+
+        private String title;
+        private String description;
+        private String content;
+        private User author;
+        private String slug;
+
+        private PostBuilder() {
+            this.title = null;
+            this.description = null;
+            this.content = null;
+            this.author = null;
+            this.slug = null;
+        }
+
+        public Post persist() {
+            return transaction(() -> {
+                var post = new Post(title, slug, description, content, author, true, LocalDateTime.now());
+                inject(EntityManager.class).persist(post);
+                return post;
+            });
+        }
+
+        public PostBuilder withAuthor(User author) {
+            this.author = author;
+            return this;
+        }
+
+        public PostBuilder withContent(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public PostBuilder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public PostBuilder withSlug(String slug) {
+            this.slug = slug;
+            return this;
+        }
+
+        public PostBuilder withTitle(String title) {
+            this.title = title;
+            return this;
+        }
+    }
+
     public static class UserBuilder {
 
         private String username;
@@ -29,9 +79,16 @@ public class Given {
             this.password = null;
         }
 
-        public UserBuilder withUsername(String username) {
-            this.username = username;
-            return this;
+        public User persist() {
+            return transaction(() -> {
+                var entityManager = inject(EntityManager.class);
+                var user = new User(requireNonNull(username, "'username' cannot be null"),
+                                    requireNonNull(email, "'email' cannot be null"),
+                                    requireNonNull(name, "'name' cannot be null"),
+                                    inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
+                entityManager.persist(user);
+                return user;
+            });
         }
 
         public UserBuilder withEmail(String email) {
@@ -49,66 +106,9 @@ public class Given {
             return this;
         }
 
-        public User persist() {
-            return transaction(() -> {
-                var entityManager = inject(EntityManager.class);
-                var user = new User(requireNonNull(username, "'username' cannot be null"),
-                                    requireNonNull(email, "'email' cannot be null"),
-                                    requireNonNull(name, "'name' cannot be null"),
-                                    inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
-                entityManager.persist(user);
-                return user;
-            });
-        }
-    }
-
-    public static class PostBuilder {
-
-        private String title;
-        private String description;
-        private String content;
-        private User author;
-        private String slug;
-
-        private PostBuilder() {
-            this.title = null;
-            this.description = null;
-            this.content = null;
-            this.author = null;
-            this.slug = null;
-        }
-
-        public PostBuilder withTitle(String title) {
-            this.title = title;
+        public UserBuilder withUsername(String username) {
+            this.username = username;
             return this;
-        }
-
-        public PostBuilder withDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public PostBuilder withContent(String content) {
-            this.content = content;
-            return this;
-        }
-
-        public PostBuilder withAuthor(User author) {
-            this.author = author;
-            return this;
-        }
-
-        public PostBuilder withSlug(String slug) {
-            this.slug = slug;
-            return this;
-        }
-
-        public Post persist() {
-            return transaction(() -> {
-                var post = new Post(title, slug, description, content, author, true, LocalDateTime.now());
-                inject(EntityManager.class).persist(post);
-                return post;
-            });
         }
     }
 
@@ -120,6 +120,14 @@ public class Given {
             query = entityManager.createQuery("DELETE FROM User");
             query.executeUpdate();
         });
+    }
+
+    public static <T> T inject(Class<T> clazz) {
+        return CDI.current().select(clazz).get();
+    }
+
+    public static PostBuilder post() {
+        return new PostBuilder();
     }
 
     public static void transaction(Runnable code) {
@@ -146,15 +154,7 @@ public class Given {
         }
     }
 
-    public static <T> T inject(Class<T> clazz) {
-        return CDI.current().select(clazz).get();
-    }
-
     public static UserBuilder user() {
         return new UserBuilder();
-    }
-
-    public static PostBuilder post() {
-        return new PostBuilder();
     }
 }

@@ -26,11 +26,11 @@ public class UserBlogEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance home(String username, Page<Post> posts, LoggedUser user);
-
         static native TemplateInstance featured(Post post);
 
         static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
+
+        public static native TemplateInstance home(String username, Page<Post> posts, LoggedUser user);
     }
 
     private final UserRepository userRepository;
@@ -45,15 +45,6 @@ public class UserBlogEndpoint {
     }
 
     @GET
-    @Path("components/home/grid")
-    @Operation(hidden = true)
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,
-                                      @QueryParam("page") int page) {
-        return Templates.grid(username, this.postRepository.findPaginatedNewestFromAuthor(username, limit, page), false);
-    }
-
-    @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance blog(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit) {
         // Check if user exists
@@ -65,5 +56,14 @@ public class UserBlogEndpoint {
         return Templates.home(username,
                               postRepository.findPaginatedNewestFromAuthor(username, limit, 1),
                               loggedUser);
+    }
+
+    @GET
+    @Path("components/home/grid")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,
+                                      @QueryParam("page") int page) {
+        return Templates.grid(username, this.postRepository.findPaginatedNewestFromAuthor(username, limit, page), false);
     }
 }

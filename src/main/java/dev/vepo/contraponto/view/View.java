@@ -53,36 +53,36 @@ public class View {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Post getPost() {
         return post;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public String getSessionId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+    public User getUser() {
+        return user;
     }
 
     public LocalDateTime getViewedAt() {
         return viewedAt;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public void setViewedAt(LocalDateTime viewedAt) {

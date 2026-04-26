@@ -17,12 +17,12 @@ import jakarta.ws.rs.core.MediaType;
 @Path("components/menu")
 @ApplicationScoped
 public class MenuEndpoint {
-    private static final Logger logger = LoggerFactory.getLogger(MenuEndpoint.class);
-
     @CheckedTemplate
     public class Template {
         public static native TemplateInstance menu(LoggedUser user);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(MenuEndpoint.class);
 
     private final LoggedUser loggedUser;
 

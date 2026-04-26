@@ -28,63 +28,6 @@ class SignupTest {
     @TestHTTPResource("/")
     URL testUrl;
 
-    @BeforeEach
-    void setup() {
-        // Create an existing user to test duplicate email scenario
-        Given.cleanup();
-        Given.user()
-             .withUsername("existing")
-             .withEmail("existing@example.com")
-             .withPassword("password123")
-             .withName("Existing User")
-             .persist();
-    }
-
-    @Test
-    void signupModalValidationAndSuccess(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        // Open login modal and switch to signup
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-        var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
-        signupLink.click();
-
-        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
-        var nameInput = driver.findElement(cssSelector("input[name=\"name\"]"));
-        var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Username validation (too short)
-        usernameInput.sendKeys("ab");
-        passwordInput.sendKeys("anyPassword123");
-        var usernameError = driver.findElement(cssSelector(".form-group:has(input[name='username']) .error-message.min-value"));
-        assertThat(usernameError.isDisplayed()).isTrue();
-        assertThat(usernameError.getText()).contains("Username must be at least 3 characters.");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Fix username
-        usernameInput.clear();
-        usernameInput.sendKeys("newuser");
-        // Now fill other fields
-        nameInput.sendKeys("New User");
-        emailInput.sendKeys("new@example.com");
-        passwordInput.sendKeys("password123");
-        await().until(() -> submitBtn.isEnabled());
-
-        // Submit
-        submitBtn.click();
-
-        // Modal closes, user menu appears
-        var modalContainer = driver.findElement(By.className("modal__container"));
-        await().until(() -> !modalContainer.isDisplayed());
-        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
-        assertThat(userMenu.isDisplayed()).isTrue();
-    }
-
     @Test
     void duplicateEmailShowsErrorMessage(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString());
@@ -200,5 +143,62 @@ class SignupTest {
         usernameInput.sendKeys("validauser");
         await().until(() -> !nameError.isDisplayed());
         await().until(() -> submitBtn.isEnabled());
+    }
+
+    @BeforeEach
+    void setup() {
+        // Create an existing user to test duplicate email scenario
+        Given.cleanup();
+        Given.user()
+             .withUsername("existing")
+             .withEmail("existing@example.com")
+             .withPassword("password123")
+             .withName("Existing User")
+             .persist();
+    }
+
+    @Test
+    void signupModalValidationAndSuccess(WebDriver driver, WebDriverWait wait) {
+        driver.get(testUrl.toString());
+        // Open login modal and switch to signup
+        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
+        loginBtn.click();
+        var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
+        signupLink.click();
+
+        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
+        var nameInput = driver.findElement(cssSelector("input[name=\"name\"]"));
+        var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
+        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
+        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
+
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+        assertThat(submitBtn.isEnabled()).isFalse();
+
+        // Username validation (too short)
+        usernameInput.sendKeys("ab");
+        passwordInput.sendKeys("anyPassword123");
+        var usernameError = driver.findElement(cssSelector(".form-group:has(input[name='username']) .error-message.min-value"));
+        assertThat(usernameError.isDisplayed()).isTrue();
+        assertThat(usernameError.getText()).contains("Username must be at least 3 characters.");
+        assertThat(submitBtn.isEnabled()).isFalse();
+
+        // Fix username
+        usernameInput.clear();
+        usernameInput.sendKeys("newuser");
+        // Now fill other fields
+        nameInput.sendKeys("New User");
+        emailInput.sendKeys("new@example.com");
+        passwordInput.sendKeys("password123");
+        await().until(() -> submitBtn.isEnabled());
+
+        // Submit
+        submitBtn.click();
+
+        // Modal closes, user menu appears
+        var modalContainer = driver.findElement(By.className("modal__container"));
+        await().until(() -> !modalContainer.isDisplayed());
+        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
+        assertThat(userMenu.isDisplayed()).isTrue();
     }
 }

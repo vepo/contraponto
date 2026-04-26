@@ -56,61 +56,52 @@ public class Image {
         this.url = url;
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        Image other = (Image) obj;
+        return Objects.equals(id, other.id);
     }
 
     public String getContentType() {
         return contentType;
     }
 
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public void setSize(Long size) {
-        this.size = size;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public String getFilePath() {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public String getFilename() {
+        return filename;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public Long getSize() {
+        return size;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public String getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     public boolean isActive() {
@@ -121,27 +112,36 @@ public class Image {
         this.active = active;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-        Image other = (Image) obj;
-        return Objects.equals(id, other.id);
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     @Override

@@ -22,12 +22,12 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class ProfileEndpoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProfileEndpoint.class);
-
     @CheckedTemplate
     public class Template {
         public static native TemplateInstance profile(int currentYear, LoggedUser user);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(ProfileEndpoint.class);
 
     private final LoggedUser loggedUser;
 

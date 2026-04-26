@@ -24,23 +24,64 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 class ProfileTest {
 
-    @TestHTTPResource("/")
-    URL testUrl;
-
     private static final String TEST_USER_EMAIL = "profile@example.com";
+
     private static final String TEST_USER_PASSWORD = "profilePass123";
     private static final String TEST_USER_USERNAME = "profileuser";
     private static final String TEST_USER_NAME = "Profile Tester";
+    @TestHTTPResource("/")
+    URL testUrl;
 
-    @BeforeEach
-    void setup() {
-        Given.cleanup();
-        Given.user()
-             .withUsername(TEST_USER_USERNAME)
-             .withEmail(TEST_USER_EMAIL)
-             .withPassword(TEST_USER_PASSWORD)
-             .withName(TEST_USER_NAME)
-             .persist();
+    @Test
+    void authenticatedUserCanViewProfile(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+
+        // Navigate to profile page
+        var userMenuBtn = wait.until(visibilityOfElementLocated(className("user-menu__button")));
+        userMenuBtn.click();
+        var profileLink = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[data-hx-get='/profile']")));
+        profileLink.click();
+
+        // Profile page should load
+        var profileForm = wait.until(visibilityOfElementLocated(className("profile-form")));
+        assertThat(profileForm.isDisplayed()).isTrue();
+
+        // Check that fields are pre-filled with user data
+        var nameInput = profileForm.findElement(cssSelector("input[name='name']"));
+        var emailInput = profileForm.findElement(cssSelector("input[name='email']"));
+        assertThat(nameInput.getAttribute("value")).isEqualTo(TEST_USER_NAME);
+        assertThat(emailInput.getAttribute("value")).isEqualTo(TEST_USER_EMAIL);
+    }
+
+    @Test
+    void changePasswordSuccessfully(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "profile");
+
+        var currentPasswordInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='currentPassword']")));
+        var newPasswordInput = driver.findElement(cssSelector("input[name='newPassword']"));
+        var confirmPasswordInput = driver.findElement(cssSelector("input[name='confirmPassword']"));
+        var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
+
+        currentPasswordInput.sendKeys(TEST_USER_PASSWORD);
+        newPasswordInput.sendKeys("newPassword456");
+        confirmPasswordInput.sendKeys("newPassword456");
+
+        submitBtn.click();
+
+        var successMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .success-message")));
+        assertThat(successMsg.getText()).contains("Profile updated successfully");
+
+        // Logout and login with new password
+        var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
+        userMenuBtn.click();
+        var logoutBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[hx-post='/forms/auth/logout']")));
+        logoutBtn.click();
+
+        // Login again with new password
+        login(driver, wait, TEST_USER_EMAIL, "newPassword456");
+        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
+        assertThat(userMenu.isDisplayed()).isTrue();
     }
 
     private void login(WebDriver driver, WebDriverWait wait, String email, String password) {
@@ -60,23 +101,6 @@ class ProfileTest {
         // Wait for modal to close and user menu to appear
         await().until(() -> !driver.findElement(By.id("authModal")).isDisplayed());
         wait.until(visibilityOfElementLocated(className("user-menu")));
-    }
-
-    @Test
-    void unauthenticatedUserCannotAccessProfile(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString() + "profile");
-
-        // Should be redirected to home or login; check that profile page is not shown
-        // For a pure SPA with htmx, maybe it shows nothing? But typically backend
-        // should block.
-        // We'll check that the main content does NOT contain profile form.
-        var profileForm = driver.findElements(cssSelector(".profile-form"));
-        assertThat(profileForm).isEmpty();
-        // Or check that an error message or login modal appears
-        var loginModal = driver.findElements(By.id("authModal"));
-        if (!loginModal.isEmpty()) {
-            assertThat(loginModal.get(0).isDisplayed()).isTrue();
-        }
     }
 
     @Test
@@ -106,24 +130,51 @@ class ProfileTest {
     }
 
     @Test
-    void authenticatedUserCanViewProfile(WebDriver driver, WebDriverWait wait) {
+    void passwordMismatchShowsError(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "profile");
 
-        // Navigate to profile page
-        var userMenuBtn = wait.until(visibilityOfElementLocated(className("user-menu__button")));
-        userMenuBtn.click();
-        var profileLink = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[data-hx-get='/profile']")));
-        profileLink.click();
+        var currentPasswordInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='currentPassword']")));
+        var newPasswordInput = driver.findElement(cssSelector("input[name='newPassword']"));
+        var confirmPasswordInput = driver.findElement(cssSelector("input[name='confirmPassword']"));
+        var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
 
-        // Profile page should load
-        var profileForm = wait.until(visibilityOfElementLocated(className("profile-form")));
-        assertThat(profileForm.isDisplayed()).isTrue();
+        currentPasswordInput.sendKeys(TEST_USER_PASSWORD);
+        newPasswordInput.sendKeys("newPassword456");
+        confirmPasswordInput.sendKeys("differentPassword");
 
-        // Check that fields are pre-filled with user data
-        var nameInput = profileForm.findElement(cssSelector("input[name='name']"));
-        var emailInput = profileForm.findElement(cssSelector("input[name='email']"));
-        assertThat(nameInput.getAttribute("value")).isEqualTo(TEST_USER_NAME);
-        assertThat(emailInput.getAttribute("value")).isEqualTo(TEST_USER_EMAIL);
+        submitBtn.click();
+
+        var errorMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .error-message")));
+        assertThat(errorMsg.getText()).contains("Passwords do not match");
+    }
+
+    @BeforeEach
+    void setup() {
+        Given.cleanup();
+        Given.user()
+             .withUsername(TEST_USER_USERNAME)
+             .withEmail(TEST_USER_EMAIL)
+             .withPassword(TEST_USER_PASSWORD)
+             .withName(TEST_USER_NAME)
+             .persist();
+    }
+
+    @Test
+    void unauthenticatedUserCannotAccessProfile(WebDriver driver, WebDriverWait wait) {
+        driver.get(testUrl.toString() + "profile");
+
+        // Should be redirected to home or login; check that profile page is not shown
+        // For a pure SPA with htmx, maybe it shows nothing? But typically backend
+        // should block.
+        // We'll check that the main content does NOT contain profile form.
+        var profileForm = driver.findElements(cssSelector(".profile-form"));
+        assertThat(profileForm).isEmpty();
+        // Or check that an error message or login modal appears
+        var loginModal = driver.findElements(By.id("authModal"));
+        if (!loginModal.isEmpty()) {
+            assertThat(loginModal.get(0).isDisplayed()).isTrue();
+        }
     }
 
     @Test
@@ -162,25 +213,6 @@ class ProfileTest {
     }
 
     @Test
-    void updateProfileWithWrongCurrentPasswordShowsError(WebDriver driver, WebDriverWait wait) {
-        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "profile");
-
-        var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='name']")));
-        var currentPasswordInput = driver.findElement(cssSelector("input[name='currentPassword']"));
-        var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
-
-        nameInput.clear();
-        nameInput.sendKeys("Any Name");
-        currentPasswordInput.sendKeys("wrongPassword");
-
-        submitBtn.click();
-
-        var errorMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .error-message")));
-        assertThat(errorMsg.getText()).contains("Current password is incorrect");
-    }
-
-    @Test
     void updateProfileWithDuplicateEmailShowsError(WebDriver driver, WebDriverWait wait) {
         // Create another user with a different email
         Given.user()
@@ -208,53 +240,21 @@ class ProfileTest {
     }
 
     @Test
-    void changePasswordSuccessfully(WebDriver driver, WebDriverWait wait) {
+    void updateProfileWithWrongCurrentPasswordShowsError(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "profile");
 
-        var currentPasswordInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='currentPassword']")));
-        var newPasswordInput = driver.findElement(cssSelector("input[name='newPassword']"));
-        var confirmPasswordInput = driver.findElement(cssSelector("input[name='confirmPassword']"));
+        var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='name']")));
+        var currentPasswordInput = driver.findElement(cssSelector("input[name='currentPassword']"));
         var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
 
-        currentPasswordInput.sendKeys(TEST_USER_PASSWORD);
-        newPasswordInput.sendKeys("newPassword456");
-        confirmPasswordInput.sendKeys("newPassword456");
-
-        submitBtn.click();
-
-        var successMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .success-message")));
-        assertThat(successMsg.getText()).contains("Profile updated successfully");
-
-        // Logout and login with new password
-        var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
-        userMenuBtn.click();
-        var logoutBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[hx-post='/forms/auth/logout']")));
-        logoutBtn.click();
-
-        // Login again with new password
-        login(driver, wait, TEST_USER_EMAIL, "newPassword456");
-        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
-        assertThat(userMenu.isDisplayed()).isTrue();
-    }
-
-    @Test
-    void passwordMismatchShowsError(WebDriver driver, WebDriverWait wait) {
-        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "profile");
-
-        var currentPasswordInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='currentPassword']")));
-        var newPasswordInput = driver.findElement(cssSelector("input[name='newPassword']"));
-        var confirmPasswordInput = driver.findElement(cssSelector("input[name='confirmPassword']"));
-        var submitBtn = driver.findElement(cssSelector("button[type='submit']"));
-
-        currentPasswordInput.sendKeys(TEST_USER_PASSWORD);
-        newPasswordInput.sendKeys("newPassword456");
-        confirmPasswordInput.sendKeys("differentPassword");
+        nameInput.clear();
+        nameInput.sendKeys("Any Name");
+        currentPasswordInput.sendKeys("wrongPassword");
 
         submitBtn.click();
 
         var errorMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .error-message")));
-        assertThat(errorMsg.getText()).contains("Passwords do not match");
+        assertThat(errorMsg.getText()).contains("Current password is incorrect");
     }
 }

@@ -26,6 +26,217 @@ public class PostRepository {
         this.entityManager = entityManager;
     }
 
+    public long count() {
+        return this.entityManager.createQuery("SELECT COUNT(p) FROM Post p", Long.class)
+                                 .getSingleResult();
+    }
+
+    public long countByAuthorAndPublished(long authorId, boolean published) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.author.id = :authorId
+                                         AND p.published = :published
+                                         """, Long.class)
+                            .setParameter("authorId", authorId)
+                            .setParameter("published", published)
+                            .getSingleResult();
+    }
+
+    public long countByAuthorUsernameAndPublished(String username) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.author.username = :username AND
+                                               p.published = true
+                                         """, Long.class)
+                            .setParameter("username", username)
+                            .getSingleResult();
+    }
+
+    public long countPublished() {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.published = true
+                                         """, Long.class)
+                            .getSingleResult();
+    }
+
+    public long countSearchResults(String query) {
+        if (Objects.nonNull(query) && !query.isBlank()) {
+            return entityManager.createQuery("""
+                                             SELECT COUNT(p)
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             AND (LOWER(p.title) LIKE LOWER(:query)
+                                                  OR LOWER(p.description) LIKE LOWER(:query)
+                                                  OR LOWER(p.content) LIKE LOWER(:query))
+                                             """, Long.class)
+                                .setParameter("query", "%" + query + "%")
+                                .getSingleResult();
+        } else {
+            return entityManager.createQuery("""
+                                             SELECT COUNT(p)
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             """, Long.class)
+                                .getSingleResult();
+        }
+    }
+
+    @Transactional
+    public boolean delete(Long id) {
+        Post post = entityManager.find(Post.class, id);
+        if (post == null) {
+            return false;
+        }
+        entityManager.remove(post);
+        logger.info("Deleted post: {}", post.getSlug());
+        return true;
+    }
+
+    public List<Post> findAll(int offset, int limit) {
+        return this.entityManager.createQuery("""
+                                              FROM Post
+                                              ORDER BY createdAt DESC
+                                              """, Post.class)
+                                 .setFirstResult(offset)
+                                 .setMaxResults(limit)
+                                 .getResultList();
+    }
+
+    public List<Post> findByAuthor(long authorId) {
+        return this.entityManager.createQuery("""
+                                              FROM Post
+                                              WHERE author.id = :authorId
+                                              ORDER BY createdAt DESC
+                                              """, Post.class)
+                                 .setParameter("authorId", authorId)
+                                 .getResultList();
+    }
+
+    public List<Post> findByAuthorAndPublished(long authorId, boolean published) {
+        return entityManager.createQuery("""
+                                         FROM Post p
+                                         WHERE author.id = :authorId AND
+                                               published = :published
+
+                                         ORDER BY updatedAt DESC
+                                         """,
+                                         Post.class)
+                            .setParameter("authorId", authorId)
+                            .setParameter("published", published)
+                            .getResultList();
+    }
+
+    public List<Post> findByAuthorUsernameAndPublished(String username, int limit, int offset) {
+        return entityManager.createQuery("""
+                                         SELECT p
+                                         FROM Post p
+                                         JOIN FETCH p.author
+                                         WHERE p.author.username = :username AND
+                                               p.published = true
+                                         ORDER BY p.publishedAt DESC
+                                         """, Post.class)
+                            .setParameter("username", username)
+                            .setMaxResults(limit)
+                            .setFirstResult(offset)
+                            .getResultList();
+    }
+
+    public Optional<Post> findById(Long id) {
+        return Optional.ofNullable(entityManager.find(Post.class, id));
+    }
+
+    public Optional<Post> findBySlugForEdit(String slug) {
+        return this.entityManager.createQuery("""
+                                              FROM Post
+                                              WHERE slug = :slug
+                                              """, Post.class)
+                                 .setParameter("slug", slug)
+                                 .getResultStream()
+                                 .findFirst();
+    }
+
+    public Optional<Post> findByUsernameAndSlug(String username, String slug) {
+        return this.entityManager.createQuery("""
+                                              FROM Post
+                                              JOIN FETCH author
+                                              WHERE published = TRUE AND
+                                                    author.username = :username AND
+                                                    slug = :slug
+                                              """, Post.class)
+                                 .setParameter("username", username)
+                                 .setParameter("slug", slug)
+                                 .getResultStream()
+                                 .findFirst();
+    }
+
+    public List<Post> findDrafts() {
+        return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
+    }
+
+    public List<Post> findNewest(int limit) {
+        return this.entityManager.createQuery("""
+                                              FROM Post
+                                              WHERE published = TRUE
+                                              ORDER BY publishedAt DESC
+                                              """, Post.class)
+                                 .setMaxResults(limit)
+                                 .getResultList();
+    }
+
+    public Page<Post> findPaginatedNewest(int limit, int page) {
+        var extraFirst = (page == 1) ? 1 : 0;
+        var effectiveLimit = limit + extraFirst;
+        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
+        return new Page<>(findPublished(effectiveLimit, offset), page, limit, countPublished());
+    }
+
+    public Page<Post> findPaginatedNewestFromAuthor(String username, int limit, int page) {
+        var extraFirst = (page == 1) ? 1 : 0;
+        var effectiveLimit = limit + extraFirst;
+        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
+        return new Page<>(findByAuthorUsernameAndPublished(username, effectiveLimit, offset),
+                          page,
+                          limit,
+                          countByAuthorUsernameAndPublished(username));
+    }
+
+    public List<Post> findPublished(int limit, int offset) {
+        return entityManager.createQuery("""
+                                         SELECT p
+                                         FROM Post p
+                                         JOIN FETCH p.author
+                                         WHERE p.published = true
+                                         ORDER BY p.publishedAt DESC
+                                         """, Post.class)
+                            .setMaxResults(limit)
+                            .setFirstResult(offset)
+                            .getResultList();
+    }
+
+    public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
+        return entityManager.createQuery("""
+                                         FROM Post p
+                                         WHERE p.author.id = :authorId
+                                         AND p.published = :published
+                                         ORDER BY p.updatedAt DESC
+                                         """, Post.class)
+                            .setParameter("authorId", authorId)
+                            .setParameter("published", published)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
+    @Transactional
+    public Post save(Post post) {
+        entityManager.persist(post);
+        logger.info("Updated post: {}", post.getSlug());
+        return post;
+    }
+
     public List<Post> search(String query, int limit, int offset) {
         if (Objects.nonNull(query) && !query.isBlank()) {
             return entityManager.createQuery("""
@@ -52,183 +263,16 @@ public class PostRepository {
         }
     }
 
-    public long countSearchResults(String query) {
-        if (Objects.nonNull(query) && !query.isBlank()) {
-            return entityManager.createQuery("""
-                                             SELECT COUNT(p)
-                                             FROM Post p
-                                             WHERE p.published = true
-                                             AND (LOWER(p.title) LIKE LOWER(:query)
-                                                  OR LOWER(p.description) LIKE LOWER(:query)
-                                                  OR LOWER(p.content) LIKE LOWER(:query))
-                                             """, Long.class)
-                                .setParameter("query", "%" + query + "%")
-                                .getSingleResult();
-        } else {
-            return entityManager.createQuery("""
-                                             SELECT COUNT(p)
-                                             FROM Post p
-                                             WHERE p.published = true
-                                             """, Long.class)
-                                .getSingleResult();
-        }
-    }
-
-    public Optional<Post> findByUsernameAndSlug(String username, String slug) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              JOIN FETCH author
-                                              WHERE published = TRUE AND
-                                                    author.username = :username AND
-                                                    slug = :slug
-                                              """, Post.class)
-                                 .setParameter("username", username)
-                                 .setParameter("slug", slug)
-                                 .getResultStream()
-                                 .findFirst();
-    }
-
-    public long countByAuthorAndPublished(long authorId, boolean published) {
-        return entityManager.createQuery("""
-                                         SELECT COUNT(p)
-                                         FROM Post p
-                                         WHERE p.author.id = :authorId
-                                         AND p.published = :published
-                                         """, Long.class)
-                            .setParameter("authorId", authorId)
-                            .setParameter("published", published)
-                            .getSingleResult();
-    }
-
-    public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
-        return entityManager.createQuery("""
-                                         FROM Post p
-                                         WHERE p.author.id = :authorId
-                                         AND p.published = :published
-                                         ORDER BY p.updatedAt DESC
-                                         """, Post.class)
-                            .setParameter("authorId", authorId)
-                            .setParameter("published", published)
-                            .setMaxResults(limit)
-                            .getResultList();
-    }
-
-    public Optional<Post> findById(Long id) {
-        return Optional.ofNullable(entityManager.find(Post.class, id));
-    }
-
-    public Optional<Post> findBySlugForEdit(String slug) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              WHERE slug = :slug
-                                              """, Post.class)
-                                 .setParameter("slug", slug)
-                                 .getResultStream()
-                                 .findFirst();
-    }
-
-    public List<Post> findByAuthorAndPublished(long authorId, boolean published) {
-        return entityManager.createQuery("""
-                                         FROM Post p
-                                         WHERE author.id = :authorId AND
-                                               published = :published
-
-                                         ORDER BY updatedAt DESC
-                                         """,
-                                         Post.class)
-                            .setParameter("authorId", authorId)
-                            .setParameter("published", published)
-                            .getResultList();
-    }
-
-    public List<Post> findNewest(int limit) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              WHERE published = TRUE
-                                              ORDER BY publishedAt DESC
-                                              """, Post.class)
-                                 .setMaxResults(limit)
-                                 .getResultList();
-    }
-
-    public List<Post> findByAuthorUsernameAndPublished(String username, int limit, int offset) {
-        return entityManager.createQuery("""
-                                         SELECT p
-                                         FROM Post p
-                                         JOIN FETCH p.author
-                                         WHERE p.author.username = :username AND
-                                               p.published = true
-                                         ORDER BY p.publishedAt DESC
-                                         """, Post.class)
-                            .setParameter("username", username)
-                            .setMaxResults(limit)
-                            .setFirstResult(offset)
-                            .getResultList();
-    }
-
-    public List<Post> findPublished(int limit, int offset) {
-        return entityManager.createQuery("""
-                                         SELECT p
-                                         FROM Post p
-                                         JOIN FETCH p.author
-                                         WHERE p.published = true
-                                         ORDER BY p.publishedAt DESC
-                                         """, Post.class)
-                            .setMaxResults(limit)
-                            .setFirstResult(offset)
-                            .getResultList();
-    }
-
-    public long countByAuthorUsernameAndPublished(String username) {
-        return entityManager.createQuery("""
-                                         SELECT COUNT(p)
-                                         FROM Post p
-                                         WHERE p.author.username = :username AND
-                                               p.published = true
-                                         """, Long.class)
-                            .setParameter("username", username)
-                            .getSingleResult();
-    }
-
-    public long countPublished() {
-        return entityManager.createQuery("""
-                                         SELECT COUNT(p)
-                                         FROM Post p
-                                         WHERE p.published = true
-                                         """, Long.class)
-                            .getSingleResult();
-    }
-
-    public List<Post> findAll(int offset, int limit) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              ORDER BY createdAt DESC
-                                              """, Post.class)
-                                 .setFirstResult(offset)
-                                 .setMaxResults(limit)
-                                 .getResultList();
-    }
-
-    public long count() {
-        return this.entityManager.createQuery("SELECT COUNT(p) FROM Post p", Long.class)
-                                 .getSingleResult();
-    }
-
-    public List<Post> findByAuthor(long authorId) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              WHERE author.id = :authorId
-                                              ORDER BY createdAt DESC
-                                              """, Post.class)
-                                 .setParameter("authorId", authorId)
-                                 .getResultList();
-    }
-
-    @Transactional
-    public Post save(Post post) {
-        entityManager.persist(post);
-        logger.info("Updated post: {}", post.getSlug());
-        return post;
+    public boolean slugExists(String slug, Long excludeId) {
+        var query = entityManager.createQuery("""
+                                              SELECT COUNT(p)
+                                              FROM Post p
+                                              WHERE p.slug = :slug
+                                              AND (:excludeId IS NULL OR p.id != :excludeId)
+                                              """, Long.class);
+        query.setParameter("slug", slug);
+        query.setParameter("excludeId", excludeId);
+        return query.getSingleResult() > 0;
     }
 
     @Transactional
@@ -256,49 +300,5 @@ public class PostRepository {
         entityManager.merge(post);
         logger.info("Updated post: {}", post.getSlug());
         return post;
-    }
-
-    @Transactional
-    public boolean delete(Long id) {
-        Post post = entityManager.find(Post.class, id);
-        if (post == null) {
-            return false;
-        }
-        entityManager.remove(post);
-        logger.info("Deleted post: {}", post.getSlug());
-        return true;
-    }
-
-    public boolean slugExists(String slug, Long excludeId) {
-        var query = entityManager.createQuery("""
-                                              SELECT COUNT(p)
-                                              FROM Post p
-                                              WHERE p.slug = :slug
-                                              AND (:excludeId IS NULL OR p.id != :excludeId)
-                                              """, Long.class);
-        query.setParameter("slug", slug);
-        query.setParameter("excludeId", excludeId);
-        return query.getSingleResult() > 0;
-    }
-
-    public List<Post> findDrafts() {
-        return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
-    }
-
-    public Page<Post> findPaginatedNewestFromAuthor(String username, int limit, int page) {
-        var extraFirst = (page == 1) ? 1 : 0;
-        var effectiveLimit = limit + extraFirst;
-        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
-        return new Page<>(findByAuthorUsernameAndPublished(username, effectiveLimit, offset),
-                          page,
-                          limit,
-                          countByAuthorUsernameAndPublished(username));
-    }
-
-    public Page<Post> findPaginatedNewest(int limit, int page) {
-        var extraFirst = (page == 1) ? 1 : 0;
-        var effectiveLimit = limit + extraFirst;
-        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
-        return new Page<>(findPublished(effectiveLimit, offset), page, limit, countPublished());
     }
 }

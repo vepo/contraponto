@@ -39,6 +39,15 @@ public class WriteEndpoint {
     }
 
     @GET
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance write() {
+        return Template.write(Optional.empty(),
+                              LocalDateTime.now().getYear(),
+                              loggedUser);
+    }
+
+    @GET
     @Path("draft/{draftId}")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
@@ -46,15 +55,6 @@ public class WriteEndpoint {
         return Template.write(Optional.ofNullable(draftId)
                                       .map(postRepository::findById)
                                       .orElseThrow(() -> new NotFoundException("Draft not found! id=%s".formatted(draftId))),
-                              LocalDateTime.now().getYear(),
-                              loggedUser);
-    }
-
-    @GET
-    @Operation(hidden = true)
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance write() {
-        return Template.write(Optional.empty(),
                               LocalDateTime.now().getYear(),
                               loggedUser);
     }
