@@ -156,7 +156,7 @@ class WriteTest {
 
         // Verify we can navigate to the published post
         // The slug is generated from title; we assume it becomes "published-post"
-        driver.get(testUrl.toString() + "post/published-post");
+        driver.get("/%s/%s/post/published-post".formatted(testUrl, testUser.getUsername()));
         var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
         assertThat(postTitle.getText()).isEqualTo(title);
     }
@@ -204,7 +204,7 @@ class WriteTest {
         assertThat(toast.getText()).contains("Post published!");
 
         // Verify on the post page
-        driver.get(testUrl.toString() + "post/updated-title");
+        driver.get("%s/%s/post/updated-title".formatted(testUrl, testUser.getUsername()));
         var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
         assertThat(postTitle.getText()).isEqualTo("Updated Title");
     }
