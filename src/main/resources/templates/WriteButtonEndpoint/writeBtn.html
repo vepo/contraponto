@@ -1,31 +1,32 @@
 {#if user.isAuthenticated}
-	<button type="button" 
-			class="btn-header" 
-			data-hx-get="/write"
-			hx-select="main"
-			hx-target="main"
-			hx-push-url="/write"
-			data-disable-pattern="^/write">
-		<img src="/images/write.svg" />
-		Escrever
-	</button>
-	<button id="publish"
-	        type="button" 
-			class="btn-header"
-			hx-post="/forms/write/publish"
-			hx-include="#postForm"
-			hx-target="main"
-			data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
-		Publicar
-	</button>
-	<button id="saveDraft" 
-	        type="button" 
-			class="btn-header"
-			hx-post="/forms/write/draft"
-			hx-include="#postForm"
-			hx-target="#toast"
-			hx-swap="innerHTML"
-			data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
-		Salvar Rascunho
-	</button>
+    <button type="button" 
+            class="btn-header" 
+            data-hx-get="/write"
+            hx-select="main"
+            hx-target="main"
+            hx-push-url="/write"
+            data-disable-pattern="^/write">
+        <img src="/images/write.svg" />
+        Escrever
+    </button>
+    <button id="publish"
+            type="button" 
+            class="btn-header"
+            hx-post="/forms/write/publish"
+            hx-include="#postForm"
+            hx-target="main"
+            hx-select="main"
+            data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
+        Publicar
+    </button>
+    <button id="saveDraft" 
+            type="button" 
+            class="btn-header"
+            hx-post="/forms/write/draft"
+            hx-include="#postForm"
+            hx-target="#toast"
+            hx-swap="innerHTML"
+            data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
+        Salvar Rascunho
+    </button>
 {/if}

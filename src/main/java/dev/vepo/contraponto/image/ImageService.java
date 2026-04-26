@@ -23,14 +23,18 @@ public class ImageService {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
-    @ConfigProperty(name = "image.storage.path", defaultValue = "/tmp/contraponto-images")
-    String storagePath;
-
-    @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080")
-    String baseUrl;
+    private final Path storagePath;
+    private final String baseUrl;
+    private final ImageRepository imageRepository;
 
     @Inject
-    ImageRepository imageRepository;
+    public ImageService(@ConfigProperty(name = "image.storage.path", defaultValue = "/tmp/contraponto-images") String storagePath,
+                        @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl,
+                        ImageRepository imageRepository) {
+        this.storagePath = Paths.get(storagePath);
+        this.baseUrl = baseUrl;
+        this.imageRepository = imageRepository;
+    }
 
     @Transactional
     public void deleteImage(String uuid) {
@@ -61,7 +65,7 @@ public class ImageService {
     }
 
     public ImageData getImage(String filename) throws IOException {
-        Path filePath = Paths.get(storagePath).resolve(filename);
+        Path filePath = storagePath.resolve(filename);
 
         if (!Files.exists(filePath)) {
             throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
@@ -101,16 +105,15 @@ public class ImageService {
             }
 
             // Create storage directory if not exists
-            var uploadPath = Paths.get(storagePath);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
+            if (!Files.exists(storagePath)) {
+                Files.createDirectories(storagePath);
             }
 
             // Generate unique filename
             var extension = getFileExtension(filename);
             var imageIdentifier = UUID.randomUUID().toString();
             var uniqueFilename = imageIdentifier + extension;
-            var filePath = uploadPath.resolve(uniqueFilename);
+            var filePath = storagePath.resolve(uniqueFilename);
 
             // Save file
             Files.copy(data, filePath, StandardCopyOption.REPLACE_EXISTING);
@@ -119,7 +122,7 @@ public class ImageService {
             var url = baseUrl + "/api/images/" + uniqueFilename;
 
             // Create image entity
-            var image = new Image(imageIdentifier, uniqueFilename, contentType, size, filePath.toString(), url);
+            var image = new Image(imageIdentifier, uniqueFilename, contentType, size, filePath.relativize(storagePath).toString(), url);
             imageRepository.save(image);
 
             logger.info("Image uploaded successfully: {} -> {}", filename, url);

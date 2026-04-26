@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.write;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -26,7 +25,7 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance write(Optional<Post> post, int currentYear, LoggedUser user);
+        public static native TemplateInstance write(Optional<Post> post, LoggedUser user);
     }
 
     private final PostRepository postRepository;
@@ -43,7 +42,6 @@ public class WriteEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write() {
         return Templates.write(Optional.empty(),
-                               LocalDateTime.now().getYear(),
                                loggedUser);
     }
 
@@ -55,7 +53,6 @@ public class WriteEndpoint {
         return Templates.write(Optional.ofNullable(draftId)
                                        .map(postRepository::findById)
                                        .orElseThrow(() -> new NotFoundException("Draft not found! id=%s".formatted(draftId))),
-                               LocalDateTime.now().getYear(),
                                loggedUser);
     }
 }

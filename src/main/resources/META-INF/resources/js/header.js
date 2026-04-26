@@ -37,12 +37,13 @@ class HeaderManager {
     setupHtmxListener() {
         // After any HTMX swap that replaces the menu container, ensure the dropdown is closed
         document.body.addEventListener('htmx:afterSwap', (evt) => {
-            console.log('swap on header', evt)
-            const menuContainer = document.getElementById('menu-container');
-            if (menuContainer && evt.detail.target.contains(menuContainer)) {
-                const userDropdown = document.getElementById('userDropdown');
-                if (userDropdown) {
-                    userDropdown.classList.remove('user-menu__dropdown--open');
+            if (evt && evt.detail && evt.detail.target) {
+                const menuContainer = document.getElementById('menu-container');
+                if (menuContainer && evt.detail.target.contains(menuContainer)) {
+                    const userDropdown = document.getElementById('userDropdown');
+                    if (userDropdown) {
+                        userDropdown.classList.remove('user-menu__dropdown--open');
+                    }
                 }
             }
         });
