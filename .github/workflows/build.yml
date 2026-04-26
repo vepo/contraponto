@@ -10,7 +10,7 @@ jobs:
     name: Build and analyze
     runs-on: ubuntu-latest
     steps:
-      - uses: browser-actions/setup-chrome@b82ad5d9e2916c124431a79b72e20138d46b05ba
+      - uses: browser-actions/setup-chrome@4f8e94349a351df0f048634f25fec36c3c91eded
       - run: chrome --version        
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
