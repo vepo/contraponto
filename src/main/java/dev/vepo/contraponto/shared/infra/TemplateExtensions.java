@@ -88,4 +88,8 @@ public class TemplateExtensions {
         }
         return minutes + " min read";
     }
+
+    private TemplateExtensions() {
+        /* This utility class should not be instantiated */
+    }
 }

@@ -130,7 +130,7 @@ public class SignUpEndpoint {
 
         // Auto-login
         var loggedUser = loggedUserProvider.login(newUser);
-        String menuHtml = MenuEndpoint.Template.menu(loggedUser).render();
+        String menuHtml = MenuEndpoint.Templates.menu(loggedUser).render();
         String responseBody = buildSuccessResponseBody(menuHtml);
 
         return Response.ok(responseBody)

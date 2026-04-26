@@ -259,8 +259,6 @@
                             <sortMembersEnabled>true</sortMembersEnabled>
                         </eclipse>
                     </java>
-                    <importOrder />
-                    <removeUnusedImports />
                 </configuration>
             </plugin>
         </plugins>

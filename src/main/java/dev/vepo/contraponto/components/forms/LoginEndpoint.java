@@ -129,7 +129,7 @@ public class LoginEndpoint {
                                      viewRepository.migrateAnonymousViewsToUser(loggedUser.getId(), anonymousSessionId);
                                  }
 
-                                 var menuHtml = MenuEndpoint.Template.menu(loggedUser).render();
+                                 var menuHtml = MenuEndpoint.Templates.menu(loggedUser).render();
                                  var responseBody = buildSuccessResponseBody(menuHtml);
 
                                  return Response.ok(responseBody)

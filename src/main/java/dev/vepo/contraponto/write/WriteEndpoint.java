@@ -25,7 +25,7 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class WriteEndpoint {
     @CheckedTemplate
-    class Template {
+    public static class Templates {
         static native TemplateInstance write(Optional<Post> post, int currentYear, LoggedUser user);
     }
 
@@ -42,9 +42,9 @@ public class WriteEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write() {
-        return Template.write(Optional.empty(),
-                              LocalDateTime.now().getYear(),
-                              loggedUser);
+        return Templates.write(Optional.empty(),
+                               LocalDateTime.now().getYear(),
+                               loggedUser);
     }
 
     @GET
@@ -52,10 +52,10 @@ public class WriteEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write(@PathParam("draftId") Long draftId) {
-        return Template.write(Optional.ofNullable(draftId)
-                                      .map(postRepository::findById)
-                                      .orElseThrow(() -> new NotFoundException("Draft not found! id=%s".formatted(draftId))),
-                              LocalDateTime.now().getYear(),
-                              loggedUser);
+        return Templates.write(Optional.ofNullable(draftId)
+                                       .map(postRepository::findById)
+                                       .orElseThrow(() -> new NotFoundException("Draft not found! id=%s".formatted(draftId))),
+                               LocalDateTime.now().getYear(),
+                               loggedUser);
     }
 }

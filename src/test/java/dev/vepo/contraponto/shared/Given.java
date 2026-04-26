@@ -13,7 +13,7 @@ import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.persistence.EntityManager;
 
-public class Given {
+public interface Given {
 
     public static class PostBuilder {
 

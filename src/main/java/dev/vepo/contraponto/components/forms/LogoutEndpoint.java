@@ -45,7 +45,7 @@ public class LogoutEndpoint {
                              document.cookie = "__session=; max-age=0; path=/;";
                              document.getElementById('authModal').classList.remove('modal--open');
                            </script>
-                           """.formatted(MenuEndpoint.Template.menu(new LoggedUser()).render()))
+                           """.formatted(MenuEndpoint.Templates.menu(new LoggedUser()).render()))
                        .header("HX-Trigger", "loggedOut")
                        .build();
     }

@@ -18,7 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class MenuEndpoint {
     @CheckedTemplate
-    public class Template {
+    public static class Templates {
         public static native TemplateInstance menu(LoggedUser user);
     }
 
@@ -36,6 +36,6 @@ public class MenuEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance menu() {
         logger.info("Reloading meny...");
-        return Template.menu(loggedUser);
+        return Templates.menu(loggedUser);
     }
 }

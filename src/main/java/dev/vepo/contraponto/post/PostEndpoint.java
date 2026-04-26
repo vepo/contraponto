@@ -26,7 +26,7 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 @ApplicationScoped
 public class PostEndpoint {
     @CheckedTemplate
-    class Template {
+    public static class Templates {
         static native TemplateInstance post(Post post, int currentYear, LoggedUser user, long viewCount);
     }
 
@@ -64,10 +64,10 @@ public class PostEndpoint {
 
         long viewCount = viewRepository.countByPost(post);
 
-        TemplateInstance template = Template.post(post,
-                                                  LocalDateTime.now().getYear(),
-                                                  loggedUser,
-                                                  viewCount);
+        TemplateInstance template = Templates.post(post,
+                                                   LocalDateTime.now().getYear(),
+                                                   loggedUser,
+                                                   viewCount);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));

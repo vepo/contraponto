@@ -13,13 +13,13 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class AuthModal {
     @CheckedTemplate
-    class Template {
+    public static class Templates {
         static native TemplateInstance modal(String mode);
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance modal(@QueryParam("mode") String mode) {
-        return Template.modal(mode); // mode = "login" or "signup"
+        return Templates.modal(mode); // mode = "login" or "signup"
     }
 }

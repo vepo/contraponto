@@ -23,7 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 public class ProfileEndpoint {
 
     @CheckedTemplate
-    public class Template {
+    public static class Templates {
         public static native TemplateInstance profile(int currentYear, LoggedUser user);
     }
 
@@ -41,6 +41,6 @@ public class ProfileEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance profile() {
         logger.info("Reloading meny...");
-        return Template.profile(LocalDateTime.now().getYear(), loggedUser);
+        return Templates.profile(LocalDateTime.now().getYear(), loggedUser);
     }
 }

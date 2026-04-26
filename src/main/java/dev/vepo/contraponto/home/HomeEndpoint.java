@@ -23,15 +23,13 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class HomeEndpoint {
     @CheckedTemplate
-    class Template {
+    public static class Templates {
         static native TemplateInstance featured(Post post);
 
         static native TemplateInstance grid(Page<Post> posts, boolean ignoreFirst);
 
         static native TemplateInstance home(Page<Post> posts, LoggedUser user);
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(HomeEndpoint.class);
 
     private final PostRepository postRepository;
     private final LoggedUser loggedUser;
@@ -47,13 +45,13 @@ public class HomeEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance morePosts(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
-        return Template.grid(this.postRepository.findPaginatedNewest(limit, page), false);
+        return Templates.grid(this.postRepository.findPaginatedNewest(limit, page), false);
     }
 
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance post(@QueryParam("limit") @DefaultValue("12") int limit) {
-        return Template.home(this.postRepository.findPaginatedNewest(limit, 1), loggedUser);
+        return Templates.home(this.postRepository.findPaginatedNewest(limit, 1), loggedUser);
     }
 }

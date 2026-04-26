@@ -18,7 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 @Path("components/write-btn")
 public class WriteButtonEndpoint {
     @CheckedTemplate
-    public class Template {
+    public static class Templates {
         public static native TemplateInstance writeBtn(LoggedUser user);
     }
 
@@ -36,6 +36,6 @@ public class WriteButtonEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance menu() {
         logger.info("Reloading meny...");
-        return Template.writeBtn(loggedUser);
+        return Templates.writeBtn(loggedUser);
     }
 }
