@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import dev.vepo.contraponto.auth.PasswordService;
@@ -22,6 +23,7 @@ public interface Given {
         private String content;
         private User author;
         private String slug;
+        private boolean published;
 
         private PostBuilder() {
             this.title = null;
@@ -29,11 +31,18 @@ public interface Given {
             this.content = null;
             this.author = null;
             this.slug = null;
+            this.published = true;
         }
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title, slug, description, content, author, true, LocalDateTime.now());
+                var post = new Post(title, slug, description, content, author, this.published, LocalDateTime.now());
+                if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
+                    post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
+                }
+                if (Objects.isNull(post.getDescription()) || post.getDescription().isBlank()) {
+                    post.setDescription(post.getTitle());
+                }
                 inject(EntityManager.class).persist(post);
                 return post;
             });
@@ -51,6 +60,11 @@ public interface Given {
 
         public PostBuilder withDescription(String description) {
             this.description = description;
+            return this;
+        }
+
+        public PostBuilder withPublished(boolean published) {
+            this.published = published;
             return this;
         }
 
