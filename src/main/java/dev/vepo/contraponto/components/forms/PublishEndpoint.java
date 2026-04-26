@@ -88,7 +88,7 @@ public class PublishEndpoint {
                        .header("X-Toast-Message", "Post published!")
                        .header("X-Toast-Type", "Success")
                        .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                       .header("HX-Push-Url", "/post/%s".formatted(post.getSlug()))
+                       .header("HX-Push-Url", "/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug()))
                        .build();
     }
 }

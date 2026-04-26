@@ -40,10 +40,10 @@
                             {#for post in results}
                             <article class="search-result">
                                 <h2 class="search-result__title">
-                                    <a data-hx-get="/post/{post.slug}"
+                                    <a data-hx-get="/{post.author.username}/post/{post.slug}"
                                     hx-select="main"
                                     hx-target="main"
-                                    hx-push-url="/post/{post.slug}">
+                                    hx-push-url="/{post.author.username}/post/{post.slug}">
                                         {post.title}
                                     </a>
                                 </h2>

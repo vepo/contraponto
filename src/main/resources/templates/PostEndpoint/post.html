@@ -30,7 +30,13 @@
                 <h1 class="article-page__title">{post.title}</h1>
 
                 <div class="article-page__byline">
-                    By {post.author.name}
+                    By <a data-hx-get="/{post.author.username}"
+                        hx-select="main"
+                        hx-target="main"
+                        hx-push-url="/{post.author.username}"
+                        class="author-link">
+                        {post.author.name}
+                    </a>
                 </div>
 
                 <div class="article-page__metadata">

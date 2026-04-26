@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 
-@Path("post/{slug}")
+@Path("{username}/post/{slug}")
 @ApplicationScoped
 public class PostEndpoint {
     @CheckedTemplate
@@ -49,10 +49,11 @@ public class PostEndpoint {
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public Response post(@PathParam("slug") String slug,
+    public Response post(@PathParam("username") String username,
+                         @PathParam("slug") String slug,
                          @Context HttpHeaders headers) {
-        Post post = postRepository.findBySlug(slug)
-                                  .orElseThrow(() -> new NotFoundException("Post not found! slug=" + slug));
+        Post post = postRepository.findByUsernameAndSlug(username, slug)
+                                  .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=$s".formatted(username, slug)));
 
         // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));

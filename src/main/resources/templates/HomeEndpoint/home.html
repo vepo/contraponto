@@ -6,79 +6,15 @@
     <body hx-history-elt>
         {#include components/header /}
         <main>
-            {#if posts.size > 0}
-            <section class="featured">
-                <div class="container">
-                    <div class="featured__grid">
-                        <div class="featured__content">
-                            <div class="featured__category">Featured</div>
-                            <h1 class="featured__title">
-                                <a data-hx-get="/post/{posts[0].slug}"
-                                   hx-select="main"
-                                   hx-target="main"
-                                   hx-push-url="/post/{posts[0].slug}">{posts[0].title}</a>
-                            </h1>
-                            <div class="featured__excerpt">{posts[0].description.raw}</div>
-                            <div class="article-meta">
-                                <span class="article-meta__author">{posts[0].author.name}</span>
-                                <span class="article-meta__dot">•</span>
-                                <time datetime="{posts[0].publishedAt}">{posts[0].publishedAt.formatDate}</time>
-                                <span class="article-meta__dot">•</span>
-                                <span>{posts[0].content.readTime}</span>
-                            </div>
-                        </div>
-                        {#if posts[0].cover}
-                        <div class="featured__image">
-                            <img src="{posts[0].cover.url}" alt="{posts[0].title}"/>
-                        </div>
-                        {/if}
-                    </div>
-                </div>
-            </section>
+            {#if !posts.isEmpty}
+            {#let post = posts.data.get(0)}
+                {#include HomeEndpoint/featured post=post}
             {/if}
 
             <div class="container">
                     <div class="posts-grid">
-                        {#for post in posts}
-                            {#if post_index > 0}
-                            <article class="article-card">
-                                {#if post.cover}
-                                <div class="article-card__image">
-                                    <a data-hx-get="/post/{post.slug}"
-                                       hx-select="main"
-                                       hx-target="main"
-                                       hx-push-url="/post/{post.slug}">
-                                        <img src="{post.cover.url}" alt="{post.title}"/>
-                                    </a>
-                                </div>
-                                {/if}
-                                <div class="article-card__content">
-                                    <div class="article-card__category">Article</div>
-                                    <h2 class="article-card__title">
-                                        <a data-hx-get="/post/{post.slug}"
-                                           hx-select="main"
-                                           hx-target="main"
-                                           hx-push-url="/post/{post.slug}">{post.title}</a>
-                                    </h2>
-                                    <p class="article-card__excerpt">{post.description}</p>
-                                    <div class="article-meta">
-                                        <span class="article-meta__author">{post.author.name}</span>
-                                        <span class="article-meta__dot">•</span>
-                                        <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
-                                        <span class="article-meta__dot">•</span>
-                                        <span>{post.content.readTime}</span>
-                                    </div>
-                                </div>
-                            </article>
-                            {/if}
-                        {/for}
+                        {#include HomeEndpoint/grid ignoreFirst=true}
                     </div>
-
-                    {#if posts.size > 6}
-                    <div class="load-more">
-                        <button class="btn">Load more</button>
-                    </div>
-                    {/if}
                 </article>
             </div>
         </main>

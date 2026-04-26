@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.shared.pagination.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -73,13 +74,15 @@ public class PostRepository {
         }
     }
 
-    public Optional<Post> findBySlug(String slug) {
+    public Optional<Post> findByUsernameAndSlug(String username, String slug) {
         return this.entityManager.createQuery("""
                                               FROM Post
                                               JOIN FETCH author
                                               WHERE published = TRUE AND
+                                                    author.username = :username AND
                                                     slug = :slug
                                               """, Post.class)
+                                 .setParameter("username", username)
                                  .setParameter("slug", slug)
                                  .getResultStream()
                                  .findFirst();
@@ -146,6 +149,54 @@ public class PostRepository {
                                               """, Post.class)
                                  .setMaxResults(limit)
                                  .getResultList();
+    }
+
+    public List<Post> findByAuthorUsernameAndPublished(String username, int limit, int offset) {
+        return entityManager.createQuery("""
+                                         SELECT p
+                                         FROM Post p
+                                         JOIN FETCH p.author
+                                         WHERE p.author.username = :username AND
+                                               p.published = true
+                                         ORDER BY p.publishedAt DESC
+                                         """, Post.class)
+                            .setParameter("username", username)
+                            .setMaxResults(limit)
+                            .setFirstResult(offset)
+                            .getResultList();
+    }
+
+    public List<Post> findPublished(int limit, int offset) {
+        return entityManager.createQuery("""
+                                         SELECT p
+                                         FROM Post p
+                                         JOIN FETCH p.author
+                                         WHERE p.published = true
+                                         ORDER BY p.publishedAt DESC
+                                         """, Post.class)
+                            .setMaxResults(limit)
+                            .setFirstResult(offset)
+                            .getResultList();
+    }
+
+    public long countByAuthorUsernameAndPublished(String username) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.author.username = :username AND
+                                               p.published = true
+                                         """, Long.class)
+                            .setParameter("username", username)
+                            .getSingleResult();
+    }
+
+    public long countPublished() {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.published = true
+                                         """, Long.class)
+                            .getSingleResult();
     }
 
     public List<Post> findAll(int offset, int limit) {
@@ -232,5 +283,21 @@ public class PostRepository {
 
     public List<Post> findDrafts() {
         return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
+    }
+
+    public Page<Post> loadPaginatedAuthorPublishedPosts(String username, int page, int limit) {
+        return new Page<>(findByAuthorUsernameAndPublished(username,
+                                                           limit,
+                                                           (page - 1) * limit),
+                          page,
+                          limit,
+                          countByAuthorUsernameAndPublished(username));
+    }
+
+    public Page<Post> findPaginatedNewest(int limit, int page) {
+        var extraFirst = (page == 1) ? 1 : 0;
+        var effectiveLimit = limit + extraFirst;
+        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
+        return new Page<>(findPublished(effectiveLimit, offset), page, limit, countPublished());
     }
 }
