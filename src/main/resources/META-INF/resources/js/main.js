@@ -70,6 +70,7 @@ class MainManager {
                     elm.classList.remove('disabled');
                 }
             });
+        hljs.highlightAll();
     }
 
     /**

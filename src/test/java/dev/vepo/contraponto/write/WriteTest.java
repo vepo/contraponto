@@ -156,7 +156,7 @@ class WriteTest {
 
         // Verify we can navigate to the published post
         // The slug is generated from title; we assume it becomes "published-post"
-        driver.get("/%s/%s/post/published-post".formatted(testUrl, testUser.getUsername()));
+        driver.get("%s/%s/post/published-post".formatted(testUrl, testUser.getUsername()));
         var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
         assertThat(postTitle.getText()).isEqualTo(title);
     }

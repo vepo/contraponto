@@ -1196,8 +1196,8 @@ OpenTelemetry provides a vendor-agnostic way to collect traces, metrics, and log
 
 ### Auto-Instrumentation
 
-```java
-// Use Java agent
+```bash
+## Use Java agent
 java -javaagent:opentelemetry-javaagent.jar \
      -Dotel.service.name=payment-service \
      -Dotel.traces.exporter=jaeger \
