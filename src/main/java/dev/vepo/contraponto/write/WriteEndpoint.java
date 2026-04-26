@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.write;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -51,9 +52,12 @@ public class WriteEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write(@PathParam("draftId") Long draftId) {
-        return Templates.write(Optional.ofNullable(draftId)
-                                       .map(postRepository::findById)
-                                       .orElseThrow(() -> new NotFoundException("Draft not found! id=%s".formatted(draftId))),
-                               loggedUser);
+        var maybePost = Optional.ofNullable(draftId)
+                                .flatMap(postRepository::findById)
+                                .filter(post -> Objects.equals(post.getAuthor().getId(), loggedUser.getId()));
+        if (maybePost.isEmpty()) {
+            throw new NotFoundException("Draft not found! id=%s".formatted(draftId));
+        }
+        return Templates.write(maybePost, loggedUser);
     }
 }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Error – contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="error-page">
+            <div class="container-narrow">
+                <div class="error-card">
+                    <!-- Optional: status code if available -->
+                    <div class="error-code">{#if status}{status}{#else}4🖋️3{/if}</div>
+                    <h1 class="error-title">
+                        {#if message}
+                            {message}
+                        {#else}
+                            Something went wrong
+                        {/if}
+                    </h1>
+                    <p class="error-description">
+                        {#if description}
+                            {description}
+                        {#else}
+                            The page you were looking for doesn't exist or you don't have permission to access it.
+                        {/if}
+                    </p>
+                    <div class="error-actions">
+                        <a data-hx-get="/"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-swap="outerHTML"
+                           hx-push-url="/"
+                           class="btn btn--primary">
+                            ← Back to home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        {#include components/footer /}
+    </body>
+</html>
