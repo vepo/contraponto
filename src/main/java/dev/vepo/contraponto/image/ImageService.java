@@ -77,6 +77,10 @@ public class ImageService {
                                      .orElseThrow(() -> new WebApplicationException("Image metadata not found",
                                                                                     Response.Status.NOT_FOUND));
 
+        if (!filePath.normalize().startsWith(storagePath)) {
+            throw new IOException("Entry is outside of the target directory");
+        }
+
         byte[] data = Files.readAllBytes(filePath);
         return new ImageData(data, image.getContentType(), image.getSize());
     }
