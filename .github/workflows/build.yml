@@ -20,6 +20,7 @@ jobs:
         with:
           java-version: 25
           distribution: 'zulu' # Alternative distribution options are available.
+          cache: 'maven' # Enables Maven caching automatically
       - name: Cache SonarQube packages
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
