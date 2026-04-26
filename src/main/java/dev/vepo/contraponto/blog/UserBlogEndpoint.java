@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.blog;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -24,7 +26,11 @@ public class UserBlogEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance userBlog(String username, Page<Post> posts, LoggedUser user);
+        public static native TemplateInstance home(String username, Page<Post> posts, LoggedUser user);
+
+        static native TemplateInstance featured(Post post);
+
+        static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
     }
 
     private final UserRepository userRepository;
@@ -39,17 +45,25 @@ public class UserBlogEndpoint {
     }
 
     @GET
+    @Path("components/home/grid")
+    @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance blog(@PathParam("username") String username,
-                                 @DefaultValue("1") @QueryParam("page") int page) {
+    public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,
+                                      @QueryParam("page") int page) {
+        return Templates.grid(username, this.postRepository.findPaginatedNewestFromAuthor(username, limit, page), false);
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance blog(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit) {
         // Check if user exists
         var userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             throw new NotFoundException("User not found: " + username);
         }
-        int limit = 10;
-        return Templates.userBlog(username,
-                                  postRepository.loadPaginatedAuthorPublishedPosts(username, page, limit),
-                                  loggedUser);
+
+        return Templates.home(username,
+                              postRepository.findPaginatedNewestFromAuthor(username, limit, 1),
+                              loggedUser);
     }
 }

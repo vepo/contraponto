@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {username} - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main>
+            {#if !posts.isEmpty}
+            {#let post = posts.data.get(0)}
+                {#include HomeEndpoint/featured post=post username=username}
+            {/if}
+
+            <div class="container">
+                    <div class="posts-grid">
+                        {#include HomeEndpoint/grid ignoreFirst=true username=username}
+                    </div>
+                </article>
+            </div>
+        </main>
+
+        {#include components/footer /}
+
+    </body>
+</html>

@@ -285,10 +285,11 @@ public class PostRepository {
         return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
     }
 
-    public Page<Post> loadPaginatedAuthorPublishedPosts(String username, int page, int limit) {
-        return new Page<>(findByAuthorUsernameAndPublished(username,
-                                                           limit,
-                                                           (page - 1) * limit),
+    public Page<Post> findPaginatedNewestFromAuthor(String username, int limit, int page) {
+        var extraFirst = (page == 1) ? 1 : 0;
+        var effectiveLimit = limit + extraFirst;
+        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
+        return new Page<>(findByAuthorUsernameAndPublished(username, effectiveLimit, offset),
                           page,
                           limit,
                           countByAuthorUsernameAndPublished(username));

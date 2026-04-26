@@ -1,0 +1,33 @@
+<section class="featured">
+    <div class="container">
+        <div class="featured__grid">
+            <div class="featured__content">
+                <div class="featured__category">Featured</div>
+                <h1 class="featured__title">
+                    <a data-hx-get="/{post.author.username}/post/{post.slug}"
+                        hx-select="main"
+                        hx-target="main"
+                        hx-push-url="/{post.author.username}/post/{post.slug}">{post.title}</a>
+                </h1>
+                <div class="featured__excerpt">{post.description.raw}</div>
+                <div class="article-meta">
+                    <a data-hx-get="/{post.author.username}"
+                        hx-select="main"
+                        hx-target="main"
+                        hx-push-url="/{post.author.username}">
+                        <span class="article-meta__author">{post.author.name}</span>
+                    </a>
+                    <span class="article-meta__dot">•</span>
+                    <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
+                    <span class="article-meta__dot">•</span>
+                    <span>{post.content.readTime}</span>
+                </div>
+            </div>
+            {#if post.cover}
+            <div class="featured__image">
+                <img src="{post.cover.url}" alt="{post.title}"/>
+            </div>
+            {/if}
+        </div>
+    </div>
+</section>
