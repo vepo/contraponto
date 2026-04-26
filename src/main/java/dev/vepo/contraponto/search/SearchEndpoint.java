@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.search;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import dev.vepo.contraponto.post.Post;
@@ -22,12 +21,13 @@ import jakarta.ws.rs.core.MediaType;
 public class SearchEndpoint {
 
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance modal();
 
-        public static native TemplateInstance results(LoggedUser user, List<Post> results, int page, long total, String query, int currentYear);
+        public static native TemplateInstance results(LoggedUser user, List<Post> results, int page, long total, String query);
 
-        public static native TemplateInstance search(String query, List<Post> results, long total, int currentYear, LoggedUser user);
+        public static native TemplateInstance search(String query, List<Post> results, long total, LoggedUser user);
     }
 
     private final PostRepository postRepository;
@@ -48,7 +48,7 @@ public class SearchEndpoint {
         int offset = (page - 1) * limit;
         List<Post> results = postRepository.search(query, limit, offset);
         long total = postRepository.countSearchResults(query);
-        return Templates.results(loggedUser, results, page, total, query, LocalDateTime.now().getYear());
+        return Templates.results(loggedUser, results, page, total, query);
     }
 
     // Modal for quick search
@@ -69,6 +69,6 @@ public class SearchEndpoint {
             results = postRepository.search(query, 20, 0);
             total = postRepository.countSearchResults(query);
         }
-        return Templates.search(query, results, total, LocalDateTime.now().getYear(), loggedUser);
+        return Templates.search(query, results, total, loggedUser);
     }
 }

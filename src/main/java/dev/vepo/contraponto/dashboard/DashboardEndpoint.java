@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.dashboard;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +24,9 @@ import jakarta.ws.rs.core.MediaType;
 public class DashboardEndpoint {
 
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance dashboard(LoggedUser user,
-                                                        int currentYear,
                                                         long draftsCount,
                                                         long publishedCount,
                                                         List<Post> recentDrafts,
@@ -66,7 +65,6 @@ public class DashboardEndpoint {
         }
 
         return Templates.dashboard(loggedUser,
-                                   LocalDateTime.now().getYear(),
                                    draftsCount,
                                    publishedCount,
                                    recentDrafts,

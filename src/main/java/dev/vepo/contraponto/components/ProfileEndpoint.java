@@ -23,6 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 public class ProfileEndpoint {
 
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance profile(int currentYear, LoggedUser user);
     }

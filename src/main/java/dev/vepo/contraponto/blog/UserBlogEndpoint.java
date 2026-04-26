@@ -25,6 +25,7 @@ import jakarta.ws.rs.core.MediaType;
 public class UserBlogEndpoint {
 
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         static native TemplateInstance featured(Post post);
 

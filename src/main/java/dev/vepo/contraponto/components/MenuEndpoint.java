@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class MenuEndpoint {
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance menu(LoggedUser user);
     }

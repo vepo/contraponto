@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 @Path("components/write-btn")
 public class WriteButtonEndpoint {
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance writeBtn(LoggedUser user);
     }

@@ -1,8 +1,6 @@
 package dev.vepo.contraponto.home;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
@@ -23,6 +21,7 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class HomeEndpoint {
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         static native TemplateInstance featured(Post post);
 

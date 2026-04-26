@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class AuthModal {
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         static native TemplateInstance modal(String mode);
     }

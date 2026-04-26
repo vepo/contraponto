@@ -26,6 +26,7 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 @ApplicationScoped
 public class PostEndpoint {
     @CheckedTemplate
+    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance post(Post post, LoggedUser user, long viewCount);
     }
