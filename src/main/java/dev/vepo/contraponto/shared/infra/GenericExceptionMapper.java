@@ -31,35 +31,6 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         this.loggedUser = loggedUser;
     }
 
-    @Override
-    public Response toResponse(Throwable exception) {
-        // Determine HTTP status
-        int status = getStatus(exception);
-        String userMessage = getUserMessage(exception, status);
-        String technicalMessage = IS_DEV ? exception.getMessage() : null;
-
-        // Log the error with stack trace for server-side debugging
-        if (status >= 500) {
-            logger.error("Internal server error: {}", exception.getMessage(), exception);
-        } else {
-            logger.warn("Client error {}: {}", status, exception.getMessage());
-        }
-
-        // Render error page
-        String html = error
-                .data("user", loggedUser)
-                .data("status", status)
-                .data("message", technicalMessage)
-                .data("description", userMessage)
-                .data("dev", IS_DEV)
-                .render();
-
-        return Response.status(status)
-                       .entity(html)
-                       .type(MediaType.TEXT_HTML)
-                       .build();
-    }
-
     private int getStatus(Throwable exception) {
         if (exception instanceof WebApplicationException webEx) {
             return webEx.getResponse().getStatus();
@@ -87,5 +58,34 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             case 429 -> "Too many requests. Please try again later.";
             default -> "An unexpected error occurred. Please try again later.";
         };
+    }
+
+    @Override
+    public Response toResponse(Throwable exception) {
+        // Determine HTTP status
+        int status = getStatus(exception);
+        String userMessage = getUserMessage(exception, status);
+        String technicalMessage = IS_DEV ? exception.getMessage() : null;
+
+        // Log the error with stack trace for server-side debugging
+        if (status >= 500) {
+            logger.error("Internal server error: {}", exception.getMessage(), exception);
+        } else {
+            logger.warn("Client error {}: {}", status, exception.getMessage());
+        }
+
+        // Render error page
+        String html = error
+                           .data("user", loggedUser)
+                           .data("status", status)
+                           .data("message", technicalMessage)
+                           .data("description", userMessage)
+                           .data("dev", IS_DEV)
+                           .render();
+
+        return Response.status(status)
+                       .entity(html)
+                       .type(MediaType.TEXT_HTML)
+                       .build();
     }
 }

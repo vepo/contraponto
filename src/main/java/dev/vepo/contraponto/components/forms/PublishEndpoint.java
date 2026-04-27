@@ -89,6 +89,8 @@ public class PublishEndpoint {
         if (request.coverId() != null && !request.coverId().isBlank()) {
             imageRepository.findByUuid(request.coverId())
                            .ifPresent(post::setCover);
+        } else if (Objects.nonNull(post.getCover())) {
+            post.setCover(null);
         }
 
         post.setSlug(request.slug());

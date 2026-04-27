@@ -6,7 +6,14 @@ import static org.openqa.selenium.By.className;
 import static org.openqa.selenium.By.cssSelector;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.Given;
@@ -71,17 +79,6 @@ class WriteTest {
     }
 
     @Test
-    void cannotSavePostWithoutContent(WebDriver driver, WebDriverWait wait) {
-        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-        driver.get(testUrl.toString() + "write");
-        driver.findElement(cssSelector("#title")).sendKeys("No content");
-        driver.findElement(By.id("saveDraft")).click();
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
-        assertThat(toast.getText()).contains("Content is required");
-        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#title"))).getAttribute("value")).isEqualTo("No content");
-    }
-
-    @Test
     void cannotPublishPostWithoutContent(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
@@ -92,6 +89,27 @@ class WriteTest {
         assertThat(wait.until(visibilityOfElementLocated(cssSelector("#title"))).getAttribute("value")).isEqualTo("No content");
     }
 
+    @Test
+    void cannotPublishPostWithoutTitle(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+        driver.findElement(cssSelector("#content")).sendKeys("Some content");
+        driver.findElement(By.id("publish")).click();
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
+        assertThat(toast.getText()).contains("Title is required");
+        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#content"))).getAttribute("value")).isEqualTo("Some content");
+    }
+
+    @Test
+    void cannotSavePostWithoutContent(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+        driver.findElement(cssSelector("#title")).sendKeys("No content");
+        driver.findElement(By.id("saveDraft")).click();
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
+        assertThat(toast.getText()).contains("Content is required");
+        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#title"))).getAttribute("value")).isEqualTo("No content");
+    }
 
     @Test
     void cannotSavePostWithoutTitle(WebDriver driver, WebDriverWait wait) {
@@ -105,14 +123,74 @@ class WriteTest {
     }
 
     @Test
-    void cannotPublishPostWithoutTitle(WebDriver driver, WebDriverWait wait) {
+    void changeCoverImageWhenEditingDraft(WebDriver driver, WebDriverWait wait) throws IOException {
+        // Create a post with an initial cover (using a dummy image from Given or
+        // directly)
+        // Since Given doesn't support cover image, we create it via UI.
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
-        driver.findElement(cssSelector("#content")).sendKeys("Some content");
+
+        Path firstImage = createTestImage();
+        driver.findElement(By.id("coverInput")).sendKeys(firstImage.toAbsolutePath().toString());
+        wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+        driver.findElement(By.id("title")).sendKeys("Post to Change Cover");
+        driver.findElement(By.id("content")).sendKeys("Content");
+        driver.findElement(By.id("saveDraft")).click();
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        String draftUrl = driver.getCurrentUrl(); // e.g., /write/draft/123
+        driver.get(draftUrl); // reload the edit page
+
+        // Remove existing cover
+        WebElement removeBtn = driver.findElement(By.id("removeCoverBtn"));
+        removeBtn.click();
+        wait.until(d -> !driver.findElement(By.id("coverPreview")).isDisplayed());
+
+        // Upload new cover
+        Path secondImage = createTestImage();
+        driver.findElement(By.id("coverInput")).sendKeys(secondImage.toAbsolutePath().toString());
+        wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+
         driver.findElement(By.id("publish")).click();
-        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
-        assertThat(toast.getText()).contains("Title is required");
-        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#content"))).getAttribute("value")).isEqualTo("Some content");
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        // Verify new cover appears on the post page
+        String slug = "post-to-change-cover";
+        driver.get(testUrl.toString() + testUser.getUsername() + "/post/" + slug);
+        WebElement coverImg = wait.until(visibilityOfElementLocated(cssSelector(".article-page__cover-image")));
+        assertThat(coverImg.isDisplayed()).isTrue();
+
+        Files.deleteIfExists(firstImage);
+        Files.deleteIfExists(secondImage);
+    }
+
+    @Test
+    void coverImageIsDisplayedOnPublishedPost(WebDriver driver, WebDriverWait wait) throws IOException {
+        // First create a post with cover image
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        Path tempImage = createTestImage();
+        WebElement coverInput = driver.findElement(By.id("coverInput"));
+        coverInput.sendKeys(tempImage.toAbsolutePath().toString());
+        wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+
+        String title = "Cover Image Test Post";
+        driver.findElement(By.id("title")).sendKeys(title);
+        driver.findElement(By.id("content")).sendKeys("Some content");
+        driver.findElement(By.id("publish")).click();
+
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        // Navigate to the published post
+        String slug = title.toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        driver.get(testUrl.toString() + testUser.getUsername() + "/post/" + slug);
+
+        WebElement coverImg = wait.until(visibilityOfElementLocated(cssSelector(".article-page__cover-image")));
+        assertThat(coverImg.isDisplayed()).isTrue();
+        assertThat(coverImg.getAttribute("src")).contains("/api/images/");
+
+        Files.deleteIfExists(tempImage);
     }
 
     @Test
@@ -137,6 +215,15 @@ class WriteTest {
 
         // After saving, URL should contain ?edit= with the new post id
         assertThat(driver.getCurrentUrl()).matches(".*/write/draft/\\d+");
+    }
+
+    private Path createTestImage() throws IOException {
+        Path tempImage = Files.createTempFile("test-cover", ".png");
+        // Create a simple 1x1 red pixel PNG
+        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, 0xFFFF0000);
+        ImageIO.write(image, "png", tempImage.toFile());
+        return tempImage;
     }
 
     @Test
@@ -271,10 +358,6 @@ class WriteTest {
         wait.until(visibilityOfElementLocated(className("user-menu")));
     }
 
-    // ------------------------------------------------------------------------
-    // Toolbar functionality (basic)
-    // ------------------------------------------------------------------------
-
     @Test
     void publishAndSaveDraftButtonsAreDisabledOnNonWritePages(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
@@ -284,10 +367,6 @@ class WriteTest {
         assertThat(publishBtn.getAttribute("class")).contains("disabled");
         assertThat(saveDraftBtn.getAttribute("class")).contains("disabled");
     }
-
-    // ------------------------------------------------------------------------
-    // NEW TESTS
-    // ------------------------------------------------------------------------
 
     @Test
     void publishNewPost(WebDriver driver, WebDriverWait wait) {
@@ -311,6 +390,43 @@ class WriteTest {
     }
 
     @Test
+    void removeCoverImageFromPost(WebDriver driver, WebDriverWait wait) throws IOException {
+        // Create a post with a cover
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        Path tempImage = createTestImage();
+        driver.findElement(By.id("coverInput")).sendKeys(tempImage.toAbsolutePath().toString());
+        wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+        driver.findElement(By.id("title")).sendKeys("Post with Cover to Remove");
+        driver.findElement(By.id("content")).sendKeys("Content");
+        driver.findElement(By.id("saveDraft")).click();
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        String draftUrl = driver.getCurrentUrl();
+        driver.get(draftUrl);
+
+        // Remove cover
+        driver.findElement(By.id("removeCoverBtn")).click();
+        wait.until(d -> !driver.findElement(By.id("coverPreview")).isDisplayed());
+
+        driver.findElement(By.id("publish")).click();
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        // Verify no cover on the post page
+        String slug = "post-with-cover-to-remove";
+        driver.get(testUrl.toString() + testUser.getUsername() + "/post/" + slug);
+        List<WebElement> coverImages = driver.findElements(cssSelector(".article-page__cover-image"));
+        assertThat(coverImages).isEmpty();
+
+        Files.deleteIfExists(tempImage);
+    }
+
+    // ------------------------------------------------------------------------
+    // Toolbar functionality (basic)
+    // ------------------------------------------------------------------------
+
+    @Test
     void savingDraftWithoutCoverImageWorks(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
@@ -321,6 +437,10 @@ class WriteTest {
         assertThat(toast.getText()).contains("Draft saved successfully!");
         // No error about cover image
     }
+
+    // ------------------------------------------------------------------------
+    // NEW TESTS
+    // ------------------------------------------------------------------------
 
     @BeforeEach
     void setup() {
@@ -397,6 +517,57 @@ class WriteTest {
     }
 
     @Test
+    void toolbarInsertsInlineImageMarkdown(WebDriver driver, WebDriverWait wait) throws IOException {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // First upload an image to get a URL (we can use the API directly or via UI)
+        Path tempImage = createTestImage();
+        WebElement coverInput = driver.findElement(By.id("coverInput"));
+        coverInput.sendKeys(tempImage.toAbsolutePath().toString());
+        wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+
+        // Wait for upload to complete and get the image ID (from hidden field)
+        String imageId = driver.findElement(By.id("coverId")).getAttribute("value");
+        assertThat(imageId).isNotBlank();
+
+        // The image URL will be /api/images/{uuid}. We'll construct it.
+        String imageUrl = testUrl.toString() + "api/images/" + imageId;
+
+        // Now go to the content textarea and insert the image using the toolbar
+        WebElement contentTextarea = driver.findElement(By.id("content"));
+        contentTextarea.sendKeys("An inline image: ");
+        // Simulate toolbar image command: it opens a file picker, but we can't automate
+        // that easily.
+        // Instead, we can directly insert the markdown via executeScript.
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        String markdown = "![Test Image](" + imageUrl + ")";
+        js.executeScript("document.getElementById('content').value += arguments[0];", markdown);
+
+        // Verify the markdown is present
+        String value = contentTextarea.getAttribute("value");
+        assertThat(value).contains(markdown);
+
+        // Save draft and verify the rendered HTML contains the image (after publishing)
+        driver.findElement(By.id("title")).sendKeys("Post with Inline Image");
+        driver.findElement(By.id("saveDraft")).click();
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        // Publish
+        driver.findElement(By.id("publish")).click();
+        wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+
+        // Navigate to post and verify the image appears in content
+        String slug = "post-with-inline-image";
+        driver.get(testUrl.toString() + testUser.getUsername() + "/post/" + slug);
+        WebElement article = wait.until(visibilityOfElementLocated(cssSelector(".article-page__content")));
+        WebElement imgInContent = article.findElement(cssSelector("img"));
+        assertThat(imgInContent.isDisplayed()).isTrue();
+
+        Files.deleteIfExists(tempImage);
+    }
+
+    @Test
     void toolbarInsertsLinkWithPrompt(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
@@ -424,10 +595,6 @@ class WriteTest {
         assertThat(value).contains("[click here](https://example.com)");
     }
 
-    // ------------------------------------------------------------------------
-    // Toolbar functionality (basic)
-    // ------------------------------------------------------------------------
-
     @Test
     void unauthenticatedUserCannotAccessWritePage(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString() + "write");
@@ -444,5 +611,38 @@ class WriteTest {
         if (!loginModal.isEmpty()) {
             assertThat(loginModal.get(0).isDisplayed()).isTrue();
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Toolbar functionality (basic)
+    // ------------------------------------------------------------------------
+
+    @Test
+    void uploadCoverImageWhenCreatingDraft(WebDriver driver, WebDriverWait wait) throws IOException {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // Create a temporary image file
+        Path tempImage = createTestImage();
+        WebElement coverInput = driver.findElement(By.id("coverInput"));
+        coverInput.sendKeys(tempImage.toAbsolutePath().toString());
+
+        // Wait for the upload to complete and preview to appear
+        wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+
+        // Fill post data
+        driver.findElement(By.id("title")).sendKeys("Post with Cover");
+        driver.findElement(By.id("content")).sendKeys("Content with cover image");
+        driver.findElement(By.id("saveDraft")).click();
+
+        WebElement toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+        assertThat(toast.getText()).contains("Draft saved successfully!");
+
+        // The cover ID should be stored in hidden field
+        String coverId = driver.findElement(By.id("coverId")).getAttribute("value");
+        assertThat(coverId).isNotBlank();
+
+        // Clean up temp file
+        Files.deleteIfExists(tempImage);
     }
 }

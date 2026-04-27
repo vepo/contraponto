@@ -13,7 +13,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
-@Logged  // Requires authentication
+@Logged // Requires authentication
 @Path("/api/posts")
 @ApplicationScoped
 public class PostApiEndpoint {
@@ -32,20 +32,20 @@ public class PostApiEndpoint {
     @Transactional
     public Response deletePost(@PathParam("id") Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Post not found"));
+                                  .orElseThrow(() -> new NotFoundException("Post not found"));
 
         // Check if the current user is the author
         if (!post.getAuthor().getId().equals(loggedUser.getId())) {
             return Response.status(Response.Status.FORBIDDEN)
-                    .entity("You are not allowed to delete this post")
-                    .build();
+                           .entity("You are not allowed to delete this post")
+                           .build();
         }
 
         // Optionally, prevent deletion of published posts (only drafts)
         if (post.isPublished()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Published posts cannot be deleted. Unpublish first.")
-                    .build();
+                           .entity("Published posts cannot be deleted. Unpublish first.")
+                           .build();
         }
 
         // Delete the post
