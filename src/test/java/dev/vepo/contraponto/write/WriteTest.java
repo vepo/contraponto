@@ -60,10 +60,6 @@ class WriteTest {
         assertThat(errorMsg).isNotEmpty();
     }
 
-    // ------------------------------------------------------------------------
-    // Existing tests (keep as is, but we may add small improvements)
-    // ------------------------------------------------------------------------
-
     @Test
     void authenticatedUserCanAccessWritePage(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
@@ -82,11 +78,20 @@ class WriteTest {
         driver.findElement(By.id("saveDraft")).click();
         var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
         assertThat(toast.getText()).contains("Content is required");
+        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#title"))).getAttribute("value")).isEqualTo("No content");
     }
 
-    // ------------------------------------------------------------------------
-    // Access control tests
-    // ------------------------------------------------------------------------
+    @Test
+    void cannotPublishPostWithoutContent(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+        driver.findElement(cssSelector("#title")).sendKeys("No content");
+        driver.findElement(By.id("publish")).click();
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
+        assertThat(toast.getText()).contains("Content is required");
+        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#title"))).getAttribute("value")).isEqualTo("No content");
+    }
+
 
     @Test
     void cannotSavePostWithoutTitle(WebDriver driver, WebDriverWait wait) {
@@ -96,6 +101,18 @@ class WriteTest {
         driver.findElement(By.id("saveDraft")).click();
         var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
         assertThat(toast.getText()).contains("Title is required");
+        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#content"))).getAttribute("value")).isEqualTo("Some content");
+    }
+
+    @Test
+    void cannotPublishPostWithoutTitle(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+        driver.findElement(cssSelector("#content")).sendKeys("Some content");
+        driver.findElement(By.id("publish")).click();
+        var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
+        assertThat(toast.getText()).contains("Title is required");
+        assertThat(wait.until(visibilityOfElementLocated(cssSelector("#content"))).getAttribute("value")).isEqualTo("Some content");
     }
 
     @Test
