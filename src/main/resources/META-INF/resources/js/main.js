@@ -41,11 +41,11 @@ class MainManager {
      */
     setupRouteBasedElementsEnabler() {
         htmx.on('loggedOut', this.redirectIfPathProtected);
-        document.body.addEventListener('htmx:afterSwap', this.updateUIElements);
+        document.body.addEventListener('htmx:afterSettle', this.updateUIElements);
     }
 
     updateUIElements(evt) {
-        if (evt && evt.detail.target.id === 'libraryContent') {
+        if (evt && evt.detail && evt.detail.target && evt.detail.target.id === 'libraryContent') {
             // Get the full request path (e.g., "/library/tab?type=published")
             const requestPath = evt.detail.pathInfo.requestPath;
             let newActiveValue = null;
