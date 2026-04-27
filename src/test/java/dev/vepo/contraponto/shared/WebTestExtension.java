@@ -46,7 +46,14 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
         var options = new ChromeOptions();
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--headless");
+        // Enable headless only when running in GitHub Actions
+        var githubActions = System.getenv("GITHUB_ACTIONS");
+        if ("true".equalsIgnoreCase(githubActions)) {
+            options.addArguments("--headless");
+            logger.info("Running in headless mode (GitHub Actions detected)");
+        } else {
+            logger.info("Running with UI (not in GitHub Actions)");
+        }
         options.addArguments("--allow-file-access-from-files");
         options.addArguments("--disable-web-security");
         options.addArguments("--allow-running-insecure-content");
