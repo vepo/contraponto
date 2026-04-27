@@ -1,7 +1,10 @@
 package dev.vepo.contraponto.view;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +33,27 @@ public class ViewRepository {
                             .getSingleResult();
     }
 
-    public List<Object[]> getViewCountsForPosts(List<Post> posts) {
-        if (posts.isEmpty())
-            return List.of();
-        return entityManager.createQuery("""
-                                         SELECT v.post.id, COUNT(v)
-                                         FROM View v
-                                         WHERE v.post IN :posts
-                                         GROUP BY v.post.id
-                                         """, Object[].class)
-                            .setParameter("posts", posts)
-                            .getResultList();
+    public Map<Long, Long> getViewCountsForPosts(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        var counts = entityManager.createQuery("""
+                                               SELECT v.post.id, COUNT(v)
+                                               FROM View v
+                                               WHERE v.post.id IN :postIds
+                                               GROUP BY v.post.id
+                                               """, Object[].class)
+                                  .setParameter("postIds", postIds)
+                                  .getResultList();
+
+        Map<Long, Long> viewCounts = new HashMap<>();
+        for (Object[] row : counts) {
+            Long postId = (Long) row[0];
+            Long count = (Long) row[1];
+            viewCounts.put(postId, count);
+        }
+        return viewCounts;
     }
 
     @Transactional

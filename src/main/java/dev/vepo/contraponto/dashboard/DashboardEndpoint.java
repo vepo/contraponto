@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.dashboard;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,21 +47,15 @@ public class DashboardEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance dashboard() {
-        long draftsCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), false);
-        long publishedCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), true);
-        List<Post> recentDrafts = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), false, 5);
-        List<Post> recentPublished = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), true, 5);
+        var draftsCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), false);
+        var publishedCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), true);
+        var recentDrafts = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), false, 5);
+        var recentPublished = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), true, 5);
 
         // Fetch view counts for the published posts
-        Map<Long, Long> viewCounts = new HashMap<>();
-        if (!recentPublished.isEmpty()) {
-            List<Object[]> counts = viewRepository.getViewCountsForPosts(recentPublished);
-            for (Object[] row : counts) {
-                Long postId = (Long) row[0];
-                Long count = (Long) row[1];
-                viewCounts.put(postId, count);
-            }
-        }
+        Map<Long, Long> viewCounts = viewRepository.getViewCountsForPosts(recentPublished.stream()
+                                                                                         .map(Post::getId)
+                                                                                         .toList());
 
         return Templates.dashboard(loggedUser,
                                    draftsCount,
