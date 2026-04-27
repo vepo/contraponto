@@ -1,8 +1,6 @@
 package dev.vepo.contraponto.components;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
@@ -23,8 +21,6 @@ public class WriteButtonEndpoint {
         public static native TemplateInstance writeBtn(LoggedUser user);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(MenuEndpoint.class);
-
     private final LoggedUser loggedUser;
 
     @Inject
@@ -36,7 +32,6 @@ public class WriteButtonEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance menu() {
-        logger.info("Reloading meny...");
         return Templates.writeBtn(loggedUser);
     }
 }
