@@ -251,6 +251,7 @@ class HomeTest {
                           .withDescription("Description for post " + index)
                           .withContent(baseContent)
                           .withAuthor(author)
+                          .withCover(Given.randomCover())
                           .persist();
                  });
     }

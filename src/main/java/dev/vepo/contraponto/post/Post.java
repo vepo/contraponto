@@ -62,8 +62,16 @@ public class Post {
 
     public Post() {}
 
-    public Post(String title, String slug, String description, String content, User author, boolean published, LocalDateTime publishedAt) {
+    public Post(String title,
+                Image cover,
+                String slug,
+                String description,
+                String content,
+                User author,
+                boolean published,
+                LocalDateTime publishedAt) {
         this.title = title;
+        this.cover = cover;
         this.slug = slug;
         this.description = description;
         this.content = content;

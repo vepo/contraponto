@@ -6,14 +6,11 @@ import static org.openqa.selenium.By.className;
 import static org.openqa.selenium.By.cssSelector;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -130,7 +127,7 @@ class WriteTest {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
 
-        Path firstImage = createTestImage();
+        Path firstImage = Given.randomImage();
         driver.findElement(By.id("coverInput")).sendKeys(firstImage.toAbsolutePath().toString());
         wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
         driver.findElement(By.id("title")).sendKeys("Post to Change Cover");
@@ -147,7 +144,7 @@ class WriteTest {
         wait.until(d -> !driver.findElement(By.id("coverPreview")).isDisplayed());
 
         // Upload new cover
-        Path secondImage = createTestImage();
+        Path secondImage = Given.randomImage();
         driver.findElement(By.id("coverInput")).sendKeys(secondImage.toAbsolutePath().toString());
         wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
 
@@ -170,7 +167,7 @@ class WriteTest {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
 
-        Path tempImage = createTestImage();
+        Path tempImage = Given.randomImage();
         WebElement coverInput = driver.findElement(By.id("coverInput"));
         coverInput.sendKeys(tempImage.toAbsolutePath().toString());
         wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
@@ -215,15 +212,6 @@ class WriteTest {
 
         // After saving, URL should contain ?edit= with the new post id
         assertThat(driver.getCurrentUrl()).matches(".*/write/draft/\\d+");
-    }
-
-    private Path createTestImage() throws IOException {
-        Path tempImage = Files.createTempFile("test-cover", ".png");
-        // Create a simple 1x1 red pixel PNG
-        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        image.setRGB(0, 0, 0xFFFF0000);
-        ImageIO.write(image, "png", tempImage.toFile());
-        return tempImage;
     }
 
     @Test
@@ -395,7 +383,7 @@ class WriteTest {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
         driver.get(testUrl.toString() + "write");
 
-        Path tempImage = createTestImage();
+        Path tempImage = Given.randomImage();
         driver.findElement(By.id("coverInput")).sendKeys(tempImage.toAbsolutePath().toString());
         wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
         driver.findElement(By.id("title")).sendKeys("Post with Cover to Remove");
@@ -522,7 +510,7 @@ class WriteTest {
         driver.get(testUrl.toString() + "write");
 
         // First upload an image to get a URL (we can use the API directly or via UI)
-        Path tempImage = createTestImage();
+        Path tempImage = Given.randomImage();
         WebElement coverInput = driver.findElement(By.id("coverInput"));
         coverInput.sendKeys(tempImage.toAbsolutePath().toString());
         wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
@@ -623,7 +611,7 @@ class WriteTest {
         driver.get(testUrl.toString() + "write");
 
         // Create a temporary image file
-        Path tempImage = createTestImage();
+        Path tempImage = Given.randomImage();
         WebElement coverInput = driver.findElement(By.id("coverInput"));
         coverInput.sendKeys(tempImage.toAbsolutePath().toString());
 

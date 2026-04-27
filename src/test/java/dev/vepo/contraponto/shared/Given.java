@@ -1,13 +1,24 @@
 package dev.vepo.contraponto.shared;
 
 import static java.util.Objects.requireNonNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import javax.imageio.ImageIO;
+
 import dev.vepo.contraponto.auth.PasswordService;
+import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.image.ImageRepository;
+import dev.vepo.contraponto.image.ImageService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -22,6 +33,7 @@ public interface Given {
         private String description;
         private String content;
         private User author;
+        private Image cover;
         private String slug;
         private boolean published;
 
@@ -36,7 +48,7 @@ public interface Given {
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title, slug, description, content, author, this.published, LocalDateTime.now());
+                var post = new Post(title, cover, slug, description, content, author, this.published, LocalDateTime.now());
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
                 }
@@ -50,6 +62,11 @@ public interface Given {
 
         public PostBuilder withAuthor(User author) {
             this.author = author;
+            return this;
+        }
+
+        public PostBuilder withCover(Image cover) {
+            this.cover = cover;
             return this;
         }
 
@@ -164,6 +181,34 @@ public interface Given {
         } catch (Exception e) {
             QuarkusTransaction.rollback();
             fail("Fail to create transaction!", e);
+            return null;
+        }
+    }
+
+    public static Image randomCover() {
+        var image = randomImage();
+        try {
+            var imageResp = inject(ImageService.class).uploadImage(image.getFileName().toString(),
+                                                                   "image/png", new FileInputStream(image.toFile()), Files.size(image));
+            var imageDb = inject(ImageRepository.class).findByUuid(imageResp.getId());
+            assertTrue(imageDb.isPresent());
+            return imageDb.get();
+        } catch (IOException ioe) {
+            fail("Cannot create image!", ioe);
+            return null;
+        }
+    }
+
+    public static Path randomImage() {
+        try {
+            var tempImage = Files.createTempFile("test-cover", ".png");
+            // Create a simple 1x1 red pixel PNG
+            var image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+            image.setRGB(0, 0, 0xFFFF0000);
+            ImageIO.write(image, "png", tempImage.toFile());
+            return tempImage;
+        } catch (IOException ioe) {
+            fail("Fail to create random image!", ioe);
             return null;
         }
     }
