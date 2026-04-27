@@ -24,15 +24,12 @@ public class ImageService {
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
     private final Path storagePath;
-    private final String baseUrl;
     private final ImageRepository imageRepository;
 
     @Inject
     public ImageService(@ConfigProperty(name = "image.storage.path", defaultValue = "/tmp/contraponto-images") String storagePath,
-                        @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl,
                         ImageRepository imageRepository) {
         this.storagePath = Paths.get(storagePath);
-        this.baseUrl = baseUrl;
         this.imageRepository = imageRepository;
     }
 
@@ -123,7 +120,7 @@ public class ImageService {
             Files.copy(data, filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Generate URL
-            var url = baseUrl + "/api/images/" + uniqueFilename;
+            var url = "/api/images/%s".formatted(uniqueFilename);
 
             // Create image entity
             var image = new Image(imageIdentifier, uniqueFilename, contentType, size, filePath.relativize(storagePath).toString(), url);
