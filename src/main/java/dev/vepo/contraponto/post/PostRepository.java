@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.post;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -8,7 +7,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.shared.pagination.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -273,32 +271,5 @@ public class PostRepository {
         query.setParameter("slug", slug);
         query.setParameter("excludeId", excludeId);
         return query.getSingleResult() > 0;
-    }
-
-    @Transactional
-    public Post update(Long id, PostRequest request, Image cover) {
-        Post post = entityManager.find(Post.class, id);
-        if (post == null) {
-            return null;
-        }
-
-        post.setSlug(request.slug());
-        post.setTitle(request.title());
-        post.setDescription(request.description());
-        post.setContent(request.content());
-        post.setCover(cover);
-
-        // Handle publishing status change
-        if (request.published() && !post.isPublished()) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        } else if (!request.published() && post.isPublished()) {
-            post.setPublished(false);
-            post.setPublishedAt(null);
-        }
-
-        entityManager.merge(post);
-        logger.info("Updated post: {}", post.getSlug());
-        return post;
     }
 }
