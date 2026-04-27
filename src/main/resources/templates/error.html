@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     {#include components/head}
     Error – contraponto
     {/include}
@@ -8,22 +8,46 @@
         <main class="error-page">
             <div class="container-narrow">
                 <div class="error-card">
-                    <!-- Optional: status code if available -->
-                    <div class="error-code">{#if status}{status}{#else}4🖋️3{/if}</div>
+                    <div class="error-code">
+                        {#if status == 404}
+                            404
+                        {#else if status == 403}
+                            403
+                        {#else if status == 400}
+                            400
+                        {#else}
+                            500
+                        {/if}
+                    </div>
                     <h1 class="error-title">
-                        {#if message}
-                            {message}
+                        {#if status == 404}
+                            Page not found
+                        {#else if status == 403}
+                            Access denied
+                        {#else if status == 400}
+                            Bad request
                         {#else}
                             Something went wrong
                         {/if}
                     </h1>
                     <p class="error-description">
-                        {#if description}
-                            {description}
+                        {#if status == 404}
+                            The page you are looking for doesn't exist or has been moved.
+                        {#else if status == 403}
+                            You don't have permission to access this resource.
+                        {#else if status == 400}
+                            The request could not be understood by the server.
                         {#else}
-                            The page you were looking for doesn't exist or you don't have permission to access it.
+                            An unexpected error occurred. Our team has been notified.
                         {/if}
                     </p>
+                    {#if status == 500 && dev}
+                    <!-- Only show technical details in development mode -->
+                    <details class="error-details">
+                        <summary>Technical details (development only)</summary>
+                        <pre>{message}</pre>
+                    </details>
+                    {/if}
                     <div class="error-actions">
                         <a data-hx-get="/"
                            hx-select="main"
@@ -31,8 +55,11 @@
                            hx-swap="outerHTML"
                            hx-push-url="/"
                            class="btn btn--primary">
-                            ← Back to home
+                            &larr; Back to home
                         </a>
+                        <button onclick="window.location.reload()" class="btn">
+                            &#8635; Try again
+                        </button>
                     </div>
                 </div>
             </div>

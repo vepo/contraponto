@@ -51,7 +51,9 @@
                     hx-delete="/api/posts/{post.id}"
                     hx-confirm="Are you sure you want to delete this draft?"
                     hx-target="closest .draft-card"
-                    hx-swap="outerHTML">
+                    hx-swap="outerHTML"
+                    hx-target-error="#toast"
+                    hx-swap-error="innerHTML">
                 Delete
             </button>
             {/if}

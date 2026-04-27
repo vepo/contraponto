@@ -9,7 +9,6 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElem
 import java.net.URL;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -44,7 +43,6 @@ class WriteTest {
     User secondUser;
 
     @Test
-    @Disabled
     void accessingAnotherUsersDraftReturnsNotFound(WebDriver driver, WebDriverWait wait) {
         var otherDraftId = Given.post()
                                 .withTitle("Other User Draft")
@@ -58,7 +56,7 @@ class WriteTest {
 
         // Should receive a 404 (the page may show an error or redirect)
         await().until(() -> !driver.getPageSource().contains("Other User Draft"));
-        var errorMsg = driver.findElements(cssSelector(".error-message, .not-found"));
+        var errorMsg = driver.findElements(cssSelector(".error-title"));
         assertThat(errorMsg).isNotEmpty();
     }
 
@@ -125,7 +123,6 @@ class WriteTest {
     }
 
     @Test
-    @Disabled
     void deleteDraftFromLibrary(WebDriver driver, WebDriverWait wait) {
         Given.post()
              .withTitle("Draft to Delete")
