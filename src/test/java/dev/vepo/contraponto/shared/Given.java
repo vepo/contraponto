@@ -65,13 +65,13 @@ public interface Given {
             return this;
         }
 
-        public PostBuilder withCover(Image cover) {
-            this.cover = cover;
+        public PostBuilder withContent(String content) {
+            this.content = content;
             return this;
         }
 
-        public PostBuilder withContent(String content) {
-            this.content = content;
+        public PostBuilder withCover(Image cover) {
+            this.cover = cover;
             return this;
         }
 
@@ -161,30 +161,6 @@ public interface Given {
         return new PostBuilder();
     }
 
-    public static void transaction(Runnable code) {
-        try {
-            QuarkusTransaction.begin();
-            code.run();
-            QuarkusTransaction.commit();
-        } catch (Exception e) {
-            QuarkusTransaction.rollback();
-            fail("Fail to create transaction!", e);
-        }
-    }
-
-    public static <T> T transaction(Supplier<T> code) {
-        try {
-            QuarkusTransaction.begin();
-            T value = code.get();
-            QuarkusTransaction.commit();
-            return value;
-        } catch (Exception e) {
-            QuarkusTransaction.rollback();
-            fail("Fail to create transaction!", e);
-            return null;
-        }
-    }
-
     public static Image randomCover() {
         var image = randomImage();
         try {
@@ -209,6 +185,30 @@ public interface Given {
             return tempImage;
         } catch (IOException ioe) {
             fail("Fail to create random image!", ioe);
+            return null;
+        }
+    }
+
+    public static void transaction(Runnable code) {
+        try {
+            QuarkusTransaction.begin();
+            code.run();
+            QuarkusTransaction.commit();
+        } catch (Exception e) {
+            QuarkusTransaction.rollback();
+            fail("Fail to create transaction!", e);
+        }
+    }
+
+    public static <T> T transaction(Supplier<T> code) {
+        try {
+            QuarkusTransaction.begin();
+            T value = code.get();
+            QuarkusTransaction.commit();
+            return value;
+        } catch (Exception e) {
+            QuarkusTransaction.rollback();
+            fail("Fail to create transaction!", e);
             return null;
         }
     }

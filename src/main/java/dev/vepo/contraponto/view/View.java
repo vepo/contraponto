@@ -13,11 +13,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "tb_views", uniqueConstraints = { @UniqueConstraint(name = "uk_view_post_user_session", columnNames = { "post_id", "user_id", "session_id" })
-})
+@Table(name = "tb_views")
 public class View {
 
     @Id

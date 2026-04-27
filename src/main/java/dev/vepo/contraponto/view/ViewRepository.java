@@ -85,7 +85,6 @@ public class ViewRepository {
         String sql = """
                      INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
                      VALUES (:postId, :userId, :sessionId, :viewedAt)
-                     ON CONFLICT (post_id, user_id, session_id) DO NOTHING
                      """;
         entityManager.createNativeQuery(sql)
                      .setParameter("postId", post.getId())

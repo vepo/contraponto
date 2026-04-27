@@ -28,13 +28,13 @@ public class ImageEndpoint {
     private static final Logger logger = LoggerFactory.getLogger(ImageEndpoint.class);
 
     private final ImageService imageService;
-    
-    record ErrorResponse(String error) {}
-    
+
     @Inject
     public ImageEndpoint(ImageService imageService) {
         this.imageService = imageService;
     }
+
+    record ErrorResponse(String error) {}
 
     @DELETE
     @Path("/{uuid}")
