@@ -46,7 +46,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
         var options = new ChromeOptions();
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--headless");
+        // options.addArguments("--headless");
         options.addArguments("--allow-file-access-from-files");
         options.addArguments("--disable-web-security");
         options.addArguments("--allow-running-insecure-content");

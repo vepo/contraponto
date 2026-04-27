@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html>
     {#include components/head}
-    {username} - contraponto
+    {author.name} - contraponto
     {/include}
     <body hx-history-elt>
         {#include components/header /}
         <main>
+            <div class="container">
+                <h1 class="user-blog__name">{author.name}</h1>
+            </div>
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}
-                {#include HomeEndpoint/featured post=post username=username}
+                {#include UserBlogEndpoint/featured post=post username=author.username}
             {/if}
 
             <div class="container">
                     <div class="posts-grid">
-                        {#include HomeEndpoint/grid ignoreFirst=true username=username}
+                        {#include UserBlogEndpoint/grid ignoreFirst=true username=author.username}
                     </div>
                 </article>
             </div>

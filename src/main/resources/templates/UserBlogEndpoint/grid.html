@@ -1,3 +1,9 @@
+{#if posts.isEmpty}
+<div class="user-blog__empty">
+    No posts published yet
+</div>
+{/if}
+
 {#for post in posts.data}
     {#if (ignoreFirst && post_index > 0) || !ignoreFirst}
     <article class="article-card">

@@ -6,6 +6,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -31,7 +32,7 @@ public class UserBlogEndpoint {
 
         static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
 
-        public static native TemplateInstance home(String username, Page<Post> posts, LoggedUser user);
+        public static native TemplateInstance home(User author, Page<Post> posts, LoggedUser user);
     }
 
     private final UserRepository userRepository;
@@ -54,7 +55,8 @@ public class UserBlogEndpoint {
             throw new NotFoundException("User not found: " + username);
         }
 
-        return Templates.home(username,
+        return Templates.home(userRepository.findByUsername(username)
+                                            .orElseThrow(() -> new NotFoundException("User not found! username=%s".formatted(username))),
                               postRepository.findPaginatedNewestFromAuthor(username, limit, 1),
                               loggedUser);
     }
@@ -65,6 +67,8 @@ public class UserBlogEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,
                                       @QueryParam("page") int page) {
-        return Templates.grid(username, this.postRepository.findPaginatedNewestFromAuthor(username, limit, page), false);
+
+        return Templates.grid(username,
+                              this.postRepository.findPaginatedNewestFromAuthor(username, limit, page), false);
     }
 }

@@ -1,3 +1,9 @@
+{#if posts.isEmpty}
+<div class="user-blog__empty">
+    No posts published yet
+</div>
+{/if}
+
 {#for post in posts.data}
     {#if (ignoreFirst && post_index > 0) || !ignoreFirst}
     <article class="article-card">
@@ -36,6 +42,7 @@
     </article>
     {/if}
 {/for}
+
 {#if posts.isLastPage}
 <div id="more-posts" class="load-more">
     <button hx-get="/components/home/grid?page={posts.nextPage}"

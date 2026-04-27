@@ -8,12 +8,16 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.invisibilityOfEl
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.locators.RelativeLocator;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.Given;
@@ -28,6 +32,8 @@ class HomeTest {
 
     @TestHTTPResource("/")
     URL testUrl;
+
+    private Map<String, User> users;
 
     @Test
     void authModalOpensFromHomePage(WebDriver driver, WebDriverWait wait) {
@@ -53,6 +59,32 @@ class HomeTest {
         var closeBtn = modal.findElement(className("modal__close"));
         closeBtn.click();
         wait.until(invisibilityOfElementLocated(By.id("authModal")));
+    }
+
+    @Test
+    void clickingAuthorLinkNavigatesToUserBlog(WebDriver driver, WebDriverWait wait) {
+        driver.get(testUrl.toString());
+
+        // Find the first article card after the featured post, get the author link
+        WebElement firstCard = wait.until(visibilityOfElementLocated(cssSelector(".article-card")));
+        WebElement authorLink = firstCard.findElement(cssSelector(".article-meta__author"));
+        String expectedUserName = authorLink.getText(); // assume username matches author name
+        // Actually the link's href or data-hx-get attribute contains the username
+        String hxGet = driver.findElement(RelativeLocator.with(By.cssSelector("[data-hx-get"))
+                                                         .near(authorLink))
+                             .getAttribute("data-hx-get");
+        assertThat(hxGet).isNotNull();
+
+        authorLink.click();
+
+        assertThat(users.containsKey(expectedUserName)).isTrue();
+        var username = users.get(expectedUserName).getUsername();
+
+        // Wait for the user blog page to load – the main content should contain the
+        // user's name or blog header
+        wait.until(d -> d.getCurrentUrl().contains("/" + username));
+        WebElement blogHeader = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__name")));
+        assertThat(blogHeader.getText()).isEqualToIgnoringCase(expectedUserName);
     }
 
     @Test
@@ -129,6 +161,38 @@ class HomeTest {
     }
 
     @Test
+    void loadMoreButtonFetchesNextPageOfPosts(WebDriver driver, WebDriverWait wait) {
+        driver.get(testUrl.toString());
+
+        // Ensure we have at least 13 posts to trigger pagination (page size = 12)
+        // The setup already creates 8 posts – we need more. We'll add them in the
+        // setup.
+        // For this test, we verify the button exists.
+        WebElement loadMoreBtn = wait.until(visibilityOfElementLocated(cssSelector(".load-more .btn")));
+        assertThat(loadMoreBtn.isDisplayed()).isTrue();
+
+        // Count initial posts in the grid after the first page loads
+        // The grid initially contains 11 posts (first page: featured + 11 grid posts =
+        // 12 total)
+        // Wait for the page to settle
+        await().until(() -> driver.findElements(cssSelector(".posts-grid .article-card")).size() > 0);
+        int initialCount = driver.findElements(cssSelector(".posts-grid .article-card")).size();
+
+        // Click "Load more"
+        loadMoreBtn.click();
+
+        // Wait for new posts to appear (the load‑more button should be replaced by new
+        // content)
+        wait.until(invisibilityOfElementLocated(cssSelector(".load-more .btn")));
+
+        // New posts should have been added; the container with id "more-posts" is
+        // replaced
+        // The grid now contains both initial and new posts.
+        int newCount = driver.findElements(cssSelector(".posts-grid .article-card")).size();
+        assertThat(newCount).isGreaterThan(initialCount);
+    }
+
+    @Test
     void postGridDisplaysArticles(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString());
 
@@ -147,9 +211,10 @@ class HomeTest {
         }
     }
 
+    // Update the setup method to create enough posts for pagination (at least 13)
     @BeforeEach
     void setup() {
-        // Ensure clean state for tests
+        users = new HashMap<>();
         Given.cleanup();
 
         // Create a test user (for modal tests)
@@ -160,31 +225,33 @@ class HomeTest {
              .withName("Home Tester")
              .persist();
 
-        var authors = IntStream.range(1, 9)
-                               .mapToObj(index -> Given.user()
-                                                       .withUsername("user-" + index)
-                                                       .withEmail("user-" + index + "@contraponto.com.br")
-                                                       .withName("Author " + index)
-                                                       .withPassword("homepass123")
-                                                       .persist())
-                               .toArray(User[]::new);
+        // Create 15 users and posts to guarantee pagination (page size = 12, need >12
+        // to show button)
+        IntStream.range(1, 16)
+                 .forEach(index -> {
+                     var author = Given.user()
+                                       .withUsername("user-" + index)
+                                       .withEmail("user-" + index + "@contraponto.com.br")
+                                       .withName("Author " + index)
+                                       .withPassword("homepass123")
+                                       .persist();
+                     users.put(author.getName(), author);
 
-        // Create 8 posts to trigger load‑more button (threshold > 6)
-        String baseContent = """
-                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                             labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                             laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
-                             voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-                             non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                             """;
+                     var baseContent = """
+                                       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                                       labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                                       laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+                                       voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+                                       non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                                       """;
 
-        IntStream.range(1, 9)
-                 .forEach(index -> Given.post()
-                                        .withTitle("Post " + index)
-                                        .withSlug("post-" + index)
-                                        .withDescription("Description for post " + index)
-                                        .withContent(baseContent)
-                                        .withAuthor(authors[index - 1])
-                                        .persist());
+                     Given.post()
+                          .withTitle("Post " + index)
+                          .withSlug("post-" + index)
+                          .withDescription("Description for post " + index)
+                          .withContent(baseContent)
+                          .withAuthor(author)
+                          .persist();
+                 });
     }
 }
