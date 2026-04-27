@@ -1,8 +1,5 @@
 package dev.vepo.contraponto.components.forms;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
@@ -22,8 +19,6 @@ import jakarta.ws.rs.core.Response.Status;
 @Path("/forms/auth/signup")
 @ApplicationScoped
 public class SignUpEndpoint {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SignUpEndpoint.class);
 
     // Constants (align with LoginEndpoint)
     private static final String SESSION_COOKIE_NAME = "__session";
@@ -126,7 +121,6 @@ public class SignUpEndpoint {
         newUser.setActive(true);
 
         userRepository.save(newUser);
-        LOGGER.info("New user registered: {}", username);
 
         // Auto-login
         var loggedUser = loggedUserProvider.login(newUser);
