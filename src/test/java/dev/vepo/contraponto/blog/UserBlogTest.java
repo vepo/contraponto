@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -90,6 +91,8 @@ class UserBlogTest {
     @Test
     void userBlogHasCorrectPageTitle(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString() + testUsername);
+
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
 
         String pageTitle = driver.getTitle();
         assertThat(pageTitle).contains(testName);
