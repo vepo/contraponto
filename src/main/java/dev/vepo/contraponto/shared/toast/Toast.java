@@ -7,10 +7,6 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
 
 public interface Toast {
-    public enum Type {
-        SUCCESS, ERROR;
-    }
-
     public static class ToastResponseBuilder {
 
         private final ResponseBuilder builder;
@@ -53,11 +49,15 @@ public interface Toast {
         }
     }
 
-    public static ToastResponseBuilder response(Status status) {
-        return new ToastResponseBuilder(Response.status(status));
+    public enum Type {
+        SUCCESS, ERROR;
     }
 
     public static ToastResponseBuilder ok() {
         return new ToastResponseBuilder(Response.ok());
+    }
+
+    public static ToastResponseBuilder response(Status status) {
+        return new ToastResponseBuilder(Response.status(status));
     }
 }

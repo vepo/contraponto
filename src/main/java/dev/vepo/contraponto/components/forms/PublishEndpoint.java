@@ -41,6 +41,55 @@ public class PublishEndpoint {
         this.loggedUser = loggedUser;
     }
 
+    private Response buildErrorResponse(String message) {
+        return Toast.response(Status.BAD_REQUEST).message(message)
+                    .type(Toast.Type.ERROR)
+                    .duration(10_000)
+                    .build();
+    }
+
+    private Response buildSuccessResponse(Post post) {
+        return Toast.ok()
+                    .message("Post published!")
+                    .type(Toast.Type.SUCCESS)
+                    .duration(10000)
+                    .url("/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug()))
+                    .page(PostEndpoint.Templates.post(post, loggedUser, 0L))
+                    .build();
+    }
+
+    private void generateSlugIfNeeded(Post post, SaveDraftRequest request) {
+        if (isBlank(request.slug())) {
+            String generatedSlug = request.title().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-");
+            post.setSlug(generatedSlug);
+        } else {
+            post.setSlug(request.slug());
+        }
+    }
+
+    private Post getOrCreatePost(SaveDraftRequest request) {
+        if (Objects.nonNull(request.id())) {
+            return postRepository.findById(request.id()).orElseGet(Post::new);
+        }
+        return new Post();
+    }
+
+    private void handleCoverImage(Post post, SaveDraftRequest request) {
+        if (request.coverId() != null && !request.coverId().isBlank()) {
+            imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
+        } else if (Objects.nonNull(post.getCover())) {
+            post.setCover(null);
+        }
+    }
+
+    private boolean hasInvalidSlugChars(String slug) {
+        return Objects.nonNull(slug) && INVALID_SLUG_CHARS.matcher(slug).find();
+    }
+
+    private boolean isBlank(String value) {
+        return Objects.isNull(value) || value.isBlank();
+    }
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -61,6 +110,26 @@ public class PublishEndpoint {
         return buildSuccessResponse(post);
     }
 
+    private void publishIfNeeded(Post post) {
+        if (!post.isPublished()) {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+    }
+
+    private void setPostFields(Post post, SaveDraftRequest request) {
+        post.setAuthor(loggedUser.getUser());
+        post.setTitle(request.title());
+        post.setContent(request.content());
+        post.setDescription(request.description());
+    }
+
+    private boolean slugAlreadyExists(SaveDraftRequest request) {
+        return postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
+                             .filter(p -> !Objects.equals(p.getId(), request.id()))
+                             .isPresent();
+    }
+
     private Optional<Response> validateRequest(SaveDraftRequest request) {
         if (isBlank(request.content())) {
             return Optional.of(buildErrorResponse("Content is required!"));
@@ -79,74 +148,5 @@ public class PublishEndpoint {
         }
 
         return Optional.empty();
-    }
-
-    private boolean isBlank(String value) {
-        return Objects.isNull(value) || value.isBlank();
-    }
-
-    private boolean hasInvalidSlugChars(String slug) {
-        return Objects.nonNull(slug) && INVALID_SLUG_CHARS.matcher(slug).find();
-    }
-
-    private boolean slugAlreadyExists(SaveDraftRequest request) {
-        return postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
-                             .filter(p -> !Objects.equals(p.getId(), request.id()))
-                             .isPresent();
-    }
-
-    private Response buildErrorResponse(String message) {
-        return Toast.response(Status.BAD_REQUEST).message(message)
-                    .type(Toast.Type.ERROR)
-                    .duration(10_000)
-                    .build();
-    }
-
-    private Post getOrCreatePost(SaveDraftRequest request) {
-        if (Objects.nonNull(request.id())) {
-            return postRepository.findById(request.id()).orElseGet(Post::new);
-        }
-        return new Post();
-    }
-
-    private void handleCoverImage(Post post, SaveDraftRequest request) {
-        if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
-        } else if (Objects.nonNull(post.getCover())) {
-            post.setCover(null);
-        }
-    }
-
-    private void setPostFields(Post post, SaveDraftRequest request) {
-        post.setAuthor(loggedUser.getUser());
-        post.setTitle(request.title());
-        post.setContent(request.content());
-        post.setDescription(request.description());
-    }
-
-    private void generateSlugIfNeeded(Post post, SaveDraftRequest request) {
-        if (isBlank(request.slug())) {
-            String generatedSlug = request.title().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-");
-            post.setSlug(generatedSlug);
-        } else {
-            post.setSlug(request.slug());
-        }
-    }
-
-    private void publishIfNeeded(Post post) {
-        if (!post.isPublished()) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-    }
-
-    private Response buildSuccessResponse(Post post) {
-        return Toast.ok()
-                    .message("Post published!")
-                    .type(Toast.Type.SUCCESS)
-                    .duration(10000)
-                    .url("/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug()))
-                    .page(PostEndpoint.Templates.post(post, loggedUser, 0L))
-                    .build();
     }
 }
