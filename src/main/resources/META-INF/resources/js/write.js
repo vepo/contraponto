@@ -1,20 +1,22 @@
-// src/main/resources/META-INF/resources/js/write.js
-
 class WriteEditor {
     constructor() {
+        this.isPreviewMode = false;
         this.setupRichText = this.setupRichText.bind(this);
         this.commandButtonCallback = this.commandButtonCallback.bind(this);
+        this.togglePreview = this.togglePreview.bind(this);
+        this.renderPreview = this.renderPreview.bind(this);
         document.body.addEventListener('htmx:afterSettle', this.setupRichText);
         this.setupRichText();
     }
 
     setupRichText() {
         const editorToolbar = document.getElementById('editorToolbar');
-        document.getElementById('editorToolbar')
-            ?.addEventListener('click', (e) => {
+        if (editorToolbar) {
+            editorToolbar.addEventListener('click', (e) => {
                 const button = e.target.closest('[data-command]');
                 if (button) this.commandButtonCallback({ target: button });
             });
+        }
     }
 
     commandButtonCallback(evt) {
@@ -22,6 +24,16 @@ class WriteEditor {
         if (!button) return;
 
         const command = button.getAttribute('data-command');
+
+        // Handle preview toggle specially
+        if (command === 'togglePreview') {
+            this.togglePreview();
+            return;
+        }
+
+        // Ignore formatting commands when in preview mode
+        if (this.isPreviewMode) return;
+
         const editor = document.getElementById('content');
         const start = editor.selectionStart;
         const end = editor.selectionEnd;
@@ -39,7 +51,7 @@ class WriteEditor {
                 replacement = `*${selectedText || 'italic text'}*`;
                 break;
             case 'underline':
-                replacement = `++${selectedText || 'underlined text'}++`; // or HTML
+                replacement = `++${selectedText || 'underlined text'}++`;
                 break;
             case 'h2':
                 replacement = `\n## ${selectedText || 'Heading 2'}\n`;
@@ -69,7 +81,7 @@ class WriteEditor {
                 break;
             case 'link':
                 const url = prompt('Enter URL:', 'https://');
-                if (!url) return; // exit early
+                if (!url) return;
                 replacement = `[${selectedText || 'link text'}](${url})`;
                 break;
             case 'image':
@@ -89,7 +101,6 @@ class WriteEditor {
                         });
                         const img = await res.json();
                         const markdownImage = `![${file.name}](${img.url})`;
-                        // Insert at cursor
                         const start = editor.selectionStart;
                         const end = editor.selectionEnd;
                         editor.value = editor.value.substring(0, start) + markdownImage + editor.value.substring(end);
@@ -100,20 +111,57 @@ class WriteEditor {
                     }
                 };
                 fileInput.click();
-                break;
+                return;
             default:
                 return;
         }
 
         editor.value = beforeText + replacement + afterText;
         editor.focus();
-
-        // Set cursor position
         const newCursorPos = start + replacement.length;
         editor.setSelectionRange(newCursorPos, newCursorPos);
-
-        // Trigger input event
         editor.dispatchEvent(new Event('input'));
+    }
+
+    togglePreview() {
+        this.isPreviewMode = !this.isPreviewMode;
+        const editor = document.getElementById('content');
+        const previewDiv = document.getElementById('previewContainer');
+        const toolbar = document.getElementById('editorToolbar');
+        const toggleBtn = document.getElementById('previewToggleBtn');
+
+        if (this.isPreviewMode) {
+            this.renderPreview();
+            editor.style.display = 'none';
+            previewDiv.style.display = 'block';
+            toolbar.classList.add('preview-mode');
+            toggleBtn.textContent = '✏️ Edit';
+        } else {
+            editor.style.display = 'block';
+            previewDiv.style.display = 'none';
+            toolbar.classList.remove('preview-mode');
+            toggleBtn.textContent = '👁️ Preview';
+        }
+    }
+
+    renderPreview() {
+        const editor = document.getElementById('content');
+        const previewDiv = document.getElementById('previewContainer');
+        const markdownText = editor.value;
+
+        // Configure marked for safe HTML (optional)
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: false,
+                mangle: false
+            });
+            previewDiv.innerHTML = marked.parse(markdownText);
+            hljs.highlightAll();
+        } else {
+            previewDiv.innerHTML = '<p>Markdown preview not available. Please refresh the page.</p>';
+        }
     }
 }
 

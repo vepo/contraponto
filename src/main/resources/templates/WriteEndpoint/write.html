@@ -83,9 +83,13 @@
                                 <span class="toolbar-separator"></span>
                                 <button type="button" data-command="link" title="Insert Link">🔗 Link</button>
                                 <button type="button" data-command="image" title="Insert Image">🖼️ Image</button>
+                                <span class="toolbar-separator"></span>
+                                <button type="button" data-command="togglePreview" id="previewToggleBtn" title="Preview">👁️ Preview</button>
                             </div>
                             <textarea id="content" name="content" class="write-form__editor"
                                       placeholder="Write your story here... Use the toolbar above for formatting.">{#if post.isPresent}{post.get().content}{/if}</textarea>
+                            <!-- Preview container (hidden by default) -->
+                            <div id="previewContainer" class="write-preview" style="display: none;"></div>
                             <div class="write-form__hint">Markdown formatting supported • Use the toolbar for shortcuts</div>
                         </div>
                     </form>
