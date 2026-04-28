@@ -2,6 +2,7 @@ package dev.vepo.contraponto.components.forms;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import dev.vepo.contraponto.image.ImageRepository;
@@ -44,76 +45,108 @@ public class PublishEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response publish(@BeanParam SaveDraftRequest request) {
-        if (Objects.isNull(request.content()) || request.content().isBlank()) {
-            return Response.status(Status.BAD_REQUEST)
-                           .header("X-Toast-Message", "Content is required!")
-                           .header("X-Toast-Type", "Error")
-                           .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                           .build();
+        Optional<Response> validationError = validateRequest(request);
+        if (validationError.isPresent()) {
+            return validationError.get();
         }
 
-        if (Objects.isNull(request.title()) || request.title().isBlank()) {
-            return Response.status(Status.BAD_REQUEST)
-                           .header("X-Toast-Message", "Title is required!")
-                           .header("X-Toast-Type", "Error")
-                           .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                           .build();
+        Post post = getOrCreatePost(request);
+        handleCoverImage(post, request);
+        setPostFields(post, request);
+        generateSlugIfNeeded(post, request);
+        publishIfNeeded(post);
+        postRepository.save(post);
+
+        return buildSuccessResponse(post);
+    }
+
+    private Optional<Response> validateRequest(SaveDraftRequest request) {
+        if (isBlank(request.content())) {
+            return Optional.of(buildErrorResponse("Content is required!"));
         }
 
-        if (Objects.nonNull(request.slug()) && INVALID_SLUG_CHARS.matcher(request.slug()).find()) {
-            return Response.status(Status.BAD_REQUEST)
-                           .header("X-Toast-Message", "Slug can only contain lowercase letters, numbers, and hyphens")
-                           .header("X-Toast-Type", "Error")
-                           .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                           .build();
+        if (isBlank(request.title())) {
+            return Optional.of(buildErrorResponse("Title is required!"));
         }
 
-        if (postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
-                          .filter(p -> !Objects.equals(p.getId(), request.id()))
-                          .isPresent()) {
-            return Response.status(Status.BAD_REQUEST)
-                           .header("X-Toast-Message", "Slug already exists!")
-                           .header("X-Toast-Type", "Error")
-                           .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                           .build();
+        if (hasInvalidSlugChars(request.slug())) {
+            return Optional.of(buildErrorResponse("Slug can only contain lowercase letters, numbers, and hyphens"));
         }
 
-        Post post;
+        if (slugAlreadyExists(request)) {
+            return Optional.of(buildErrorResponse("Slug already exists!"));
+        }
+
+        return Optional.empty();
+    }
+
+    private boolean isBlank(String value) {
+        return Objects.isNull(value) || value.isBlank();
+    }
+
+    private boolean hasInvalidSlugChars(String slug) {
+        return Objects.nonNull(slug) && INVALID_SLUG_CHARS.matcher(slug).find();
+    }
+
+    private boolean slugAlreadyExists(SaveDraftRequest request) {
+        return postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
+                             .filter(p -> !Objects.equals(p.getId(), request.id()))
+                             .isPresent();
+    }
+
+    private Response buildErrorResponse(String message) {
+        return Response.status(Status.BAD_REQUEST)
+                       .header("X-Toast-Message", message)
+                       .header("X-Toast-Type", "Error")
+                       .header("X-Toast-Duration", "10000")
+                       .build();
+    }
+
+    private Post getOrCreatePost(SaveDraftRequest request) {
         if (Objects.nonNull(request.id())) {
-            post = postRepository.findById(request.id()).orElseGet(Post::new);
-        } else {
-            post = new Post();
+            return postRepository.findById(request.id()).orElseGet(Post::new);
         }
+        return new Post();
+    }
 
-        // Set cover image if provided
+    private void handleCoverImage(Post post, SaveDraftRequest request) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuid(request.coverId())
-                           .ifPresent(post::setCover);
+            imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
         } else if (Objects.nonNull(post.getCover())) {
             post.setCover(null);
         }
+    }
 
-        post.setSlug(request.slug());
+    private void setPostFields(Post post, SaveDraftRequest request) {
         post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());
         post.setContent(request.content());
-        if (Objects.isNull(request.slug()) || request.slug().isBlank()) {
-            post.setSlug(request.title().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
+        post.setDescription(request.description());
+    }
+
+    private void generateSlugIfNeeded(Post post, SaveDraftRequest request) {
+        if (isBlank(request.slug())) {
+            String generatedSlug = request.title().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-");
+            post.setSlug(generatedSlug);
         } else {
             post.setSlug(request.slug());
         }
-        post.setDescription(request.description());
+    }
+
+    private void publishIfNeeded(Post post) {
         if (!post.isPublished()) {
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
         }
-        postRepository.save(post);
+    }
+
+    private Response buildSuccessResponse(Post post) {
         return Response.ok()
                        .header("X-Toast-Message", "Post published!")
                        .header("X-Toast-Type", "Success")
-                       .header("X-Toast-Duration", "10000") // optional, in milliseconds
+                       .header("X-Toast-Duration", "10000")
                        .header("HX-Push-Url", "/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug()))
-                       .entity(PostEndpoint.Templates.post(post, loggedUser, 0l))
+                       .entity(PostEndpoint.Templates.post(post, loggedUser, 0L))
                        .type(MediaType.TEXT_HTML)
                        .build();
     }
