@@ -11,6 +11,7 @@ import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -95,11 +96,10 @@ public class PublishEndpoint {
     }
 
     private Response buildErrorResponse(String message) {
-        return Response.status(Status.BAD_REQUEST)
-                       .header("X-Toast-Message", message)
-                       .header("X-Toast-Type", "Error")
-                       .header("X-Toast-Duration", "10000")
-                       .build();
+        return Toast.response(Status.BAD_REQUEST).message(message)
+                    .type(Toast.Type.ERROR)
+                    .duration(10_000)
+                    .build();
     }
 
     private Post getOrCreatePost(SaveDraftRequest request) {
@@ -141,13 +141,12 @@ public class PublishEndpoint {
     }
 
     private Response buildSuccessResponse(Post post) {
-        return Response.ok()
-                       .header("X-Toast-Message", "Post published!")
-                       .header("X-Toast-Type", "Success")
-                       .header("X-Toast-Duration", "10000")
-                       .header("HX-Push-Url", "/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug()))
-                       .entity(PostEndpoint.Templates.post(post, loggedUser, 0L))
-                       .type(MediaType.TEXT_HTML)
-                       .build();
+        return Toast.ok()
+                    .message("Post published!")
+                    .type(Toast.Type.SUCCESS)
+                    .duration(10000)
+                    .url("/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug()))
+                    .page(PostEndpoint.Templates.post(post, loggedUser, 0L))
+                    .build();
     }
 }

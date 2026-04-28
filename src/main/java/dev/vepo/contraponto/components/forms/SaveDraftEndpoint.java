@@ -7,6 +7,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -40,19 +41,19 @@ public class SaveDraftEndpoint {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response save(@BeanParam SaveDraftRequest request) {
         if (Objects.isNull(request.content()) || request.content().isBlank()) {
-            return Response.ok()
-                           .header("X-Toast-Message", "Content is required!")
-                           .header("X-Toast-Type", "Error")
-                           .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                           .build();
+            return Toast.ok()
+                        .message("Content is required!")
+                        .type(Toast.Type.ERROR)
+                        .duration(10000)
+                        .build();
         }
 
         if (Objects.isNull(request.title()) || request.title().isBlank()) {
-            return Response.ok()
-                           .header("X-Toast-Message", "Title is required!")
-                           .header("X-Toast-Type", "Error")
-                           .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                           .build();
+            return Toast.ok()
+                        .message("Title is required!")
+                        .type(Toast.Type.ERROR)
+                        .duration(10000)
+                        .build();
         }
         Post post;
         if (Objects.nonNull(request.id())) {
@@ -73,11 +74,11 @@ public class SaveDraftEndpoint {
         post.setContent(request.content());
         post.setDescription(request.description());
         postRepository.save(post);
-        return Response.ok()
-                       .header("X-Toast-Message", "Draft saved successfully!")
-                       .header("X-Toast-Type", "Success")
-                       .header("X-Toast-Duration", "10000") // optional, in milliseconds
-                       .header("HX-Push-Url", "/write/draft/%d".formatted(post.getId()))
-                       .build();
+        return Toast.ok()
+                    .message("Draft saved successfully!")
+                    .type(Toast.Type.SUCCESS)
+                    .duration(10000)
+                    .url("/write/draft/%d".formatted(post.getId()))
+                    .build();
     }
 }
