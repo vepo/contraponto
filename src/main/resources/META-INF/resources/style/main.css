@@ -36,6 +36,10 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
+pre code {
+  font-family: 'Courier New', Courier, monospace;
+}
+
 /* ========== HTMX ========== */
 
 [data-hx-get] {
@@ -330,8 +334,21 @@ a {
   margin-bottom: 1.4rem;
 }
 
+.article-page__content .ulist ul,
+.article-page__content .ulist ol {
+  margin-left: 2rem;
+}
+
+.article-page__content .ulist ul p,
+.article-page__content .ulist ol p {
+  margin-bottom: 0.5rem;
+}
+
 /* Drop cap */
-.article-page__content p:first-of-type::first-letter {
+/* Markdown: direct <p> that is first-of-type inside .article-page__content */
+/* AsciiDoc: first <p> inside a .paragraph div that is not preceded by another .paragraph */
+.article-page__content > p:first-of-type::first-letter,
+.article-page__content .paragraph:first-of-type p:first-of-type::first-letter {
   font-family: var(--font-serif-display);
   font-size: 4.2rem;
   float: left;
@@ -339,6 +356,11 @@ a {
   padding-right: 0.5rem;
   padding-top: 0.15rem;
   font-weight: 700;
+}
+
+.article-page__content > p:first-of-type,
+.article-page__content .paragraph:first-of-type {
+    min-height: calc(4.2rem - 1.4rem);
 }
 
 /* Article headings */

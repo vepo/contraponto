@@ -62,7 +62,7 @@ public class ImageService {
 
     public ImageData getImage(String filename) throws IOException {
         var filePath = storagePath.resolve(filename).normalize();
-        if (filePath.startsWith(storagePath) || !Files.exists(filePath)) {
+        if (!filePath.startsWith(storagePath) || !Files.exists(filePath)) {
             throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
         }
 

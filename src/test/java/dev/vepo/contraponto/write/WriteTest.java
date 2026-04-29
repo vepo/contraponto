@@ -340,7 +340,7 @@ class WriteTest {
         assertThat(dropdown.isDisplayed()).isTrue();
 
         // Click AsciiDoc option
-        WebElement asciiDocOption = dropdown.findElement(cssSelector("[data-mode='asciidoc']"));
+        WebElement asciiDocOption = dropdown.findElement(cssSelector("[data-mode='ASCIIDOC']"));
         asciiDocOption.click();
 
         // Wait for mode label to update
@@ -350,7 +350,7 @@ class WriteTest {
         // Switch back to Markdown
         modeButton.click();
         dropdown = wait.until(visibilityOfElementLocated(cssSelector(".editor-mode-dropdown")));
-        WebElement markdownOption = dropdown.findElement(cssSelector("[data-mode='markdown']"));
+        WebElement markdownOption = dropdown.findElement(cssSelector("[data-mode='MARKDOWN']"));
         markdownOption.click();
         wait.until(d -> modeButton.findElement(cssSelector(".editor-mode-label")).getText().equals("Markdown"));
         assertThat(modeButton.findElement(cssSelector(".editor-mode-icon")).getText()).contains("📝");
@@ -367,7 +367,7 @@ class WriteTest {
         // Switch to AsciiDoc
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
 
         wait.until(d -> hint.getText().contains("AsciiDoc"));
@@ -422,7 +422,7 @@ class WriteTest {
         // Switch to AsciiDoc
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
 
@@ -621,7 +621,7 @@ class WriteTest {
         // Switch to AsciiDoc
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
 
@@ -631,7 +631,7 @@ class WriteTest {
         // Switch back to Markdown
         modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement markdownOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='markdown']")));
+        WebElement markdownOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='MARKDOWN']")));
         markdownOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("Markdown"));
 
@@ -647,7 +647,7 @@ class WriteTest {
         // Switch to AsciiDoc mode
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
 
@@ -683,7 +683,7 @@ class WriteTest {
         // Switch to AsciiDoc
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
 
@@ -785,7 +785,7 @@ class WriteTest {
         // Switch to AsciiDoc
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
 
@@ -808,7 +808,7 @@ class WriteTest {
         // Switch to AsciiDoc
         WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
         modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='ASCIIDOC']")));
         asciiDocOption.click();
         wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
 

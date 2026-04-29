@@ -1,7 +1,7 @@
 class WriteEditor {
     constructor() {
         this.isPreviewMode = false;
-        this.currentMode = 'markdown';   // 'markdown' or 'asciidoc'
+        this.currentMode = 'MARKDOWN';   // 'MARKDOWN' or 'ASCIIDOC'
         this.setupRichText = this.setupRichText.bind(this);
         this.commandButtonCallback = this.commandButtonCallback.bind(this);
         this.togglePreview = this.togglePreview.bind(this);
@@ -68,7 +68,7 @@ class WriteEditor {
     updateHint() {
         const hint = document.getElementById('editorHint');
         if (hint) {
-            if (this.currentMode === 'markdown') {
+            if (this.currentMode === 'MARKDOWN') {
                 hint.innerHTML = 'Markdown formatting supported • Use **bold**, *italic*, [links](url), etc.';
             } else {
                 hint.innerHTML = 'AsciiDoc formatting supported • Use *bold*, _italic_, link:url[text], etc.';
@@ -111,7 +111,7 @@ class WriteEditor {
 
         let replacement = '';
 
-        if (this.currentMode === 'markdown') {
+        if (this.currentMode === 'MARKDOWN') {
             switch (command) {
                 case 'bold': replacement = `**${selectedText || 'bold text'}**`; break;
                 case 'italic': replacement = `*${selectedText || 'italic text'}*`; break;
@@ -278,7 +278,7 @@ class WriteEditor {
         const previewDiv = document.getElementById('previewContainer');
         const rawText = editor.value;
 
-        if (this.currentMode === 'markdown') {
+        if (this.currentMode === 'MARKDOWN') {
             if (typeof marked !== 'undefined') {
                 marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
                 previewDiv.innerHTML = marked.parse(rawText);

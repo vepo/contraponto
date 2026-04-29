@@ -5,7 +5,11 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main class="article-page">
+        <main class="article-page" 
+              hx-get="/{post.author.username}/post/{post.slug}" 
+              hx-select="main"
+              hx-target="main"
+              hx-trigger="loggedIn from:body, loggedOut from:body">
             <div class="container-narrow">
                 <!-- Edit button (only for author) -->
                 {#if user.isAuthenticated && user.id == post.author.id}

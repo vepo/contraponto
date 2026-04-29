@@ -266,7 +266,7 @@
 .write-form__editor {
     width: 100%;
     min-height: 500px;
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 18px;
     line-height: 1.7;
     color: #1a1a1a;
