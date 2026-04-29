@@ -60,11 +60,9 @@ class WriteEditor {
 
     changeMode(mode) {
         this.currentMode = mode;
+        document.getElementById('contentFormat').value = mode;
         this.updateHint();
-        // If preview is open, refresh it
-        if (this.isPreviewMode) {
-            this.renderPreview();
-        }
+        if (this.isPreviewMode) this.renderPreview();
     }
 
     updateHint() {

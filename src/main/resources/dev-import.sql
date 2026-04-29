@@ -129,6 +129,8 @@ DECLARE
     v_image_id_6 BIGINT;
     v_image_id_7 BIGINT;
     v_image_id_8 BIGINT;
+    v_draft_img_1 BIGINT;
+    v_draft_img_2 BIGINT;
 BEGIN
     -- Buscar IDs das imagens
     SELECT id INTO v_image_id_1 FROM tb_images WHERE uuid = 'img-distributed-systems-001';
@@ -139,9 +141,12 @@ BEGIN
     SELECT id INTO v_image_id_6 FROM tb_images WHERE uuid = 'img-grpc-006';
     SELECT id INTO v_image_id_7 FROM tb_images WHERE uuid = 'img-observability-007';
     SELECT id INTO v_image_id_8 FROM tb_images WHERE uuid = 'img-loom-008';
+    SELECT id INTO v_draft_img_1 FROM tb_images WHERE uuid = 'img-draft-001';
+    SELECT id INTO v_draft_img_2 FROM tb_images WHERE uuid = 'img-draft-002';
 
-    -- Inserir posts publicados
-    INSERT INTO tb_posts(slug, title, author_id, description, content, published, created_at, updated_at, published_at, cover_id) 
+    -- Inserir posts publicados (alternando MARKDOWN e ASCIIDOC)
+    -- Post 1: MARKDOWN
+    INSERT INTO tb_posts(slug, title, author_id, description, content, content_format, published, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'introduction-to-distributed-systems-java', 
@@ -186,34 +191,37 @@ public class DistributedCounter {
 ```
 
 Stay tuned for hands-on examples using Java RMI, Spring Cloud, and Apache Kafka!', 
+        'MARKDOWN',
         TRUE, 
         '2023-01-15 09:00:00', 
         '2023-01-15 09:00:00', 
         '2023-01-15 09:00:00',
         v_image_id_1
     ),
+    -- Post 2: ASCIIDOC
     (
         'microservices-patterns-spring-boot', 
         'Essential Microservices Patterns with Spring Boot', 
         1,
         'Explore battle-tested microservices patterns and learn how to implement them using Spring Boot and Spring Cloud.', 
-        '## Designing Robust Microservices with Spring Ecosystem
+        '== Designing Robust Microservices with Spring Ecosystem
 
 Microservices architecture offers tremendous flexibility but introduces complexity. This guide walks through proven patterns that address common distributed system challenges.
 
 > "Microservices are not a silver bullet - they require disciplined implementation of proven patterns."
 
-### Patterns We''ll Cover
+=== Patterns We''ll Cover
 
-- **API Gateway Pattern** - Using Spring Cloud Gateway
-- **Service Discovery** - Netflix Eureka integration
-- **Circuit Breaker** - Resilience4j implementation
-- **Distributed Tracing** - Sleuth and Zipkin
-- **Configuration Management** - Spring Cloud Config Server
+- *API Gateway Pattern* - Using Spring Cloud Gateway
+- *Service Discovery* - Netflix Eureka integration
+- *Circuit Breaker* - Resilience4j implementation
+- *Distributed Tracing* - Sleuth and Zipkin
+- *Configuration Management* - Spring Cloud Config Server
 
-### Implementation Example
+=== Implementation Example
 
-```java
+[source,java]
+----
 // Circuit Breaker example with Resilience4j
 @CircuitBreaker(name = "paymentService", fallbackMethod = "fallbackPayment")
 public PaymentResponse processPayment(PaymentRequest request) {
@@ -223,17 +231,19 @@ public PaymentResponse processPayment(PaymentRequest request) {
 public PaymentResponse fallbackPayment(PaymentRequest request, Exception e) {
     return new PaymentResponse("PENDING", "Payment queued for retry");
 }
-```
+----
 
-### Real-world Example
+=== Real-world Example
 
 We''ll build a simple e-commerce system demonstrating how these patterns work together to create a resilient, scalable application. Code examples included!', 
+        'ASCIIDOC',
         TRUE, 
         '2023-02-20 14:30:00', 
         '2023-02-25 11:15:00', 
         '2023-02-20 14:30:00',
         v_image_id_2
     ),
+    -- Post 3: MARKDOWN
     (
         'apache-kafka-spring-boot-tutorial', 
         'Building Event-Driven Systems with Apache Kafka and Spring Boot', 
@@ -279,31 +289,34 @@ public void processOrder(OrderEvent event) {
 ### Hands-on Project
 
 We''ll build a real-time order processing system that demonstrates event sourcing and CQRS patterns. Complete source code available on GitHub.', 
+        'MARKDOWN',
         TRUE, 
         '2023-04-05 10:00:00', 
         '2023-04-10 16:45:00', 
         '2023-04-05 10:00:00',
         v_image_id_3
     ),
+    -- Post 4: ASCIIDOC
     (
         'distributed-transactions-saga-pattern', 
         'Distributed Transactions: Implementing the Saga Pattern', 
         1,
         'Learn how to maintain data consistency across microservices using the Saga pattern with practical Java implementations.', 
-        '## Solving the Distributed Transaction Problem
+        '== Solving the Distributed Transaction Problem
 
 Traditional ACID transactions don''t work across microservices. The Saga pattern offers a pragmatic approach to maintaining data consistency in distributed systems.
 
 > "In distributed systems, we trade immediate consistency for eventual consistency and resilience."
 
-### Saga Coordination Approaches
+=== Saga Coordination Approaches
 
-- **Choreography-based Saga** - Event-driven coordination
-- **Orchestration-based Saga** - Centralized control with compensation logic
+- *Choreography-based Saga* - Event-driven coordination
+- *Orchestration-based Saga* - Centralized control with compensation logic
 
-### Orchestration Example
+=== Orchestration Example
 
-```java
+[source,java]
+----
 @Component
 public class TravelBookingSaga {
     @Autowired
@@ -328,21 +341,23 @@ public class TravelBookingSaga {
         }
     }
 }
-```
+----
 
-### Implementation Examples
+=== Implementation Examples
 
 We''ll explore both approaches using Spring Boot, with detailed code examples showing compensation strategies, idempotency, and monitoring. The examples include a travel booking system that coordinates flight, hotel, and car rental services.
 
-### Best Practices
+=== Best Practices
 
 Learn about timeout handling, retry mechanisms, and monitoring strategies to make your sagas production-ready.', 
+        'ASCIIDOC',
         TRUE, 
         '2023-06-12 11:00:00', 
         '2023-06-15 09:30:00', 
         '2023-06-12 11:00:00',
         v_image_id_4
     ),
+    -- Post 5: MARKDOWN
     (
         'kubernetes-java-microservices-deployment', 
         'Deploying Java Microservices on Kubernetes: A Complete Guide', 
@@ -397,31 +412,34 @@ spec:
 ### Production Considerations
 
 We''ll cover memory management for JVM in containers, logging aggregation with EFK stack, and monitoring with Prometheus and Grafana.', 
+        'MARKDOWN',
         TRUE, 
         '2023-08-18 08:00:00', 
         '2023-08-22 14:20:00', 
         '2023-08-18 08:00:00',
         v_image_id_5
     ),
+    -- Post 6: ASCIIDOC
     (
         'grpc-java-performance-comparison', 
         'gRPC vs REST: Performance Analysis in Java Microservices', 
         1,
         'Deep dive into gRPC performance characteristics compared to traditional REST APIs, with benchmarking results and implementation guides.', 
-        '## Is gRPC Worth the Hype? Let''s Measure It
+        '== Is gRPC Worth the Hype? Let''s Measure It
 
 gRPC promises better performance than REST, but what does that mean in practice? We conducted extensive benchmarks comparing gRPC and REST in Java microservices.
 
-### Benchmark Results
+=== Benchmark Results
 
 - Throughput comparison under varying load
 - Latency analysis at the 99th percentile
 - Memory and CPU utilization
 - Network bandwidth efficiency with Protocol Buffers
 
-### gRPC Service Definition
+=== gRPC Service Definition
 
-```protobuf
+[source,protobuf]
+----
 // product.proto
 syntax = "proto3";
 
@@ -439,11 +457,12 @@ message ProductResponse {
     string name = 2;
     double price = 3;
 }
-```
+----
 
-### Java Implementation
+=== Java Implementation
 
-```java
+[source,java]
+----
 @GrpcService
 public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBase {
     @Override
@@ -458,17 +477,19 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 }
-```
+----
 
-### When to Choose What
+=== When to Choose What
 
 Practical recommendations on when gRPC makes sense and when traditional REST/GraphQL might be better suited for your use case.', 
+        'ASCIIDOC',
         TRUE, 
         '2023-10-25 13:00:00', 
         '2023-10-28 10:15:00', 
         '2023-10-25 13:00:00',
         v_image_id_6
     ),
+    -- Post 7: MARKDOWN
     (
         'observability-java-distributed-systems', 
         'Observability in Java Distributed Systems: Metrics, Logs, and Traces', 
@@ -544,30 +565,33 @@ We''ll build a complete observability pipeline: Spring Boot applications exporti
 ### Practical Alerting
 
 Learn to set up meaningful alerts based on SLOs and SLIs to proactively detect issues before they impact users.', 
+        'MARKDOWN',
         TRUE, 
         '2023-12-02 15:30:00', 
         '2024-01-05 11:45:00', 
         '2023-12-02 15:30:00',
         v_image_id_7
     ),
+    -- Post 8: ASCIIDOC
     (
         'virtual-threads-project-loom', 
         'Project Loom: Virtual Threads Revolutionizing Java Concurrency', 
         1,
         'Explore how virtual threads in Java 21 are changing the game for concurrent programming in distributed systems.', 
-        '## Concurrency Made Simple: Virtual Threads in Practice
+        '== Concurrency Made Simple: Virtual Threads in Practice
 
 Java 21 introduced virtual threads (Project Loom) as a preview feature, now finalized. This revolutionary feature dramatically simplifies concurrent programming while improving resource utilization.
 
 > "Virtual threads bring back the simplicity of thread-per-request without the overhead."
 
-### What Are Virtual Threads?
+=== What Are Virtual Threads?
 
 Unlike platform threads that map 1:1 to OS threads, virtual threads are lightweight, managed by the JVM, enabling millions of concurrent tasks with minimal overhead.
 
-### Traditional vs Virtual Threads
+=== Traditional vs Virtual Threads
 
-```java
+[source,java]
+----
 // Traditional platform threads (heavy)
 ExecutorService executor = Executors.newFixedThreadPool(200);
 for (int i = 0; i < 10000; i++) {
@@ -585,11 +609,12 @@ for (int i = 0; i < 100000; i++) {
         Thread.sleep(1000); // Doesn''t block OS thread
     });
 }
-```
+----
 
-### Structured Concurrency
+=== Structured Concurrency
 
-```java
+[source,java]
+----
 Response handleRequest(Request request) throws Exception {
     try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
         Future<User> user = scope.fork(() -> fetchUser(request.userId()));
@@ -601,30 +626,32 @@ Response handleRequest(Request request) throws Exception {
         return new Response(user.resultNow(), order.resultNow());
     }
 }
-```
+----
 
-### Impact on Distributed Systems
+=== Impact on Distributed Systems
 
 - Simplified code for handling many concurrent connections
 - Better resource utilization in microservices
 - Compatibility with existing Java frameworks
 - Performance improvements in I/O-heavy workloads
 
-### Migration Guide
+=== Migration Guide
 
 How to start using virtual threads in existing applications, common patterns, and performance benchmarks comparing traditional thread pools with virtual threads.', 
+        'ASCIIDOC',
         TRUE, 
         '2024-01-20 09:00:00', 
         '2024-01-20 09:00:00', 
         '2024-01-20 09:00:00',
         v_image_id_8
     ),
-(
-    'cloud-native-java-microprofile', 
-    'Cloud Native Java with Eclipse MicroProfile', 
-    1,
-    'Explore MicroProfile specifications for building portable cloud-native Java microservices.', 
-    '## MicroProfile: Java EE for the Cloud
+    -- Post 9: MARKDOWN
+    (
+        'cloud-native-java-microprofile', 
+        'Cloud Native Java with Eclipse MicroProfile', 
+        1,
+        'Explore MicroProfile specifications for building portable cloud-native Java microservices.', 
+        '## MicroProfile: Java EE for the Cloud
 
 Eclipse MicroProfile optimizes Enterprise Java for microservices architecture.
 
@@ -654,43 +681,47 @@ public class ProductResource {
     }
 }
 ```',
-    TRUE, 
-    '2024-02-01 09:00:00', 
-    '2024-02-01 09:00:00', 
-    '2024-02-01 09:00:00',
-    v_image_id_1
-),
-(
-    'apache-pulsar-vs-kafka', 
-    'Apache Pulsar vs Kafka: Which Event Streaming Platform to Choose?', 
-    1,
-    'Deep technical comparison between Apache Pulsar and Kafka, including architecture, performance, and use cases.', 
-    '## Beyond Kafka: The Rise of Pulsar
+        'MARKDOWN',
+        TRUE, 
+        '2024-02-01 09:00:00', 
+        '2024-02-01 09:00:00', 
+        '2024-02-01 09:00:00',
+        v_image_id_1
+    ),
+    -- Post 10: ASCIIDOC
+    (
+        'apache-pulsar-vs-kafka', 
+        'Apache Pulsar vs Kafka: Which Event Streaming Platform to Choose?', 
+        1,
+        'Deep technical comparison between Apache Pulsar and Kafka, including architecture, performance, and use cases.', 
+        '== Beyond Kafka: The Rise of Pulsar
 
 Both platforms offer unique strengths. This post helps you decide.
 
-### Comparison Matrix
+=== Comparison Matrix
 
-- **Architecture** - Pulsar separates serving and storage
-- **Multi-tenancy** - Native in Pulsar
-- **Geo-replication** - Both support, Pulsar simplifies
-- **Queueing** - Pulsar supports both streaming and queueing
+- *Architecture* - Pulsar separates serving and storage
+- *Multi-tenancy* - Native in Pulsar
+- *Geo-replication* - Both support, Pulsar simplifies
+- *Queueing* - Pulsar supports both streaming and queueing
 
-### Performance Benchmarks
+=== Performance Benchmarks
 
 We tested both under varying loads. Results show Pulsar shines with many topics, while Kafka excels in simple throughput.', 
-    TRUE, 
-    '2024-02-10 10:30:00', 
-    '2024-02-12 14:20:00', 
-    '2024-02-10 10:30:00',
-    v_image_id_3
-),
-(
-    'java-21-pattern-matching', 
-    'Pattern Matching in Java 21: Switch, Instanceof, and Beyond', 
-    1,
-    'Learn how pattern matching simplifies code and reduces bugs with real-world examples.', 
-    '## Write Safer Code with Pattern Matching
+        'ASCIIDOC',
+        TRUE, 
+        '2024-02-10 10:30:00', 
+        '2024-02-12 14:20:00', 
+        '2024-02-10 10:30:00',
+        v_image_id_3
+    ),
+    -- Post 11: MARKDOWN
+    (
+        'java-21-pattern-matching', 
+        'Pattern Matching in Java 21: Switch, Instanceof, and Beyond', 
+        1,
+        'Learn how pattern matching simplifies code and reduces bugs with real-world examples.', 
+        '## Write Safer Code with Pattern Matching
 
 Java 21 finalizes pattern matching features that enhance expressiveness.
 
@@ -713,45 +744,50 @@ String describeShape(Object obj) {
 ### Guarded Patterns
 
 Use `when` clauses for additional conditions.', 
-    TRUE, 
-    '2024-02-18 11:00:00', 
-    '2024-02-18 11:00:00', 
-    '2024-02-18 11:00:00',
-    v_image_id_8
-),
-(
-    'spring-boot-3-native-docker', 
-    'Spring Boot 3 Native Images with Docker: Complete Guide', 
-    1,
-    'Step-by-step tutorial to compile Spring Boot 3 applications into native executables and run them in Docker containers.', 
-    '## From Source to Instant Startup
+        'MARKDOWN',
+        TRUE, 
+        '2024-02-18 11:00:00', 
+        '2024-02-18 11:00:00', 
+        '2024-02-18 11:00:00',
+        v_image_id_8
+    ),
+    -- Post 12: ASCIIDOC
+    (
+        'spring-boot-3-native-docker', 
+        'Spring Boot 3 Native Images with Docker: Complete Guide', 
+        1,
+        'Step-by-step tutorial to compile Spring Boot 3 applications into native executables and run them in Docker containers.', 
+        '== From Source to Instant Startup
 
 Spring Boot 3 with GraalVM native images reduces startup time to milliseconds.
 
-### Building Native Image
+=== Building Native Image
 
-```dockerfile
+[source,dockerfile]
+----
 FROM ghcr.io/graalvm/native-image:ol9-java17-22.3 AS builder
 WORKDIR /app
 COPY . .
 RUN ./mvnw -Pnative spring-boot:build-image
-```
+----
 
-### Running in Production
+=== Running in Production
 
 Measure startup time: 0.08 seconds vs 2.5 seconds for JVM mode. Memory footprint reduced by 40%.', 
-    TRUE, 
-    '2024-03-01 08:00:00', 
-    '2024-03-03 16:30:00', 
-    '2024-03-01 08:00:00',
-    v_image_id_5
-),
-(
-    'resilience4j-practical-guide', 
-    'Resilience4j: A Practical Guide to Fault Tolerance in Java', 
-    1,
-    'Hands-on examples of circuit breakers, retries, rate limiters, and bulkheads with Resilience4j.', 
-    '## Build Resilient Systems Without Hystrix
+        'ASCIIDOC',
+        TRUE, 
+        '2024-03-01 08:00:00', 
+        '2024-03-03 16:30:00', 
+        '2024-03-01 08:00:00',
+        v_image_id_5
+    ),
+    -- Post 13: MARKDOWN
+    (
+        'resilience4j-practical-guide', 
+        'Resilience4j: A Practical Guide to Fault Tolerance in Java', 
+        1,
+        'Hands-on examples of circuit breakers, retries, rate limiters, and bulkheads with Resilience4j.', 
+        '## Build Resilient Systems Without Hystrix
 
 Resilience4j is a lightweight fault tolerance library inspired by Netflix Hystrix.
 
@@ -783,24 +819,27 @@ RetryConfig config = RetryConfig.custom()
 ```
 
 We''ll build a complete example of a resilient product service.', 
-    TRUE, 
-    '2024-03-10 09:30:00', 
-    '2024-03-12 13:15:00', 
-    '2024-03-10 09:30:00',
-    v_image_id_6
-),
-(
-    'graalvm-polyglot-java-python', 
-    'GraalVM Polyglot: Running Python, JavaScript, and Java Together', 
-    1,
-    'Discover how GraalVM allows seamless interoperability between JVM languages and scripting languages.', 
-    '## The Polyglot Runtime
+        'MARKDOWN',
+        TRUE, 
+        '2024-03-10 09:30:00', 
+        '2024-03-12 13:15:00', 
+        '2024-03-10 09:30:00',
+        v_image_id_6
+    ),
+    -- Post 14: ASCIIDOC
+    (
+        'graalvm-polyglot-java-python', 
+        'GraalVM Polyglot: Running Python, JavaScript, and Java Together', 
+        1,
+        'Discover how GraalVM allows seamless interoperability between JVM languages and scripting languages.', 
+        '== The Polyglot Runtime
 
 GraalVM enables Java applications to execute code written in Python, JavaScript, Ruby, and R.
 
-### Example: Python Script from Java
+=== Example: Python Script from Java
 
-```java
+[source,java]
+----
 import org.graalvm.polyglot.*;
 
 public class PolyglotDemo {
@@ -811,27 +850,29 @@ public class PolyglotDemo {
         }
     }
 }
-```
+----
 
-### Use Cases
+=== Use Cases
 
-- **Machine Learning** - Run Python ML models from Java
-- **Scripting** - Embed JavaScript for business rules
-- **Migration** - Incrementally rewrite legacy systems
+- *Machine Learning* - Run Python ML models from Java
+- *Scripting* - Embed JavaScript for business rules
+- *Migration* - Incrementally rewrite legacy systems
 
 We''ll build a real-time sentiment analysis service that uses Python''s NLTK and Java Spring Boot.', 
-    TRUE, 
-    '2024-03-18 14:00:00', 
-    '2024-03-20 10:45:00', 
-    '2024-03-18 14:00:00',
-    v_image_id_7
-),
-(
-    'observability-micrometer-prometheus', 
-    'Micrometer + Prometheus: Advanced Metrics for Spring Boot', 
-    1,
-    'Learn to create custom metrics, export to Prometheus, and visualize in Grafana for deep insight into application behavior.', 
-    '## Beyond Default Metrics
+        'ASCIIDOC',
+        TRUE, 
+        '2024-03-18 14:00:00', 
+        '2024-03-20 10:45:00', 
+        '2024-03-18 14:00:00',
+        v_image_id_7
+    ),
+    -- Post 15: MARKDOWN
+    (
+        'observability-micrometer-prometheus', 
+        'Micrometer + Prometheus: Advanced Metrics for Spring Boot', 
+        1,
+        'Learn to create custom metrics, export to Prometheus, and visualize in Grafana for deep insight into application behavior.', 
+        '## Beyond Default Metrics
 
 Micrometer provides a facade for metrics with support for multiple monitoring systems.
 
@@ -861,24 +902,27 @@ public class OrderService {
 ### Grafana Dashboards
 
 Create dashboards to monitor latency, throughput, and error rates. Alert on anomalies.', 
-    TRUE, 
-    '2024-03-25 11:00:00', 
-    '2024-03-27 15:30:00', 
-    '2024-03-25 11:00:00',
-    v_image_id_7
-),
-(
-    'spring-cloud-gateway-jwt', 
-    'Spring Cloud Gateway with JWT Authentication', 
-    1,
-    'Implement token-based authentication and routing using Spring Cloud Gateway and JWT.', 
-    '## API Gateway as Security Enforcer
+        'MARKDOWN',
+        TRUE, 
+        '2024-03-25 11:00:00', 
+        '2024-03-27 15:30:00', 
+        '2024-03-25 11:00:00',
+        v_image_id_7
+    ),
+    -- Post 16: ASCIIDOC
+    (
+        'spring-cloud-gateway-jwt', 
+        'Spring Cloud Gateway with JWT Authentication', 
+        1,
+        'Implement token-based authentication and routing using Spring Cloud Gateway and JWT.', 
+        '== API Gateway as Security Enforcer
 
 Spring Cloud Gateway can validate JWT tokens and route requests accordingly.
 
-### JWT Validation Filter
+=== JWT Validation Filter
 
-```java
+[source,java]
+----
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter {
     @Override
@@ -891,11 +935,12 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         return exchange.getResponse().setComplete();
     }
 }
-```
+----
 
-### Route Configuration
+=== Route Configuration
 
-```yaml
+[source,yaml]
+----
 spring:
   cloud:
     gateway:
@@ -906,21 +951,23 @@ spring:
             - Path=/api/products/**
           filters:
             - JwtAuthenticationFilter
-```
+----
 
 Complete example with service discovery via Eureka included.', 
-    TRUE, 
-    '2024-04-01 08:00:00', 
-    '2024-04-03 09:15:00', 
-    '2024-04-01 08:00:00',
-    v_image_id_2
-),
-(
-    'distributed-caching-java', 
-    'Distributed Caching in Java: Redis, Hazelcast, and Infinispan', 
-    1,
-    'Compare leading caching solutions for Java microservices and learn best practices for cache invalidation.', 
-    '## Caching Strategies for Scale
+        'ASCIIDOC',
+        TRUE, 
+        '2024-04-01 08:00:00', 
+        '2024-04-03 09:15:00', 
+        '2024-04-01 08:00:00',
+        v_image_id_2
+    ),
+    -- Post 17: MARKDOWN
+    (
+        'distributed-caching-java', 
+        'Distributed Caching in Java: Redis, Hazelcast, and Infinispan', 
+        1,
+        'Compare leading caching solutions for Java microservices and learn best practices for cache invalidation.', 
+        '## Caching Strategies for Scale
 
 Distributed caching reduces latency and database load. We compare three popular solutions.
 
@@ -957,52 +1004,57 @@ public Config hazelcastConfig() {
 ### Cache Invalidation Patterns
 
 Learn about write-through, write-behind, and cache-aside patterns with code examples.', 
-    TRUE, 
-    '2024-04-08 10:00:00', 
-    '2024-04-10 14:30:00', 
-    '2024-04-08 10:00:00',
-    v_image_id_4
-),
-(
-    'java-memory-management-tuning', 
-    'Java Memory Management: From Garbage Collection to Tuning', 
-    1,
-    'Deep dive into JVM memory areas, garbage collectors (G1, ZGC, Shenandoah), and practical tuning guidelines.', 
-    '## Mastering the JVM Heap
+        'MARKDOWN',
+        TRUE, 
+        '2024-04-08 10:00:00', 
+        '2024-04-10 14:30:00', 
+        '2024-04-08 10:00:00',
+        v_image_id_4
+    ),
+    -- Post 18: ASCIIDOC
+    (
+        'java-memory-management-tuning', 
+        'Java Memory Management: From Garbage Collection to Tuning', 
+        1,
+        'Deep dive into JVM memory areas, garbage collectors (G1, ZGC, Shenandoah), and practical tuning guidelines.', 
+        '== Mastering the JVM Heap
 
 Understanding memory management is crucial for performance.
 
-### Garbage Collectors Comparison
+=== Garbage Collectors Comparison
 
-- **G1GC** - Default, good for most applications
-- **ZGC** - Sub-millisecond pauses, large heaps
-- **Shenandoah** - Concurrent compaction
+- *G1GC* - Default, good for most applications
+- *ZGC* - Sub-millisecond pauses, large heaps
+- *Shenandoah* - Concurrent compaction
 
-### Tuning Example
+=== Tuning Example
 
-```bash
+[source,bash]
+----
 -Xms4g -Xmx4g
 -XX:+UseG1GC
 -XX:MaxGCPauseMillis=100
 -XX:ParallelGCThreads=8
 -XX:ConcGCThreads=2
-```
+----
 
-### Monitoring Tools
+=== Monitoring Tools
 
 Learn jstat, jmap, and VisualVM to diagnose memory leaks and optimize GC. Sample heap dumps analysis included.', 
-    TRUE, 
-    '2024-04-12 09:45:00', 
-    '2024-04-14 11:00:00', 
-    '2024-04-12 09:45:00',
-    v_image_id_5
-),
-(
-    'cdc-debezium-kafka', 
-    'Change Data Capture (CDC) with Debezium and Kafka', 
-    1,
-    'Stream database changes in real-time using Debezium connectors and Kafka.', 
-    '## Turning Database Tables into Event Streams
+        'ASCIIDOC',
+        TRUE, 
+        '2024-04-12 09:45:00', 
+        '2024-04-14 11:00:00', 
+        '2024-04-12 09:45:00',
+        v_image_id_5
+    ),
+    -- Post 19: MARKDOWN
+    (
+        'cdc-debezium-kafka', 
+        'Change Data Capture (CDC) with Debezium and Kafka', 
+        1,
+        'Stream database changes in real-time using Debezium connectors and Kafka.', 
+        '## Turning Database Tables into Event Streams
 
 Debezium captures row-level changes and pushes them to Kafka.
 
@@ -1037,24 +1089,27 @@ public void handleOrderChange(ConsumerRecord<String, String> record) {
 ```
 
 Use cases: cache invalidation, search indexing, data synchronization between services.', 
-    TRUE, 
-    '2024-04-15 13:00:00', 
-    '2024-04-17 16:20:00', 
-    '2024-04-15 13:00:00',
-    v_image_id_3
-),
-(
-    'testing-spring-boot-testcontainers', 
-    'Integration Testing with Testcontainers in Spring Boot', 
-    1,
-    'Write reliable integration tests using real dependencies like databases, message brokers, and browsers with Testcontainers.', 
-    '## Stop Mocking, Start Testing
+        'MARKDOWN',
+        TRUE, 
+        '2024-04-15 13:00:00', 
+        '2024-04-17 16:20:00', 
+        '2024-04-15 13:00:00',
+        v_image_id_3
+    ),
+    -- Post 20: ASCIIDOC
+    (
+        'testing-spring-boot-testcontainers', 
+        'Integration Testing with Testcontainers in Spring Boot', 
+        1,
+        'Write reliable integration tests using real dependencies like databases, message brokers, and browsers with Testcontainers.', 
+        '== Stop Mocking, Start Testing
 
 Testcontainers spins up Docker containers for your integration tests.
 
-### Test Example
+=== Test Example
 
-```java
+[source,java]
+----
 @Testcontainers
 @SpringBootTest
 class OrderServiceTest {
@@ -1079,23 +1134,25 @@ class OrderServiceTest {
         // real PostgreSQL and Kafka are used
     }
 }
-```
+----
 
-### Complex Scenarios
+=== Complex Scenarios
 
 Mock external APIs with WireMock containers, test database migrations, and more.', 
-    TRUE, 
-    '2024-04-20 08:30:00', 
-    '2024-04-22 12:45:00', 
-    '2024-04-20 08:30:00',
-    v_image_id_1
-),
-(
-    'graphql-java-spring-boot', 
-    'GraphQL with Java and Spring Boot: From Setup to Federation', 
-    1,
-    'Implement flexible APIs with GraphQL using Spring Boot and explore Apollo Federation for microservices.', 
-    '## GraphQL: Query Exactly What You Need
+        'ASCIIDOC',
+        TRUE, 
+        '2024-04-20 08:30:00', 
+        '2024-04-22 12:45:00', 
+        '2024-04-20 08:30:00',
+        v_image_id_1
+    ),
+    -- Post 21: MARKDOWN
+    (
+        'graphql-java-spring-boot', 
+        'GraphQL with Java and Spring Boot: From Setup to Federation', 
+        1,
+        'Implement flexible APIs with GraphQL using Spring Boot and explore Apollo Federation for microservices.', 
+        '## GraphQL: Query Exactly What You Need
 
 GraphQL provides a strongly-typed, client-driven alternative to REST.
 
@@ -1135,33 +1192,37 @@ public class ProductController {
 ### Federation Example
 
 Combine multiple GraphQL services into a single endpoint using Apollo Federation.', 
-    TRUE, 
-    '2024-04-25 11:15:00', 
-    '2024-04-27 15:00:00', 
-    '2024-04-25 11:15:00',
-    v_image_id_2
-),
-(
-    'quarkus-superfast-java', 
-    'Building Super-Fast Java Applications with Quarkus', 
-    1,
-    'Discover Quarkus, the Kubernetes-native Java stack that offers instant startup and low memory usage.', 
-    '## Java, but Faster
+        'MARKDOWN',
+        TRUE, 
+        '2024-04-25 11:15:00', 
+        '2024-04-27 15:00:00', 
+        '2024-04-25 11:15:00',
+        v_image_id_2
+    ),
+    -- Post 22: ASCIIDOC
+    (
+        'quarkus-superfast-java', 
+        'Building Super-Fast Java Applications with Quarkus', 
+        1,
+        'Discover Quarkus, the Kubernetes-native Java stack that offers instant startup and low memory usage.', 
+        '== Java, but Faster
 
 Quarkus is designed for cloud-native environments, with build-time metadata processing.
 
-### Getting Started
+=== Getting Started
 
-```xml
+[source,xml]
+----
 <dependency>
     <groupId>io.quarkus</groupId>
     <artifactId>quarkus-resteasy-reactive</artifactId>
 </dependency>
-```
+----
 
-### REST Endpoint
+=== REST Endpoint
 
-```java
+[source,java]
+----
 @Path("/hello")
 public class GreetingResource {
     @GET
@@ -1170,27 +1231,30 @@ public class GreetingResource {
         return "Hello from Quarkus";
     }
 }
-```
+----
 
-### Native Compilation
+=== Native Compilation
 
-```bash
+[source,bash]
+----
 ./mvnw package -Pnative
-```
+----
 
 Startup time: ~15ms, memory: ~10MB. Ideal for serverless and edge computing.', 
-    TRUE, 
-    '2024-04-28 09:00:00', 
-    '2024-04-28 09:00:00', 
-    '2024-04-28 09:00:00',
-    v_image_id_8
-),
-(
-    'opentelemetry-distributed-tracing', 
-    'Distributed Tracing with OpenTelemetry', 
-    1,
-    'Instrument your Java applications with OpenTelemetry to trace requests across microservices and identify bottlenecks.', 
-    '## See the Whole Picture
+        'ASCIIDOC',
+        TRUE, 
+        '2024-04-28 09:00:00', 
+        '2024-04-28 09:00:00', 
+        '2024-04-28 09:00:00',
+        v_image_id_8
+    ),
+    -- Post 23: MARKDOWN
+    (
+        'opentelemetry-distributed-tracing', 
+        'Distributed Tracing with OpenTelemetry', 
+        1,
+        'Instrument your Java applications with OpenTelemetry to trace requests across microservices and identify bottlenecks.', 
+        '## See the Whole Picture
 
 OpenTelemetry provides a vendor-agnostic way to collect traces, metrics, and logs.
 
@@ -1225,82 +1289,59 @@ public void processPayment(Payment payment) {
 ### Trace Visualization
 
 See request flow across services: API Gateway → Auth → Order → Payment → Shipping.', 
-    TRUE, 
-    '2024-05-01 10:00:00', 
-    '2024-05-03 14:30:00', 
-    '2024-05-01 10:00:00',
-    v_image_id_7
-),
-(
-    'java-modules-9-project-jigsaw', 
-    'Java Modules (Project Jigsaw) in Real-World Applications', 
-    1,
-    'Practical guide to migrating to the Java Platform Module System, including benefits and common pitfalls.', 
-    '## Encapsulate Your Code Better
+        'MARKDOWN',
+        TRUE, 
+        '2024-05-01 10:00:00', 
+        '2024-05-03 14:30:00', 
+        '2024-05-01 10:00:00',
+        v_image_id_7
+    ),
+    -- Post 24: ASCIIDOC
+    (
+        'java-modules-9-project-jigsaw', 
+        'Java Modules (Project Jigsaw) in Real-World Applications', 
+        1,
+        'Practical guide to migrating to the Java Platform Module System, including benefits and common pitfalls.', 
+        '== Encapsulate Your Code Better
 
 Java 9 introduced modules, enabling reliable configuration and strong encapsulation.
 
-### Module Declaration
+=== Module Declaration
 
-```java
+[source,java]
+----
 module com.myapp.payment {
     requires java.sql;
     requires com.myapp.common;
     exports com.myapp.payment.api;
     opens com.myapp.payment.internal to com.fasterxml.jackson.databind;
 }
-```
+----
 
-### Migration Strategy
+=== Migration Strategy
 
 Start with `--class-path` mode, then gradually add `module-info.java` to leaf modules. Use jdeps to analyze dependencies.
 
-### Benefits
+=== Benefits
 
 - Reliable configuration (no missing JARs)
 - Strong encapsulation (internal packages hidden)
 - Smaller runtime images with jlink
 
 We''ll migrate a sample microservice to modules and measure startup time changes.', 
-    TRUE, 
-    '2024-05-05 12:00:00', 
-    '2024-05-07 16:00:00', 
-    '2024-05-05 12:00:00',
-    v_image_id_6
-);
-END $$;
+        'ASCIIDOC',
+        TRUE, 
+        '2024-05-05 12:00:00', 
+        '2024-05-07 16:00:00', 
+        '2024-05-05 12:00:00',
+        v_image_id_6
+    );
 
--- ============================================
--- 4. Inserir rascunhos (drafts) para teste
--- ============================================
-
-DO $$
-DECLARE
-    v_image_id_1 BIGINT;
-    v_image_id_2 BIGINT;
-    v_image_id_3 BIGINT;
-    v_image_id_4 BIGINT;
-    v_image_id_5 BIGINT;
-    v_image_id_6 BIGINT;
-    v_image_id_7 BIGINT;
-    v_image_id_8 BIGINT;
-    v_draft_img_1 BIGINT;
-    v_draft_img_2 BIGINT;
-BEGIN
-    -- Buscar IDs das imagens existentes para drafts
-    SELECT id INTO v_image_id_1 FROM tb_images WHERE uuid = 'img-distributed-systems-001';
-    SELECT id INTO v_image_id_2 FROM tb_images WHERE uuid = 'img-microservices-002';
-    SELECT id INTO v_image_id_3 FROM tb_images WHERE uuid = 'img-kafka-003';
-    SELECT id INTO v_image_id_4 FROM tb_images WHERE uuid = 'img-saga-004';
-    SELECT id INTO v_image_id_5 FROM tb_images WHERE uuid = 'img-kubernetes-005';
-    SELECT id INTO v_image_id_6 FROM tb_images WHERE uuid = 'img-grpc-006';
-    SELECT id INTO v_image_id_7 FROM tb_images WHERE uuid = 'img-observability-007';
-    SELECT id INTO v_image_id_8 FROM tb_images WHERE uuid = 'img-loom-008';
-    SELECT id INTO v_draft_img_1 FROM tb_images WHERE uuid = 'img-draft-001';
-    SELECT id INTO v_draft_img_2 FROM tb_images WHERE uuid = 'img-draft-002';
-
-    -- Inserir rascunhos (drafts)
-    INSERT INTO tb_posts(slug, title, author_id, description, content, published, created_at, updated_at, published_at, cover_id) 
+    -- ============================================
+    -- 4. Inserir rascunhos (drafts) – mixing formats
+    -- ============================================
+    -- Draft 1: MARKDOWN
+    INSERT INTO tb_posts(slug, title, author_id, description, content, content_format, published, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'draft-why-java-still-matters-2024', 
@@ -1319,22 +1360,24 @@ This is a draft post. I intend to discuss how Java continues to evolve and why i
 - Case studies from large companies
 
 More content coming soon. Check back for updates!', 
+        'MARKDOWN',
         FALSE, 
         '2024-03-15 10:00:00', 
         '2024-03-20 14:30:00', 
         NULL,
         v_draft_img_1
     ),
+    -- Draft 2: ASCIIDOC
     (
         'draft-graalvm-native-image-spring-boot', 
         'GraalVM Native Image with Spring Boot: Performance Gains (Draft)', 
         1,
         'Analyzing startup time and memory improvements when compiling Spring Boot applications to native executables using GraalVM.', 
-        '## Native Compilation: A Game Changer for Spring Boot?
+        '== Native Compilation: A Game Changer for Spring Boot?
 
 Draft post exploring GraalVM native image capabilities with Spring Boot 3.x.
 
-### What I plan to cover:
+=== What I plan to cover:
 
 - Setup and configuration challenges
 - Startup time benchmarks (cold vs warm)
@@ -1342,12 +1385,14 @@ Draft post exploring GraalVM native image capabilities with Spring Boot 3.x.
 - Limitations and workarounds
 
 Need to run more tests and include real-world metrics.', 
+        'ASCIIDOC',
         FALSE, 
         '2024-03-25 09:15:00', 
         '2024-03-28 16:20:00', 
         NULL,
         v_draft_img_2
     ),
+    -- Draft 3: MARKDOWN
     (
         'draft-testing-distributed-systems', 
         'Testing Strategies for Distributed Systems (Draft - Early Stage)', 
@@ -1365,22 +1410,24 @@ This is a very early draft. Need to flesh out examples and tools.
 - Performance and load testing strategies
 
 Will add code snippets and best practices soon.', 
+        'MARKDOWN',
         FALSE, 
         '2024-04-01 11:00:00', 
         '2024-04-01 11:00:00', 
         NULL,
-        NULL  -- no cover image for this draft
+        NULL
     ),
+    -- Draft 4: ASCIIDOC
     (
         'draft-reactive-java-rxjava-webflux', 
         'Reactive Java: RxJava vs. Project Reactor (Draft)', 
         1,
         'Comparing reactive programming libraries in Java, their performance characteristics, and when to use each.', 
-        '## Reactive Streams in Practice
+        '== Reactive Streams in Practice
 
 Draft comparing RxJava 3 and Project Reactor (Spring WebFlux).
 
-### Planned content:
+=== Planned content:
 
 - Core concepts (Observables, Flux, Mono)
 - Backpressure handling
@@ -1388,12 +1435,14 @@ Draft comparing RxJava 3 and Project Reactor (Spring WebFlux).
 - Learning curve and debugging
 
 Code examples and comparison tables are being prepared.', 
+        'ASCIIDOC',
         FALSE, 
         '2024-04-05 13:30:00', 
         '2024-04-08 09:45:00', 
         NULL,
-        v_image_id_6  -- reuse gRPC cover image as placeholder
+        v_image_id_6
     ),
+    -- Draft 5: MARKDOWN
     (
         'draft-security-java-microservices', 
         'Securing Java Microservices: OAuth2, JWT, and mTLS (Draft)', 
@@ -1412,11 +1461,12 @@ First draft - need to add configuration examples and best practices.
 - Secure configuration management
 
 Will include Spring Security 6 examples and Keycloak integration.', 
+        'MARKDOWN',
         FALSE, 
         '2024-04-10 15:00:00', 
         '2024-04-12 11:10:00', 
         NULL,
-        v_image_id_5  -- reuse Kubernetes cover image
+        v_image_id_5
     );
 
 END $$;

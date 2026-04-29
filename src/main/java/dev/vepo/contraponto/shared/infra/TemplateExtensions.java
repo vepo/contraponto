@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.Options;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
@@ -15,7 +17,8 @@ public class TemplateExtensions {
 
     private static final Parser parser = Parser.builder().build();
 
-    private static final HtmlRenderer renderer = HtmlRenderer.builder().build();
+    private static final HtmlRenderer MARKDOWN_RENDERER = HtmlRenderer.builder().build();
+    private static final Asciidoctor ASCIIDOCTOR_RENDERER = Asciidoctor.Factory.create();
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -64,15 +67,6 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
-    public static String markdown2Html(String content) {
-        if (content == null || content.trim().isEmpty()) {
-            return "";
-        }
-
-        return renderer.render(parser.parse(content));
-    }
-
-    @TemplateExtension
     public static String readTime(String content) {
         if (content == null || content.trim().isEmpty()) {
             return "0 min read";
@@ -87,6 +81,18 @@ public class TemplateExtensions {
             return "< 1 min read";
         }
         return minutes + " min read";
+    }
+
+    @TemplateExtension
+    public static String render(Post post) {
+        if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
+            return "";
+        }
+
+        return switch (post.getContentFormat()) {
+            case MARKDOWN -> MARKDOWN_RENDERER.render(parser.parse(post.getContent()));
+            case ASCIIDOC -> ASCIIDOCTOR_RENDERER.convert(post.getContent(), Options.builder().build());
+        };
     }
 
     private TemplateExtensions() {

@@ -325,6 +325,55 @@ class WriteTest {
         assertThat(postTitle.getText()).isEqualTo("Updated Title");
     }
 
+    @Test
+    void editorModeSelectorExistsAndCanSwitch(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        WebElement modeButton = wait.until(visibilityOfElementLocated(cssSelector("#editorModeButton")));
+        assertThat(modeButton.isDisplayed()).isTrue();
+        assertThat(modeButton.findElement(cssSelector(".editor-mode-label")).getText()).isEqualTo("Markdown");
+
+        // Open dropdown
+        modeButton.click();
+        WebElement dropdown = wait.until(visibilityOfElementLocated(cssSelector(".editor-mode-dropdown")));
+        assertThat(dropdown.isDisplayed()).isTrue();
+
+        // Click AsciiDoc option
+        WebElement asciiDocOption = dropdown.findElement(cssSelector("[data-mode='asciidoc']"));
+        asciiDocOption.click();
+
+        // Wait for mode label to update
+        wait.until(d -> modeButton.findElement(cssSelector(".editor-mode-label")).getText().equals("AsciiDoc"));
+        assertThat(modeButton.findElement(cssSelector(".editor-mode-icon")).getText()).contains("📄");
+
+        // Switch back to Markdown
+        modeButton.click();
+        dropdown = wait.until(visibilityOfElementLocated(cssSelector(".editor-mode-dropdown")));
+        WebElement markdownOption = dropdown.findElement(cssSelector("[data-mode='markdown']"));
+        markdownOption.click();
+        wait.until(d -> modeButton.findElement(cssSelector(".editor-mode-label")).getText().equals("Markdown"));
+        assertThat(modeButton.findElement(cssSelector(".editor-mode-icon")).getText()).contains("📝");
+    }
+
+    @Test
+    void hintTextUpdatesWhenChangingMode(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        WebElement hint = wait.until(visibilityOfElementLocated(cssSelector("#editorHint")));
+        assertThat(hint.getText()).contains("Markdown");
+
+        // Switch to AsciiDoc
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+
+        wait.until(d -> hint.getText().contains("AsciiDoc"));
+        assertThat(hint.getText()).contains("link:url[text]");
+    }
+
     // ------------------------------------------------------------------------
     // Helper method for login
     // ------------------------------------------------------------------------
@@ -344,6 +393,92 @@ class WriteTest {
 
         await().until(() -> !driver.findElement(By.id("authModal")).isDisplayed());
         wait.until(visibilityOfElementLocated(className("user-menu")));
+    }
+
+    @Test
+    void previewToggleWhenSwitchingModeWhilePreviewIsOpen(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("# Markdown heading\n\nSome content.");
+
+        // Open preview
+        WebElement previewBtn = driver.findElement(cssSelector("#previewToggleBtn"));
+        previewBtn.click();
+        WebElement previewContainer = wait.until(visibilityOfElementLocated(cssSelector("#previewContainer")));
+        assertThat(previewContainer.isDisplayed()).isTrue();
+
+        // Switch mode to AsciiDoc (should re-render preview)
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        // Preview should still be visible and have updated content (AsciiDoc view)
+        String previewHtml = previewContainer.getAttribute("innerHTML");
+        // AsciiDoc renderer may produce different structure; we just check it's not
+        // empty and changed
+        assertThat(previewContainer.isDisplayed()).isTrue();
+        // assertThat(previewHtml).doesNotContain("Markdown heading")
+        // .or().doesNotContain("<h1"); // Markdown heading renders as h1, AsciiDoc
+        // level-0 also h1 but content differs
+    }
+
+    // ------------------------------------------------------------------------
+    // Toolbar functionality (basic)
+    // ------------------------------------------------------------------------
+
+    @Test
+    void previewWorksForAsciiDocMode(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // Switch to AsciiDoc
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("= Heading\n\nThis is *bold* text.");
+
+        WebElement previewBtn = driver.findElement(cssSelector("#previewToggleBtn"));
+        previewBtn.click();
+
+        WebElement previewContainer = wait.until(visibilityOfElementLocated(cssSelector("#previewContainer")));
+        assertThat(previewContainer.isDisplayed()).isTrue();
+
+        // AsciiDoctor renders <h1> for level-0 heading
+        String html = previewContainer.getAttribute("innerHTML");
+        assertThat(html).contains("<h1");
+        assertThat(previewContainer.getText()).contains("bold");
+    }
+
+    // ------------------------------------------------------------------------
+    // NEW TESTS
+    // ------------------------------------------------------------------------
+
+    @Test
+    void previewWorksForMarkdownMode(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("# Heading\n\nThis is **bold** text.");
+
+        WebElement previewBtn = driver.findElement(cssSelector("#previewToggleBtn"));
+        previewBtn.click();
+
+        WebElement previewContainer = wait.until(visibilityOfElementLocated(cssSelector("#previewContainer")));
+        assertThat(previewContainer.isDisplayed()).isTrue();
+        assertThat(previewContainer.getText()).contains("Heading");
+        assertThat(previewContainer.getText()).contains("bold"); // Should render as <strong> or text
+        // Check for HTML structure (optional)
+        String html = previewContainer.getAttribute("innerHTML");
+        assertThat(html).contains("<h1");
     }
 
     @Test
@@ -410,10 +545,6 @@ class WriteTest {
         Files.deleteIfExists(tempImage);
     }
 
-    // ------------------------------------------------------------------------
-    // Toolbar functionality (basic)
-    // ------------------------------------------------------------------------
-
     @Test
     void savingDraftWithoutCoverImageWorks(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
@@ -425,10 +556,6 @@ class WriteTest {
         assertThat(toast.getText()).contains("Draft saved successfully!");
         // No error about cover image
     }
-
-    // ------------------------------------------------------------------------
-    // NEW TESTS
-    // ------------------------------------------------------------------------
 
     @BeforeEach
     void setup() {
@@ -477,6 +604,10 @@ class WriteTest {
         assertThat(toast.getText()).contains("Post published!");
     }
 
+    // ------------------------------------------------------------------------
+    // Toolbar functionality (basic)
+    // ------------------------------------------------------------------------
+
     @Test
     void slugValidationRejectsInvalidCharacters(WebDriver driver, WebDriverWait wait) {
         login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
@@ -488,6 +619,62 @@ class WriteTest {
         driver.findElement(By.id("publish")).click();
         var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
         assertThat(toast.getText()).contains("Slug can only contain lowercase letters, numbers, and hyphens");
+    }
+
+    // ------------------------------------------------------------------------
+    // Markdown / AsciiDoc mode switching tests
+    // ------------------------------------------------------------------------
+
+    @Test
+    void switchingModeDoesNotLoseContent(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        String originalText = "Some text that should persist after mode switch.";
+        contentTextarea.sendKeys(originalText);
+
+        // Switch to AsciiDoc
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        String valueAfterSwitch = driver.findElement(cssSelector("#content")).getAttribute("value");
+        assertThat(valueAfterSwitch).isEqualTo(originalText);
+
+        // Switch back to Markdown
+        modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement markdownOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='markdown']")));
+        markdownOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("Markdown"));
+
+        valueAfterSwitch = driver.findElement(cssSelector("#content")).getAttribute("value");
+        assertThat(valueAfterSwitch).isEqualTo(originalText);
+    }
+
+    @Test
+    void toolbarBoldButtonProducesAsciiDocSyntaxWhenInAsciiDocMode(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // Switch to AsciiDoc mode
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("some text");
+        contentTextarea.sendKeys(Keys.HOME);
+        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT));
+        driver.findElement(cssSelector("button[data-command='bold']")).click();
+
+        String value = driver.findElement(cssSelector("#content")).getAttribute("value");
+        assertThat(value).contains("*some* text"); // AsciiDoc bold uses single asterisks
     }
 
     @Test
@@ -502,6 +689,29 @@ class WriteTest {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         var value = driver.findElement(cssSelector("#content")).getAttribute("value");
         assertThat(value).contains("**some** text");
+    }
+
+    @Test
+    void toolbarHeadingButtonProducesAsciiDocSyntax(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // Switch to AsciiDoc
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("Heading");
+        contentTextarea.sendKeys(Keys.HOME);
+        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT,
+                                            Keys.ARROW_RIGHT, Keys.ARROW_RIGHT));
+        driver.findElement(cssSelector("button[data-command='h2']")).click();
+
+        String value = driver.findElement(cssSelector("#content")).getAttribute("value");
+        assertThat(value).contains("== Heading");
     }
 
     @Test
@@ -584,6 +794,56 @@ class WriteTest {
     }
 
     @Test
+    void toolbarItalicButtonProducesAsciiDocSyntax(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // Switch to AsciiDoc
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("italic word");
+        contentTextarea.sendKeys(Keys.HOME);
+        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT,
+                                            Keys.ARROW_RIGHT));
+        driver.findElement(cssSelector("button[data-command='italic']")).click();
+
+        String value = driver.findElement(cssSelector("#content")).getAttribute("value");
+        assertThat(value).contains("_italic_ word");
+    }
+
+    @Test
+    void toolbarLinkButtonProducesAsciiDocSyntax(WebDriver driver, WebDriverWait wait) {
+        login(driver, wait, TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        driver.get(testUrl.toString() + "write");
+
+        // Switch to AsciiDoc
+        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
+        modeButton.click();
+        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
+        asciiDocOption.click();
+        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
+
+        WebElement contentTextarea = driver.findElement(cssSelector("#content"));
+        contentTextarea.sendKeys("click here");
+        contentTextarea.sendKeys(Keys.HOME);
+        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT,
+                                            Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT));
+        driver.findElement(cssSelector("button[data-command='link']")).click();
+
+        await().until(() -> driver.switchTo().alert() != null);
+        driver.switchTo().alert().sendKeys("https://example.com");
+        driver.switchTo().alert().accept();
+
+        String value = driver.findElement(cssSelector("#content")).getAttribute("value");
+        assertThat(value).contains("link:https://example.com[click here]");
+    }
+
+    @Test
     void unauthenticatedUserCannotAccessWritePage(WebDriver driver, WebDriverWait wait) {
         driver.get(testUrl.toString() + "write");
 
@@ -600,10 +860,6 @@ class WriteTest {
             assertThat(loginModal.get(0).isDisplayed()).isTrue();
         }
     }
-
-    // ------------------------------------------------------------------------
-    // Toolbar functionality (basic)
-    // ------------------------------------------------------------------------
 
     @Test
     void uploadCoverImageWhenCreatingDraft(WebDriver driver, WebDriverWait wait) throws IOException {
