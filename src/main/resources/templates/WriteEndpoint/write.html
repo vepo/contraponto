@@ -68,6 +68,30 @@
                         <div class="write-form__group write-form__group--editor">
                             <label class="write-form__label">Your story</label>
                             <div class="write-editor-toolbar" id="editorToolbar">
+                                <!-- Mode selector -->
+                                <div class="editor-mode-wrapper">
+                                    <button type="button" class="editor-mode-button" id="editorModeButton">
+                                        <span class="editor-mode-icon">📝</span>
+                                        <span class="editor-mode-label" id="currentModeLabel">Markdown</span>
+                                        <svg class="editor-mode-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <div class="editor-mode-dropdown" id="editorModeDropdown">
+                                        <div class="editor-mode-option" data-mode="markdown">
+                                            <span class="editor-mode-option-icon">📝</span>
+                                            <span class="editor-mode-option-label">Markdown</span>
+                                            <span class="editor-mode-option-desc">Lightweight markup</span>
+                                        </div>
+                                        <div class="editor-mode-option" data-mode="asciidoc">
+                                            <span class="editor-mode-option-icon">📄</span>
+                                            <span class="editor-mode-option-label">AsciiDoc</span>
+                                            <span class="editor-mode-option-desc">Richer document format</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="toolbar-separator"></span>
+
                                 <button type="button" data-command="bold" title="Bold"><strong>B</strong></button>
                                 <button type="button" data-command="italic" title="Italic"><em>I</em></button>
                                 <button type="button" data-command="underline" title="Underline"><u>U</u></button>
@@ -90,7 +114,7 @@
                                       placeholder="Write your story here... Use the toolbar above for formatting.">{#if post.isPresent}{post.get().content}{/if}</textarea>
                             <!-- Preview container (hidden by default) -->
                             <div id="previewContainer" class="write-preview" style="display: none;"></div>
-                            <div class="write-form__hint">Markdown formatting supported • Use the toolbar for shortcuts</div>
+                            <div class="write-form__hint" id="editorHint">Markdown formatting supported • Use the toolbar for shortcuts</div>
                         </div>
                     </form>
                 </div>
