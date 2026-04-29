@@ -1,10 +1,11 @@
 package dev.vepo.contraponto.components.forms;
 
-import java.util.Objects;
+import java.util.Optional;
 
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -24,6 +25,12 @@ import jakarta.ws.rs.core.Response;
 @Path("/forms/write/draft")
 public class SaveDraftEndpoint {
 
+    // Constants for messages and durations
+    private static final String ERROR_MSG_CONTENT_REQUIRED = "Content is required!";
+    private static final String ERROR_MSG_TITLE_REQUIRED = "Title is required!";
+    private static final String SUCCESS_MSG_DRAFT_SAVED = "Draft saved successfully!";
+    private static final int TOAST_DURATION = 10_000;
+
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
     private final LoggedUser loggedUser;
@@ -35,50 +42,98 @@ public class SaveDraftEndpoint {
         this.loggedUser = loggedUser;
     }
 
+    // ============================== PUBLIC API ==============================
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response save(@BeanParam SaveDraftRequest request) {
-        if (Objects.isNull(request.content()) || request.content().isBlank()) {
-            return Toast.ok()
-                        .message("Content is required!")
-                        .type(Toast.Type.ERROR)
-                        .duration(10000)
-                        .build();
+        Optional<Response> validationError = validateRequest(request);
+        if (validationError.isPresent()) {
+            return validationError.get();
         }
 
-        if (Objects.isNull(request.title()) || request.title().isBlank()) {
-            return Toast.ok()
-                        .message("Title is required!")
-                        .type(Toast.Type.ERROR)
-                        .duration(10000)
-                        .build();
-        }
-        Post post;
-        if (Objects.nonNull(request.id())) {
-            post = postRepository.findById(request.id()).orElseGet(Post::new);
-        } else {
-            post = new Post();
-        }
+        Post post = getOrCreatePost(request);
+        updateCoverImageIfProvided(post, request);
+        setFormat(post, request);
+        fillPostMetadata(post, request);
+        postRepository.save(post);
 
-        // Set cover image if provided
+        return buildSuccessResponse(post);
+    }
+
+    // ============================== VALIDATION ==============================
+
+    private Optional<Response> validateRequest(SaveDraftRequest request) {
+        if (isBlank(request.content())) {
+            return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
+        }
+        if (isBlank(request.title())) {
+            return Optional.of(buildErrorResponse(ERROR_MSG_TITLE_REQUIRED));
+        }
+        return Optional.empty();
+    }
+
+    // ============================== POST RETRIEVAL / CREATION ==============================
+
+    private Post getOrCreatePost(SaveDraftRequest request) {
+        if (request.id() != null) {
+            return postRepository.findById(request.id()).orElseGet(Post::new);
+        }
+        return new Post();
+    }
+
+    // ============================== POST DATA MUTATION ==============================
+
+    private void updateCoverImageIfProvided(Post post, SaveDraftRequest request) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
             imageRepository.findByUuid(request.coverId())
-                           .ifPresent(post::setCover);
+                    .ifPresent(post::setCover);
         }
+        // Note: Unlike publish endpoint, we do NOT clear cover if coverId is missing.
+        // This allows preserving existing cover when saving a draft.
+    }
 
+    private void setFormat(Post post, SaveDraftRequest request) {
+        if (!isBlank(request.format())) {
+            post.setFormat(Format.valueOf(request.format().toUpperCase()));
+        } else {
+            post.setFormat(Format.MARKDOWN);
+        }
+    }
+
+    private void fillPostMetadata(Post post, SaveDraftRequest request) {
         post.setSlug(request.slug());
         post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());
         post.setContent(request.content());
         post.setDescription(request.description());
-        postRepository.save(post);
+        // Note: This endpoint does NOT set published or publishedAt – it's a draft.
+    }
+
+    // ============================== RESPONSE BUILDING ==============================
+
+    private Response buildErrorResponse(String message) {
+        return Toast.ok()   // Using OK status but with error type (original behavior)
+                .message(message)
+                .type(Toast.Type.ERROR)
+                .duration(TOAST_DURATION)
+                .build();
+    }
+
+    private Response buildSuccessResponse(Post post) {
         return Toast.ok()
-                    .message("Draft saved successfully!")
-                    .type(Toast.Type.SUCCESS)
-                    .duration(10000)
-                    .url("/write/draft/%d".formatted(post.getId()))
-                    .build();
+                .message(SUCCESS_MSG_DRAFT_SAVED)
+                .type(Toast.Type.SUCCESS)
+                .duration(TOAST_DURATION)
+                .url("/write/draft/%d".formatted(post.getId()))
+                .build();
+    }
+
+    // ============================== UTILITIES ==============================
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

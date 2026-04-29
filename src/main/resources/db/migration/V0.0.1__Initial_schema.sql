@@ -39,7 +39,7 @@ CREATE TABLE tb_posts (
     cover_id          BIGINT,
     description       VARCHAR(512) NOT NULL,
     content           TEXT NOT NULL,
-    content_format    VARCHAR(20) NOT NULL,
+    format            VARCHAR(20) NOT NULL,
     published         BOOLEAN NOT NULL DEFAULT FALSE,
     created_at        TIMESTAMP(6) NOT NULL,
     published_at      TIMESTAMP(6),

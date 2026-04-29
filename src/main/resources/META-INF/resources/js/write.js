@@ -60,7 +60,7 @@ class WriteEditor {
 
     changeMode(mode) {
         this.currentMode = mode;
-        document.getElementById('contentFormat').value = mode;
+        document.getElementById('format').value = mode;
         this.updateHint();
         if (this.isPreviewMode) this.renderPreview();
     }

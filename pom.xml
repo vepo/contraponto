@@ -16,6 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.platform.version>3.30.5</quarkus.platform.version>
         <sonar.organization>vepo-github</sonar.organization>
+        <graaljs.version>25.0.3</graaljs.version>
 
         <!-- JaCoCo Properties -->
         <jacoco.version>0.8.14</jacoco.version>
@@ -108,16 +109,23 @@
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
+        <!--dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.7</version>
+        </dependency-->
         <dependency>
-            <groupId>org.commonmark</groupId>
-            <artifactId>commonmark</artifactId>
-            <version>0.28.0</version>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js-scriptengine</artifactId>
+            <version>25.0.3</version>
         </dependency>
         <dependency>
-            <groupId>org.asciidoctor</groupId>
-            <artifactId>asciidoctorj</artifactId>
-            <version>3.0.1</version>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+            <version>25.0.3</version>
+            <type>pom</type>
         </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>io.quarkus</groupId>

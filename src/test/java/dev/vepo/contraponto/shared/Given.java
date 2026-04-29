@@ -20,6 +20,7 @@ import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.ImageService;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
@@ -32,6 +33,7 @@ public interface Given {
         private String title;
         private String description;
         private String content;
+        private Format format;
         private User author;
         private Image cover;
         private String slug;
@@ -42,13 +44,14 @@ public interface Given {
             this.description = null;
             this.content = null;
             this.author = null;
+            this.format = Format.MARKDOWN;
             this.slug = null;
             this.published = true;
         }
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title, cover, slug, description, content, author, this.published, LocalDateTime.now());
+                var post = new Post(title, cover, slug, description, content, format, author, this.published, LocalDateTime.now());
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
                 }

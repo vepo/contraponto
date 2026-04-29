@@ -8,4 +8,4 @@ public record SaveDraftRequest(@FormParam("postId") Long id,
                                @FormParam("title") String title,
                                @FormParam("description") String description,
                                @FormParam("content") String content,
-                               @FormParam("contentFormat") String contentFormat) {}
+                               @FormParam("format") String format) {}

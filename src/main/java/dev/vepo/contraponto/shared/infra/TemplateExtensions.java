@@ -4,21 +4,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.Options;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
-
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.renderer.Renderer;
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
 public class TemplateExtensions {
-
-    private static final Parser parser = Parser.builder().build();
-
-    private static final HtmlRenderer MARKDOWN_RENDERER = HtmlRenderer.builder().build();
-    private static final Asciidoctor ASCIIDOCTOR_RENDERER = Asciidoctor.Factory.create();
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -89,10 +80,8 @@ public class TemplateExtensions {
             return "";
         }
 
-        return switch (post.getContentFormat()) {
-            case MARKDOWN -> MARKDOWN_RENDERER.render(parser.parse(post.getContent()));
-            case ASCIIDOC -> ASCIIDOCTOR_RENDERER.convert(post.getContent(), Options.builder().build());
-        };
+        return Renderer.get(post.getFormat())
+                       .render(post.getContent());
     }
 
     private TemplateExtensions() {

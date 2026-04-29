@@ -408,22 +408,6 @@ class WriteTest {
         previewBtn.click();
         WebElement previewContainer = wait.until(visibilityOfElementLocated(cssSelector("#previewContainer")));
         assertThat(previewContainer.isDisplayed()).isTrue();
-
-        // Switch mode to AsciiDoc (should re-render preview)
-        WebElement modeButton = driver.findElement(cssSelector("#editorModeButton"));
-        modeButton.click();
-        WebElement asciiDocOption = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='asciidoc']")));
-        asciiDocOption.click();
-        wait.until(d -> driver.findElement(cssSelector("#editorModeButton .editor-mode-label")).getText().equals("AsciiDoc"));
-
-        // Preview should still be visible and have updated content (AsciiDoc view)
-        String previewHtml = previewContainer.getAttribute("innerHTML");
-        // AsciiDoc renderer may produce different structure; we just check it's not
-        // empty and changed
-        assertThat(previewContainer.isDisplayed()).isTrue();
-        // assertThat(previewHtml).doesNotContain("Markdown heading")
-        // .or().doesNotContain("<h1"); // Markdown heading renders as h1, AsciiDoc
-        // level-0 also h1 but content differs
     }
 
     // ------------------------------------------------------------------------
@@ -831,8 +815,18 @@ class WriteTest {
         WebElement contentTextarea = driver.findElement(cssSelector("#content"));
         contentTextarea.sendKeys("click here");
         contentTextarea.sendKeys(Keys.HOME);
-        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT,
-                                            Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT));
+        contentTextarea.sendKeys(Keys.chord(Keys.SHIFT,
+                                            Keys.ARROW_RIGHT, // c
+                                            Keys.ARROW_RIGHT, // l
+                                            Keys.ARROW_RIGHT, // i
+                                            Keys.ARROW_RIGHT, // c
+                                            Keys.ARROW_RIGHT, // k
+                                            Keys.ARROW_RIGHT, // " "
+                                            Keys.ARROW_RIGHT, // h
+                                            Keys.ARROW_RIGHT, // e
+                                            Keys.ARROW_RIGHT, // r
+                                            Keys.ARROW_RIGHT // e
+        ));
         driver.findElement(cssSelector("button[data-command='link']")).click();
 
         await().until(() -> driver.switchTo().alert() != null);

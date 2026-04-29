@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,9 +49,9 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "content_format", nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ContentFormat contentFormat;
+    private Format format;
 
     @Column
     private boolean published;
@@ -73,6 +74,7 @@ public class Post {
                 String slug,
                 String description,
                 String content,
+                Format format,
                 User author,
                 boolean published,
                 LocalDateTime publishedAt) {
@@ -81,6 +83,7 @@ public class Post {
         this.slug = slug;
         this.description = description;
         this.content = content;
+        this.format = format;
         this.author = author;
         this.published = published;
         this.publishedAt = publishedAt;
@@ -106,10 +109,6 @@ public class Post {
         return content;
     }
 
-    public ContentFormat getContentFormat() {
-        return contentFormat;
-    }
-
     public Image getCover() {
         return cover;
     }
@@ -120,6 +119,10 @@ public class Post {
 
     public String getDescription() {
         return description;
+    }
+
+    public Format getFormat() {
+        return format;
     }
 
     public Long getId() {
@@ -151,16 +154,16 @@ public class Post {
         return published;
     }
 
+    public void setFormat(Format format) {
+        this.format = format;
+    }
+
     public void setAuthor(User author) {
         this.author = author;
     }
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public void setContentFormat(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
     }
 
     public void setCover(Image cover) {
