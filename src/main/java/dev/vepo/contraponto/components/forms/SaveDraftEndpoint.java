@@ -44,6 +44,51 @@ public class SaveDraftEndpoint {
 
     // ============================== PUBLIC API ==============================
 
+    private Response buildErrorResponse(String message) {
+        return Toast.ok() // Using OK status but with error type (original behavior)
+                    .message(message)
+                    .type(Toast.Type.ERROR)
+                    .duration(TOAST_DURATION)
+                    .build();
+    }
+
+    // ============================== VALIDATION ==============================
+
+    private Response buildSuccessResponse(Post post) {
+        return Toast.ok()
+                    .message(SUCCESS_MSG_DRAFT_SAVED)
+                    .type(Toast.Type.SUCCESS)
+                    .duration(TOAST_DURATION)
+                    .url("/write/draft/%d".formatted(post.getId()))
+                    .build();
+    }
+
+    // ============================== POST RETRIEVAL / CREATION
+    // ==============================
+
+    private void fillPostMetadata(Post post, SaveDraftRequest request) {
+        post.setSlug(request.slug());
+        post.setAuthor(loggedUser.getUser());
+        post.setTitle(request.title());
+        post.setContent(request.content());
+        post.setDescription(request.description());
+        // Note: This endpoint does NOT set published or publishedAt – it's a draft.
+    }
+
+    // ============================== POST DATA MUTATION
+    // ==============================
+
+    private Post getOrCreatePost(SaveDraftRequest request) {
+        if (request.id() != null) {
+            return postRepository.findById(request.id()).orElseGet(Post::new);
+        }
+        return new Post();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -63,37 +108,8 @@ public class SaveDraftEndpoint {
         return buildSuccessResponse(post);
     }
 
-    // ============================== VALIDATION ==============================
-
-    private Optional<Response> validateRequest(SaveDraftRequest request) {
-        if (isBlank(request.content())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
-        }
-        if (isBlank(request.title())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_TITLE_REQUIRED));
-        }
-        return Optional.empty();
-    }
-
-    // ============================== POST RETRIEVAL / CREATION ==============================
-
-    private Post getOrCreatePost(SaveDraftRequest request) {
-        if (request.id() != null) {
-            return postRepository.findById(request.id()).orElseGet(Post::new);
-        }
-        return new Post();
-    }
-
-    // ============================== POST DATA MUTATION ==============================
-
-    private void updateCoverImageIfProvided(Post post, SaveDraftRequest request) {
-        if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuid(request.coverId())
-                    .ifPresent(post::setCover);
-        }
-        // Note: Unlike publish endpoint, we do NOT clear cover if coverId is missing.
-        // This allows preserving existing cover when saving a draft.
-    }
+    // ============================== RESPONSE BUILDING
+    // ==============================
 
     private void setFormat(Post post, SaveDraftRequest request) {
         if (!isBlank(request.format())) {
@@ -103,37 +119,24 @@ public class SaveDraftEndpoint {
         }
     }
 
-    private void fillPostMetadata(Post post, SaveDraftRequest request) {
-        post.setSlug(request.slug());
-        post.setAuthor(loggedUser.getUser());
-        post.setTitle(request.title());
-        post.setContent(request.content());
-        post.setDescription(request.description());
-        // Note: This endpoint does NOT set published or publishedAt – it's a draft.
-    }
-
-    // ============================== RESPONSE BUILDING ==============================
-
-    private Response buildErrorResponse(String message) {
-        return Toast.ok()   // Using OK status but with error type (original behavior)
-                .message(message)
-                .type(Toast.Type.ERROR)
-                .duration(TOAST_DURATION)
-                .build();
-    }
-
-    private Response buildSuccessResponse(Post post) {
-        return Toast.ok()
-                .message(SUCCESS_MSG_DRAFT_SAVED)
-                .type(Toast.Type.SUCCESS)
-                .duration(TOAST_DURATION)
-                .url("/write/draft/%d".formatted(post.getId()))
-                .build();
+    private void updateCoverImageIfProvided(Post post, SaveDraftRequest request) {
+        if (request.coverId() != null && !request.coverId().isBlank()) {
+            imageRepository.findByUuid(request.coverId())
+                           .ifPresent(post::setCover);
+        }
+        // Note: Unlike publish endpoint, we do NOT clear cover if coverId is missing.
+        // This allows preserving existing cover when saving a draft.
     }
 
     // ============================== UTILITIES ==============================
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    private Optional<Response> validateRequest(SaveDraftRequest request) {
+        if (isBlank(request.content())) {
+            return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
+        }
+        if (isBlank(request.title())) {
+            return Optional.of(buildErrorResponse(ERROR_MSG_TITLE_REQUIRED));
+        }
+        return Optional.empty();
     }
 }

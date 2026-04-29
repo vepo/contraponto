@@ -56,6 +56,73 @@ public class PublishEndpoint {
 
     // ============================== PUBLIC API ==============================
 
+    private Response buildErrorResponse(String message) {
+        return Toast.response(Status.BAD_REQUEST)
+                    .message(message)
+                    .type(Toast.Type.ERROR)
+                    .duration(TOAST_DURATION_SHORT)
+                    .build();
+    }
+
+    private Response buildSuccessResponse(Post post) {
+        String postUrl = "/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug());
+        return Toast.ok()
+                    .message(SUCCESS_MSG_PUBLISHED)
+                    .type(Toast.Type.SUCCESS)
+                    .duration(TOAST_DURATION_LONG)
+                    .url(postUrl)
+                    .page(PostEndpoint.Templates.post(post, loggedUser, 0L))
+                    .build();
+    }
+
+    private void fillPostMetadata(Post post, SaveDraftRequest request) {
+        post.setAuthor(loggedUser.getUser());
+        post.setTitle(request.title());
+        post.setContent(request.content());
+        post.setDescription(request.description());
+        // slug is handled separately
+    }
+
+    /**
+     * Converts a title into a URL‑friendly slug. Anything not a letter, digit or
+     * hyphen is replaced with a hyphen.
+     */
+    private String generateSlugFromTitle(String title) {
+        return title.toLowerCase()
+                    .replaceAll(SLUG_GENERATION_PATTERN.pattern(), "-");
+    }
+
+    private void generateSlugIfMissing(Post post, SaveDraftRequest request) {
+        if (isBlank(request.slug())) {
+            String generatedSlug = generateSlugFromTitle(request.title());
+            post.setSlug(generatedSlug);
+        } else {
+            post.setSlug(request.slug());
+        }
+    }
+
+    private Post getOrCreatePost(SaveDraftRequest request) {
+        if (request.id() != null) {
+            return postRepository.findById(request.id()).orElseGet(Post::new);
+        }
+        return new Post();
+    }
+
+    private boolean hasInvalidSlugCharacters(String slug) {
+        return slug != null && INVALID_SLUG_CHARS.matcher(slug).find();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private void markAsPublishedIfNeeded(Post post) {
+        if (!post.isPublished()) {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+    }
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -77,6 +144,33 @@ public class PublishEndpoint {
         return buildSuccessResponse(post);
     }
 
+    private void setFormatIfProvided(Post post, SaveDraftRequest request) {
+        if (!isBlank(request.format())) {
+            post.setFormat(Format.valueOf(request.format().toUpperCase()));
+        } else {
+            post.setFormat(Format.MARKDOWN); // sensible default
+        }
+    }
+
+    private boolean slugAlreadyExistsForDifferentPost(SaveDraftRequest request) {
+        // If no slug provided, no conflict (slug will be generated later)
+        if (isBlank(request.slug())) {
+            return false;
+        }
+        return postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
+                             .filter(existingPost -> !existingPost.getId().equals(request.id()))
+                             .isPresent();
+    }
+
+    private void updateCoverImage(Post post, SaveDraftRequest request) {
+        if (request.coverId() != null && !request.coverId().isBlank()) {
+            imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
+        } else if (post.getCover() != null) {
+            // Explicitly remove cover if request has no coverId or empty coverId
+            post.setCover(null);
+        }
+    }
+
     private Optional<Response> validateRequest(SaveDraftRequest request) {
         if (isBlank(request.content())) {
             return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
@@ -91,101 +185,5 @@ public class PublishEndpoint {
             return Optional.of(buildErrorResponse(ERROR_MSG_SLUG_EXISTS));
         }
         return Optional.empty();
-    }
-
-    private boolean hasInvalidSlugCharacters(String slug) {
-        return slug != null && INVALID_SLUG_CHARS.matcher(slug).find();
-    }
-
-    private boolean slugAlreadyExistsForDifferentPost(SaveDraftRequest request) {
-        // If no slug provided, no conflict (slug will be generated later)
-        if (isBlank(request.slug())) {
-            return false;
-        }
-        return postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
-                .filter(existingPost -> !existingPost.getId().equals(request.id()))
-                .isPresent();
-    }
-
-    private Post getOrCreatePost(SaveDraftRequest request) {
-        if (request.id() != null) {
-            return postRepository.findById(request.id()).orElseGet(Post::new);
-        }
-        return new Post();
-    }
-
-
-    private void setFormatIfProvided(Post post, SaveDraftRequest request) {
-        if (!isBlank(request.format())) {
-            post.setFormat(Format.valueOf(request.format().toUpperCase()));
-        } else {
-            post.setFormat(Format.MARKDOWN); // sensible default
-        }
-    }
-
-    private void updateCoverImage(Post post, SaveDraftRequest request) {
-        if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
-        } else if (post.getCover() != null) {
-            // Explicitly remove cover if request has no coverId or empty coverId
-            post.setCover(null);
-        }
-    }
-
-    private void fillPostMetadata(Post post, SaveDraftRequest request) {
-        post.setAuthor(loggedUser.getUser());
-        post.setTitle(request.title());
-        post.setContent(request.content());
-        post.setDescription(request.description());
-        // slug is handled separately
-    }
-
-    private void generateSlugIfMissing(Post post, SaveDraftRequest request) {
-        if (isBlank(request.slug())) {
-            String generatedSlug = generateSlugFromTitle(request.title());
-            post.setSlug(generatedSlug);
-        } else {
-            post.setSlug(request.slug());
-        }
-    }
-
-    /**
-     * Converts a title into a URL‑friendly slug.
-     * Anything not a letter, digit or hyphen is replaced with a hyphen.
-     */
-    private String generateSlugFromTitle(String title) {
-        return title.toLowerCase()
-                .replaceAll(SLUG_GENERATION_PATTERN.pattern(), "-");
-    }
-
-    private void markAsPublishedIfNeeded(Post post) {
-        if (!post.isPublished()) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-    }
-
-
-    private Response buildErrorResponse(String message) {
-        return Toast.response(Status.BAD_REQUEST)
-                .message(message)
-                .type(Toast.Type.ERROR)
-                .duration(TOAST_DURATION_SHORT)
-                .build();
-    }
-
-    private Response buildSuccessResponse(Post post) {
-        String postUrl = "/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug());
-        return Toast.ok()
-                .message(SUCCESS_MSG_PUBLISHED)
-                .type(Toast.Type.SUCCESS)
-                .duration(TOAST_DURATION_LONG)
-                .url(postUrl)
-                .page(PostEndpoint.Templates.post(post, loggedUser, 0L))
-                .build();
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 }

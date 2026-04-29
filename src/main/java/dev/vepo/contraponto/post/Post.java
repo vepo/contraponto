@@ -154,10 +154,6 @@ public class Post {
         return published;
     }
 
-    public void setFormat(Format format) {
-        this.format = format;
-    }
-
     public void setAuthor(User author) {
         this.author = author;
     }
@@ -176,6 +172,10 @@ public class Post {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setFormat(Format format) {
+        this.format = format;
     }
 
     public void setId(Long id) {
