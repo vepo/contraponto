@@ -6,6 +6,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -44,13 +45,13 @@ public class HomeEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance morePosts(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
-        return Templates.grid(this.postRepository.findPaginatedNewest(limit, page), false);
+        return Templates.grid(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, page)), false);
     }
 
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance post(@QueryParam("limit") @DefaultValue("12") int limit) {
-        return Templates.home(this.postRepository.findPaginatedNewest(limit, 1), loggedUser);
+        return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)), loggedUser);
     }
 }

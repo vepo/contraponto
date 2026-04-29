@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Review Featured Posts - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="review-page">
+            <div class="container-narrow">
+                <h1 class="review-page__title">Manage Posts</h1>
+                <p class="review-page__subtitle">
+                    Toggle the star to make a post appear on the home page.
+                </p>
+
+                <div class="review-list">
+                    {#include ReviewEndpoint/grid posts=posts /}
+                </div>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

@@ -35,11 +35,11 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cover_id")
     private Image cover;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
@@ -55,6 +55,9 @@ public class Post {
 
     @Column
     private boolean published;
+
+    @Column(nullable = false)
+    private boolean featured = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -86,6 +89,7 @@ public class Post {
         this.format = format;
         this.author = author;
         this.published = published;
+        this.featured = false;
         this.publishedAt = publishedAt;
     }
 
@@ -111,6 +115,14 @@ public class Post {
 
     public Image getCover() {
         return cover;
+    }
+
+    public boolean isFeatured() {
+        return featured;
+    }
+
+    public void setFeatured(boolean featured) {
+        this.featured = featured;
     }
 
     public LocalDateTime getCreatedAt() {

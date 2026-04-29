@@ -146,7 +146,7 @@ BEGIN
 
     -- Inserir posts publicados (alternando MARKDOWN e ASCIIDOC)
     -- Post 1: MARKDOWN
-    INSERT INTO tb_posts(slug, title, author_id, description, content, format, published, created_at, updated_at, published_at, cover_id) 
+    INSERT INTO tb_posts(slug, title, author_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'introduction-to-distributed-systems-java', 
@@ -193,6 +193,7 @@ public class DistributedCounter {
 Stay tuned for hands-on examples using Java RMI, Spring Cloud, and Apache Kafka!', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2023-01-15 09:00:00', 
         '2023-01-15 09:00:00', 
         '2023-01-15 09:00:00',
@@ -237,6 +238,7 @@ public PaymentResponse fallbackPayment(PaymentRequest request, Exception e) {
 
 We''ll build a simple e-commerce system demonstrating how these patterns work together to create a resilient, scalable application. Code examples included!', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2023-02-20 14:30:00', 
         '2023-02-25 11:15:00', 
@@ -290,6 +292,7 @@ public void processOrder(OrderEvent event) {
 
 We''ll build a real-time order processing system that demonstrates event sourcing and CQRS patterns. Complete source code available on GitHub.', 
         'MARKDOWN',
+        TRUE, 
         TRUE, 
         '2023-04-05 10:00:00', 
         '2023-04-10 16:45:00', 
@@ -352,6 +355,7 @@ We''ll explore both approaches using Spring Boot, with detailed code examples sh
 Learn about timeout handling, retry mechanisms, and monitoring strategies to make your sagas production-ready.', 
         'ASCIIDOC',
         TRUE, 
+        TRUE, 
         '2023-06-12 11:00:00', 
         '2023-06-15 09:30:00', 
         '2023-06-12 11:00:00',
@@ -413,6 +417,7 @@ spec:
 
 We''ll cover memory management for JVM in containers, logging aggregation with EFK stack, and monitoring with Prometheus and Grafana.', 
         'MARKDOWN',
+        TRUE, 
         TRUE, 
         '2023-08-18 08:00:00', 
         '2023-08-22 14:20:00', 
@@ -483,6 +488,7 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
 
 Practical recommendations on when gRPC makes sense and when traditional REST/GraphQL might be better suited for your use case.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2023-10-25 13:00:00', 
         '2023-10-28 10:15:00', 
@@ -567,6 +573,7 @@ We''ll build a complete observability pipeline: Spring Boot applications exporti
 Learn to set up meaningful alerts based on SLOs and SLIs to proactively detect issues before they impact users.', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2023-12-02 15:30:00', 
         '2024-01-05 11:45:00', 
         '2023-12-02 15:30:00',
@@ -640,6 +647,7 @@ Response handleRequest(Request request) throws Exception {
 How to start using virtual threads in existing applications, common patterns, and performance benchmarks comparing traditional thread pools with virtual threads.', 
         'ASCIIDOC',
         TRUE, 
+        TRUE, 
         '2024-01-20 09:00:00', 
         '2024-01-20 09:00:00', 
         '2024-01-20 09:00:00',
@@ -683,6 +691,7 @@ public class ProductResource {
 ```',
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2024-02-01 09:00:00', 
         '2024-02-01 09:00:00', 
         '2024-02-01 09:00:00',
@@ -709,6 +718,7 @@ Both platforms offer unique strengths. This post helps you decide.
 
 We tested both under varying loads. Results show Pulsar shines with many topics, while Kafka excels in simple throughput.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2024-02-10 10:30:00', 
         '2024-02-12 14:20:00', 
@@ -746,6 +756,7 @@ String describeShape(Object obj) {
 Use `when` clauses for additional conditions.', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2024-02-18 11:00:00', 
         '2024-02-18 11:00:00', 
         '2024-02-18 11:00:00',
@@ -775,6 +786,7 @@ RUN ./mvnw -Pnative spring-boot:build-image
 
 Measure startup time: 0.08 seconds vs 2.5 seconds for JVM mode. Memory footprint reduced by 40%.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2024-03-01 08:00:00', 
         '2024-03-03 16:30:00', 
@@ -821,6 +833,7 @@ RetryConfig config = RetryConfig.custom()
 We''ll build a complete example of a resilient product service.', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2024-03-10 09:30:00', 
         '2024-03-12 13:15:00', 
         '2024-03-10 09:30:00',
@@ -860,6 +873,7 @@ public class PolyglotDemo {
 
 We''ll build a real-time sentiment analysis service that uses Python''s NLTK and Java Spring Boot.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2024-03-18 14:00:00', 
         '2024-03-20 10:45:00', 
@@ -903,6 +917,7 @@ public class OrderService {
 
 Create dashboards to monitor latency, throughput, and error rates. Alert on anomalies.', 
         'MARKDOWN',
+        TRUE, 
         TRUE, 
         '2024-03-25 11:00:00', 
         '2024-03-27 15:30:00', 
@@ -956,6 +971,7 @@ spring:
 Complete example with service discovery via Eureka included.', 
         'ASCIIDOC',
         TRUE, 
+        TRUE, 
         '2024-04-01 08:00:00', 
         '2024-04-03 09:15:00', 
         '2024-04-01 08:00:00',
@@ -1006,6 +1022,7 @@ public Config hazelcastConfig() {
 Learn about write-through, write-behind, and cache-aside patterns with code examples.', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2024-04-08 10:00:00', 
         '2024-04-10 14:30:00', 
         '2024-04-08 10:00:00',
@@ -1042,6 +1059,7 @@ Understanding memory management is crucial for performance.
 
 Learn jstat, jmap, and VisualVM to diagnose memory leaks and optimize GC. Sample heap dumps analysis included.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2024-04-12 09:45:00', 
         '2024-04-14 11:00:00', 
@@ -1090,6 +1108,7 @@ public void handleOrderChange(ConsumerRecord<String, String> record) {
 
 Use cases: cache invalidation, search indexing, data synchronization between services.', 
         'MARKDOWN',
+        TRUE, 
         TRUE, 
         '2024-04-15 13:00:00', 
         '2024-04-17 16:20:00', 
@@ -1140,6 +1159,7 @@ class OrderServiceTest {
 
 Mock external APIs with WireMock containers, test database migrations, and more.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2024-04-20 08:30:00', 
         '2024-04-22 12:45:00', 
@@ -1194,6 +1214,7 @@ public class ProductController {
 Combine multiple GraphQL services into a single endpoint using Apollo Federation.', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2024-04-25 11:15:00', 
         '2024-04-27 15:00:00', 
         '2024-04-25 11:15:00',
@@ -1243,6 +1264,7 @@ public class GreetingResource {
 Startup time: ~15ms, memory: ~10MB. Ideal for serverless and edge computing.', 
         'ASCIIDOC',
         TRUE, 
+        TRUE, 
         '2024-04-28 09:00:00', 
         '2024-04-28 09:00:00', 
         '2024-04-28 09:00:00',
@@ -1291,6 +1313,7 @@ public void processPayment(Payment payment) {
 See request flow across services: API Gateway → Auth → Order → Payment → Shipping.', 
         'MARKDOWN',
         TRUE, 
+        TRUE, 
         '2024-05-01 10:00:00', 
         '2024-05-03 14:30:00', 
         '2024-05-01 10:00:00',
@@ -1330,6 +1353,7 @@ Start with `--class-path` mode, then gradually add `module-info.java` to leaf mo
 
 We''ll migrate a sample microservice to modules and measure startup time changes.', 
         'ASCIIDOC',
+        TRUE, 
         TRUE, 
         '2024-05-05 12:00:00', 
         '2024-05-07 16:00:00', 

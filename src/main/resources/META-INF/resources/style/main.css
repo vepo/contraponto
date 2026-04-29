@@ -101,7 +101,7 @@ a {
   top: 0;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #DDDDDD;
   z-index: 1000;
   font-family: var(--font-sans);
 }
@@ -1077,7 +1077,7 @@ hr:after {
 
 /* Article Cover Image */
 .article-page__cover {
-  margin: 2rem 0 2rem 0;
+  margin: 0rem 0 2rem 0;
   border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -1793,4 +1793,101 @@ hr:after {
 .error-details pre {
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+/* Review Page */
+.review-page {
+    padding: 2rem 0 4rem;
+}
+
+.review-page__title {
+    font-family: var(--font-serif-display);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid var(--color-primary);
+    padding-left: 1rem;
+}
+
+.review-page__subtitle {
+    font-family: var(--font-sans);
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-bg);
+}
+
+.review-row__content {
+    display: flex;
+    flex-direction: column;
+}
+
+.review-row__title {
+    font-weight: 600;
+}
+
+.review-row__author,
+.review-row__date {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.btn--featured {
+    background: var(--color-primary);
+    color: white;
+}
+
+.article-page__actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn--icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    transition: all 0.2s ease;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-offset);
+    color: var(--color-text);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn--icon:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: white;
+}
+
+.btn--star-active {
+    border-color: #eab308;
+    color: #eab308;
+    background: #fff9e6;
+}
+
+.btn--star-active:hover {
+    background: #fef3c7;
 }

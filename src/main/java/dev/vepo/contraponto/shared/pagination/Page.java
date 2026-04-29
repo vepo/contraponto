@@ -23,10 +23,14 @@ public record Page<T>(List<T> data, int page, int limit, long total) {
     }
 
     public boolean isLastPage() {
-        return page * limit < total;
+        return page * limit >= total;
     }
 
     public int nextPage() {
         return page + 1;
+    }
+
+    public static int offset() {
+        return 0;
     }
 }

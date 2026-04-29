@@ -1,0 +1,20 @@
+<div class="review-row" id="post-row-{post.id}">
+    <div class="review-row__content">
+        <span class="review-row__title">{post.title}</span>
+        <span class="review-row__author">by {post.author.name}</span>
+        <span class="review-row__date">{post.publishedAt.formatDate}</span>
+    </div>
+    <div class="review-row__actions">
+        <!-- Toggle button: sends PUT to the endpoint, swaps the whole row -->
+        <button class="btn btn--small {#if post.featured}btn--featured{/if}"
+                hx-put="/review/components/{post.id}/featured/toggle"
+                hx-target="#post-row-{post.id}"
+                hx-swap="outerHTML">
+            {#if post.featured}
+                ★ Featured
+            {#else}
+                ☆ Not Featured
+            {/if}
+        </button>
+    </div>
+</div>

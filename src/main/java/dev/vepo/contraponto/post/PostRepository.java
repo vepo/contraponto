@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -52,11 +53,21 @@ public class PostRepository {
                             .getSingleResult();
     }
 
-    public long countPublished() {
+    private long countPublished() {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
                                          FROM Post p
                                          WHERE p.published = true
+                                         """, Long.class)
+                            .getSingleResult();
+    }
+
+    private long countFeatured() {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.published = true AND
+                                               p.featured = true
                                          """, Long.class)
                             .getSingleResult();
     }
@@ -128,33 +139,26 @@ public class PostRepository {
                             .getResultList();
     }
 
-    public List<Post> findByAuthorUsernameAndPublished(String username, int limit, int offset) {
-        return entityManager.createQuery("""
-                                         SELECT p
-                                         FROM Post p
-                                         JOIN FETCH p.author
-                                         WHERE p.author.username = :username AND
-                                               p.published = true
-                                         ORDER BY p.publishedAt DESC
-                                         """, Post.class)
-                            .setParameter("username", username)
-                            .setMaxResults(limit)
-                            .setFirstResult(offset)
-                            .getResultList();
+    public Page<Post> findPublished(String username, PageQuery query) {
+        return new Page<>(entityManager.createQuery("""
+                                                    SELECT p
+                                                    FROM Post p
+                                                    JOIN FETCH p.author
+                                                    WHERE p.author.username = :username AND
+                                                          p.published = true
+                                                    ORDER BY p.publishedAt DESC
+                                                    """, Post.class)
+                                       .setParameter("username", username)
+                                       .setMaxResults(query.maxResults())
+                                       .setFirstResult(query.skip())
+                                       .getResultList(),
+                          query.page(),
+                          query.limit(),
+                          countByAuthorUsernameAndPublished(username));
     }
 
     public Optional<Post> findById(Long id) {
         return Optional.ofNullable(entityManager.find(Post.class, id));
-    }
-
-    public Optional<Post> findBySlugForEdit(String slug) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              WHERE slug = :slug
-                                              """, Post.class)
-                                 .setParameter("slug", slug)
-                                 .getResultStream()
-                                 .findFirst();
     }
 
     public Optional<Post> findByUsernameAndSlug(String username, String slug) {
@@ -175,44 +179,35 @@ public class PostRepository {
         return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
     }
 
-    public List<Post> findNewest(int limit) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              WHERE published = TRUE
-                                              ORDER BY publishedAt DESC
-                                              """, Post.class)
-                                 .setMaxResults(limit)
-                                 .getResultList();
+    public Page<Post> findPublished(PageQuery query) {
+        return new Page<>(entityManager.createQuery("""
+                                                    FROM Post
+                                                    JOIN FETCH author
+                                                    WHERE published = true
+                                                    ORDER BY publishedAt DESC
+                                                    """, Post.class)
+                                       .setMaxResults(query.maxResults())
+                                       .setFirstResult(query.skip())
+                                       .getResultList(),
+                          query.page(),
+                          query.limit(),
+                          countPublished());
     }
 
-    public Page<Post> findPaginatedNewest(int limit, int page) {
-        var extraFirst = (page == 1) ? 1 : 0;
-        var effectiveLimit = limit + extraFirst;
-        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
-        return new Page<>(findPublished(effectiveLimit, offset), page, limit, countPublished());
-    }
-
-    public Page<Post> findPaginatedNewestFromAuthor(String username, int limit, int page) {
-        var extraFirst = (page == 1) ? 1 : 0;
-        var effectiveLimit = limit + extraFirst;
-        var offset = (page == 1) ? 0 : ((page - 1) * limit) + 1; // skip the extra from first page
-        return new Page<>(findByAuthorUsernameAndPublished(username, effectiveLimit, offset),
-                          page,
-                          limit,
-                          countByAuthorUsernameAndPublished(username));
-    }
-
-    public List<Post> findPublished(int limit, int offset) {
-        return entityManager.createQuery("""
-                                         SELECT p
-                                         FROM Post p
-                                         JOIN FETCH p.author
-                                         WHERE p.published = true
-                                         ORDER BY p.publishedAt DESC
-                                         """, Post.class)
-                            .setMaxResults(limit)
-                            .setFirstResult(offset)
-                            .getResultList();
+    public Page<Post> findFeatured(PageQuery query) {
+        return new Page<>(entityManager.createQuery("""
+                                                    FROM Post
+                                                    JOIN FETCH author
+                                                    WHERE published = true AND
+                                                          featured = true
+                                                    ORDER BY publishedAt DESC
+                                                    """, Post.class)
+                                       .setMaxResults(query.maxResults())
+                                       .setFirstResult(query.skip())
+                                       .getResultList(),
+                          query.page(),
+                          query.limit(),
+                          countFeatured());
     }
 
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
@@ -235,29 +230,57 @@ public class PostRepository {
         return post;
     }
 
-    public List<Post> search(String query, int limit, int offset) {
-        if (Objects.nonNull(query) && !query.isBlank()) {
+    public Page<Post> search(String term, PageQuery query) {
+        if (Objects.nonNull(term) && !term.isBlank()) {
+            return new Page<>(entityManager.createQuery("""
+                                                        FROM Post p
+                                                        WHERE p.published = true
+                                                        AND (LOWER(p.title) LIKE LOWER(:query)
+                                                             OR LOWER(p.description) LIKE LOWER(:query)
+                                                             OR LOWER(p.content) LIKE LOWER(:query))
+                                                        ORDER BY p.publishedAt DESC
+                                                        """, Post.class)
+                                           .setParameter("query", "%%%s%%".formatted(term))
+                                           .setMaxResults(query.maxResults())
+                                           .setFirstResult(query.skip())
+                                           .getResultList(),
+                              query.page(),
+                              query.limit(),
+                              countSearch(term));
+        } else {
+            return new Page<>(entityManager.createQuery("""
+                                                        FROM Post p
+                                                        WHERE p.published = true
+                                                        ORDER BY p.publishedAt DESC
+                                                        """, Post.class)
+                                           .setMaxResults(query.maxResults())
+                                           .setFirstResult(query.skip())
+                                           .getResultList(),
+                              query.page(),
+                              query.limit(),
+                              countSearch(term));
+        }
+    }
+
+    public long countSearch(String term) {
+        if (Objects.nonNull(term) && !term.isBlank()) {
             return entityManager.createQuery("""
+                                             SELECT COUNT(p)
                                              FROM Post p
                                              WHERE p.published = true
                                              AND (LOWER(p.title) LIKE LOWER(:query)
                                                   OR LOWER(p.description) LIKE LOWER(:query)
                                                   OR LOWER(p.content) LIKE LOWER(:query))
-                                             ORDER BY p.publishedAt DESC
-                                             """, Post.class)
-                                .setParameter("query", "%%%s%%".formatted(query))
-                                .setMaxResults(limit)
-                                .setFirstResult(offset)
-                                .getResultList();
+                                             """, Long.class)
+                                .setParameter("query", "%%%s%%".formatted(term))
+                                .getSingleResult();
         } else {
             return entityManager.createQuery("""
+                                             SELECT COUNT(p)
                                              FROM Post p
                                              WHERE p.published = true
-                                             ORDER BY p.publishedAt DESC
-                                             """, Post.class)
-                                .setMaxResults(limit)
-                                .setFirstResult(offset)
-                                .getResultList();
+                                             """, Long.class)
+                                .getSingleResult();
         }
     }
 
@@ -271,5 +294,10 @@ public class PostRepository {
         query.setParameter("slug", slug);
         query.setParameter("excludeId", excludeId);
         return query.getSingleResult() > 0;
+    }
+
+    public Object toogleFeatured(Long postId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toogleFeatured'");
     }
 }

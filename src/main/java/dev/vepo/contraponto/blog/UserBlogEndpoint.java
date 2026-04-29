@@ -6,6 +6,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import io.quarkus.qute.CheckedTemplate;
@@ -57,7 +58,7 @@ public class UserBlogEndpoint {
 
         return Templates.home(userRepository.findByUsername(username)
                                             .orElseThrow(() -> new NotFoundException("User not found! username=%s".formatted(username))),
-                              postRepository.findPaginatedNewestFromAuthor(username, limit, 1),
+                              postRepository.findPublished(username, PageQuery.forFeaturedGrid(limit, 1)),
                               loggedUser);
     }
 
@@ -69,6 +70,6 @@ public class UserBlogEndpoint {
                                       @QueryParam("page") int page) {
 
         return Templates.grid(username,
-                              this.postRepository.findPaginatedNewestFromAuthor(username, limit, page), false);
+                              this.postRepository.findPublished(username, PageQuery.forFeaturedGrid(limit, page)), false);
     }
 }

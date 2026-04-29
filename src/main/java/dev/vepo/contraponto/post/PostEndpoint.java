@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import dev.vepo.contraponto.view.ViewRepository;
@@ -11,8 +12,10 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -29,6 +32,8 @@ public class PostEndpoint {
     @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance post(Post post, LoggedUser user, long viewCount);
+
+        public static native TemplateInstance toggle(Post post, LoggedUser user);
     }
 
     private final PostRepository postRepository;
@@ -71,5 +76,30 @@ public class PostEndpoint {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));
         }
         return response.build();
+    }
+
+    @PUT
+    @Logged
+    @Path("/component/featured/toggle")
+    @Transactional
+    public Response toggleFeatured(@PathParam("username") String username,
+                                   @PathParam("slug") String slug) {
+        // ADMIN and EDITOR can select featured posts
+        if (!loggedUser.isEditor()) {
+            return Response.status(403)
+                           .build();
+        }
+
+        var maybePost = postRepository.findByUsernameAndSlug(username, slug);
+        if (maybePost.isEmpty()) {
+            return Response.status(404).build();
+        } else {
+            var post = maybePost.get();
+            post.setFeatured(!post.isFeatured());
+            postRepository.save(post);
+            return Response.ok()
+                           .entity(Templates.toggle(post, loggedUser))
+                           .build();
+        }
     }
 }

@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
+import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 
 public class LoggedUser {
@@ -83,5 +84,13 @@ public class LoggedUser {
     @Override
     public String toString() {
         return "Image[user=%s, sessionId=%s]".formatted(user, sessionId);
+    }
+
+    public Role getRole() {
+        return Optional.ofNullable(user).map(User::getRole).orElse(null);
+    }
+
+    public boolean isEditor() {
+        return isAuthenticated() && (getRole() == Role.ADMIN || getRole() == Role.EDITOR);
     }
 }

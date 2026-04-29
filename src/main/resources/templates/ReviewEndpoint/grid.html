@@ -1,0 +1,19 @@
+
+{#if posts.isEmpty}
+<div>
+    No posts published yet
+</div>
+{/if}
+
+{#for post in posts.data}
+    {#include ReviewEndpoint/row post=post /}
+{/for}
+
+{#if !posts.isEmpty && !posts.isLastPage}
+<div id="more-posts" class="load-more">
+    <button hx-get="/review/components/page?page={posts.nextPage}"
+            hx-target="#more-posts"
+            hx-swap="outerHTML"
+            class="btn">Load more</button>
+</div>
+{/if}

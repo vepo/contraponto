@@ -1,0 +1,18 @@
+{#if user.isEditor}
+<button id="post-featured-toggle" class="btn btn--icon btn--outline {#if post.featured}btn--star-active{/if}"
+        hx-put="/{post.author.username}/post/{post.slug}/component/featured/toggle"
+        hx-swap="outerHTML"
+        hx-select="#post-featured-toggle"
+        hx-target="#post-featured-toggle">
+    <svg width="16" height="16" viewBox="0 0 24 24" 
+        {#if post.featured}fill="currentColor"{#else}fill="none"{/if} 
+        stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>
+    {#if post.featured}
+        Featured
+    {#else}
+        Feature
+    {/if}
+</button>
+{/if}

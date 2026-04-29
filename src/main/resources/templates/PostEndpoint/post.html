@@ -9,18 +9,24 @@
               hx-get="/{post.author.username}/post/{post.slug}" 
               hx-select="main"
               hx-target="main"
+              hx-swap="outerHTML"
               hx-trigger="loggedIn from:body, loggedOut from:body">
             <div class="container-narrow">
-                <!-- Edit button (only for author) -->
-                {#if user.isAuthenticated && user.id == post.author.id}
-                <div class="article-page__edit">
+            {#if user.isAuthenticated}
+                <div class="article-page__actions">
+                    {#if user.id == post.author.id}
                     <a data-hx-get="/write/draft/{post.id}"
-                       hx-select="main"
-                       hx-target="main"
-                       hx-push-url="/write/draft/{post.id}"
-                       class="btn btn--small btn--edit">
-                        ✎ Edit post
+                    hx-select="main"
+                    hx-target="main"
+                    hx-push-url="/write/draft/{post.id}"
+                    class="btn btn--icon btn--outline">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z"/>
+                        </svg>
+                        Edit
                     </a>
+                    {/if}
+                    {#include PostEndpoint/toggle post=post /}
                 </div>
                 {/if}
 

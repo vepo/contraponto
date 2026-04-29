@@ -7,6 +7,8 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
 
 public interface Toast {
+    public static final int TOAST_DEFAULT_DURATION_MS = 10_000;
+
     public static class ToastResponseBuilder {
 
         private final ResponseBuilder builder;

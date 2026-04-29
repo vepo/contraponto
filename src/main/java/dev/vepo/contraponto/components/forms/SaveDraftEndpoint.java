@@ -29,7 +29,6 @@ public class SaveDraftEndpoint {
     private static final String ERROR_MSG_CONTENT_REQUIRED = "Content is required!";
     private static final String ERROR_MSG_TITLE_REQUIRED = "Title is required!";
     private static final String SUCCESS_MSG_DRAFT_SAVED = "Draft saved successfully!";
-    private static final int TOAST_DURATION = 10_000;
 
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
@@ -48,7 +47,7 @@ public class SaveDraftEndpoint {
         return Toast.ok() // Using OK status but with error type (original behavior)
                     .message(message)
                     .type(Toast.Type.ERROR)
-                    .duration(TOAST_DURATION)
+                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
     }
 
@@ -58,7 +57,7 @@ public class SaveDraftEndpoint {
         return Toast.ok()
                     .message(SUCCESS_MSG_DRAFT_SAVED)
                     .type(Toast.Type.SUCCESS)
-                    .duration(TOAST_DURATION)
+                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/write/draft/%d".formatted(post.getId()))
                     .build();
     }

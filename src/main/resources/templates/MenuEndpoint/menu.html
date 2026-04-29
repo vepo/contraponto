@@ -71,6 +71,22 @@
                 </svg>
                 Dashboard
             </a>
+            {#if user.isEditor}
+            <a data-hx-get="/review"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/review"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <!-- Star icon for featured review -->
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
+                        stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Review
+            </a>
+            {/if}
             <div class="user-menu__divider"></div>
             <button class="user-menu__item" hx-post="/forms/auth/logout">
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
