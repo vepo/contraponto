@@ -56,7 +56,7 @@ public final class Markdown implements Renderer {
             return engine;
         } catch (IOException | ScriptException e) {
             logger.error("Failed to create GraalJS engine", e);
-            throw new RuntimeException("Could not create Markdown engine", e);
+            throw new RendererException("Could not create Markdown engine", e);
         }
     }
 
@@ -68,7 +68,7 @@ public final class Markdown implements Renderer {
             // 1. Acquire a permit to borrow an engine (up to max concurrency)
             permitAcquired = semaphore.tryAcquire(5, TimeUnit.SECONDS);
             if (!permitAcquired) {
-                throw new RuntimeException("Timeout waiting for an engine slot (max concurrency = " + maxPoolSize + ")");
+                throw new RendererException("Timeout waiting for an engine slot (max concurrency = " + maxPoolSize + ")");
             }
 
             // 2. Try to get an idle engine; if none, create a new one
@@ -81,7 +81,7 @@ public final class Markdown implements Renderer {
             return (String) ((Invocable) engine).invokeFunction("renderMarkdownAsHTML", content);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted while waiting for an engine", e);
+            throw new RendererException("Interrupted while waiting for an engine", e);
         } catch (NoSuchMethodException | ScriptException e) {
             logger.error("Failed to render Markdown content", e);
             return content;

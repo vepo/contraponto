@@ -52,7 +52,7 @@ public final class AsciiDoctor implements Renderer {
                                                .readAllBytes();
             String asciidoctorScript = new String(scriptBytes);
             if (asciidoctorScript.isEmpty()) {
-                throw new RuntimeException("Asciidoctor script is empty – check the file path");
+                throw new RendererException("Asciidoctor script is empty – check the file path");
             }
             logger.debug("Loaded Asciidoctor.js, length: {} bytes", asciidoctorScript.length());
             engine.eval(asciidoctorScript);
@@ -71,7 +71,7 @@ public final class AsciiDoctor implements Renderer {
             return engine;
         } catch (IOException | ScriptException e) {
             logger.error("Failed to create or initialise GraalJS engine for AsciiDoctor", e);
-            throw new RuntimeException("Could not create AsciiDoctor engine", e);
+            throw new RendererException("Could not create AsciiDoctor engine", e);
         }
     }
 
@@ -82,7 +82,7 @@ public final class AsciiDoctor implements Renderer {
         try {
             permitAcquired = semaphore.tryAcquire(5, TimeUnit.SECONDS);
             if (!permitAcquired) {
-                throw new RuntimeException("Timeout waiting for an engine slot (max concurrency = " + maxPoolSize + ")");
+                throw new RendererException("Timeout waiting for an engine slot (max concurrency = " + maxPoolSize + ")");
             }
 
             engine = idleEngines.poll();
@@ -93,7 +93,7 @@ public final class AsciiDoctor implements Renderer {
             return (String) ((Invocable) engine).invokeFunction("renderAsciiDocAsHTML", content);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted while waiting for an engine", e);
+            throw new RendererException("Interrupted while waiting for an engine", e);
         } catch (NoSuchMethodException | ScriptException e) {
             logger.error("Failed to render AsciiDoc content", e);
             return content;
