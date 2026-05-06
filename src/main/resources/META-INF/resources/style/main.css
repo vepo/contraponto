@@ -42,7 +42,7 @@ pre code {
 
 /* ========== HTMX ========== */
 
-[data-hx-get] {
+[data-hx-get], a[onclick] {
   cursor: pointer;
 }
 
@@ -1387,7 +1387,7 @@ hr:after {
 }
 
 .search-form {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .search-form__group {
@@ -1890,4 +1890,29 @@ hr:after {
 
 .btn--star-active:hover {
     background: #fef3c7;
+}
+
+.search-initial-state {
+    text-align: center;
+    padding: 1rem 1rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+}
+
+.search-initial-icon {
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.search-initial-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--color-text);
+}
+
+.search-initial-hint {
+    font-size: 0.85rem;
+    margin: 0;
 }

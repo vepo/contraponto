@@ -65,6 +65,10 @@ public class LoggedUser {
         return Optional.ofNullable(user).map(User::getName).orElse("");
     }
 
+    public Role getRole() {
+        return Optional.ofNullable(user).map(User::getRole).orElse(null);
+    }
+
     public String getSessionId() {
         return Optional.ofNullable(sessionId).orElse("");
     }
@@ -81,16 +85,12 @@ public class LoggedUser {
         return Objects.nonNull(user);
     }
 
+    public boolean isEditor() {
+        return isAuthenticated() && (getRole() == Role.ADMIN || getRole() == Role.EDITOR);
+    }
+
     @Override
     public String toString() {
         return "Image[user=%s, sessionId=%s]".formatted(user, sessionId);
-    }
-
-    public Role getRole() {
-        return Optional.ofNullable(user).map(User::getRole).orElse(null);
-    }
-
-    public boolean isEditor() {
-        return isAuthenticated() && (getRole() == Role.ADMIN || getRole() == Role.EDITOR);
     }
 }

@@ -85,6 +85,21 @@ class MainManager {
         }
     }
 
+    closeModal(selector) {
+        var modal = document.querySelector('.modal.modal--open');
+        if (modal) {
+            modal.classList.remove('modal--open');
+        }
+
+        if (selector) {
+            var actionBtn = document.querySelector(selector);
+            if (actionBtn) {
+                actionBtn.click();
+            }
+        }
+
+    }
+
     /**
      * Checks if the given pathname is in the protected list.
      */
@@ -93,5 +108,5 @@ class MainManager {
     }
 }
 document.addEventListener('DOMContentLoaded', () => {
-    new MainManager();
+    window.main = new MainManager();
 });

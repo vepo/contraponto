@@ -97,16 +97,12 @@ public class User {
         return passwordHash;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
     public Role getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
     public String getUsername() {
@@ -144,6 +140,10 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

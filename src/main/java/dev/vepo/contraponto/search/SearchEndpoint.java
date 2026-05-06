@@ -1,10 +1,12 @@
 package dev.vepo.contraponto.search;
 
-import java.util.List;
+import java.util.Objects;
 
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -25,9 +27,9 @@ public class SearchEndpoint {
     public static class Templates {
         public static native TemplateInstance modal();
 
-        public static native TemplateInstance results(LoggedUser user, List<Post> results, int page, long total, String query);
+        public static native TemplateInstance results(LoggedUser user, Page<Post> results, String query);
 
-        public static native TemplateInstance search(String query, List<Post> results, long total, LoggedUser user);
+        public static native TemplateInstance search(String query, Page<Post> results, LoggedUser user);
     }
 
     private final PostRepository postRepository;
@@ -44,11 +46,12 @@ public class SearchEndpoint {
     @Path("/results")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance resultsFragment(@QueryParam("q") String query, @DefaultValue("1") @QueryParam("page") int page) {
-        int limit = 10;
-        int offset = (page - 1) * limit;
-        List<Post> results = postRepository.search(query, limit, offset);
-        long total = postRepository.countSearchResults(query);
-        return Templates.results(loggedUser, results, page, total, query);
+        if (Objects.nonNull(query) && !query.isBlank()) {
+            Page<Post> results = postRepository.search(query, PageQuery.forGrid(20, page));
+            return Templates.results(loggedUser, results, query);
+        } else {
+            return Templates.results(loggedUser, null, query);
+        }
     }
 
     // Modal for quick search
@@ -63,12 +66,10 @@ public class SearchEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance searchPage(@QueryParam("q") String query) {
-        List<Post> results = List.of();
-        long total = 0;
-        if (query != null && !query.isBlank()) {
-            results = postRepository.search(query, 20, 0);
-            total = postRepository.countSearchResults(query);
+        if (Objects.nonNull(query) && !query.isBlank()) {
+            return Templates.search(query, postRepository.search(query, PageQuery.forGrid(20, 1)), loggedUser);
+        } else {
+            return Templates.search(query, null, loggedUser);
         }
-        return Templates.search(query, results, total, loggedUser);
     }
 }

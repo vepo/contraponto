@@ -53,6 +53,16 @@ public class PostRepository {
                             .getSingleResult();
     }
 
+    private long countFeatured() {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.published = true AND
+                                               p.featured = true
+                                         """, Long.class)
+                            .getSingleResult();
+    }
+
     private long countPublished() {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
@@ -62,14 +72,26 @@ public class PostRepository {
                             .getSingleResult();
     }
 
-    private long countFeatured() {
-        return entityManager.createQuery("""
-                                         SELECT COUNT(p)
-                                         FROM Post p
-                                         WHERE p.published = true AND
-                                               p.featured = true
-                                         """, Long.class)
-                            .getSingleResult();
+    public long countSearch(String term) {
+        if (Objects.nonNull(term) && !term.isBlank()) {
+            return entityManager.createQuery("""
+                                             SELECT COUNT(p)
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             AND (LOWER(p.title) LIKE LOWER(:query)
+                                                  OR LOWER(p.description) LIKE LOWER(:query)
+                                                  OR LOWER(p.content) LIKE LOWER(:query))
+                                             """, Long.class)
+                                .setParameter("query", "%%%s%%".formatted(term))
+                                .getSingleResult();
+        } else {
+            return entityManager.createQuery("""
+                                             SELECT COUNT(p)
+                                             FROM Post p
+                                             WHERE p.published = true
+                                             """, Long.class)
+                                .getSingleResult();
+        }
     }
 
     public long countSearchResults(String query) {
@@ -139,24 +161,6 @@ public class PostRepository {
                             .getResultList();
     }
 
-    public Page<Post> findPublished(String username, PageQuery query) {
-        return new Page<>(entityManager.createQuery("""
-                                                    SELECT p
-                                                    FROM Post p
-                                                    JOIN FETCH p.author
-                                                    WHERE p.author.username = :username AND
-                                                          p.published = true
-                                                    ORDER BY p.publishedAt DESC
-                                                    """, Post.class)
-                                       .setParameter("username", username)
-                                       .setMaxResults(query.maxResults())
-                                       .setFirstResult(query.skip())
-                                       .getResultList(),
-                          query.page(),
-                          query.limit(),
-                          countByAuthorUsernameAndPublished(username));
-    }
-
     public Optional<Post> findById(Long id) {
         return Optional.ofNullable(entityManager.find(Post.class, id));
     }
@@ -179,6 +183,22 @@ public class PostRepository {
         return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
     }
 
+    public Page<Post> findFeatured(PageQuery query) {
+        return new Page<>(entityManager.createQuery("""
+                                                    FROM Post
+                                                    JOIN FETCH author
+                                                    WHERE published = true AND
+                                                          featured = true
+                                                    ORDER BY publishedAt DESC
+                                                    """, Post.class)
+                                       .setMaxResults(query.maxResults())
+                                       .setFirstResult(query.skip())
+                                       .getResultList(),
+                          query.page(),
+                          query.limit(),
+                          countFeatured());
+    }
+
     public Page<Post> findPublished(PageQuery query) {
         return new Page<>(entityManager.createQuery("""
                                                     FROM Post
@@ -194,20 +214,22 @@ public class PostRepository {
                           countPublished());
     }
 
-    public Page<Post> findFeatured(PageQuery query) {
+    public Page<Post> findPublished(String username, PageQuery query) {
         return new Page<>(entityManager.createQuery("""
-                                                    FROM Post
-                                                    JOIN FETCH author
-                                                    WHERE published = true AND
-                                                          featured = true
-                                                    ORDER BY publishedAt DESC
+                                                    SELECT p
+                                                    FROM Post p
+                                                    JOIN FETCH p.author
+                                                    WHERE p.author.username = :username AND
+                                                          p.published = true
+                                                    ORDER BY p.publishedAt DESC
                                                     """, Post.class)
+                                       .setParameter("username", username)
                                        .setMaxResults(query.maxResults())
                                        .setFirstResult(query.skip())
                                        .getResultList(),
                           query.page(),
                           query.limit(),
-                          countFeatured());
+                          countByAuthorUsernameAndPublished(username));
     }
 
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
@@ -259,28 +281,6 @@ public class PostRepository {
                               query.page(),
                               query.limit(),
                               countSearch(term));
-        }
-    }
-
-    public long countSearch(String term) {
-        if (Objects.nonNull(term) && !term.isBlank()) {
-            return entityManager.createQuery("""
-                                             SELECT COUNT(p)
-                                             FROM Post p
-                                             WHERE p.published = true
-                                             AND (LOWER(p.title) LIKE LOWER(:query)
-                                                  OR LOWER(p.description) LIKE LOWER(:query)
-                                                  OR LOWER(p.content) LIKE LOWER(:query))
-                                             """, Long.class)
-                                .setParameter("query", "%%%s%%".formatted(term))
-                                .getSingleResult();
-        } else {
-            return entityManager.createQuery("""
-                                             SELECT COUNT(p)
-                                             FROM Post p
-                                             WHERE p.published = true
-                                             """, Long.class)
-                                .getSingleResult();
         }
     }
 

@@ -31,9 +31,9 @@ public class ReviewEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance review(Page<Post> posts, LoggedUser user);
-
         public static native TemplateInstance grid(Page<Post> posts, LoggedUser user);
+
+        public static native TemplateInstance review(Page<Post> posts, LoggedUser user);
 
         public static native TemplateInstance row(Post post); // for HTMX swap
     }
@@ -46,44 +46,6 @@ public class ReviewEndpoint {
     public ReviewEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.loggedUser = loggedUser;
-    }
-
-    /**
-     * Main review page – shows all published posts with featured toggle.
-     */
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response review(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
-        // ADMIN and EDITOR can select featured posts
-        if (!loggedUser.isEditor()) {
-            return Toast.response(Response.Status.FORBIDDEN)
-                        .message("Usuário não possui permissões de editor!")
-                        .type(Toast.Type.ERROR)
-                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .build();
-        }
-        // Fetch all published posts, newest first
-        return Response.ok()
-                       .entity(Templates.review(postRepository.findPublished(PageQuery.forGrid(limit, 1)), loggedUser))
-                       .build();
-    }
-
-    @GET
-    @Path("components/page")
-    @Operation(hidden = true)
-    @Produces(MediaType.TEXT_HTML)
-    public Response nextPage(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
-        // ADMIN and EDITOR can select featured posts
-        if (!loggedUser.isEditor()) {
-            return Toast.response(Response.Status.FORBIDDEN)
-                        .message("Usuário não possui permissões de editor!")
-                        .type(Toast.Type.ERROR)
-                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .build();
-        }
-        return Response.ok()
-                       .entity(Templates.grid(postRepository.findPublished(PageQuery.forGrid(limit, page)), loggedUser))
-                       .build();
     }
 
     @PUT
@@ -120,6 +82,44 @@ public class ReviewEndpoint {
         postRepository.save(post);
         return Response.ok()
                        .entity(Templates.row(post))
+                       .build();
+    }
+
+    @GET
+    @Path("components/page")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public Response nextPage(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
+        // ADMIN and EDITOR can select featured posts
+        if (!loggedUser.isEditor()) {
+            return Toast.response(Response.Status.FORBIDDEN)
+                        .message("Usuário não possui permissões de editor!")
+                        .type(Toast.Type.ERROR)
+                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                        .build();
+        }
+        return Response.ok()
+                       .entity(Templates.grid(postRepository.findPublished(PageQuery.forGrid(limit, page)), loggedUser))
+                       .build();
+    }
+
+    /**
+     * Main review page – shows all published posts with featured toggle.
+     */
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response review(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
+        // ADMIN and EDITOR can select featured posts
+        if (!loggedUser.isEditor()) {
+            return Toast.response(Response.Status.FORBIDDEN)
+                        .message("Usuário não possui permissões de editor!")
+                        .type(Toast.Type.ERROR)
+                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                        .build();
+        }
+        // Fetch all published posts, newest first
+        return Response.ok()
+                       .entity(Templates.review(postRepository.findPublished(PageQuery.forGrid(limit, 1)), loggedUser))
                        .build();
     }
 }

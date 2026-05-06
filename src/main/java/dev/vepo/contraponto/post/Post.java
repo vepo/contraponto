@@ -117,14 +117,6 @@ public class Post {
         return cover;
     }
 
-    public boolean isFeatured() {
-        return featured;
-    }
-
-    public void setFeatured(boolean featured) {
-        this.featured = featured;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -162,6 +154,10 @@ public class Post {
         return Objects.hash(id);
     }
 
+    public boolean isFeatured() {
+        return featured;
+    }
+
     public boolean isPublished() {
         return published;
     }
@@ -184,6 +180,10 @@ public class Post {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setFeatured(boolean featured) {
+        this.featured = featured;
     }
 
     public void setFormat(Format format) {

@@ -9,22 +9,40 @@
                   hx-get="/search/results" 
                   hx-target="#modalSearchResults"
                   hx-select="#searchResults"
-                  hx-trigger="input changed delay:300ms"
-                  hx-push-url="false">
+                  hx-trigger="keyup changed delay:300ms"
+                  hx-push-url="false"
+                  hx-params="q">
                 <div class="search-form__group">
                     <input type="search" 
                            name="q" 
                            class="search-form__input" 
                            placeholder="Type to search..."
                            autocomplete="off"
+                           value="" 
                            autofocus/>
                 </div>
             </form>
             <div id="modalSearchResults" class="search-results-modal">
-                <!-- Results appear here -->
+                <div class="search-initial-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="search-initial-icon">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <p class="search-initial-title">Find the perfect story</p>
+                    <p class="search-initial-hint">Start typing to search across all articles</p>
+                </div>
+                <button id="btnGoToAdvanced" 
+                        hx-get="/search" 
+                        hx-select="main"
+                        hx-target="main"
+                        hx-push-url="/search"
+                        hx-swap="outerHTML"
+                        style="display: none;">Go to advanced</button>
             </div>
             <div class="search-modal__footer">
-                <a href="/search" class="search-modal__advanced">Advanced search →</a>
+                <a onclick="main.closeModal('#btnGoToAdvanced')"
+                   class="search-modal__advanced">Advanced search →
+                </a>
             </div>
         </div>
     </div>

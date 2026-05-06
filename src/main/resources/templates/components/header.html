@@ -21,7 +21,8 @@
                     id="searchBtn"
                     hx-get="/search/modal"
                     hx-target="#modal-container"
-                    hx-swap="innerHTML">
+                    hx-swap="innerHTML"
+                    data-disable-pattern="/search">
                 <img src="/images/search.svg" />
             </button>
             <div hx-get="/components/write-btn" hx-trigger="loggedIn from:body, loggedOut from:body">

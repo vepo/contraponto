@@ -11,7 +11,7 @@ public record Page<T>(List<T> data, int page, int limit, long total) {
     }
 
     public boolean isFirstPage() {
-        return page * limit < total;
+        return page == 1;
     }
 
     public boolean isEmpty() {

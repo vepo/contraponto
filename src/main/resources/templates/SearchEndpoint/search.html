@@ -13,7 +13,7 @@
                       hx-get="/search/results" 
                       hx-target="#searchResults"
                       hx-select="#searchResults"
-                      hx-trigger="input changed delay:500ms, search"
+                      hx-trigger="keyup changed delay:500ms, search"
                       hx-swap="outerHTML"
                       hx-push-url="true">
                     <div class="search-form__group">
@@ -26,15 +26,20 @@
                         <button type="submit" class="search-form__button">Search</button>
                     </div>
                 </form>
-                
-                <div id="searchResults" 
-                     hx-get="/search/results?q={query}&page=1" 
-                     hx-trigger="load"
-                     hx-target="#searchResults"
-                     hx-select="#searchResults"
-                     hx-swap="outerHTML">
-                    <div class="loading-spinner">Loading...</div>
+                {#if results == null}
+                <div id="searchResults">
+                    <div class="search-initial-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="search-initial-icon">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <p class="search-initial-title">Find the perfect story</p>
+                        <p class="search-initial-hint">Start typing to search across all articles</p>
+                    </div>
                 </div>
+                {#else}
+                {#include SearchEndpoint/results /}
+                {/if}
             </div>
         </main>
         
