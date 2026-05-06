@@ -80,6 +80,7 @@ public class Post {
                 Format format,
                 User author,
                 boolean published,
+                boolean featured,
                 LocalDateTime publishedAt) {
         this.title = title;
         this.cover = cover;
@@ -89,7 +90,7 @@ public class Post {
         this.format = format;
         this.author = author;
         this.published = published;
-        this.featured = false;
+        this.featured = featured;
         this.publishedAt = publishedAt;
     }
 

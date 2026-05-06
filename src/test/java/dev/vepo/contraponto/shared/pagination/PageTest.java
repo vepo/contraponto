@@ -27,8 +27,6 @@ class PageTest {
         assertThat(page.isFirstPage()).isFalse();
         assertThat(page.isLastPage()).isTrue();
 
-
-
         page = new Page<>(IntStream.range(0, 8)
                                    .mapToObj(i -> i)
                                    .toList(),

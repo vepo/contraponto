@@ -38,6 +38,7 @@ public interface Given {
         private Image cover;
         private String slug;
         private boolean published;
+        private boolean featured;
 
         private PostBuilder() {
             this.title = null;
@@ -47,11 +48,12 @@ public interface Given {
             this.format = Format.MARKDOWN;
             this.slug = null;
             this.published = true;
+            this.featured = false;
         }
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title, cover, slug, description, content, format, author, this.published, LocalDateTime.now());
+                var post = new Post(title, cover, slug, description, content, format, author, published, featured, LocalDateTime.now());
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
                 }
@@ -95,6 +97,11 @@ public interface Given {
 
         public PostBuilder withTitle(String title) {
             this.title = title;
+            return this;
+        }
+
+        public PostBuilder withFeatured(boolean featured) {
+            this.featured = featured;
             return this;
         }
     }

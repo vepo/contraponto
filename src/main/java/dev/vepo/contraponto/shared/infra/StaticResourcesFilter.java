@@ -21,13 +21,42 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class StaticResourcesFilter implements ContainerRequestFilter {
 
+    private static class CachedResource {
+        final byte[] content;
+        final MediaType mediaType;
+        final String etag;
+        final String lastModified;
+
+        CachedResource(byte[] content, MediaType mediaType, String etag, String lastModified) {
+            this.content = content;
+            this.mediaType = mediaType;
+            this.etag = etag;
+            this.lastModified = lastModified;
+        }
+    }
+
     // Cache of static files (never changes at runtime)
     private static final ConcurrentMap<String, CachedResource> CACHE = new ConcurrentHashMap<>();
-
     private static final String STATIC_ROOT = "/META-INF/resources/";
     private static final long ONE_MONTH_SECONDS = 2_592_000L; // 30 days
+
     private static final DateTimeFormatter HTTP_DATE_FORMAT =
             DateTimeFormatter.RFC_1123_DATE_TIME;
+
+    private String computeETag(byte[] content) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] digest = md.digest(content);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return '"' + sb.toString() + '"';
+        } catch (NoSuchAlgorithmException e) {
+            // Fallback: use length as weak etag
+            return '"' + String.valueOf(content.length) + '"';
+        }
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -38,7 +67,7 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
         }
 
         String path = requestContext.getUriInfo().getPath();
-        if (path == null || path.isEmpty()) {
+        if (path == null || path.isEmpty() || path.isBlank() || path.equals("/")) {
             return;
         }
 
@@ -85,9 +114,9 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
         cacheControl.setPrivate(false);
 
         Response.ResponseBuilder responseBuilder = Response.ok(cached.content, cached.mediaType.toString())
-                .cacheControl(cacheControl)
-                .header("ETag", cached.etag)
-                .header("Last-Modified", cached.lastModified);
+                                                           .cacheControl(cacheControl)
+                                                           .header("ETag", cached.etag)
+                                                           .header("Last-Modified", cached.lastModified);
 
         // Handle conditional requests
         String ifNoneMatch = requestContext.getHeaderString("If-None-Match");
@@ -115,35 +144,6 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
         } else {
             // fallback
             return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-        }
-    }
-
-    private String computeETag(byte[] content) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] digest = md.digest(content);
-            StringBuilder sb = new StringBuilder();
-            for (byte b : digest) {
-                sb.append(String.format("%02x", b));
-            }
-            return '"' + sb.toString() + '"';
-        } catch (NoSuchAlgorithmException e) {
-            // Fallback: use length as weak etag
-            return '"' + String.valueOf(content.length) + '"';
-        }
-    }
-
-    private static class CachedResource {
-        final byte[] content;
-        final MediaType mediaType;
-        final String etag;
-        final String lastModified;
-
-        CachedResource(byte[] content, MediaType mediaType, String etag, String lastModified) {
-            this.content = content;
-            this.mediaType = mediaType;
-            this.etag = etag;
-            this.lastModified = lastModified;
         }
     }
 }
