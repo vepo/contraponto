@@ -15,34 +15,29 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class App {
-    public class Login {
 
-        public Signup switchToSignup() {
-            wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a"))).click();
-            return new Signup();
-        }
-    }
+    public abstract class AccessModal<T extends AccessModal<T>> {
 
-    public class Signup {
+        private AccessModal() {}
 
-        public Signup assertErrorMessage(String errorMessage) {
+        public T assertErrorMessage(String errorMessage) {
             var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
             assertThat(authError.getText()).contains(errorMessage);
-            return this;
+            return (T) this;
         }
 
-        public Signup assertFieldError(String... errorMessages) {
+        public T assertFieldError(String... errorMessages) {
             var errors = driver.findElements(cssSelector(".form-group .error-message.visible"));
             assertThat(errors).hasSize(errorMessages.length)
                               .allMatch(WebElement::isDisplayed)
                               .extracting(WebElement::getText)
                               .containsExactlyInAnyOrder(errorMessages);
-            return this;
+            return (T) this;
         }
 
-        public Signup assertModalIsOpen() {
+        public T assertModalIsOpen() {
             assertThat(driver.findElement(By.className("modal__container")).isDisplayed()).isTrue();
-            return this;
+            return (T) this;
         }
 
         public App assertModalWasClosed() {
@@ -51,38 +46,60 @@ public class App {
             return App.this;
         }
 
-        public Signup assertNoFieldErrorMessage() {
+        public T assertNoFieldErrorMessage() {
             assertThat(driver.findElements(cssSelector(".form-group .error-message.visible"))).isEmpty();
-            return this;
+            return (T) this;
         }
 
-        public Signup assertSubmitDisabled() {
+        public T assertSubmitDisabled() {
             var btn = driver.findElement(cssSelector("button[type=\"submit\"]"));
             await().until(() -> !btn.isEnabled());
-            return this;
+            return (T) this;
         }
 
-        public Signup assertSubmitEnabled() {
+        public T assertSubmitEnabled() {
             var btn = driver.findElement(cssSelector("button[type=\"submit\"]"));
             await().until(() -> btn.isEnabled());
-            return this;
+            return (T) this;
         }
 
-        public Signup submit() {
+        public T submit() {
             driver.findElement(cssSelector("button[type=\"submit\"]"))
                   .click();
+            return (T) this;
+        }
+
+        public T usePassword(String password) {
+            useFieldValue("input[name=\"password\"]", password);
+            return (T) this;
+        }
+
+        public T waitForReady() {
+            App.this.waitForReady();
+            return (T) this;
+        }
+    }
+
+    public final class Login extends AccessModal<Login> {
+        private Login() {}
+
+        public Signup switchToSignup() {
+            wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a"))).click();
+            return new Signup();
+        }
+
+        public Login useLogin(String login) {
+            useFieldValue("input[name=\"login\"]", login);
             return this;
         }
+    }
+
+    public final class Signup extends AccessModal<Signup> {
+        private Signup() {}
 
         public Signup useEmail(String email) {
             useFieldValue("input[name=\"email\"]", email);
             return this;
-        }
-
-        private void useFieldValue(String cssSelector, String value) {
-            var input = wait.until(visibilityOfElementLocated(cssSelector(cssSelector)));
-            input.clear();
-            input.sendKeys(value);
         }
 
         public Signup useName(String name) {
@@ -90,18 +107,8 @@ public class App {
             return this;
         }
 
-        public Signup usePassword(String password) {
-            useFieldValue("input[name=\"password\"]", password);
-            return this;
-        }
-
         public Signup useUsername(String username) {
             useFieldValue("input[name=\"username\"]", username);
-            return this;
-        }
-
-        public Signup waitForReady() {
-            App.this.waitForReady();
             return this;
         }
     }
@@ -133,6 +140,12 @@ public class App {
         wait.until(visibilityOfElementLocated(className("auth-btn-login")))
             .click();
         return new Login();
+    }
+
+    private void useFieldValue(String cssSelector, String value) {
+        var input = wait.until(visibilityOfElementLocated(cssSelector(cssSelector)));
+        input.clear();
+        input.sendKeys(value);
     }
 
     public App waitForReady() {

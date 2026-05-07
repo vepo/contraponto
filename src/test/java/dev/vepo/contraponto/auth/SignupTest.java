@@ -102,6 +102,7 @@ class SignupTest {
            // Username validation (too short)
            .useUsername("ab")
            .usePassword("anyPassword123")
+           .waitForReady()
            .assertFieldError("Username must be at least 3 characters.")
            .assertSubmitDisabled()
            // Fix username

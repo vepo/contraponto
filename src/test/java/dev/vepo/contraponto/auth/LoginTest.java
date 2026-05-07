@@ -14,6 +14,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -27,30 +28,20 @@ class LoginTest {
     URL testUrl;
 
     @Test
-    void invalidCredentialsShowsErrorMessage(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var modalContainer = wait.until(visibilityOfElementLocated(className("modal__container")));
-        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"login\"]")));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        // Fill with valid format but wrong credentials
-        loginInput.sendKeys("wrong@example.com");
-        passwordInput.sendKeys("wrongPassword");
-        await().until(() -> submitBtn.isEnabled());
-
-        submitBtn.click();
-
-        // Expect an error message inside #authError (or a global error div)
-        var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
-        assertThat(authError.getText()).contains("Invalid username/email or password.");
-        // Modal should still be open
-        assertThat(modalContainer.isDisplayed()).isTrue();
-        // Submit button should remain enabled (user can retry)
-        assertThat(submitBtn.isEnabled()).isTrue();
+    void invalidCredentialsShowsErrorMessage(App app) {
+        app.access()
+           .loginModal()
+           // Fill with valid format but wrong credentials
+           .useLogin("wrong@example.com")
+           .usePassword("wrongPassword")
+           .assertSubmitEnabled()
+           .submit()
+           // Expect an error message inside #authError (or a global error div)
+           .assertErrorMessage("Invalid username/email or password.")
+           // Modal should still be open
+           .assertModalIsOpen()
+           // Submit button should remain enabled (user can retry)
+           .assertSubmitEnabled();
     }
 
     @Test

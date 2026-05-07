@@ -10,8 +10,12 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class UserRepository {
 
+    private final EntityManager entityManager;
+
     @Inject
-    EntityManager entityManager;
+    public UserRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     public boolean existsByEmail(String email) {
         return entityManager.createQuery("""
