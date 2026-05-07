@@ -1,10 +1,6 @@
 package dev.vepo.contraponto.renderer;
 
 import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.script.Invocable;
@@ -29,15 +25,10 @@ public final class AsciiDoctor implements Renderer {
         return instance.updateAndGet(current -> current == null ? new AsciiDoctor() : current);
     }
 
-    private final Queue<ScriptEngine> idleEngines = new ConcurrentLinkedQueue<>();
-    private final Semaphore semaphore;
-
-    private final int maxPoolSize;
+    private final EnginePool pool;
 
     private AsciiDoctor() {
-        maxPoolSize = Integer.getInteger("asciidoctor.pool.maxSize", Runtime.getRuntime().availableProcessors());
-        semaphore = new Semaphore(maxPoolSize);
-        logger.info("Reactive AsciiDoctor engine pool (max concurrency = {})", maxPoolSize);
+        pool = new EnginePool(Integer.getInteger("asciidoctor.pool.maxSize", Runtime.getRuntime().availableProcessors()), this::createEngine);
     }
 
     private ScriptEngine createEngine() {
@@ -77,33 +68,11 @@ public final class AsciiDoctor implements Renderer {
 
     @Override
     public String render(String content) {
-        ScriptEngine engine = null;
-        boolean permitAcquired = false;
         try {
-            permitAcquired = semaphore.tryAcquire(5, TimeUnit.SECONDS);
-            if (!permitAcquired) {
-                throw new RendererException("Timeout waiting for an engine slot (max concurrency = " + maxPoolSize + ")");
-            }
-
-            engine = idleEngines.poll();
-            if (engine == null) {
-                engine = createEngine();
-            }
-
-            return (String) ((Invocable) engine).invokeFunction("renderAsciiDocAsHTML", content);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RendererException("Interrupted while waiting for an engine", e);
+            return pool.withEngine(engine -> (String) ((Invocable) engine).invokeFunction("renderAsciiDocAsHTML", content));
         } catch (NoSuchMethodException | ScriptException e) {
             logger.error("Failed to render AsciiDoc content", e);
             return content;
-        } finally {
-            if (engine != null) {
-                idleEngines.offer(engine);
-            }
-            if (permitAcquired) {
-                semaphore.release();
-            }
         }
     }
 }
