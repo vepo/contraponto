@@ -24,6 +24,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     private static final Logger logger = LoggerFactory.getLogger(WebTestExtension.class);
     private WebDriver driver;
     private WebDriverWait wait;
+    private App app;
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
@@ -71,6 +72,14 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
                 this.wait = new WebDriverWait(driver, Duration.ofSeconds(2));
             }
             return this.wait;
+        } else if (parameterContext.getParameter().getType().isAssignableFrom(App.class)) {
+            if (Objects.isNull(app)) {
+                if (Objects.isNull(this.wait)) {
+                    this.wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+                }
+                this.app = new App(driver, wait);
+            }
+            return this.app;
         } else {
             throw new ParameterResolutionException("Parameter not implemented!!! class=%s".formatted(parameterContext.getParameter().getType()));
         }
@@ -80,6 +89,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
         return parameterContext.getParameter().getType().isAssignableFrom(WebDriver.class) ||
-                parameterContext.getParameter().getType().isAssignableFrom(WebDriverWait.class);
+                parameterContext.getParameter().getType().isAssignableFrom(WebDriverWait.class) ||
+                parameterContext.getParameter().getType().isAssignableFrom(App.class);
     }
 }

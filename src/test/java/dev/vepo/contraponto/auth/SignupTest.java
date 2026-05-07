@@ -16,6 +16,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -29,75 +30,43 @@ class SignupTest {
     URL testUrl;
 
     @Test
-    void duplicateEmailShowsErrorMessage(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
-        signupLink.click();
-
-        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
-        var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"name\"]")));
-        var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        // Fill with existing email
-        usernameInput.sendKeys("duplicated");
-        nameInput.sendKeys("Duplicate Tester");
-        emailInput.sendKeys("existing@example.com");
-        passwordInput.sendKeys("anyPassword123");
-        await().until(() -> submitBtn.isEnabled());
-
-        submitBtn.click();
-
-        // Expect error message inside #authError or .response.error
-        var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
-        assertThat(authError.getText()).contains("Email already registered");
-
-        // Modal should still be open, submit button remains enabled
-        var modalContainer = driver.findElement(By.className("modal__container"));
-        assertThat(modalContainer.isDisplayed()).isTrue();
-        assertThat(submitBtn.isEnabled()).isTrue();
+    void duplicateEmailShowsErrorMessage(App app) {
+        app.access()
+           .loginModal()
+           .switchToSignup()
+           .useUsername("duplicated")
+           .useName("Duplicate Tester")
+           // Fill with existing email
+           .useEmail("existing@example.com")
+           .usePassword("anyPassword123")
+           .assertSubmitEnabled()
+           .submit()
+           // Expect error message inside #authError or .response.error
+           .assertErrorMessage("Email already registered")
+           // Modal should still be open, submit button remains enabled
+           .assertModalIsOpen()
+           .assertSubmitEnabled();
     }
 
     @Test
-    void invalidEmailFormatShowsErrorWithoutSubmitting(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
-        signupLink.click();
-
-        var emailInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"email\"]")));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-
-        emailInput.sendKeys("not-an-email");
-        passwordInput.sendKeys("anyPassword123");
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-
-        var emailErrors = driver.findElements(cssSelector(".form-group:has(input[name='email']) .error-message"))
-                                .stream()
-                                .filter(WebElement::isDisplayed)
-                                .findFirst();
-        assertThat(emailErrors.isPresent());
-        var emailError = emailErrors.get();
-        assertThat(emailError.isDisplayed()).isTrue();
-        assertThat(emailError.getText()).contains("valid email");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Fix email
-        emailInput.clear();
-        emailInput.sendKeys("good@example.com");
-        // Error should disappear
-        await().until(() -> !emailError.isDisplayed());
-        // Now button may still be disabled because password empty
-        assertThat(submitBtn.isEnabled()).isFalse();
+    void invalidEmailFormatShowsErrorWithoutSubmitting(App app) {
+        app.access()
+           .loginModal()
+           .switchToSignup()
+           // load validation scripts
+           .waitForReady()
+           .useEmail("not-an-email")
+           .usePassword("anyPassword123")
+           // wait validation ends
+           .waitForReady()
+           .assertFieldError("Please enter a valid email address.")
+           .assertSubmitDisabled()
+           // Fix email
+           .useEmail("good@example.com")
+           // Error should disappear
+           .assertNoFieldErrorMessage()
+           // Now button may still be disabled because other fields are emtpy
+           .assertSubmitDisabled();
     }
 
     @Test

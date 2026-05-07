@@ -64,7 +64,7 @@ class FormsManager {
 
             // Reset all error messages inside the modal
             const allErrors = form.querySelectorAll('.error-message');
-            allErrors.forEach(err => err.style.display = 'none');
+            allErrors.forEach(err => err.classList.remove('visible'));
 
             let isValid = true;
 
@@ -74,7 +74,7 @@ class FormsManager {
                     if (!value) {
                         if (input.pristine != undefined && !input.pristine) {
                             const errorMessage = input.closest('.form-group')?.querySelector('.error-message.required');
-                            if (errorMessage) errorMessage.style.display = 'block';
+                            if (errorMessage) errorMessage.classList.add('visible');
                         }
                         isValid = false;
                     }
@@ -88,7 +88,7 @@ class FormsManager {
                         if (!emailRegex.test(email)) {
                             if (input.pristine != undefined && !input.pristine) {
                                 const errorMessage = input.closest('.form-group')?.querySelector('.error-message.email');
-                                if (errorMessage) errorMessage.style.display = 'block';
+                                if (errorMessage) errorMessage.classList.add('visible');
                             }
                             isValid = false;
                         }
@@ -107,7 +107,7 @@ class FormsManager {
                                 if (value.trim().length < minSizeValue) {
                                     if (input.pristine != undefined && !input.pristine) {
                                         const errorMessage = input.closest('.form-group')?.querySelector('.error-message.min-value');
-                                        if (errorMessage) errorMessage.style.display = 'block';
+                                        if (errorMessage) errorMessage.classList.add('visible');
                                     }
                                     isValid = false;
                                 }
@@ -123,7 +123,7 @@ class FormsManager {
                                 if (value.trim().length > maxSizeValue) {
                                     if (input.pristine != undefined && !input.pristine) {
                                         const errorMessage = input.closest('.form-group')?.querySelector('.error-message.max-value');
-                                        if (errorMessage) errorMessage.style.display = 'block';
+                                        if (errorMessage) errorMessage.classList.add('visible');
                                     }
                                     isValid = false;
                                 }
