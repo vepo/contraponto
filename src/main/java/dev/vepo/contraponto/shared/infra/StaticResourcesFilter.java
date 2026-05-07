@@ -40,12 +40,11 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
     private static final String STATIC_ROOT = "/META-INF/resources/";
     private static final long ONE_MONTH_SECONDS = 2_592_000L; // 30 days
 
-    private static final DateTimeFormatter HTTP_DATE_FORMAT =
-            DateTimeFormatter.RFC_1123_DATE_TIME;
+    private static final DateTimeFormatter HTTP_DATE_FORMAT = DateTimeFormatter.RFC_1123_DATE_TIME;
 
     private String computeETag(byte[] content) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] digest = md.digest(content);
             StringBuilder sb = new StringBuilder();
             for (byte b : digest) {

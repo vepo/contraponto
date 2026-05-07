@@ -63,7 +63,6 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
     @Override
     public Response toResponse(Throwable exception) {
         // Determine HTTP status
-        exception.printStackTrace();
         int status = getStatus(exception);
         String userMessage = getUserMessage(exception, status);
         String technicalMessage = IS_DEV ? exception.getMessage() : null;
