@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.App;
@@ -70,48 +69,31 @@ class SignupTest {
     }
 
     @Test
-    void missingNameShowsErrorMessage(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
-        signupLink.click();
-
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-
-        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
-        var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"name\"]")));
-        var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        // 1. Fill email and password (they will become non‑pristine later)
-        passwordInput.sendKeys("password123");
-
-        // 2. Make the name field non‑pristine:
-        // - Focus, type something (changes value → hasChanged = true)
-        // - Clear it (value becomes empty)
-        // - Blur (sets pristine = false)
-        nameInput.click();
-        nameInput.sendKeys("temp");
-        nameInput.clear();
-        // Blur by clicking on email field (or any other)
-        emailInput.sendKeys("any-email@example.com");
-
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-
-        // Now name field is empty and non‑pristine → error should appear
-        WebElement nameError = driver.findElement(cssSelector(".form-group:has(input[name='name']) .error-message.required"));
-        assertThat(nameError.isDisplayed()).isTrue();
-        assertThat(nameError.getText()).contains("Name is required");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // 3. Fill name correctly → error disappears, button enabled
-        nameInput.sendKeys("Valid Name");
-        usernameInput.sendKeys("validauser");
-        await().until(() -> !nameError.isDisplayed());
-        await().until(() -> submitBtn.isEnabled());
+    void missingNameShowsErrorMessage(App app) {
+        app.access()
+           .loginModal()
+           .switchToSignup()
+           .waitForReady()
+           // 1. Fill email and password (they will become non‑pristine later)
+           .usePassword("password123")
+           // 2. Make the name field non‑pristine:
+           // - Focus, type something (changes value → hasChanged = true)
+           // - Clear it (value becomes empty)
+           // - Blur (sets pristine = false)
+           .useName("temp")
+           // Blur by clicking on email field (or any other)
+           .useEmail("any-email@example.com")
+           .useName("")
+           // Now name field is empty and non‑pristine → error should appear
+           .waitForReady()
+           .assertFieldError("Name is required.")
+           .assertSubmitDisabled()
+           // 3. Fill name correctly → error disappears, button enabled
+           .useName("Valid Name")
+           .useUsername("validauser")
+           .waitForReady()
+           .assertNoFieldErrorMessage()
+           .assertSubmitEnabled();
     }
 
     @BeforeEach
