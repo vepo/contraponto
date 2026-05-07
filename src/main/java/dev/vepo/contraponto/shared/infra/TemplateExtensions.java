@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.shared.infra;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -16,7 +18,8 @@ public class TemplateExtensions {
     @TemplateExtension
     public static String avatarUrl(LoggedUser user) {
         if (Objects.nonNull(user)) {
-            return "";
+            return "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(user.getName(),
+                                                                                                                                    StandardCharsets.UTF_8));
         } else {
             return "";
         }
