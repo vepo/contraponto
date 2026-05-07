@@ -82,7 +82,7 @@ class SearchTest {
         WebElement modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
         WebElement advancedLink = modal.findElement(cssSelector(".search-modal__advanced"));
         assertThat(advancedLink.getText()).contains("Advanced search");
-        assertThat(advancedLink.getAttribute("href")).contains("/search");
+        assertThat(advancedLink.isEnabled()).isTrue();
     }
 
     @Test

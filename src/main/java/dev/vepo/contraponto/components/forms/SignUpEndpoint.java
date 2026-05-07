@@ -3,6 +3,7 @@ package dev.vepo.contraponto.components.forms;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -118,6 +119,7 @@ public class SignUpEndpoint {
         newUser.setName(name);
         newUser.setEmail(email);
         newUser.setPasswordHash(hashedPassword);
+        newUser.setRole(Role.USER);
         newUser.setActive(true);
 
         userRepository.save(newUser);

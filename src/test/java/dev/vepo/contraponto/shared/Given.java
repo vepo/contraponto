@@ -85,6 +85,11 @@ public interface Given {
             return this;
         }
 
+        public PostBuilder withFeatured(boolean featured) {
+            this.featured = featured;
+            return this;
+        }
+
         public PostBuilder withPublished(boolean published) {
             this.published = published;
             return this;
@@ -97,11 +102,6 @@ public interface Given {
 
         public PostBuilder withTitle(String title) {
             this.title = title;
-            return this;
-        }
-
-        public PostBuilder withFeatured(boolean featured) {
-            this.featured = featured;
             return this;
         }
     }
