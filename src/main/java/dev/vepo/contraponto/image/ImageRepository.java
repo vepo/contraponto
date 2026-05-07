@@ -10,8 +10,12 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ImageRepository {
 
+    private final EntityManager entityManager;
+
     @Inject
-    EntityManager entityManager;
+    public ImageRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     public Optional<Image> findById(Long id) {
         return Optional.ofNullable(entityManager.find(Image.class, id));

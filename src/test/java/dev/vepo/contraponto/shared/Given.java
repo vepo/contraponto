@@ -176,7 +176,7 @@ public interface Given {
         try {
             var imageResp = inject(ImageService.class).uploadImage(image.getFileName().toString(),
                                                                    "image/png", new FileInputStream(image.toFile()), Files.size(image));
-            var imageDb = inject(ImageRepository.class).findByUuid(imageResp.getId());
+            var imageDb = inject(ImageRepository.class).findByUuid(imageResp.id());
             assertTrue(imageDb.isPresent());
             return imageDb.get();
         } catch (IOException ioe) {
