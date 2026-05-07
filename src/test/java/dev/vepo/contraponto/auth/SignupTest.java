@@ -1,32 +1,16 @@
 package dev.vepo.contraponto.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.openqa.selenium.By.className;
-import static org.openqa.selenium.By.cssSelector;
-import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
-
-import java.net.URL;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
-import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 @WebTest
 @QuarkusTest
 class SignupTest {
-
-    @TestHTTPResource("/")
-    URL testUrl;
 
     @Test
     void duplicateEmailShowsErrorMessage(App app) {
@@ -109,47 +93,27 @@ class SignupTest {
     }
 
     @Test
-    void signupModalValidationAndSuccess(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-        // Open login modal and switch to signup
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-        var signupLink = wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a")));
-        signupLink.click();
-
-        var usernameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"username\"]")));
-        var nameInput = driver.findElement(cssSelector("input[name=\"name\"]"));
-        var emailInput = driver.findElement(cssSelector("input[name=\"email\"]"));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Username validation (too short)
-        usernameInput.sendKeys("ab");
-        passwordInput.sendKeys("anyPassword123");
-        var usernameError = driver.findElement(cssSelector(".form-group:has(input[name='username']) .error-message.min-value"));
-        assertThat(usernameError.isDisplayed()).isTrue();
-        assertThat(usernameError.getText()).contains("Username must be at least 3 characters.");
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Fix username
-        usernameInput.clear();
-        usernameInput.sendKeys("newuser");
-        // Now fill other fields
-        nameInput.sendKeys("New User");
-        emailInput.sendKeys("new@example.com");
-        passwordInput.sendKeys("password123");
-        await().until(() -> submitBtn.isEnabled());
-
-        // Submit
-        submitBtn.click();
-
-        // Modal closes, user menu appears
-        var modalContainer = driver.findElement(By.className("modal__container"));
-        await().until(() -> !modalContainer.isDisplayed());
-        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
-        assertThat(userMenu.isDisplayed()).isTrue();
+    void signupModalValidationAndSuccess(App app) {
+        app.access()
+           .loginModal()
+           .switchToSignup()
+           .waitForReady()
+           .assertSubmitDisabled()
+           // Username validation (too short)
+           .useUsername("ab")
+           .usePassword("anyPassword123")
+           .assertFieldError("Username must be at least 3 characters.")
+           .assertSubmitDisabled()
+           // Fix username
+           .useUsername("newuser")
+           // Now fill other fields
+           .useEmail("new@example.com")
+           .useName("New User")
+           .assertSubmitEnabled()
+           // Submit
+           .submit()
+           // Modal closes, user menu appears
+           .assertModalWasClosed()
+           .assertMenuIsDisplayed();
     }
 }

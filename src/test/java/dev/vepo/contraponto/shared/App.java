@@ -45,6 +45,12 @@ public class App {
             return this;
         }
 
+        public App assertModalWasClosed() {
+            var modalContainer = driver.findElement(By.className("modal__container"));
+            await().until(() -> !modalContainer.isDisplayed());
+            return App.this;
+        }
+
         public Signup assertNoFieldErrorMessage() {
             assertThat(driver.findElements(cssSelector(".form-group .error-message.visible"))).isEmpty();
             return this;
@@ -114,6 +120,12 @@ public class App {
 
     public App access() {
         driver.get(this.rootUri);
+        return this;
+    }
+
+    public App assertMenuIsDisplayed() {
+        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
+        assertThat(userMenu.isDisplayed()).isTrue();
         return this;
     }
 
