@@ -53,10 +53,10 @@ public class User {
     // Constructors
     public User() {}
 
-    public User(String username, String email, String name, String passwordHash) {
+    public User(String username, String email, String name, Role role, String passwordHash) {
         this.username = username;
         this.email = email;
-        this.role = Role.USER;
+        this.role = role;
         this.name = name;
         this.passwordHash = passwordHash;
         this.active = true;

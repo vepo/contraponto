@@ -49,7 +49,7 @@ public class ImageService {
 
         // Soft delete from database
         imageRepository.softDelete(uuid);
-        logger.info("Image deleted successfully! uuid={}", uuid);
+        logger.info("Image deleted successfully! id={}", image.getId());
     }
 
     private String getFileExtension(String filename) {

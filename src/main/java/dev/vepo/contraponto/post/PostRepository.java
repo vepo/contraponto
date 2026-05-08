@@ -15,6 +15,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
+@SuppressWarnings("java:S1192")
 public class PostRepository {
     private static final Logger logger = LoggerFactory.getLogger(PostRepository.class);
 

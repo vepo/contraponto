@@ -62,7 +62,7 @@ public class PostEndpoint {
                          @PathParam("slug") String slug,
                          @Context HttpHeaders headers) {
         Post post = postRepository.findByUsernameAndSlug(username, slug)
-                                  .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=$s".formatted(username, slug)));
+                                  .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
 
         // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));

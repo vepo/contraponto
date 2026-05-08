@@ -4,14 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.openqa.selenium.By.className;
 import static org.openqa.selenium.By.cssSelector;
+import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
+import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfAllElementsLocatedBy;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class App {
@@ -153,4 +159,38 @@ public class App {
         return this;
     }
 
+    public App login(User user) {
+        var loggedUser = Given.inject(LoggedUserProvider.class)
+                              .login(user);
+        driver.manage()
+              .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
+        driver.navigate().refresh();
+        return this;
+    }
+
+    public App assertNumberOfPosts(int numberOfPosts) {
+        var gridElements = driver.findElements(By.cssSelector("article.article-card"));
+        var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
+        assertThat(gridElements.size() + featuredPost.size()).isEqualTo(numberOfPosts);
+        return this;
+    }
+
+    public Review goToReview() {
+        var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
+        userMenuBtn.click();
+        var reviewBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[data-hx-get='/review']")));
+        reviewBtn.click();
+        waitForReady();
+        return new Review();
+    }
+
+    public class Review {
+        private Review() {}
+
+        public Review assertNumberOfPosts(int numberOfPosts) {
+            var reviewRows = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".review-list .review-row")));
+            assertThat(reviewRows).hasSize(numberOfPosts);
+            return this;
+        }
+    }
 }

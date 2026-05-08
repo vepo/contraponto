@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -21,6 +22,7 @@ import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.ImageService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
@@ -112,12 +114,14 @@ public interface Given {
         private String email;
         private String name;
         private String password;
+        private Role role;
 
         private UserBuilder() {
             this.username = null;
             this.email = null;
             this.name = null;
             this.password = null;
+            this.role = Role.USER;
         }
 
         public User persist() {
@@ -126,6 +130,7 @@ public interface Given {
                 var user = new User(requireNonNull(username, "'username' cannot be null"),
                                     requireNonNull(email, "'email' cannot be null"),
                                     requireNonNull(name, "'name' cannot be null"),
+                                    requireNonNull(role, "'role' cannot be null"),
                                     inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
                 entityManager.persist(user);
                 return user;
@@ -144,6 +149,11 @@ public interface Given {
 
         public UserBuilder withPassword(String password) {
             this.password = password;
+            return this;
+        }
+
+        public UserBuilder withRole(Role role) {
+            this.role = role;
             return this;
         }
 
@@ -190,7 +200,8 @@ public interface Given {
             var tempImage = Files.createTempFile("test-cover", ".png");
             // Create a simple 1x1 red pixel PNG
             var image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-            image.setRGB(0, 0, 0xFFFF0000);
+            var random = new SecureRandom();
+            image.setRGB(0, 0, 0xFF000000 | random.nextInt(0xFFFFFF));
             ImageIO.write(image, "png", tempImage.toFile());
             return tempImage;
         } catch (IOException ioe) {
