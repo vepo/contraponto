@@ -15,6 +15,7 @@ class ReviewTest {
 
     private User admin;
     private User regularUser;
+    private User editorUser;
     private Post post1;
     private Post post2;
 
@@ -22,12 +23,20 @@ class ReviewTest {
     void checkPromoteToFeatureButtonTest(App app) {
         app.access()
            .login(admin)
-           .assertNumberOfPosts(0)
-           .goToReview()
-           .assertNumberOfPosts(2)
-           .toggleFeatured(post1)
+           .goTo(post1)
+           .assertFeaturedButtonIsPresent()
+           .toggleFeatured()
            .home()
-           .assertNumberOfPosts(1);
+           .assertNumberOfPosts(1)
+           .logout()
+           .login(regularUser)
+           .goTo(post2)
+           .assertFeaturedButtonIsNotPresent()
+           .home()
+           .logout()
+           .login(editorUser)
+           .goTo(post2)
+           .assertFeaturedButtonIsPresent();
     }
 
     @BeforeEach
@@ -45,8 +54,15 @@ class ReviewTest {
                            .withName("Regular User")
                            .withEmail("regular-user@contraponto.com.br")
                            .withPassword("qwas1234")
-                           .withRole(Role.ADMIN)
+                           .withRole(Role.USER)
                            .persist();
+        editorUser = Given.user()
+                          .withUsername("editor-user")
+                          .withName("Editor User")
+                          .withEmail("editor-user@contraponto.com.br")
+                          .withPassword("qwas1234")
+                          .withRole(Role.EDITOR)
+                          .persist();
         post1 = Given.post()
                      .withAuthor(regularUser)
                      .withTitle("Post 1")
@@ -67,5 +83,17 @@ class ReviewTest {
                      .withPublished(true)
                      .withFeatured(false)
                      .persist();
+    }
+
+    @Test
+    void toggleFeaturedTest(App app) {
+        app.access()
+           .login(admin)
+           .assertNumberOfPosts(0)
+           .goToReview()
+           .assertNumberOfPosts(2)
+           .toggleFeatured(post1)
+           .home()
+           .assertNumberOfPosts(1);
     }
 }

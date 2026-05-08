@@ -101,14 +101,8 @@ public class App {
         }
     }
 
-    public class Review {
-        private Review() {}
-
-        public Review assertNumberOfPosts(int numberOfPosts) {
-            var reviewRows = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".review-list .review-row")));
-            assertThat(reviewRows).hasSize(numberOfPosts);
-            return this;
-        }
+    public abstract class Page<T extends Page<T>> {
+        private Page() {}
 
         public App home() {
             var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
@@ -117,7 +111,42 @@ public class App {
             return App.this;
         }
 
-        public Review toggleFeatured(Post post) {
+    }
+
+    public class PostPage extends Page<PostPage> {
+        private PostPage() {}
+
+        public PostPage assertFeaturedButtonIsNotPresent() {
+            var elements = driver.findElements(By.cssSelector("#post-featured-toggle"));
+            assertThat(elements).isEmpty();
+            return this;
+        }
+
+        public PostPage assertFeaturedButtonIsPresent() {
+            var elements = driver.findElements(By.cssSelector("#post-featured-toggle"));
+            assertThat(elements).hasSize(1);
+            var postFeaturedButton = elements.get(0);
+            assertThat(postFeaturedButton.isDisplayed()).isTrue();
+            return this;
+        }
+
+        public PostPage toggleFeatured() {
+            var postFeaturedButton = driver.findElement(By.cssSelector("#post-featured-toggle"));
+            postFeaturedButton.click();
+            return this;
+        }
+    }
+
+    public class ReviewPage extends Page<ReviewPage> {
+        private ReviewPage() {}
+
+        public ReviewPage assertNumberOfPosts(int numberOfPosts) {
+            var reviewRows = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".review-list .review-row")));
+            assertThat(reviewRows).hasSize(numberOfPosts);
+            return this;
+        }
+
+        public ReviewPage toggleFeatured(Post post) {
             var toggleBtn = wait.until(visibilityOfElementLocated(By.cssSelector("#post-row-%d .btn".formatted(post.getId()))));
             toggleBtn.click();
             waitForReady();
@@ -174,13 +203,19 @@ public class App {
         return this;
     }
 
-    public Review goToReview() {
+    public PostPage goTo(Post post) {
+        driver.navigate().to(rootUri + "/" + post.getAuthor().getUsername() + "/post/" + post.getSlug());
+        waitForReady();
+        return new PostPage();
+    }
+
+    public ReviewPage goToReview() {
         var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
         userMenuBtn.click();
         var reviewBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[data-hx-get='/review']")));
         reviewBtn.click();
         waitForReady();
-        return new Review();
+        return new ReviewPage();
     }
 
     public App login(User user) {
@@ -196,6 +231,13 @@ public class App {
         wait.until(visibilityOfElementLocated(className("auth-btn-login")))
             .click();
         return new Login();
+    }
+
+    public App logout() {
+        driver.manage()
+              .deleteAllCookies();
+        driver.navigate().refresh();
+        return this;
     }
 
     private void useFieldValue(String cssSelector, String value) {
