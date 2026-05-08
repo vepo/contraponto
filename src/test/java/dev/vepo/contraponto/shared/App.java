@@ -16,6 +16,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
@@ -100,6 +101,30 @@ public class App {
         }
     }
 
+    public class Review {
+        private Review() {}
+
+        public Review assertNumberOfPosts(int numberOfPosts) {
+            var reviewRows = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".review-list .review-row")));
+            assertThat(reviewRows).hasSize(numberOfPosts);
+            return this;
+        }
+
+        public App home() {
+            var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
+            homeBtn.click();
+            waitForReady();
+            return App.this;
+        }
+
+        public Review toggleFeatured(Post post) {
+            var toggleBtn = wait.until(visibilityOfElementLocated(By.cssSelector("#post-row-%d .btn".formatted(post.getId()))));
+            toggleBtn.click();
+            waitForReady();
+            return this;
+        }
+    }
+
     public final class Signup extends AccessModal<Signup> {
         private Signup() {}
 
@@ -142,32 +167,6 @@ public class App {
         return this;
     }
 
-    public Login loginModal() {
-        wait.until(visibilityOfElementLocated(className("auth-btn-login")))
-            .click();
-        return new Login();
-    }
-
-    private void useFieldValue(String cssSelector, String value) {
-        var input = wait.until(visibilityOfElementLocated(cssSelector(cssSelector)));
-        input.clear();
-        input.sendKeys(value);
-    }
-
-    public App waitForReady() {
-        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
-        return this;
-    }
-
-    public App login(User user) {
-        var loggedUser = Given.inject(LoggedUserProvider.class)
-                              .login(user);
-        driver.manage()
-              .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
-        driver.navigate().refresh();
-        return this;
-    }
-
     public App assertNumberOfPosts(int numberOfPosts) {
         var gridElements = driver.findElements(By.cssSelector("article.article-card"));
         var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
@@ -184,13 +183,29 @@ public class App {
         return new Review();
     }
 
-    public class Review {
-        private Review() {}
+    public App login(User user) {
+        var loggedUser = Given.inject(LoggedUserProvider.class)
+                              .login(user);
+        driver.manage()
+              .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
+        driver.navigate().refresh();
+        return this;
+    }
 
-        public Review assertNumberOfPosts(int numberOfPosts) {
-            var reviewRows = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".review-list .review-row")));
-            assertThat(reviewRows).hasSize(numberOfPosts);
-            return this;
-        }
+    public Login loginModal() {
+        wait.until(visibilityOfElementLocated(className("auth-btn-login")))
+            .click();
+        return new Login();
+    }
+
+    private void useFieldValue(String cssSelector, String value) {
+        var input = wait.until(visibilityOfElementLocated(cssSelector(cssSelector)));
+        input.clear();
+        input.sendKeys(value);
+    }
+
+    public App waitForReady() {
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+        return this;
     }
 }
