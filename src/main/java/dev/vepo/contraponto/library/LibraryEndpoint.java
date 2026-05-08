@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.library;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import dev.vepo.contraponto.post.Post;
@@ -24,9 +23,14 @@ public class LibraryEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance library(LoggedUser user, int currentYear);
+
+        public static native TemplateInstance library(LoggedUser user);
 
         public static native TemplateInstance postsList(List<Post> posts, String type);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private final PostRepository postRepository;
@@ -42,7 +46,7 @@ public class LibraryEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance library() {
-        return Templates.library(loggedUser, LocalDateTime.now().getYear());
+        return Templates.library(loggedUser);
     }
 
     // Fragment endpoint for each tab – returns only the posts list

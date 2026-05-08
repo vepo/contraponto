@@ -25,9 +25,12 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class WriteEndpoint {
     @CheckedTemplate
-    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance write(Optional<Post> post, LoggedUser user);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private final PostRepository postRepository;

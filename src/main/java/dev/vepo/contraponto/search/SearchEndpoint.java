@@ -23,13 +23,17 @@ import jakarta.ws.rs.core.MediaType;
 public class SearchEndpoint {
 
     @CheckedTemplate
-    @SuppressWarnings("java:S1118")
     public static class Templates {
+
         public static native TemplateInstance modal();
 
         public static native TemplateInstance results(LoggedUser user, Page<Post> results, String query);
 
         public static native TemplateInstance search(String query, Page<Post> results, LoggedUser user);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private final PostRepository postRepository;

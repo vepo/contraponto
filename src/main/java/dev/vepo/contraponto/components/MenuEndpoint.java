@@ -18,9 +18,12 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class MenuEndpoint {
     @CheckedTemplate
-    @SuppressWarnings("java:S1118")
     public static class Templates {
         public static native TemplateInstance menu(LoggedUser user);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private static final Logger logger = LoggerFactory.getLogger(MenuEndpoint.class);

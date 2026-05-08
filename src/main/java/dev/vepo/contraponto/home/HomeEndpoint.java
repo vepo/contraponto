@@ -22,13 +22,16 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class HomeEndpoint {
     @CheckedTemplate
-    @SuppressWarnings("java:S1118")
     public static class Templates {
         static native TemplateInstance featured(Post post);
 
         static native TemplateInstance grid(Page<Post> posts, boolean ignoreFirst);
 
         static native TemplateInstance home(Page<Post> posts, LoggedUser user);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private final PostRepository postRepository;

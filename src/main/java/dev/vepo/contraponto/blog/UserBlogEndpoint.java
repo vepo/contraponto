@@ -27,13 +27,16 @@ import jakarta.ws.rs.core.MediaType;
 public class UserBlogEndpoint {
 
     @CheckedTemplate
-    @SuppressWarnings("java:S1118")
     public static class Templates {
         static native TemplateInstance featured(Post post);
 
         static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
 
         public static native TemplateInstance home(User author, Page<Post> posts, LoggedUser user);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private final UserRepository userRepository;

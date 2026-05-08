@@ -13,9 +13,12 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 public class AuthModal {
     @CheckedTemplate
-    @SuppressWarnings("java:S1118")
     public static class Templates {
         static native TemplateInstance modal(String mode);
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     @GET

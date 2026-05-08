@@ -36,6 +36,10 @@ public class ReviewEndpoint {
         public static native TemplateInstance review(Page<Post> posts, LoggedUser user);
 
         public static native TemplateInstance row(Post post); // for HTMX swap
+
+        private Templates() {
+            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        }
     }
 
     private final PostRepository postRepository;
