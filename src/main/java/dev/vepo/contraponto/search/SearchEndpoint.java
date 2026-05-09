@@ -2,6 +2,8 @@ package dev.vepo.contraponto.search;
 
 import java.util.Objects;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -29,7 +31,7 @@ public class SearchEndpoint {
 
         public static native TemplateInstance results(LoggedUser user, Page<Post> results, String query);
 
-        public static native TemplateInstance search(String query, Page<Post> results, LoggedUser user);
+        public static native TemplateInstance search(String query, Page<Post> results, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -37,11 +39,13 @@ public class SearchEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public SearchEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
+    public SearchEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -71,9 +75,9 @@ public class SearchEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance searchPage(@QueryParam("q") String query) {
         if (Objects.nonNull(query) && !query.isBlank()) {
-            return Templates.search(query, postRepository.search(query, PageQuery.forGrid(20, 1)), loggedUser);
+            return Templates.search(query, postRepository.search(query, PageQuery.forGrid(20, 1)), customPageRepository.loadLinks(), loggedUser);
         } else {
-            return Templates.search(query, null, loggedUser);
+            return Templates.search(query, null, customPageRepository.loadLinks(), loggedUser);
         }
     }
 }
