@@ -78,3 +78,105 @@ CREATE TABLE tb_views (
     CONSTRAINT fk_views_user FOREIGN KEY (user_id) REFERENCES tb_users(id),
     CONSTRAINT fk_views_post FOREIGN KEY (post_id) REFERENCES tb_posts(id)
 );
+
+-- Remove os placeholders antigos (opcional, se já existirem)
+DELETE FROM tb_custom_pages WHERE slug IN ('/sobre', '/contato', '/privacidade', '/termos');
+
+-- Insere páginas com conteúdo real
+INSERT INTO tb_custom_pages (slug, section, title, content, placement, published, created_at, published_at, updated_at) VALUES
+(
+    '/sobre',
+    'Explore',
+    'Sobre o Contraponto',
+    '<h2>Bem-vindo ao Contraponto</h2>
+    <p>O <strong>Contraponto</strong> é um espaço para ideias, críticas e narrativas que desafiam o senso comum. 
+    Acreditamos que toda história tem mais de um lado, e nosso objetivo é trazer perspectivas diversas sobre 
+    literatura, tecnologia, política e cultura.</p>
+    <h3>Nossa missão</h3>
+    <p>Oferecer conteúdo independente e de qualidade, estimulando o pensamento crítico e o debate respeitoso.</p>
+    <h3>Quem escreve</h3>
+    <p>Somos uma comunidade de escritores, programadores, professores e curiosos. 
+    Se você tem algo a dizer, <a href="/contato">entre em contato</a> e faça parte do time.</p>
+    <p><em>“A verdade é raramente pura e nunca simples.” – Oscar Wilde</em></p>',
+    'FOOTER',
+    TRUE,
+    NOW(),
+    NOW(),
+    NOW()
+),
+(
+    '/contato',
+    'Connect',
+    'Contato',
+    '<h2>Fale conosco</h2>
+    <p>Tem alguma sugestão, crítica ou quer contribuir com o blog? Adoraríamos ouvir você!</p>
+    <p><strong>E-mail:</strong> <a href="mailto:contato@contraponto.blog">contato@contraponto.blog</a></p>
+    <p><strong>Redes sociais:</strong></p>
+    <ul>
+        <li>Twitter: <a href="#">@contraponto_blog</a></li>
+        <li>Mastodon: <a href="#">@contraponto@social.blog</a></li>
+    </ul>
+    <p>Você também pode usar o formulário abaixo (em breve implementaremos um formulário dinâmico). 
+    Enquanto isso, escreva diretamente para o nosso e-mail.</p>
+    <p>Responderemos em até 48 horas úteis.</p>',
+    'FOOTER',
+    TRUE,
+    NOW(),
+    NOW(),
+    NOW()
+),
+(
+    '/privacidade',
+    'Legal',
+    'Política de Privacidade',
+    '<h2>Política de Privacidade do Contraponto</h2>
+    <p>A sua privacidade é importante para nós. Esta política explica quais dados coletamos, como os usamos e 
+    quais direitos você tem.</p>
+    <h3>Dados coletados</h3>
+    <ul>
+        <li><strong>Cadastro:</strong> nome, e-mail, nome de usuário.</li>
+        <li><strong>Uso:</strong> visualizações de posts, tempo de sessão, endereço IP anonimizado.</li>
+        <li><strong>Cookies:</strong> utilizamos cookies de sessão para autenticação e preferências.</li>
+    </ul>
+    <h3>Como usamos seus dados</h3>
+    <p>Os dados são usados exclusivamente para operar o blog, melhorar a experiência do usuário e enviar 
+    notificações (se você optar por recebê-las). Nunca vendemos ou compartilhamos seus dados com terceiros 
+    sem seu consentimento explícito.</p>
+    <h3>Seus direitos</h3>
+    <p>Você pode solicitar a exclusão da sua conta, a correção de dados ou o acesso aos seus dados pessoais 
+    a qualquer momento enviando um e-mail para <strong>privacidade@contraponto.blog</strong>.</p>
+    <p>Esta política pode ser atualizada periodicamente. A versão mais recente estará sempre disponível nesta URL.</p>
+    <p><em>Última atualização: maio de 2026</em></p>',
+    'FOOTER',
+    TRUE,
+    NOW(),
+    NOW(),
+    NOW()
+),
+(
+    '/termos',
+    'Legal',
+    'Termos de Uso',
+    '<h2>Termos de Uso do Contraponto</h2>
+    <p>Ao acessar ou utilizar o Contraponto, você concorda com os seguintes termos:</p>
+    <h3>Conteúdo</h3>
+    <p>Todo o conteúdo publicado no blog é de responsabilidade dos autores. As opiniões expressas não refletem 
+    necessariamente a posição da plataforma.</p>
+    <h3>Comentários e interações</h3>
+    <p>Você pode comentar em posts desde que respeite outros usuários. Não são permitidos discursos de ódio, 
+    assédio, spam ou conteúdo ilegal. Comentários que violem estas regras serão removidos e o usuário poderá 
+    ser banido.</p>
+    <h3>Propriedade intelectual</h3>
+    <p>Os textos e imagens publicados pelos autores permanecem sob sua propriedade, mas ao publicar no Contraponto 
+    você concede à plataforma uma licença não exclusiva para exibir o conteúdo. É proibida a cópia ou reprodução 
+    não autorizada de qualquer material do site.</p>
+    <h3>Modificações</h3>
+    <p>Podemos alterar estes termos a qualquer momento. O uso continuado do site após as mudanças constitui 
+    aceitação dos novos termos.</p>
+    <p>Para dúvidas, entre em contato via <a href="/contato">nossa página de contato</a>.</p>',
+    'FOOTER',
+    TRUE,
+    NOW(),
+    NOW(),
+    NOW()
+);
