@@ -63,6 +63,18 @@ public class CustomPage {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    public CustomPage() {}
+
+    public CustomPage(String slug, String title, String section, String content, PagePlacement placement, User blog, boolean published) {
+        this.slug = slug;
+        this.title = title;
+        this.section = section;
+        this.content = content;
+        this.placement = placement;
+        this.blog = blog;
+        this.published = published;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

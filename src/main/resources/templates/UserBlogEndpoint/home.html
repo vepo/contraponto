@@ -11,12 +11,12 @@
             </div>
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}
-                {#include UserBlogEndpoint/featured post=post username=author.username}
+                {#include UserBlogEndpoint/featured post=post username=author.username /}
             {/if}
 
             <div class="container">
                     <div class="posts-grid">
-                        {#include UserBlogEndpoint/grid ignoreFirst=true username=author.username}
+                        {#include UserBlogEndpoint/grid ignoreFirst=true username=author.username /}
                     </div>
                 </article>
             </div>

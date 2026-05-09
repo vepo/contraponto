@@ -17,6 +17,8 @@ import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 
 import dev.vepo.contraponto.auth.PasswordService;
+import dev.vepo.contraponto.custompage.CustomPage;
+import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.ImageService;
@@ -29,6 +31,64 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.persistence.EntityManager;
 
 public interface Given {
+
+    public static class CustomPageBuilder {
+        private String slug;
+        private String title;
+        private String content;
+        private String section;
+        private User blog;
+        private PagePlacement placement;
+
+        private CustomPageBuilder() {
+            this.slug = null;
+            this.title = null;
+            this.section = null;
+            this.content = null;
+            this.placement = null;
+        }
+
+        public CustomPage persist() {
+            return transaction(() -> {
+                var entityManager = inject(EntityManager.class);
+                var page = new CustomPage(slug, title, section, content, placement, blog, true);
+                entityManager.persist(page);
+                return page;
+            });
+        }
+
+        public CustomPageBuilder withBlog(User blog) {
+            this.blog = blog;
+            return this;
+        }
+
+        public CustomPageBuilder withContent(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public CustomPageBuilder withPlacement(PagePlacement placement) {
+            this.placement = placement;
+            return this;
+
+        }
+
+        public CustomPageBuilder withSection(String section) {
+            this.section = section;
+            return this;
+        }
+
+        public CustomPageBuilder withSlug(String slug) {
+            this.slug = slug;
+            return this;
+
+        }
+
+        public CustomPageBuilder withTitle(String title) {
+            this.title = title;
+            return this;
+        }
+    }
 
     public static class PostBuilder {
 
@@ -168,9 +228,15 @@ public interface Given {
             var entityManager = inject(EntityManager.class);
             var query = entityManager.createQuery("DELETE FROM Post");
             query.executeUpdate();
+            query = entityManager.createQuery("DELETE FROM CustomPage");
+            query.executeUpdate();
             query = entityManager.createQuery("DELETE FROM User");
             query.executeUpdate();
         });
+    }
+
+    public static CustomPageBuilder customPage() {
+        return new CustomPageBuilder();
     }
 
     public static <T> T inject(Class<T> clazz) {

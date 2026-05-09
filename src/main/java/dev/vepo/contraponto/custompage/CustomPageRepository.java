@@ -6,12 +6,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 
 @ApplicationScoped
 public class CustomPageRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(CustomPageRepository.class);
     private final EntityManager entityManager;
 
     public CustomPageRepository(EntityManager entityManager) {
@@ -33,7 +37,7 @@ public class CustomPageRepository {
                                          .toList();
             sectionsByPlacement.put(placement, sections);
         }
-
+        logger.info("sections: {}", sectionsByPlacement);
         return new Links(sectionsByPlacement);
     }
 
@@ -66,9 +70,10 @@ public class CustomPageRepository {
 
     private Stream<CustomPage> listBlogPages(String username) {
         return entityManager.createQuery("""
-                                         FROM CustomPage
-                                         WHERE published = true AND
-                                               blog.username = :username
+                                         SELECT cp FROM CustomPage cp
+                                         LEFT JOIN cp.blog b
+                                         WHERE cp.published = true AND
+                                               (b IS NULL OR b.username = :username)
                                          """, CustomPage.class)
                             .setParameter("username", username)
                             .getResultStream();

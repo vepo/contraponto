@@ -13,9 +13,11 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.User;
@@ -190,12 +192,32 @@ public class App {
         return this;
     }
 
+    public App accessUserBlog(String username) {
+        driver.navigate().to(this.rootUri + "/" + username);
+        return this;
+    }
+
     public App assertCookieIsPresent(String key) {
         assertThat(driver.manage()
                          .getCookieNamed(key)).isNotNull()
                                               .extracting(Cookie::getName)
                                               .asString()
                                               .isNotBlank();
+        return this;
+    }
+
+    public App assertLinks(PagePlacement placement, String... links) {
+        switch (placement) {
+            case FOOTER:
+                var footerElements = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".footer__links .custom-page__link")));
+                assertThat(footerElements).hasSize(links.length)
+                                          .extracting(elm -> elm.getAttribute("data-hx-get"))
+                                          .containsExactlyInAnyOrder(links);
+                break;
+
+            default:
+                break;
+        }
         return this;
     }
 
@@ -209,6 +231,24 @@ public class App {
         var gridElements = driver.findElements(By.cssSelector("article.article-card"));
         var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
         assertThat(gridElements.size() + featuredPost.size()).isEqualTo(numberOfPosts);
+        return this;
+    }
+
+    public App assertUrl(String url) {
+        wait.until(ExpectedConditions.urlToBe(this.rootUri + url));
+        return this;
+    }
+
+    public App click(PagePlacement placement, String link) {
+        switch (placement) {
+            case FOOTER:
+                wait.until(visibilityOfElementLocated(By.cssSelector(".footer__links .custom-page__link[data-hx-get=\"%s\"]".formatted(link))))
+                    .click();
+                break;
+
+            default:
+                break;
+        }
         return this;
     }
 
