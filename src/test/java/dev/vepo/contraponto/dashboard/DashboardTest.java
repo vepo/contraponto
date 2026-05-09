@@ -175,7 +175,7 @@ class DashboardTest {
 
         loginInput.sendKeys(USER_EMAIL);
         passwordInput.sendKeys(USER_PASSWORD);
-        await().until(() -> submitBtn.isEnabled());
+        await().until(submitBtn::isEnabled);
         submitBtn.click();
 
         await().until(() -> !driver.findElement(By.id("authModal")).isDisplayed());
