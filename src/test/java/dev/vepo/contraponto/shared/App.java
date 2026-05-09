@@ -59,14 +59,14 @@ public class App {
         }
 
         public T assertSubmitDisabled() {
-            var btn = driver.findElement(cssSelector("button[type=\"submit\"]"));
+            var btn = wait.until(visibilityOfElementLocated(cssSelector("button[type=\"submit\"]")));
             await().until(() -> !btn.isEnabled());
             return (T) this;
         }
 
         public T assertSubmitEnabled() {
-            var btn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-            await().until(() -> btn.isEnabled());
+            var btn = wait.until(visibilityOfElementLocated(cssSelector("button[type=\"submit\"]")));
+            await().until(btn::isEnabled);
             return (T) this;
         }
 
@@ -187,6 +187,15 @@ public class App {
 
     public App access() {
         driver.get(this.rootUri);
+        return this;
+    }
+
+    public App assertCookieIsPresent(String key) {
+        assertThat(driver.manage()
+                         .getCookieNamed(key)).isNotNull()
+                                              .extracting(Cookie::getName)
+                                              .asString()
+                                              .isNotBlank();
         return this;
     }
 

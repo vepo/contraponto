@@ -42,10 +42,11 @@ public class LogoutEndpoint {
         return Response.ok("""
                            <div hx-swap-oob="true" id="menu-container">%s</div>
                            <script>
-                             document.cookie = "__session=; max-age=0; path=/;";
+                             document.cookie = "%s=; max-age=0; path=/;";
                              document.getElementById('authModal').classList.remove('modal--open');
                            </script>
-                           """.formatted(MenuEndpoint.Templates.menu(new LoggedUser()).render()))
+                           """.formatted(MenuEndpoint.Templates.menu(new LoggedUser()).render(),
+                                         SignUpEndpoint.SESSION_COOKIE_NAME))
                        .header("HX-Trigger", "loggedOut")
                        .build();
     }

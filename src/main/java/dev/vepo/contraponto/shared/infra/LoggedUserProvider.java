@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.user.User;
 import io.vertx.core.http.HttpServerRequest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,7 +40,7 @@ public class LoggedUserProvider {
     @Produces
     @RequestScoped
     public LoggedUser loadLoggedUser() {
-        var cookie = request.getCookie("__session");
+        var cookie = request.getCookie(LoginEndpoint.SESSION_COOKIE_NAME);
         logger.info("New logged user! cookie={}", cookie);
         if (Objects.nonNull(cookie)) {
             var sessionId = cookie.getValue();

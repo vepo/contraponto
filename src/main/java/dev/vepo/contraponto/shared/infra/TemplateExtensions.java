@@ -18,6 +18,17 @@ public class TemplateExtensions {
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
+    private static final Map<String, String> HTML_ENTITIES = Map.of("&", "&amp;",
+                                                                    "<", "&lt;",
+                                                                    ">", "&gt;",
+                                                                    "\"", "&quot;",
+                                                                    "'", "&#39;");
+
+    private static final Pattern HTML_SPECIAL_CHARS = Pattern.compile(HTML_ENTITIES.keySet()
+                                                                                   .stream()
+                                                                                   .map(Pattern::quote)
+                                                                                   .collect(Collectors.joining("|")));
+
     @TemplateExtension
     public static String avatarUrl(LoggedUser user) {
         if (Objects.nonNull(user)) {
@@ -36,16 +47,6 @@ public class TemplateExtensions {
             return null;
         }
     }
-
-    private static final Map<String, String> HTML_ENTITIES = Map.of("&", "&amp;",
-                                                                    "<", "&lt;",
-                                                                    ">", "&gt;",
-                                                                    "\"", "&quot;",
-                                                                    "'", "&#39;");
-    private static final Pattern HTML_SPECIAL_CHARS = Pattern.compile(HTML_ENTITIES.keySet()
-                                                                                   .stream()
-                                                                                   .map(Pattern::quote)
-                                                                                   .collect(Collectors.joining("|")));
 
     @TemplateExtension
     public static String escapeHtml(String value) {

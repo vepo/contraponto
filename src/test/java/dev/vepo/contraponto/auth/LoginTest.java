@@ -1,19 +1,13 @@
 package dev.vepo.contraponto.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.openqa.selenium.By.className;
-import static org.openqa.selenium.By.cssSelector;
-import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
-
 import java.net.URL;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.contraponto.components.forms.SignUpEndpoint;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
@@ -45,53 +39,32 @@ class LoginTest {
     }
 
     @Test
-    void loginModalValidationAndSuccess(WebDriver driver, WebDriverWait wait) {
-        driver.get(testUrl.toString());
-
-        // Open login modal
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
-        loginBtn.click();
-
-        var modalContainer = wait.until(visibilityOfElementLocated(className("modal__container")));
-        assertThat(modalContainer.isDisplayed()).isTrue();
-        var loginInput = wait.until(visibilityOfElementLocated(cssSelector("input[name=\"login\"]")));
-        var passwordInput = driver.findElement(cssSelector("input[name=\"password\"]"));
-        var submitBtn = driver.findElement(cssSelector("button[type=\"submit\"]"));
-
-        // Initially disabled
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Test empty fields
-        loginInput.sendKeys("");
-        passwordInput.click();
-        assertThat(submitBtn.isEnabled()).isFalse();
-
-        // Test invalid login (non-existent)
-        loginInput.clear();
-        loginInput.sendKeys("nonexistent");
-        passwordInput.sendKeys("validPassword123");
-        await().until(() -> submitBtn.isEnabled());
-        submitBtn.click();
-        var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
-        assertThat(authError.getText()).contains("Invalid username/email");
-
-        // Successful login with email
-        loginInput.clear();
-        loginInput.sendKeys("test@example.com");
-        passwordInput.clear();
-        passwordInput.sendKeys("validPassword123");
-        await().until(() -> submitBtn.isEnabled());
-        submitBtn.click();
-
-        // Modal closes, user menu appears
-        var postModalContainer = driver.findElement(By.className("modal__container"));
-        await().until(() -> !postModalContainer.isDisplayed());
-        var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
-        assertThat(userMenu.isDisplayed()).isTrue();
-
-        // - Optionally check that the session cookie is set
-        var sessionCookie = driver.manage().getCookieNamed("__session").getValue();
-        assertThat(sessionCookie).isNotBlank();
+    void loginModalValidationAndSuccess(App app, WebDriver driver, WebDriverWait wait) {
+        app.access()
+           // Open login modal
+           .loginModal()
+           // Initially disabled
+           .assertSubmitDisabled()
+           // Test empty fields. It should not be pristine
+           .useLogin("abc")
+           .useLogin("")
+           .usePassword("validPassword123")
+           .assertSubmitDisabled()
+           // Test invalid login (non-existent)
+           .useLogin("nonexistent")
+           .assertSubmitEnabled()
+           .submit()
+           .assertErrorMessage("Invalid username/email")
+           // Successful login with email
+           .useLogin("test@example.com")
+           .usePassword("validPassword123")
+           .assertSubmitEnabled()
+           .submit()
+           // Modal closes, user menu appears
+           .assertModalWasClosed()
+           .assertMenuIsDisplayed()
+           // - Optionally check that the session cookie is set
+           .assertCookieIsPresent(SignUpEndpoint.SESSION_COOKIE_NAME);
     }
 
     @BeforeEach

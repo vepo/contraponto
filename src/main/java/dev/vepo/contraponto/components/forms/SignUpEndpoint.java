@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.Response.Status;
 public class SignUpEndpoint {
 
     // Constants (align with LoginEndpoint)
-    private static final String SESSION_COOKIE_NAME = "__session";
+    public static final String SESSION_COOKIE_NAME = LoginEndpoint.SESSION_COOKIE_NAME;
     private static final String SESSION_COOKIE_PATH = "/";
     private static final String HX_TRIGGER_HEADER = "HX-Trigger";
     private static final String LOGGED_IN_EVENT = "loggedIn";
