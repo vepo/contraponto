@@ -50,7 +50,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         return Status.INTERNAL_SERVER_ERROR.getStatusCode();
     }
 
-    private String getUserMessage(Throwable exception, int status) {
+    private String getUserMessage(int status) {
         return switch (status) {
             case 400 -> "The request could not be processed due to invalid input.";
             case 403 -> "You are not allowed to access this resource.";
@@ -67,7 +67,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
     public Response toResponse(Throwable exception) {
         // Determine HTTP status
         int status = getStatus(exception);
-        String userMessage = getUserMessage(exception, status);
+        String userMessage = getUserMessage(status);
         String technicalMessage = IS_DEV ? exception.getMessage() : null;
 
         // Log the error with stack trace for server-side debugging

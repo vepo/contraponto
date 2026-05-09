@@ -40,7 +40,6 @@ class UserBlogTest {
         // Click on the first post in the grid (non‑featured)
         WebElement firstCard = wait.until(visibilityOfElementLocated(cssSelector(".article-card")));
         WebElement titleLink = firstCard.findElement(cssSelector(".article-card__title a"));
-        String expectedSlug = titleLink.getAttribute("data-hx-get");
 
         titleLink.click();
 
@@ -95,8 +94,8 @@ class UserBlogTest {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
 
         String pageTitle = driver.getTitle();
-        assertThat(pageTitle).contains(testName);
-        assertThat(pageTitle).contains("contraponto");
+        assertThat(pageTitle).contains(testName)
+                             .contains("contraponto");
     }
 
     @Test
