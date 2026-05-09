@@ -4,7 +4,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.renderer.Renderer;
@@ -34,14 +37,21 @@ public class TemplateExtensions {
         }
     }
 
+    private static final Map<String, String> HTML_ENTITIES = Map.of("&", "&amp;",
+                                                                    "<", "&lt;",
+                                                                    ">", "&gt;",
+                                                                    "\"", "&quot;",
+                                                                    "'", "&#39;");
+    private static final Pattern HTML_SPECIAL_CHARS = Pattern.compile(HTML_ENTITIES.keySet()
+                                                                                   .stream()
+                                                                                   .map(Pattern::quote)
+                                                                                   .collect(Collectors.joining("|")));
+
     @TemplateExtension
     public static String escapeHtml(String value) {
         if (Objects.nonNull(value)) {
-            return value.replaceAll("&", "&amp;")
-                        .replaceAll("<", "&lt;")
-                        .replaceAll(">", "&gt;")
-                        .replaceAll("\"", "&quot;")
-                        .replaceAll("'", "&#39;");
+            return HTML_SPECIAL_CHARS.matcher(value)
+                                     .replaceAll(m -> HTML_ENTITIES.get(m.group()));
         } else {
             return "null";
         }
