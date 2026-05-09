@@ -11,4 +11,8 @@ public class Globals {
     public static int currentYear() {
         return LocalDateTime.now().getYear();
     }
+
+    private Globals() {
+        /* This utility class should not be instantiated */
+    }
 }

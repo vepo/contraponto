@@ -21,6 +21,16 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class StaticResourcesFilter implements ContainerRequestFilter {
 
+    private static final String TYPE_IMAGE = "image";
+    private static final String TYPE_TEXT = "text";
+    private static final String TYPE_APPLICATION = "application";
+    private static final MediaType MEDIA_TYPE_JS = new MediaType(TYPE_APPLICATION, "javascript");
+    private static final MediaType MEDIA_TYPE_CSS = new MediaType(TYPE_TEXT, "css");
+    private static final MediaType MEDIA_TYPE_GIF = new MediaType(TYPE_IMAGE, "gif");
+    private static final MediaType MEDIA_TYPE_JPEG = new MediaType(TYPE_IMAGE, "jpeg");
+    private static final MediaType MEDIA_TYPE_PNG = new MediaType(TYPE_IMAGE, "png");
+    private static final MediaType MEDIA_TYPE_X_ICON = new MediaType(TYPE_IMAGE, "x-icon");
+
     private static class CachedResource {
         final byte[] content;
         final MediaType mediaType;
@@ -128,21 +138,14 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
     }
 
     private MediaType guessMediaType(String path) {
-        if (path.endsWith(".ico")) {
-            return new MediaType("image", "x-icon");
-        } else if (path.endsWith(".png")) {
-            return new MediaType("image", "png");
-        } else if (path.endsWith(".jpg") || path.endsWith(".jpeg")) {
-            return new MediaType("image", "jpeg");
-        } else if (path.endsWith(".gif")) {
-            return new MediaType("image", "gif");
-        } else if (path.endsWith(".css")) {
-            return new MediaType("text", "css");
-        } else if (path.endsWith(".js")) {
-            return new MediaType("application", "javascript");
-        } else {
-            // fallback
-            return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-        }
+        return switch (path) {
+            case String p when p.endsWith(".ico") -> MEDIA_TYPE_X_ICON;
+            case String p when p.endsWith(".png") -> MEDIA_TYPE_PNG;
+            case String p when p.endsWith(".jpg") || p.endsWith(".jpeg") -> MEDIA_TYPE_JPEG;
+            case String p when p.endsWith(".gif") -> MEDIA_TYPE_GIF;
+            case String p when p.endsWith(".css") -> MEDIA_TYPE_CSS;
+            case String p when p.endsWith(".js") -> MEDIA_TYPE_JS;
+            default -> MediaType.APPLICATION_OCTET_STREAM_TYPE;
+        };
     }
 }
