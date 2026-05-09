@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -26,7 +28,7 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance write(Optional<Post> post, LoggedUser user);
+        public static native TemplateInstance write(Optional<Post> post, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -34,11 +36,13 @@ public class WriteEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public WriteEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
+    public WriteEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -47,6 +51,7 @@ public class WriteEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write() {
         return Templates.write(Optional.empty(),
+                               customPageRepository.loadLinks(),
                                loggedUser);
     }
 
@@ -61,6 +66,6 @@ public class WriteEndpoint {
         if (maybePost.isEmpty()) {
             throw new NotFoundException("Draft not found! id=%s".formatted(draftId));
         }
-        return Templates.write(maybePost, loggedUser);
+        return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser);
     }
 }

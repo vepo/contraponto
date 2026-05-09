@@ -2,6 +2,8 @@ package dev.vepo.contraponto.admin;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -33,7 +35,7 @@ public class ReviewEndpoint {
     public static class Templates {
         public static native TemplateInstance grid(Page<Post> posts, LoggedUser user);
 
-        public static native TemplateInstance review(Page<Post> posts, LoggedUser user);
+        public static native TemplateInstance review(Page<Post> posts, Links links, LoggedUser user);
 
         public static native TemplateInstance row(Post post); // for HTMX swap
 
@@ -43,12 +45,13 @@ public class ReviewEndpoint {
     }
 
     private final PostRepository postRepository;
-
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public ReviewEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
+    public ReviewEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -123,7 +126,9 @@ public class ReviewEndpoint {
         }
         // Fetch all published posts, newest first
         return Response.ok()
-                       .entity(Templates.review(postRepository.findPublished(PageQuery.forGrid(limit, 1)), loggedUser))
+                       .entity(Templates.review(postRepository.findPublished(PageQuery.forGrid(limit, 1)),
+                                                customPageRepository.loadLinks(),
+                                                loggedUser))
                        .build();
     }
 }

@@ -3,6 +3,7 @@ package dev.vepo.contraponto.shared.infra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
 import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,11 +24,13 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
     private static final boolean IS_DEV = "dev".equals(System.getProperty("quarkus.profile"));
 
     private final Template error;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public GenericExceptionMapper(Template error, LoggedUser loggedUser) {
+    public GenericExceptionMapper(Template error, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.error = error;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -75,11 +78,11 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         }
 
         // Render error page
-        String html = error
-                           .data("user", loggedUser)
+        String html = error.data("user", loggedUser)
                            .data("status", status)
                            .data("message", technicalMessage)
                            .data("description", userMessage)
+                           .data("links", customPageRepository.loadLinks())
                            .data("dev", IS_DEV)
                            .render();
 

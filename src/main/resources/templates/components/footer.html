@@ -10,25 +10,19 @@
                 <a href="/">contraponto</a>
                 <p>Counterpoint in every story.</p>
             </div>
+            
+            {#if links != null}
             <div class="footer__links">
+                {#for section in links.sections("FOOTER")}
                 <div class="footer__column">
-                    <h4>Explore</h4>
-                    <a href="/archive">Archive</a>
-                    <a href="/topics">Topics</a>
-                    <a href="/about">About</a>
+                    <h4>{section.name}</h4>
+                    {#for link in section.itens}
+                        <a href="{link.href}">{link.title}</a>
+                    {/for}
                 </div>
-                <div class="footer__column">
-                    <h4>Connect</h4>
-                    <a href="/newsletter">Newsletter</a>
-                    <a href="/submit">Submit a story</a>
-                    <a href="/contact">Contact</a>
-                </div>
-                <div class="footer__column">
-                    <h4>Legal</h4>
-                    <a href="/privacy">Privacy</a>
-                    <a href="/terms">Terms</a>
-                </div>
+                {/for}
             </div>
+            {/if}
         </div>
         <div class="footer__bottom">
             <p>&copy; {currentYear} contraponto. All rights reserved.</p>

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.view.SessionIdProvider;
@@ -30,7 +32,7 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 public class PostEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance post(Post post, LoggedUser user, long viewCount);
+        public static native TemplateInstance post(Post post, Links links, LoggedUser user, long viewCount);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
 
@@ -40,16 +42,19 @@ public class PostEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final ViewRepository viewRepository;
     private final SessionIdProvider sessionIdProvider;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
+                        CustomPageRepository customPageRepository,
                         LoggedUser loggedUser,
                         ViewRepository viewRepository,
                         SessionIdProvider sessionIdProvider) {
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.viewRepository = viewRepository;
         this.sessionIdProvider = sessionIdProvider;
@@ -73,7 +78,7 @@ public class PostEndpoint {
 
         long viewCount = viewRepository.countByPost(post);
 
-        TemplateInstance template = Templates.post(post, loggedUser, viewCount);
+        TemplateInstance template = Templates.post(post, customPageRepository.loadLinks(), loggedUser, viewCount);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));

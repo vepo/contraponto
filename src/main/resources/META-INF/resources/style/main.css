@@ -1916,3 +1916,113 @@ hr:after {
     font-size: 0.85rem;
     margin: 0;
 }
+
+/* Sidebar overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar drawer */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar__header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.sidebar__close {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 0;
+}
+
+.sidebar__nav {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.sidebar__section {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 0.5rem;
+}
+
+.sidebar__section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #999;
+    margin: 0 1rem 0.75rem;
+    font-weight: 600;
+}
+
+.sidebar__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar__link {
+    display: block;
+    padding: 0.6rem 1rem 0.6rem 1.5rem;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.sidebar__link--button {
+    width: 100%;
+}
+
+.sidebar__link:hover {
+    background-color: #f5f5f5;
+    color: #1a8917;
+}
+
+/* Prevent body scroll when sidebar is open */
+body.sidebar-open {
+    overflow: hidden;
+}

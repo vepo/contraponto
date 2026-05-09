@@ -3,6 +3,8 @@ package dev.vepo.contraponto.dashboard;
 import java.util.List;
 import java.util.Map;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -29,7 +31,8 @@ public class DashboardEndpoint {
                                                         long publishedCount,
                                                         List<Post> recentDrafts,
                                                         List<Post> recentPublished,
-                                                        Map<Long, Long> viewCounts);
+                                                        Map<Long, Long> viewCounts,
+                                                        Links links);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -38,12 +41,14 @@ public class DashboardEndpoint {
 
     private final PostRepository postRepository;
     private final ViewRepository viewRepository;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public DashboardEndpoint(PostRepository postRepository, ViewRepository viewRepository, LoggedUser loggedUser) {
+    public DashboardEndpoint(PostRepository postRepository, ViewRepository viewRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.viewRepository = viewRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -65,6 +70,7 @@ public class DashboardEndpoint {
                                    publishedCount,
                                    recentDrafts,
                                    recentPublished,
-                                   viewCounts);
+                                   viewCounts,
+                                   customPageRepository.loadLinks());
     }
 }

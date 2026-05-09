@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
@@ -44,12 +45,14 @@ public class PublishEndpoint {
     private static final Pattern SLUG_GENERATION_PATTERN = Pattern.compile("[^a-zA-Z0-9\\-]");
 
     private final PostRepository postRepository;
+    private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public PublishEndpoint(PostRepository postRepository, ImageRepository imageRepository, LoggedUser loggedUser) {
+    public PublishEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, ImageRepository imageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
         this.loggedUser = loggedUser;
     }
@@ -71,7 +74,7 @@ public class PublishEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(TOAST_DURATION_LONG)
                     .url(postUrl)
-                    .page(PostEndpoint.Templates.post(post, loggedUser, 0L))
+                    .page(PostEndpoint.Templates.post(post, customPageRepository.loadLinks(), loggedUser, 0L))
                     .build();
     }
 

@@ -1,10 +1,13 @@
+{#let sections = links.sections("SIDEBAR")}
 <header class="site-header">
     <div class="header-container">
+        {#if !sections.isEmpty}
         <div class="nav-left">
             <button class="icon-btn" aria-label="Menu" id="menuBtn">
-                <img src="/images/sidebar.svg" />
+                <img src="/images/sidebar.svg" alt="icone do menu lateral" />
             </button>
         </div>
+        {/if}
 
         <div class="logo">
             <a data-hx-get="/"
@@ -34,3 +37,33 @@
         </div>
     </div>
 </header>
+
+{#if !sections.isEmpty}
+<!-- Sidebar overlay and drawer -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<aside id="sidebar" class="sidebar">
+    <div class="sidebar__header">
+        <button class="sidebar__close" aria-label="Close menu">&times;</button>
+    </div>
+    <nav class="sidebar__nav">
+        {#for section in sections}
+                <div class="sidebar__section">
+                    <h3 class="sidebar__section-title">{section.name}</h3>
+                    <ul class="sidebar__links">
+                        {#for link in section.itens}
+                            <li>
+                                <a data-hx-get="{link.href}" 
+                                   hx-select="main" 
+                                   hx-target="main" 
+                                   hx-push-url="{link.href}" 
+                                   class="sidebar__link">
+                                    {link.title}
+                                </a>
+                            </li>
+                        {/for}
+                    </ul>
+                </div>
+        {/for}
+    </nav>
+</aside>
+{/if}

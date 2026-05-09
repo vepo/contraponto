@@ -8,14 +8,13 @@
         <main>
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}
-                {#include HomeEndpoint/featured post=post}
+                {#include HomeEndpoint/featured post=post /}
             {/if}
 
             <div class="container">
-                    <div class="posts-grid">
-                        {#include HomeEndpoint/grid ignoreFirst=true}
-                    </div>
-                </article>
+                <div class="posts-grid">
+                    {#include HomeEndpoint/grid ignoreFirst=true /}
+                </div>
             </div>
         </main>
         {#include components/footer /}

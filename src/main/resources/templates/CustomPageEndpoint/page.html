@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {page.title} - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="custom-page">
+            <div class="container-narrow">
+                <h1 class="custom-page__title">{page.title}</h1>
+                <div class="custom-page__content">
+                    {page.content.raw}   <!-- raw HTML -->
+                </div>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

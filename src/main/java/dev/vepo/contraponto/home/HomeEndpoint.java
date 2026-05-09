@@ -2,6 +2,8 @@ package dev.vepo.contraponto.home;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -27,7 +29,7 @@ public class HomeEndpoint {
 
         static native TemplateInstance grid(Page<Post> posts, boolean ignoreFirst);
 
-        static native TemplateInstance home(Page<Post> posts, LoggedUser user);
+        static native TemplateInstance home(Page<Post> posts, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -35,11 +37,13 @@ public class HomeEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public HomeEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
+    public HomeEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -55,6 +59,6 @@ public class HomeEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance post(@QueryParam("limit") @DefaultValue("12") int limit) {
-        return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)), loggedUser);
+        return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)), customPageRepository.loadLinks(), loggedUser);
     }
 }

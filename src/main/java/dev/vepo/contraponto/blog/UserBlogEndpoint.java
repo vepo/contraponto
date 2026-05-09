@@ -2,6 +2,8 @@ package dev.vepo.contraponto.blog;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -32,7 +34,7 @@ public class UserBlogEndpoint {
 
         static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
 
-        public static native TemplateInstance home(User author, Page<Post> posts, LoggedUser user);
+        public static native TemplateInstance home(User author, Page<Post> posts, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -41,12 +43,14 @@ public class UserBlogEndpoint {
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public UserBlogEndpoint(UserRepository userRepository, PostRepository postRepository, LoggedUser loggedUser) {
+    public UserBlogEndpoint(UserRepository userRepository, PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -62,6 +66,7 @@ public class UserBlogEndpoint {
         return Templates.home(userRepository.findByUsername(username)
                                             .orElseThrow(() -> new NotFoundException("User not found! username=%s".formatted(username))),
                               postRepository.findPublished(username, PageQuery.forFeaturedGrid(limit, 1)),
+                              customPageRepository.loadLinks(username),
                               loggedUser);
     }
 
