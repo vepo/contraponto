@@ -58,14 +58,10 @@ public class UserBlogEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance blog(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit) {
         // Check if user exists
-        var userOpt = userRepository.findByUsername(username);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("User not found: " + username);
-        }
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
 
-        return Templates.home(userRepository.findByUsername(username)
-                                            .orElseThrow(() -> new NotFoundException("User not found! username=%s".formatted(username))),
-                              postRepository.findPublished(username, PageQuery.forFeaturedGrid(limit, 1)),
+        return Templates.home(user,
+                              postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, 1)),
                               customPageRepository.loadLinks(username),
                               loggedUser);
     }
@@ -77,7 +73,8 @@ public class UserBlogEndpoint {
     public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,
                                       @QueryParam("page") int page) {
 
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
         return Templates.grid(username,
-                              this.postRepository.findPublished(username, PageQuery.forFeaturedGrid(limit, page)), false);
+                              this.postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, page)), false);
     }
 }

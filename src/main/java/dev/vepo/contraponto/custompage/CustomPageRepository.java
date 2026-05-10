@@ -59,7 +59,7 @@ public class CustomPageRepository {
                                          FROM CustomPage
                                          WHERE published = true AND
                                                slug = :slug AND
-                                               blog.username = :username
+                                               blog.owner.username = :username
                                          """, CustomPage.class)
                             .setParameter("slug", slug)
                             .setParameter("username", username)
@@ -73,7 +73,7 @@ public class CustomPageRepository {
                                          SELECT cp FROM CustomPage cp
                                          LEFT JOIN cp.blog b
                                          WHERE cp.published = true AND
-                                               (b IS NULL OR b.username = :username)
+                                               (b IS NULL OR b.owner.username = :username)
                                          """, CustomPage.class)
                             .setParameter("username", username)
                             .getResultStream();

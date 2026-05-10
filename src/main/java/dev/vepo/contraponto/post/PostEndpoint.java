@@ -27,7 +27,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 
-@Path("{username}/post/{slug}")
+@Path("{username}")
 @ApplicationScoped
 public class PostEndpoint {
     @CheckedTemplate
@@ -61,6 +61,7 @@ public class PostEndpoint {
     }
 
     @GET
+    @Path("/post/{slug}")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public Response post(@PathParam("username") String username,

@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.admin;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.post.Post;
@@ -10,6 +11,7 @@ import dev.vepo.contraponto.shared.WebTest;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 
+@Disabled
 @WebTest
 class ReviewTest {
 

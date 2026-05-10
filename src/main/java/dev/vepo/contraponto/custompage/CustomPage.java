@@ -7,6 +7,7 @@ import java.util.Objects;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,11 +50,9 @@ public class CustomPage {
     @Column(nullable = false)
     private boolean published = true;
 
-    // If null, the page is global (site-wide).
-    // If set, it belongs to a specific user's blog.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id")
-    private User blog;
+    private Blog blog;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -65,7 +64,7 @@ public class CustomPage {
 
     public CustomPage() {}
 
-    public CustomPage(String slug, String title, String section, String content, PagePlacement placement, User blog, boolean published) {
+    public CustomPage(String slug, String title, String section, String content, PagePlacement placement, Blog blog, boolean published) {
         this.slug = slug;
         this.title = title;
         this.section = section;
@@ -87,8 +86,12 @@ public class CustomPage {
         }
     }
 
-    public User getBlog() {
+    public Blog getBlog() {
         return blog;
+    }
+
+    public User getBlogOwner() {
+        return blog != null ? blog.getOwner() : null;
     }
 
     public String getContent() {
@@ -132,7 +135,7 @@ public class CustomPage {
         return published;
     }
 
-    public void setBlog(User blog) {
+    public void setBlog(Blog blog) {
         this.blog = blog;
     }
 

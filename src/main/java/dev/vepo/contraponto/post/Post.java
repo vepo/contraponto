@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.user.User;
@@ -39,9 +40,9 @@ public class Post {
     @JoinColumn(name = "cover_id")
     private Image cover;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blog_id", nullable = false)
+    private Blog blog;
 
     @Column
     private String description;
@@ -78,7 +79,7 @@ public class Post {
                 String description,
                 String content,
                 Format format,
-                User author,
+                Blog blog,
                 boolean published,
                 boolean featured,
                 LocalDateTime publishedAt) {
@@ -88,7 +89,7 @@ public class Post {
         this.description = description;
         this.content = content;
         this.format = format;
-        this.author = author;
+        this.blog = blog;
         this.published = published;
         this.featured = featured;
         this.publishedAt = publishedAt;
@@ -107,7 +108,11 @@ public class Post {
     }
 
     public User getAuthor() {
-        return author;
+        return blog.getOwner();
+    }
+
+    public Blog getBlog() {
+        return blog;
     }
 
     public String getContent() {
@@ -163,8 +168,8 @@ public class Post {
         return published;
     }
 
-    public void setAuthor(User author) {
-        this.author = author;
+    public void setBlog(Blog blog) {
+        this.blog = blog;
     }
 
     public void setContent(String content) {
@@ -217,6 +222,6 @@ public class Post {
 
     @Override
     public String toString() {
-        return "Post[id=%d, slug=%s, author=%s]".formatted(id, slug, author);
+        return "Post[id=%d, slug=%s, blog=%s]".formatted(id, slug, blog);
     }
 }

@@ -6,10 +6,8 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
-import io.quarkus.test.junit.QuarkusTest;
 
 @WebTest
-@QuarkusTest
 class SignupTest {
 
     @Test

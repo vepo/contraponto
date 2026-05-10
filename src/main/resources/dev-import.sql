@@ -146,7 +146,7 @@ BEGIN
 
     -- Inserir posts publicados (alternando MARKDOWN e ASCIIDOC)
     -- Post 1: MARKDOWN
-    INSERT INTO tb_posts(slug, title, author_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id) 
+    INSERT INTO tb_posts(slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'introduction-to-distributed-systems-java', 
@@ -1365,7 +1365,7 @@ We''ll migrate a sample microservice to modules and measure startup time changes
     -- 4. Inserir rascunhos (drafts) – mixing formats
     -- ============================================
     -- Draft 1: MARKDOWN
-    INSERT INTO tb_posts(slug, title, author_id, description, content, format, published, created_at, updated_at, published_at, cover_id) 
+    INSERT INTO tb_posts(slug, title, blog_id, description, content, format, published, created_at, updated_at, published_at, cover_id) 
     VALUES 
     (
         'draft-why-java-still-matters-2024', 

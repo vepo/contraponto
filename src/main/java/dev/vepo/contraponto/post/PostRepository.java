@@ -43,17 +43,6 @@ public class PostRepository {
                             .getSingleResult();
     }
 
-    public long countByAuthorUsernameAndPublished(String username) {
-        return entityManager.createQuery("""
-                                         SELECT COUNT(p)
-                                         FROM Post p
-                                         WHERE p.author.username = :username AND
-                                               p.published = true
-                                         """, Long.class)
-                            .setParameter("username", username)
-                            .getSingleResult();
-    }
-
     private long countFeatured() {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
@@ -70,6 +59,17 @@ public class PostRepository {
                                          FROM Post p
                                          WHERE p.published = true
                                          """, Long.class)
+                            .getSingleResult();
+    }
+
+    public long countPublishedByAuthor(long authorId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.blog.owner.id = :authorId AND
+                                               p.published = true
+                                         """, Long.class)
+                            .setParameter("authorId", authorId)
                             .getSingleResult();
     }
 
@@ -151,7 +151,7 @@ public class PostRepository {
     public List<Post> findByAuthorAndPublished(long authorId, boolean published) {
         return entityManager.createQuery("""
                                          FROM Post p
-                                         WHERE author.id = :authorId AND
+                                         WHERE blog.owner.id = :authorId AND
                                                published = :published
 
                                          ORDER BY updatedAt DESC
@@ -187,7 +187,8 @@ public class PostRepository {
     public Page<Post> findFeatured(PageQuery query) {
         return new Page<>(entityManager.createQuery("""
                                                     FROM Post
-                                                    JOIN FETCH author
+                                                    JOIN FETCH blog
+                                                    JOIN FETCH blog.owner
                                                     WHERE published = true AND
                                                           featured = true
                                                     ORDER BY publishedAt DESC
@@ -203,7 +204,8 @@ public class PostRepository {
     public Page<Post> findPublished(PageQuery query) {
         return new Page<>(entityManager.createQuery("""
                                                     FROM Post
-                                                    JOIN FETCH author
+                                                    JOIN FETCH blog
+                                                    JOIN FETCH blog.owner
                                                     WHERE published = true
                                                     ORDER BY publishedAt DESC
                                                     """, Post.class)
@@ -215,22 +217,22 @@ public class PostRepository {
                           countPublished());
     }
 
-    public Page<Post> findPublished(String username, PageQuery query) {
+    public Page<Post> findPublishedByAuthor(long authorId, PageQuery query) {
         return new Page<>(entityManager.createQuery("""
-                                                    SELECT p
-                                                    FROM Post p
-                                                    JOIN FETCH p.author
-                                                    WHERE p.author.username = :username AND
-                                                          p.published = true
-                                                    ORDER BY p.publishedAt DESC
+                                                    FROM Post
+                                                    JOIN FETCH blog
+                                                    JOIN FETCH blog.owner
+                                                    WHERE blog.owner.id = :authorId AND
+                                                          published = true
+                                                    ORDER BY publishedAt DESC
                                                     """, Post.class)
-                                       .setParameter("username", username)
+                                       .setParameter("authorId", authorId)
                                        .setMaxResults(query.maxResults())
                                        .setFirstResult(query.skip())
                                        .getResultList(),
                           query.page(),
                           query.limit(),
-                          countByAuthorUsernameAndPublished(username));
+                          countPublishedByAuthor(authorId));
     }
 
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
@@ -18,6 +19,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -45,13 +47,19 @@ public class PublishEndpoint {
     private static final Pattern SLUG_GENERATION_PATTERN = Pattern.compile("[^a-zA-Z0-9\\-]");
 
     private final PostRepository postRepository;
+    private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public PublishEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, ImageRepository imageRepository, LoggedUser loggedUser) {
+    public PublishEndpoint(PostRepository postRepository,
+                           BlogRepository blogRepository,
+                           CustomPageRepository customPageRepository,
+                           ImageRepository imageRepository,
+                           LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.blogRepository = blogRepository;
         this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
         this.loggedUser = loggedUser;
@@ -79,11 +87,9 @@ public class PublishEndpoint {
     }
 
     private void fillPostMetadata(Post post, SaveDraftRequest request) {
-        post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());
         post.setContent(request.content());
         post.setDescription(request.description());
-        // slug is handled separately
     }
 
     /**
@@ -131,12 +137,17 @@ public class PublishEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response publish(@BeanParam SaveDraftRequest request) {
-        Optional<Response> validationError = validateRequest(request);
+        var validationError = validateRequest(request);
         if (validationError.isPresent()) {
             return validationError.get();
         }
 
-        Post post = getOrCreatePost(request);
+        var blog = blogRepository.findById(request.blogId())
+                                 .filter(b -> b.getOwner().getId() == loggedUser.getId()) // validating owner
+                                 .orElseThrow(() -> new NotFoundException("Blog not found!! blogId=%s".formatted(request.blogId())));
+
+        var post = getOrCreatePost(request);
+        post.setBlog(blog);
         setFormatIfProvided(post, request);
         updateCoverImage(post, request);
         fillPostMetadata(post, request);

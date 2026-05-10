@@ -2,6 +2,7 @@ package dev.vepo.contraponto.components.forms;
 
 import java.util.Optional;
 
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
@@ -14,6 +15,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -31,12 +33,17 @@ public class SaveDraftEndpoint {
     private static final String SUCCESS_MSG_DRAFT_SAVED = "Draft saved successfully!";
 
     private final PostRepository postRepository;
+    private final BlogRepository blogRepository;
     private final ImageRepository imageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public SaveDraftEndpoint(PostRepository postRepository, ImageRepository imageRepository, LoggedUser loggedUser) {
+    public SaveDraftEndpoint(PostRepository postRepository,
+                             BlogRepository blogRepository,
+                             ImageRepository imageRepository,
+                             LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.blogRepository = blogRepository;
         this.imageRepository = imageRepository;
         this.loggedUser = loggedUser;
     }
@@ -51,8 +58,6 @@ public class SaveDraftEndpoint {
                     .build();
     }
 
-    // ============================== VALIDATION ==============================
-
     private Response buildSuccessResponse(Post post) {
         return Toast.ok()
                     .message(SUCCESS_MSG_DRAFT_SAVED)
@@ -62,20 +67,13 @@ public class SaveDraftEndpoint {
                     .build();
     }
 
-    // ============================== POST RETRIEVAL / CREATION
-    // ==============================
-
     private void fillPostMetadata(Post post, SaveDraftRequest request) {
         post.setSlug(request.slug());
-        post.setAuthor(loggedUser.getUser());
         post.setTitle(request.title());
         post.setContent(request.content());
         post.setDescription(request.description());
         // Note: This endpoint does NOT set published or publishedAt – it's a draft.
     }
-
-    // ============================== POST DATA MUTATION
-    // ==============================
 
     private Post getOrCreatePost(SaveDraftRequest request) {
         if (request.id() != null) {
@@ -93,12 +91,16 @@ public class SaveDraftEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response save(@BeanParam SaveDraftRequest request) {
-        Optional<Response> validationError = validateRequest(request);
+        var validationError = validateRequest(request);
         if (validationError.isPresent()) {
             return validationError.get();
         }
 
-        Post post = getOrCreatePost(request);
+        var blog = blogRepository.findById(request.blogId())
+                                 .filter(b -> b.getOwner().getId() == loggedUser.getId()) // validating owner
+                                 .orElseThrow(() -> new NotFoundException("Blog not found!! blogId=%s".formatted(request.blogId())));
+        var post = getOrCreatePost(request);
+        post.setBlog(blog);
         updateCoverImageIfProvided(post, request);
         setFormat(post, request);
         fillPostMetadata(post, request);
@@ -106,9 +108,6 @@ public class SaveDraftEndpoint {
 
         return buildSuccessResponse(post);
     }
-
-    // ============================== RESPONSE BUILDING
-    // ==============================
 
     private void setFormat(Post post, SaveDraftRequest request) {
         if (!isBlank(request.format())) {

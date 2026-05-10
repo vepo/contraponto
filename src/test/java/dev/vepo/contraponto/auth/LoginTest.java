@@ -1,25 +1,15 @@
 package dev.vepo.contraponto.auth;
 
-import java.net.URL;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.components.forms.SignUpEndpoint;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
-import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
 
 @WebTest
-@QuarkusTest
 class LoginTest {
-
-    @TestHTTPResource("/")
-    URL testUrl;
 
     @Test
     void invalidCredentialsShowsErrorMessage(App app) {
@@ -39,7 +29,7 @@ class LoginTest {
     }
 
     @Test
-    void loginModalValidationAndSuccess(App app, WebDriver driver, WebDriverWait wait) {
+    void loginModalValidationAndSuccess(App app) {
         app.access()
            // Open login modal
            .loginModal()

@@ -13,10 +13,12 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
 import dev.vepo.contraponto.auth.PasswordService;
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.custompage.CustomPage;
 import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.image.Image;
@@ -29,6 +31,8 @@ import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
 
 public interface Given {
 
@@ -37,7 +41,7 @@ public interface Given {
         private String title;
         private String content;
         private String section;
-        private User blog;
+        private Blog blog;
         private PagePlacement placement;
 
         private CustomPageBuilder() {
@@ -57,7 +61,7 @@ public interface Given {
             });
         }
 
-        public CustomPageBuilder withBlog(User blog) {
+        public CustomPageBuilder withBlog(Blog blog) {
             this.blog = blog;
             return this;
         }
@@ -115,7 +119,7 @@ public interface Given {
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title, cover, slug, description, content, format, author, published, featured, LocalDateTime.now());
+                var post = new Post(title, cover, slug, description, content, format, author.getDefaultBlog(), published, featured, LocalDateTime.now());
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
                 }
@@ -225,14 +229,18 @@ public interface Given {
 
     public static void cleanup() {
         transaction(() -> {
-            var entityManager = inject(EntityManager.class);
-            var query = entityManager.createQuery("DELETE FROM Post");
-            query.executeUpdate();
-            query = entityManager.createQuery("DELETE FROM CustomPage");
-            query.executeUpdate();
-            query = entityManager.createQuery("DELETE FROM User");
-            query.executeUpdate();
+            Stream.of(Post.class, CustomPage.class, Blog.class, User.class)
+                  .sequential()
+                  .forEachOrdered(Given::deleteAll);
         });
+    }
+
+    private static <T> void deleteAll(Class<T> entityClass) {
+        var entityManager = inject(EntityManager.class);
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaDelete<T> delete = cb.createCriteriaDelete(entityClass);
+        delete.from(entityClass);
+        entityManager.createQuery(delete).executeUpdate();
     }
 
     public static CustomPageBuilder customPage() {

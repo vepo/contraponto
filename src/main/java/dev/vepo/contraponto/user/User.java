@@ -1,18 +1,23 @@
 package dev.vepo.contraponto.user;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import dev.vepo.contraponto.blog.Blog;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -42,6 +47,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
+    private Set<Blog> blogs;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -60,6 +68,7 @@ public class User {
         this.name = name;
         this.passwordHash = passwordHash;
         this.active = true;
+        this.blogs = new HashSet<>();
     }
 
     @Override
@@ -76,8 +85,19 @@ public class User {
         return Objects.equals(other.id, id);
     }
 
+    public Set<Blog> getBlogs() {
+        return blogs;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Blog getDefaultBlog() {
+        return blogs.stream()
+                    .filter(Blog::isMain)
+                    .findFirst()
+                    .orElse(null);
     }
 
     public String getEmail() {
@@ -120,6 +140,10 @@ public class User {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public void setBlogs(Set<Blog> blogs) {
+        this.blogs = blogs;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
