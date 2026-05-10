@@ -48,6 +48,18 @@ public class Blog {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    public Blog() {}
+
+    public Blog(User user) {
+        this.slug = user.getUsername();
+        this.name = user.getName();
+        this.description = user.getName();
+        this.owner = user;
+        this.main = true;
+        this.active = true;
+        this.createdAt = LocalDateTime.now();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

@@ -45,13 +45,13 @@ public class App {
         }
 
         public T assertModalIsOpen() {
-            assertThat(driver.findElement(By.className("modal__container")).isDisplayed()).isTrue();
+            var modal = wait.until(visibilityOfElementLocated(By.className("modal__container")));
+            assertThat(modal.isDisplayed()).isTrue();
             return (T) this;
         }
 
         public App assertModalWasClosed() {
-            var modalContainer = driver.findElement(By.className("modal__container"));
-            await().until(() -> !modalContainer.isDisplayed());
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("modal__container")));
             return App.this;
         }
 
@@ -99,6 +99,12 @@ public class App {
 
         public Login useLogin(String login) {
             useFieldValue("input[name=\"login\"]", login);
+            return this;
+        }
+
+        public Login closeModal() {
+            var closeBtn = driver.findElement(By.cssSelector("#authModal .modal__close"));
+            closeBtn.click();
             return this;
         }
     }

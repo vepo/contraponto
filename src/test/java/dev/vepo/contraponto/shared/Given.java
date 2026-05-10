@@ -189,7 +189,7 @@ public interface Given {
         }
 
         public User persist() {
-            return transaction(() -> {
+            var createdUser = transaction(() -> {
                 var entityManager = inject(EntityManager.class);
                 var user = new User(requireNonNull(username, "'username' cannot be null"),
                                     requireNonNull(email, "'email' cannot be null"),
@@ -197,8 +197,17 @@ public interface Given {
                                     requireNonNull(role, "'role' cannot be null"),
                                     inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
                 entityManager.persist(user);
+                var defaultBlog = new Blog(user);
+                entityManager.persist(defaultBlog);
                 return user;
             });
+            return inject(EntityManager.class).createQuery("""
+                                                               FROM User u
+                                                               JOIN FETCH blogs b
+                                                               WHERE u.id = :userId
+                                                           """, User.class)
+                                              .setParameter("userId", createdUser.getId())
+                                              .getSingleResultOrNull();
         }
 
         public UserBuilder withEmail(String email) {
