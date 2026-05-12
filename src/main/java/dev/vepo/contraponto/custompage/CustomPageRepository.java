@@ -68,17 +68,6 @@ public class CustomPageRepository {
                             .findFirst();
     }
 
-    private Stream<CustomPage> listBlogPages(String username) {
-        return entityManager.createQuery("""
-                                         SELECT cp FROM CustomPage cp
-                                         LEFT JOIN cp.blog b
-                                         WHERE cp.published = true AND
-                                               (b IS NULL OR b.owner.username = :username)
-                                         """, CustomPage.class)
-                            .setParameter("username", username)
-                            .getResultStream();
-    }
-
     private Stream<CustomPage> listBlogPages(long blogId) {
         return entityManager.createQuery("""
                                          SELECT cp FROM CustomPage cp
@@ -101,10 +90,6 @@ public class CustomPageRepository {
 
     public Links loadLinks() {
         return buildLinks(listMainPages());
-    }
-
-    public Links loadLinks(String username) {
-        return buildLinks(listBlogPages(username));
     }
 
     public Links loadLinks(long blogId) {

@@ -154,7 +154,6 @@ public class App {
             _loadMore();
             return this;
         }
-
     }
 
     public class Featured {
@@ -231,6 +230,11 @@ public class App {
     public abstract class Page<T extends Page<T>> {
         private Page() {}
 
+        public T assertLinks(PagePlacement placement, String... links) {
+            _assertLinks(placement, links);
+            return (T) this;
+        }
+
         public T assertPageTitleContains(String... titles) {
             assertThat(driver.getTitle()).contains(titles);
             return (T) this;
@@ -239,6 +243,11 @@ public class App {
         public T assertUrlContains(String urlFragment) {
             wait.until(ExpectedConditions.urlContains(urlFragment));
             return (T) this;
+        }
+
+        public App click(PagePlacement placement, String link) {
+            _click(placement, link);
+            return App.this;
         }
 
         public App home() {
@@ -327,6 +336,20 @@ public class App {
         this.rootUri = TestHTTPResourceManager.getUri();
     }
 
+    private void _assertLinks(PagePlacement placement, String... links) {
+        switch (placement) {
+            case FOOTER:
+                var footerElements = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".footer__links .custom-page__link")));
+                assertThat(footerElements).hasSize(links.length)
+                                          .extracting(elm -> elm.getAttribute("data-hx-get"))
+                                          .containsExactlyInAnyOrder(links);
+                break;
+
+            default:
+                break;
+        }
+    }
+
     void _assertLoadMoreVisibility(boolean visible) {
         var btnLoadMore = driver.findElements(cssSelector("#more-posts"));
         if (visible) {
@@ -343,6 +366,18 @@ public class App {
                    var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
                    return gridElements.size() + featuredPost.size() == numberOfPosts;
                });
+    }
+
+    private void _click(PagePlacement placement, String link) {
+        switch (placement) {
+            case FOOTER:
+                wait.until(visibilityOfElementLocated(By.cssSelector(".footer__links .custom-page__link[data-hx-get=\"%s\"]".formatted(link))))
+                    .click();
+                break;
+
+            default:
+                break;
+        }
     }
 
     private void _clickFirstPostTitle() {
@@ -369,11 +404,6 @@ public class App {
 
     public App access() {
         driver.get(this.rootUri);
-        return this;
-    }
-
-    public App accessUserBlog(String username) {
-        driver.navigate().to(this.rootUri + "/" + username);
         return this;
     }
 
@@ -405,17 +435,7 @@ public class App {
     }
 
     public App assertLinks(PagePlacement placement, String... links) {
-        switch (placement) {
-            case FOOTER:
-                var footerElements = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".footer__links .custom-page__link")));
-                assertThat(footerElements).hasSize(links.length)
-                                          .extracting(elm -> elm.getAttribute("data-hx-get"))
-                                          .containsExactlyInAnyOrder(links);
-                break;
-
-            default:
-                break;
-        }
+        _assertLinks(placement, links);
         return this;
     }
 
@@ -474,15 +494,7 @@ public class App {
     }
 
     public App click(PagePlacement placement, String link) {
-        switch (placement) {
-            case FOOTER:
-                wait.until(visibilityOfElementLocated(By.cssSelector(".footer__links .custom-page__link[data-hx-get=\"%s\"]".formatted(link))))
-                    .click();
-                break;
-
-            default:
-                break;
-        }
+        _click(placement, link);
         return this;
     }
 

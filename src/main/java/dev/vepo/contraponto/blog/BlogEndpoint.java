@@ -71,7 +71,7 @@ public class BlogEndpoint {
 
         return Templates.home(user,
                               postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, 1)),
-                              customPageRepository.loadLinks(username),
+                              customPageRepository.loadLinks(user.getDefaultBlog().getId()),
                               loggedUser);
     }
 

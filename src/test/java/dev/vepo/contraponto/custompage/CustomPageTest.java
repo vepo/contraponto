@@ -1,17 +1,18 @@
 package dev.vepo.contraponto.custompage;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
 import dev.vepo.contraponto.user.Role;
+import dev.vepo.contraponto.user.User;
 
-@Disabled
 @WebTest
 class CustomPageTest {
+    private User regularUser;
+
     @Test
     void accessGlobalPage(App app) {
         app.access()
@@ -24,7 +25,7 @@ class CustomPageTest {
     @Test
     void accessUsersPage(App app) {
         app.access()
-           .accessUserBlog("regular-user")
+           .goTo(regularUser.getDefaultBlog())
            .assertLinks(PagePlacement.FOOTER, "/page-2", "/page-1")
            .click(PagePlacement.FOOTER, "/page-1")
            .assertUrl("/page-1")
@@ -34,13 +35,13 @@ class CustomPageTest {
     @BeforeEach
     void setup() {
         Given.cleanup();
-        var regularUser = Given.user()
-                               .withUsername("regular-user")
-                               .withName("Regular User")
-                               .withEmail("regular-user@contraponto.com.br")
-                               .withPassword("qwas1234")
-                               .withRole(Role.USER)
-                               .persist();
+        regularUser = Given.user()
+                           .withUsername("regular-user")
+                           .withName("Regular User")
+                           .withEmail("regular-user@contraponto.com.br")
+                           .withPassword("qwas1234")
+                           .withRole(Role.USER)
+                           .persist();
         Given.customPage()
              .withSlug("/page-1")
              .withTitle("Page 1")
