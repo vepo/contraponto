@@ -30,6 +30,7 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Meaning https://en.wikipedia.org/wiki/Slug_(publishing)
     @Column(nullable = false)
     private String slug;
 

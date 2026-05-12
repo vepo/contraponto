@@ -138,6 +138,24 @@ public class PostRepository {
                                  .getResultList();
     }
 
+    public Optional<Post> findBlogPost(String username, String blogSlug, String slug) {
+        return this.entityManager.createQuery("""
+                                              FROM Post p
+                                              JOIN FETCH blog b
+                                              JOIN FETCH blog.owner o
+                                              WHERE p.published = TRUE AND
+                                                    b.main = FALSE AND
+                                                    b.slug = :blogSlug AND
+                                                    o.username = :username AND
+                                                    p.slug = :slug
+                                              """, Post.class)
+                                 .setParameter("username", username)
+                                 .setParameter("blogSlug", blogSlug)
+                                 .setParameter("slug", slug)
+                                 .getResultStream()
+                                 .findFirst();
+    }
+
     public List<Post> findByAuthor(long authorId) {
         return this.entityManager.createQuery("""
                                               FROM Post

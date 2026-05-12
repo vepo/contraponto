@@ -44,7 +44,7 @@
 {/for}
 {#if !posts.isEmpty && !posts.isLastPage}
 <div id="more-posts" class="load-more">
-    <button hx-get="/components/home/grid?page={posts.nextPage}"
+    <button hx-get="/components/grid?page={posts.nextPage}"
             hx-target="#more-posts"
             hx-swap="outerHTML"
             class="btn">Load more</button>

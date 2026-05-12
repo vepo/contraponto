@@ -8,6 +8,8 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfAllElementsLocatedBy;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
@@ -21,6 +23,7 @@ import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
 
@@ -175,6 +178,11 @@ public class App {
             return App.this;
         }
 
+        public T waitForReady() {
+            App.this.waitForReady();
+            return (T) this;
+        }
+
     }
 
     public class PostPage extends Page<PostPage> {
@@ -259,12 +267,30 @@ public class App {
         return this;
     }
 
+    public App assertAccessButtonIsDisplayed() {
+        var loginBtn = driver.findElement(className("auth-btn-login"));
+        assertThat(loginBtn.isDisplayed()).isTrue();
+        return this;
+    }
+
     public App assertCookieIsPresent(String key) {
         assertThat(driver.manage()
                          .getCookieNamed(key)).isNotNull()
                                               .extracting(Cookie::getName)
                                               .asString()
                                               .isNotBlank();
+        return this;
+    }
+
+    public App assertFeaturedDisplayed() {
+        var articles = driver.findElements(cssSelector(".article-card, .featured"));
+        assertThat(articles).isNotEmpty();
+        return this;
+    }
+
+    public App assertHeaderIsDisplayed() {
+        var header = wait.until(visibilityOfElementLocated(className("site-header")));
+        assertThat(header.isDisplayed()).isTrue();
         return this;
     }
 
@@ -283,6 +309,24 @@ public class App {
         return this;
     }
 
+    public App assertLoadMoreIsNotVisible() {
+        var btnLoadMore = driver.findElements(cssSelector("#more-posts"));
+        assertThat(btnLoadMore).isEmpty();
+        return this;
+    }
+
+    public App assertLoadMoreIsVisible() {
+        var btnLoadMore = driver.findElements(cssSelector("#more-posts"));
+        assertThat(btnLoadMore).isNotEmpty().hasSize(1);
+        return this;
+    }
+
+    public App assertMainContent() {
+        var main = driver.findElement(By.tagName("main"));
+        assertThat(main.isDisplayed()).isTrue();
+        return this;
+    }
+
     public App assertMenuIsDisplayed() {
         var userMenu = wait.until(visibilityOfElementLocated(className("user-menu")));
         assertThat(userMenu.isDisplayed()).isTrue();
@@ -290,9 +334,21 @@ public class App {
     }
 
     public App assertNumberOfPosts(int numberOfPosts) {
-        var gridElements = driver.findElements(By.cssSelector("article.article-card"));
-        var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
-        assertThat(gridElements.size() + featuredPost.size()).isEqualTo(numberOfPosts);
+        await().alias("Wait for %d posts...".formatted(numberOfPosts))
+               .until(() -> {
+                   var gridElements = driver.findElements(By.cssSelector("article.article-card"));
+                   var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
+                   return gridElements.size() + featuredPost.size() == numberOfPosts;
+               });
+        return this;
+    }
+
+    public App assertPostTitles(List<String> titles) {
+        var titlesElements = driver.findElements(By.cssSelector(".article-card__title, .featured__title"));
+        assertThat(titlesElements).hasSize(titles.size())
+                                  .extracting(WebElement::getText)
+                                  .extracting(String::trim)
+                                  .containsExactly(titles.stream().toArray(String[]::new));
         return this;
     }
 
@@ -331,7 +387,7 @@ public class App {
     }
 
     public PostPage goTo(Post post) {
-        driver.navigate().to(rootUri + "/" + post.getAuthor().getUsername() + "/post/" + post.getSlug());
+        driver.navigate().to(rootUri + TemplateExtensions.url(post));
         waitForReady();
         return new PostPage();
     }
@@ -343,6 +399,13 @@ public class App {
         reviewBtn.click();
         waitForReady();
         return new ReviewPage();
+    }
+
+    public App loadMore() {
+        var btnLoadMore = driver.findElement(cssSelector("#more-posts"));
+        btnLoadMore.click();
+        waitForReady();
+        return this;
     }
 
     public App login(User user) {

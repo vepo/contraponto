@@ -1,7 +1,6 @@
 package dev.vepo.contraponto.admin;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.post.Post;
@@ -11,33 +10,54 @@ import dev.vepo.contraponto.shared.WebTest;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 
-@Disabled
 @WebTest
 class ReviewTest {
 
     private User admin;
     private User regularUser;
     private User editorUser;
-    private Post post1;
-    private Post post2;
+    private Post mainPost1;
+    private Post mainPost2;
+    private Post blogPost1;
+    private Post blogPost2;
 
     @Test
-    void checkPromoteToFeatureButtonTest(App app) {
+    void checkPromoteBlogPostToFeatureButtonTest(App app) {
         app.access()
            .login(admin)
-           .goTo(post1)
+           .goTo(blogPost1)
            .assertFeaturedButtonIsPresent()
            .toggleFeatured()
            .home()
            .assertNumberOfPosts(1)
            .logout()
            .login(regularUser)
-           .goTo(post2)
+           .goTo(blogPost2)
            .assertFeaturedButtonIsNotPresent()
            .home()
            .logout()
            .login(editorUser)
-           .goTo(post2)
+           .goTo(blogPost2)
+           .assertFeaturedButtonIsPresent();
+    }
+
+    @Test
+    void checkPromoteMainBlogPostToFeatureButtonTest(App app) {
+        app.access()
+           .login(admin)
+           .goTo(mainPost1)
+           .assertFeaturedButtonIsPresent()
+           .toggleFeatured()
+           .home()
+           .assertNumberOfPosts(1)
+           .logout()
+           .login(regularUser)
+           .goTo(mainPost2)
+           .assertFeaturedButtonIsNotPresent()
+           .home()
+           .logout()
+           .login(editorUser)
+           .goTo(mainPost2)
            .assertFeaturedButtonIsPresent();
     }
 
@@ -58,6 +78,12 @@ class ReviewTest {
                            .withPassword("qwas1234")
                            .withRole(Role.USER)
                            .persist();
+        var blog = Given.blog()
+                        .withUser(regularUser)
+                        .withSlug("secondary")
+                        .withName("Secondary Blog")
+                        .withDescription("Secondary Blog description")
+                        .persist();
         editorUser = Given.user()
                           .withUsername("editor-user")
                           .withName("Editor User")
@@ -65,26 +91,46 @@ class ReviewTest {
                           .withPassword("qwas1234")
                           .withRole(Role.EDITOR)
                           .persist();
-        post1 = Given.post()
-                     .withAuthor(regularUser)
-                     .withTitle("Post 1")
-                     .withSlug("post-1")
-                     .withContent("Post 1 content")
-                     .withCover(Given.randomCover())
-                     .withDescription("Post 1 description")
-                     .withPublished(true)
-                     .withFeatured(false)
-                     .persist();
-        post2 = Given.post()
-                     .withAuthor(regularUser)
-                     .withTitle("Post 2")
-                     .withSlug("post-2")
-                     .withContent("Post 2 content")
-                     .withCover(Given.randomCover())
-                     .withDescription("Post 2 description")
-                     .withPublished(true)
-                     .withFeatured(false)
-                     .persist();
+        mainPost1 = Given.post()
+                         .withAuthor(regularUser)
+                         .withTitle("Post 1")
+                         .withSlug("post-1")
+                         .withContent("Post 1 content")
+                         .withCover(Given.randomCover())
+                         .withDescription("Post 1 description")
+                         .withPublished(true)
+                         .withFeatured(false)
+                         .persist();
+        mainPost2 = Given.post()
+                         .withAuthor(regularUser)
+                         .withTitle("Post 2")
+                         .withSlug("post-2")
+                         .withContent("Post 2 content")
+                         .withCover(Given.randomCover())
+                         .withDescription("Post 2 description")
+                         .withPublished(true)
+                         .withFeatured(false)
+                         .persist();
+        blogPost1 = Given.post()
+                         .withBlog(blog)
+                         .withTitle("Post 1")
+                         .withSlug("post-1")
+                         .withContent("Post 1 content")
+                         .withCover(Given.randomCover())
+                         .withDescription("Post 1 description")
+                         .withPublished(true)
+                         .withFeatured(false)
+                         .persist();
+        blogPost2 = Given.post()
+                         .withBlog(blog)
+                         .withTitle("Post 2")
+                         .withSlug("post-2")
+                         .withContent("Post 2 content")
+                         .withCover(Given.randomCover())
+                         .withDescription("Post 2 description")
+                         .withPublished(true)
+                         .withFeatured(false)
+                         .persist();
     }
 
     @Test
@@ -93,8 +139,8 @@ class ReviewTest {
            .login(admin)
            .assertNumberOfPosts(0)
            .goToReview()
-           .assertNumberOfPosts(2)
-           .toggleFeatured(post1)
+           .assertNumberOfPosts(4)
+           .toggleFeatured(mainPost1)
            .home()
            .assertNumberOfPosts(1);
     }

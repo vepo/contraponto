@@ -48,17 +48,17 @@ public class HomeEndpoint {
     }
 
     @GET
-    @Path("components/home/grid")
+    @Path("components/grid")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance morePosts(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
+    public TemplateInstance grid(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {
         return Templates.grid(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, page)), false);
     }
 
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance post(@QueryParam("limit") @DefaultValue("12") int limit) {
+    public TemplateInstance home(@QueryParam("limit") @DefaultValue("12") int limit) {
         return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)), customPageRepository.loadLinks(), loggedUser);
     }
 }

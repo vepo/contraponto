@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -35,6 +36,49 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 
 public interface Given {
+
+    public static class BlogBuilder {
+        private User user;
+        private String slug;
+        private String name;
+        private String description;
+
+        private BlogBuilder() {
+            this.user = null;
+        }
+
+        public Blog persist() {
+            return transaction(() -> {
+                var entityManager = inject(EntityManager.class);
+                var blog = new Blog(requireNonNull(user, "'user' cannot be null!"),
+                                    requireNonNull(slug, "'slug' cannot be null"),
+                                    requireNonNull(name, "'name' cannot be null"),
+                                    requireNonNull(description, "'description' cannot be null"));
+                entityManager.persist(blog);
+                return blog;
+            });
+        }
+
+        public BlogBuilder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public BlogBuilder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public BlogBuilder withSlug(String slug) {
+            this.slug = slug;
+            return this;
+        }
+
+        public BlogBuilder withUser(User user) {
+            this.user = user;
+            return this;
+        }
+    }
 
     public static class CustomPageBuilder {
         private String slug;
@@ -101,6 +145,7 @@ public interface Given {
         private String content;
         private Format format;
         private User author;
+        private Blog blog;
         private Image cover;
         private String slug;
         private boolean published;
@@ -119,7 +164,16 @@ public interface Given {
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title, cover, slug, description, content, format, author.getDefaultBlog(), published, featured, LocalDateTime.now());
+                var post = new Post(title,
+                                    cover,
+                                    slug,
+                                    description,
+                                    content,
+                                    format,
+                                    Optional.ofNullable(blog).orElseGet(() -> author.getDefaultBlog()),
+                                    published,
+                                    featured,
+                                    LocalDateTime.now());
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
                 }
@@ -133,6 +187,11 @@ public interface Given {
 
         public PostBuilder withAuthor(User author) {
             this.author = author;
+            return this;
+        }
+
+        public PostBuilder withBlog(Blog blog) {
+            this.blog = blog;
             return this;
         }
 
@@ -234,6 +293,10 @@ public interface Given {
             this.username = username;
             return this;
         }
+    }
+
+    public static BlogBuilder blog() {
+        return new BlogBuilder();
     }
 
     public static void cleanup() {

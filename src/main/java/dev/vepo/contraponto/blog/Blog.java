@@ -60,6 +60,16 @@ public class Blog {
         this.createdAt = LocalDateTime.now();
     }
 
+    public Blog(User user, String slug, String name, String description) {
+        this.owner = user;
+        this.slug = slug;
+        this.name = name;
+        this.description = description;
+        this.main = false;
+        this.active = true;
+        this.createdAt = LocalDateTime.now();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

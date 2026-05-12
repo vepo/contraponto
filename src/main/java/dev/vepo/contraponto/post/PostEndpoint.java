@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
@@ -71,15 +72,39 @@ public class PostEndpoint {
     }
 
     @GET
-    @Path("/post/{slug}")
+    @Path("{blogSlug}/post/{slug}")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public Response post(@PathParam("username") String username,
-                         @PathParam("slug") String slug,
-                         @Context HttpHeaders headers) {
-        Post post = postRepository.findMainBlogPost(username, slug)
-                                  .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
+    public Response blogPost(@PathParam("username") String username,
+                             @PathParam("blogSlug") String blogSlug,
+                             @PathParam("slug") String slug,
+                             @Context HttpHeaders headers) {
+        return renderPost(postRepository.findBlogPost(username, blogSlug, slug)
+                                        .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))),
+                          headers);
+    }
 
+    private Links loadLinks(Post post) {
+        if (post.getBlog().isMain()) {
+            return customPageRepository.loadLinks();
+        } else {
+            return customPageRepository.loadLinks(post.getBlog().getId());
+        }
+    }
+
+    @GET
+    @Path("post/{slug}")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public Response mainBlogPost(@PathParam("username") String username,
+                                 @PathParam("slug") String slug,
+                                 @Context HttpHeaders headers) {
+        return renderPost(postRepository.findMainBlogPost(username, slug)
+                                        .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))),
+                          headers);
+    }
+
+    private Response renderPost(Post post, HttpHeaders headers) {
         // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));
         viewRepository.recordView(post,
@@ -89,7 +114,7 @@ public class PostEndpoint {
 
         long viewCount = viewRepository.countByPost(post);
 
-        TemplateInstance template = Templates.post(post, customPageRepository.loadLinks(), loggedUser, viewCount);
+        TemplateInstance template = Templates.post(post, loadLinks(post), loggedUser, viewCount);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));
@@ -99,17 +124,36 @@ public class PostEndpoint {
 
     @PUT
     @Logged
-    @Path("/component/featured/toggle")
+    @Path("{blogSlug}/post/{slug}/component/featured/toggle")
     @Transactional
-    public Response toggleFeatured(@PathParam("username") String username,
-                                   @PathParam("slug") String slug) {
+    public Response toggleBlogPostFeatured(@PathParam("username") String username,
+                                           @PathParam("blogSlug") String blogSlug,
+                                           @PathParam("slug") String slug) {
         // ADMIN and EDITOR can select featured posts
         if (!loggedUser.isEditor()) {
             return Response.status(403)
                            .build();
         }
 
-        var maybePost = postRepository.findByUsernameAndSlug(username, slug);
+        return togglePostFeatured(postRepository.findBlogPost(username, blogSlug, slug));
+    }
+
+    @PUT
+    @Logged
+    @Path("post/{slug}/component/featured/toggle")
+    @Transactional
+    public Response toggleMapPostFeatured(@PathParam("username") String username,
+                                          @PathParam("slug") String slug) {
+        // ADMIN and EDITOR can select featured posts
+        if (!loggedUser.isEditor()) {
+            return Response.status(403)
+                           .build();
+        }
+
+        return togglePostFeatured(postRepository.findMainBlogPost(username, slug));
+    }
+
+    public Response togglePostFeatured(Optional<Post> maybePost) {
         if (maybePost.isEmpty()) {
             return Response.status(404).build();
         } else {
