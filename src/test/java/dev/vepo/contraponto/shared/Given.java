@@ -244,16 +244,16 @@ public interface Given {
         });
     }
 
+    public static CustomPageBuilder customPage() {
+        return new CustomPageBuilder();
+    }
+
     private static <T> void deleteAll(Class<T> entityClass) {
         var entityManager = inject(EntityManager.class);
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaDelete<T> delete = cb.createCriteriaDelete(entityClass);
         delete.from(entityClass);
         entityManager.createQuery(delete).executeUpdate();
-    }
-
-    public static CustomPageBuilder customPage() {
-        return new CustomPageBuilder();
     }
 
     public static <T> T inject(Class<T> clazz) {

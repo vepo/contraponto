@@ -9,10 +9,10 @@
     <article class="article-card">
         {#if post.cover}
         <div class="article-card__image">
-            <a data-hx-get="/{post.author.username}/post/{post.slug}"
+            <a data-hx-get="{post.url}"
                 hx-select="main"
                 hx-target="main"
-                hx-push-url="/{post.author.username}/post/{post.slug}">
+                hx-push-url="{post.url}">
                 <img src="{post.cover.url}" alt="{post.title}"/>
             </a>
         </div>
@@ -20,10 +20,10 @@
         <div class="article-card__content">
             <div class="article-card__category">Article</div>
             <h2 class="article-card__title">
-                <a data-hx-get="/{post.author.username}/post/{post.slug}"
+                <a data-hx-get="{post.url}"
                     hx-select="main"
                     hx-target="main"
-                    hx-push-url="/{post.author.username}/post/{post.slug}">{post.title}</a>
+                    hx-push-url="{post.url}">{post.title}</a>
             </h2>
             <p class="article-card__excerpt">{post.description}</p>
             <div class="article-meta">

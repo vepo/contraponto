@@ -41,10 +41,20 @@ public class PostEndpoint {
         }
     }
 
+    public static String extractUrl(Post post) {
+        var blog = post.getBlog();
+        if (post.getBlog().isMain()) {
+            return "/%s/post/%s".formatted(blog.getOwner().getUsername(), post.getSlug());
+        } else {
+            return "/%s/%s/post/%s".formatted(blog.getOwner().getUsername(), blog.getSlug(), post.getSlug());
+        }
+    }
+
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final ViewRepository viewRepository;
+
     private final SessionIdProvider sessionIdProvider;
 
     @Inject
@@ -67,7 +77,7 @@ public class PostEndpoint {
     public Response post(@PathParam("username") String username,
                          @PathParam("slug") String slug,
                          @Context HttpHeaders headers) {
-        Post post = postRepository.findByUsernameAndSlug(username, slug)
+        Post post = postRepository.findMainBlogPost(username, slug)
                                   .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
 
         // Record view

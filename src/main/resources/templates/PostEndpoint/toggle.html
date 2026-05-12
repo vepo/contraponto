@@ -1,6 +1,6 @@
 {#if user.isEditor}
 <button id="post-featured-toggle" class="btn btn--icon btn--outline {#if post.featured}btn--star-active{/if}"
-        hx-put="/{post.author.username}/post/{post.slug}/component/featured/toggle"
+        hx-put="{post.url}/component/featured/toggle"
         hx-swap="outerHTML"
         hx-select="#post-featured-toggle"
         hx-target="#post-featured-toggle">

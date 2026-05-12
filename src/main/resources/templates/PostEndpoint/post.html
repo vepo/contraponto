@@ -6,7 +6,7 @@
     <body hx-history-elt>
         {#include components/header /}
         <main class="article-page" 
-              hx-get="/{post.author.username}/post/{post.slug}" 
+              hx-get="{post.url}" 
               hx-select="main"
               hx-target="main"
               hx-swap="outerHTML"

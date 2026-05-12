@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.renderer.Renderer;
 import io.quarkus.qute.TemplateExtension;
 
@@ -96,6 +97,12 @@ public class TemplateExtensions {
 
         return Renderer.get(post.getFormat())
                        .render(post.getContent());
+    }
+
+    @TemplateExtension
+
+    public static String url(Post post) {
+        return PostEndpoint.extractUrl(post);
     }
 
     private TemplateExtensions() {

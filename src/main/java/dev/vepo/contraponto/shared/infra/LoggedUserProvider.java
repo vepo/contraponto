@@ -41,7 +41,6 @@ public class LoggedUserProvider {
     @RequestScoped
     public LoggedUser loadLoggedUser() {
         var cookie = request.getCookie(LoginEndpoint.SESSION_COOKIE_NAME);
-        logger.info("New logged user! cookie={}", cookie);
         if (Objects.nonNull(cookie)) {
             var sessionId = cookie.getValue();
             var user = sessions.get(sessionId);

@@ -1,178 +1,226 @@
-Contraponto
+# Contraponto UI/UX Guidelines
 
-## 1. Core Philosophy
+*Version 1.0 – A newspaper‑style blogging platform*
 
-**“Readable like a newspaper, responsive like a modern web app.”**  
-- **No page reloads** – HTMX swaps only the `<main>` or smaller fragments.  
-- **Typographic focus** – elegant serif fonts for content, clean sans‑serif for UI.  
-- **Editorial design** – generous whitespace, strong hierarchy, understated colors.  
+---
+
+## 1. Introduction
+
+Contraponto is a publishing platform designed to combine the elegance of a classic newspaper with the speed of a modern web application. Every design decision aims to **maximize readability, guide the eye naturally, and give writers full control over their content** without interfering with the reading experience.
 
 ---
 
 ## 2. Design Principles
 
-| Principle          | How it’s applied                                                                 |
-|--------------------|----------------------------------------------------------------------------------|
-| **Clarity**        | High contrast text, intuitive navigation, clear call‑to‑actions.                  |
-| **Consistency**    | Reuse components (cards, buttons, forms) – see `/components` and `/shared` CSS.   |
-| **Progressive enhancement** | Core functionality works without JS; HTMX adds SPA‑like feel.                      |
-| **Modularity**     | Each page is composed of interchangeable blocks (featured, grid, actions).         |
-| **Performance**    | Minimal custom JavaScript; use HTMX for most interactions; cache static assets.    |
+### 2.1 Typography-driven hierarchy
+- **Serif fonts** (Cormorant Garamond, Playfair Display) for headings, titles, and body copy to evoke a timeless editorial feel.
+- **Sans‑serif font** (Inter) for UI elements, metadata, and navigation – ensuring clean contrast.
+- Font sizes follow a modular scale: `18px` base for body, `1.1rem` for article content, `3rem` for main titles on desktop.
+
+### 2.2 Color restraint
+- Primary brand colour: `#1a8917` (green) – used sparingly for links, buttons, and accents.
+- Accent colour: `#c41e3a` (deep red) – reserved for high‑emphasis elements like drop caps, pull‑quote borders, and critical alerts.
+- Neutral palette: `#1a1a1a` (text), `#4a4a4a` (secondary text), `#6b6b6b` (muted), `#fafafa` (background offset).
+- Background: pure white `#ffffff` to maximise contrast.
+
+### 2.3 Spacious & breathable layout
+- Generous whitespace: max‑content width `1192px` for home, `900px` for articles.
+- Grid‑based layout for post cards; consistent spacing units (`0.5rem` – `4rem`).
+
+### 2.4 Subtle interactions
+- Hover states use colour shifts and soft shadows, never abrupt changes.
+- Transitions are smooth (`0.2s`) and never distract from content.
+
+### 2.5 Mobile first
+- The design scales gracefully; all main functions are accessible on mobile with stacked layouts, hidden secondary text, and touch‑friendly tap targets.
 
 ---
 
-## 3. Component Inventory
+## 3. Global Components
 
-### 3.1 Global Shell
+### 3.1 Header
+- Sticky top bar with logo (centered), navigation icons (left), and user actions (right).
+- **Logo:** “contraponto” in Playfair Display, links to home.
+- **Left:** menu (sidebar) and search icons.
+- **Right:** write button (if logged in), user menu or Sign Up / Sign In buttons.
 
-- **Header** (`site-header` – sticky)  
-  - Logo (links to `/`).  
-  - Left: hamburger menu icon (future sidebar).  
-  - Right: search button, write button (if authenticated), user menu (dropdown).  
-  - Auth buttons (sign‑up / sign‑in) when not logged in.  
-- **Footer** (`site-footer`)  
-  - Logo, description.  
-  - Static links (Archive, Topics, About…).  
-  - Custom page links (loaded dynamically via HTMX from `/page/_footer-pages`).  
-  - Toast container (`#toast`).  
-- **Modal Container** (`#modal-container` – empty div at bottom of `<head>`)  
-  - Hosts modals injected by HTMX (auth, search).  
+### 3.2 Footer
+- Darker background (`#fafafa`), multi‑column layout with links to explore, connect, legal, and dynamically loaded **Custom Pages** (global, placement `FOOTER` or `BOTH`).
+- Copyright line at the bottom.
 
-### 3.2 Page Templates
+### 3.3 Search Modal
+- Triggered by the search icon in the header.
+- Contains a search input that autofocuses; results appear inline with subtle animation.
+- Initial state shows a friendly “Find the perfect story” placeholder.
+- Live filtering (`keyup` with 300ms delay) – no page reload.
+- “Advanced search →” link opens the dedicated search page with pagination.
 
-| Page                | Key elements                                              | Related files                                                        |
-|---------------------|-----------------------------------------------------------|----------------------------------------------------------------------|
-| **Home**            | Featured article (large), 3‑column post grid, load‑more.  | `HomeEndpoint/home.html`, `featured.html`, `grid.html`               |
-| **User Blog**       | Same layout, but filtered to a user’s posts.              | `UserBlogEndpoint/home.html`, `featured.html`, `grid.html`           |
-| **Article**         | Cover image, title, author link, metadata, rich content.  | `PostEndpoint/post.html`                                             |
-| **Write / Edit**    | Title, cover upload, slug, description, editor, toolbar, preview. | `WriteEndpoint/write.html`, `write.js`                        |
-| **Profile**         | Account settings form (name, email, password).             | `ProfileEndpoint/profile.html`                                       |
-| **Dashboard**       | Stats cards (drafts, published), recent activity, quick write link. | `DashboardEndpoint/dashboard.html`                         |
-| **Library**         | Tabs for drafts / published, edit/delete buttons.         | `LibraryEndpoint/library.html`, `postsList.html`                     |
-| **Search**          | Input with live results (modal or full page).             | `SearchEndpoint/modal.html`, `search.html`, `results.html`           |
-| **Review**          | List of published posts with toggle featured button.       | `ReviewEndpoint/review.html`, `postRow.html` (planned)               |
-| **Custom Page**     | Simple static page with title and rendered content.        | `CustomPageResource/page.html`                                       |
-| **Error**           | Status code, explanation, back‑home / retry buttons.       | `templates/error.html`                                               |
+### 3.4 Authentication Modals
+- Separate modals for Sign‑Up and Sign‑In, toggled via links in the modal footer.
+- Form validation is real‑time: error messages appear only after a field loses focus (if invalid).
+- Submit button is disabled until all required fields are valid.
 
-### 3.3 Reusable UI Patterns
+### 3.5 User Menu
+- Dropdown showing avatar, name, email.
+- Items: My Blog, Profile, Write, Library, Dashboard, Review (editor only), Sign Out.
+- The dropdown closes on escape or when clicking outside.
 
-#### **Article Cards** (`.article-card`)
-- Used in grids (home, user blog, search results).  
-- Contains: image, category, title (link), excerpt, meta (author, date, read time).  
-- Hover effect: lift shadow, image scale.  
-
-#### **Featured Section** (`.featured`)
-- Two‑column layout (text + image).  
-- Category label, large title, excerpt, meta.  
-
-#### **Buttons**
-- `.btn` – base style, rounded, transition border/background.  
-- `.btn--primary` – green, for main actions.  
-- `.btn--small` – compact for lists.  
-- `.btn--icon` – with SVG icon for edit/feature.  
-- `.btn--outline` – transparent border, used in actions bar.  
-- `.btn--star-active` – yellow star for featured toggle.  
-
-#### **Form Elements**
-- `.form-group` – label + input with error messages below.  
-- Inputs: focus border turns green, validation errors shown conditionally.  
-- Submit button disabled until form valid.  
-
-#### **Error / Success Messages**
-- `.error-message` – hidden by default, shown via JS when validation fails.  
-- `.success-message` – green background, used after profile save etc.  
-
-#### **Toast Notifications** (`.toast`)
-- Fixed bottom‑right, slides in, auto‑hides.  
-- Can be triggered by response header `X-Toast-Message`.  
-- Supports types: success (green), error (red).  
-
-#### **Modal** (`.modal`)
-- Centered box, backdrop, open/close transitions.  
-- Used for auth forms and search.  
-
-#### **Loading States**
-- `.loading-spinner` – placeholder while HTMX request is in‑flight.  
-- `.htmx-indicator` – class added to indicate activity (global CSS).  
+### 3.6 Toast Notifications
+- Non‑blocking, positioned bottom‑right.
+- Success (green) and error (red) variants.
+- Appear on publish, draft save, or critical errors.
 
 ---
 
-## 4. HTMX Interaction Patterns
+## 4. Home Page
 
-- **Navigation** – all internal links use `data-hx-get` + `hx-select="main"` + `hx-target="main"` + `hx-push-url`. This replaces only the main content area and updates the URL without full reload.  
-- **Forms** – use `hx-post` or `hx-put` with `hx-target` for error/success areas.  
-- **Live Search** – input triggers `keyup changed delay:300ms` with `hx-get`; explicit button also fires `hx-get`.  
-- **Lazy loading** – footer custom pages use `hx-get` with `hx-trigger="load"`.  
-- **Tabs** (Library) – buttons with `hx-get="/library/tab?type=…"`, `hx-target="#libraryContent"`.  
-- **Pagination** – “Load more” button that fetches the next grid page and swaps itself out.  
+**Purpose:** Showcases curated featured posts to all visitors.
 
-**Rule of thumb:** Any action that should not cause a full page refresh is a candidate for HTMX.
-
----
-
-## 5. Theming & CSS Variables
-
-All styling lives in `main.css` and `write.css`.  
-**CSS custom properties** are defined in `:root` of `main.css`:
-
-| Variable               | Purpose                     | Default                |
-|------------------------|-----------------------------|------------------------|
-| `--color-primary`      | Main action color (links, buttons) | `#1a8917` (green) |
-| `--color-accent`       | Drop caps, decorative lines | `#c41e3a` (red)       |
-| `--color-text`         | Primary text                | `#1a1a1a`             |
-| `--color-text-light`   | Excerpts, secondary text    | `#4a4a4a`             |
-| `--color-text-muted`   | Metadata, footnotes         | `#6b6b6b`             |
-| `--color-border`       | Borders, dividers           | `#e5e5e5`             |
-| `--color-bg`           | Background                  | `#ffffff`             |
-| `--color-bg-offset`    | Off‑white background        | `#fafafa`             |
-| `--font-serif`         | Body text (Cormorant Garamond) |                      |
-| `--font-serif-display` | Headings (Playfair Display) |                      |
-| `--font-sans`          | UI, meta (Inter)            |                      |
-
-**Do not override these variables** – use them in new components to stay consistent.
+- **Featured hero:** The first featured post gets a large two‑column layout (cover image + title/excerpt) at the top.
+- **Post grid:** Below, the remaining featured posts are displayed in a three‑column card grid.
+- **Load more:** At the bottom, a “Load more” button fetches the next page of featured posts via HTMX without a full page refresh.
+- **Visual priority:** The featured hero uses a larger title and a drop‑shadow on the cover. The grid uses smaller cards with a uniform image height.
+- **Empty state:** If no posts are featured, the page shows a friendly message inviting editors to feature content.
 
 ---
 
-## 6. Responsive Breakpoints
+## 5. Blog Page (User’s Blog)
 
-| Breakpoint | Target         | Layout changes                                   |
-|------------|----------------|--------------------------------------------------|
-| ≥ 1024px   | Desktop        | 3‑column grid, two‑column featured.              |
-| 768‑1023px | Tablet         | 2‑column grid, stacked featured, compact header. |
-| ≤ 767px    | Mobile         | 1‑column grid, stacked featured, full‑width cards, reduced header. |
-| ≤ 480px    | Small mobile   | Further reduced padding, simplified typography.  |
+**URL:** `/{username}` (default blog) and `/{username}/{blogSlug}` (additional blogs).
 
-**General rules:**  
-- Use `max-width: var(--container-max)` for content.  
-- Use `container-narrow` for reading‑centered pages (articles, profiles, settings).  
-- Images maintain aspect ratio with `object-fit: cover`.  
+- **Blog header:** The user’s name is displayed as a large title; optional biography or blog description below.
+- **Featured post:** If the blog has a featured post, it uses the same hero layout as the home page.
+- **Post grid:** All published posts from that blog in a card grid.
+- **Empty state:** “No posts published yet” with a link for the blog owner to start writing.
+- The page respects the same newspaper styling.
 
 ---
 
-## 7. Security & Role‑Based UI
+## 6. Post Page
 
-- **Editors/Admins** see additional menu items (Review, Custom Pages management).  
-- **Post author** sees “Edit” button.  
-- **Editors** see “Toggle Featured” on post actions bar.  
-- Non‑authenticated users see Sign‑Up / Sign‑In buttons.  
-- Always check roles server‑side; UI hiding is only cosmetic.  
+**URL:** `/{username}/post/{slug}` (or `/{username}/{blogSlug}/post/{slug}`).
 
----
-
-## 8. File Naming & Organization
-
-- **Templates** – `templates/EndpointName/page.html`.  
-- **JavaScript** – `js/main.js`, `js/forms.js`, `js/write.js`, `js/header.js`, etc. Each has a single class.  
-- **CSS** – `main.css` for global styles, `write.css` for editor‑specific styles.  
+- **Cover image:** Full‑width, rounded corners, max height 500px.
+- **Title:** Playfair Display, `3rem`, left‑aligned.
+- **Byline:** Author name (link to their blog), followed by publication/update dates and view count.
+- **Content:** Clean typography with drop caps on the first paragraph, proper heading hierarchy (H2 with left red border, H3 italic), pull‑quotes, and horizontal rules with a diamond symbol.
+- **Action bar** (visible to author/editor):
+  - Edit button (pencil icon) – opens the post in the editor.
+  - Feature toggle (star icon) – only for editors; clicking toggles the featured status inline without page reload.
+- Content is rendered from Markdown/AsciiDoc; code blocks use syntax highlighting.
 
 ---
 
-## 9. Development Workflow
+## 7. Search Experience
 
-- Use Qute `{#include ...}` to compose pages (head, header, footer).  
-- For new HTMX interactions, add minimal JavaScript only if absolutely necessary (see `js/` files for examples).  
-- Always test that a page works without JavaScript by disabling JS – the core navigation should still function (HTMX relies on JS, but progressive enhancement should keep basic links/forms operational).  
+### 7.1 Quick Search (Modal)
+- Opens from header icon.
+- Live results appear as the user types; each result shows title, author, date, and excerpt.
+- Clicking a result navigates to the post.
+
+### 7.2 Advanced Search Page
+- Dedicated `/search` page with a larger input and a “Search” button.
+- Results are paginated (Previous / Next).
+- Empty state: “No results found for …”.
+- URL updates with query for shareability.
 
 ---
 
-This guideline ensures that any new feature or page blends seamlessly into the existing design language and technical architecture. Adherence to it results in a cohesive, high‑quality reading and writing experience.
+## 8. Authentication
+
+### 8.1 Sign‑Up Modal
+- Fields: Username (3‑20 chars), Full Name, Email, Password.
+- Real‑time validation: required, email format, length.
+- Success redirects to the previous page (or home).
+
+### 8.2 Sign‑In Modal
+- Fields: Email or Username, Password.
+- Error messages display inline (e.g., invalid credentials).
+
+Both modals are accessible via the header buttons.
+
+---
+
+## 9. Profile Settings
+
+**URL:** `/profile`
+- A narrow‑width form with fields: Full Name, Email, Current Password (required for changes), New Password (optional), Confirm New Password.
+- Validation rules: password mismatch, email format, etc.
+- “Save Changes” button.
+- Success/error messages appear above the form.
+
+---
+
+## 10. Write / Editor
+
+**URL:** `/write` (new post) or `/write/draft/{id}` (edit existing).
+
+- **Header:** “Publish” and “Save Draft” buttons, plus a “Write” link to exit.
+- **Title field:** Large, borderless, placeholder “Story title…”.
+- **Cover image upload:** Drop‑zone with preview; drag & drop or click to upload.
+- **Slug / description:** Simple text fields.
+- **Format selector:** Markdown / AsciiDoc toggle with a vintage dropdown.
+- **Toolbar:** Bold, italic, underline, headings, lists, quote, code, link, image insertion, and preview toggle.
+- **Editor area:** Monospace font, line height 1.7, minimal border.
+- **Live preview:** Toggled via toolbar button; renders formatted text instantly.
+- **Saving:** “Save Draft” shows toast; “Publish” triggers validation and may redirect to the published post.
+- Only the author can edit; button visibility is controlled by `data-disable-pattern`.
+
+---
+
+## 11. Dashboard
+
+**URL:** `/dashboard`
+- **Stats cards:** Number of drafts and published posts (clickable links to library filtered by tab).
+- **Recent drafts / published:** Lists with title, last‑updated date, views (for published).
+- **Quick action:** “✍️ Write a new story” button.
+
+---
+
+## 12. Library
+
+**URL:** `/library`
+- Tabs: **Drafts** / **Published** – each loads content dynamically via HTMX.
+- Each card shows title (or “Untitled”), excerpt, metadata, and action buttons (Edit, Delete for drafts).
+- Empty state: “No drafts yet” with a link to start writing.
+
+---
+
+## 13. Review Page (Editor)
+
+**URL:** `/review` (only accessible to users with `EDITOR` role).
+- Displays a list of all published posts.
+- Each row: title, author, date, and a star toggle button.
+- Clicking the star instantly marks/unmarks the post as **Featured** and updates the row’s appearance (filled/unfilled star).
+- Provides a central place to curate the home page content.
+
+---
+
+## 14. Custom Pages
+
+**URL:** `/page/{slug}` (global) or `/page/{username}/{slug}` (per blog).
+- A simple page layout with a title and rendered HTML content.
+- Placements: `FOOTER`, `SIDEBAR`, `BOTH`, or `NONE`.
+- Footer links are loaded dynamically via HTMX.
+- Editors can manage pages via the admin interface (not yet detailed).
+
+---
+
+## 15. Accessibility & Responsiveness
+
+- All interactive elements have visible focus outlines.
+- Forms use proper label‑input associations.
+- Modals trap focus and close with Escape.
+- Images have `alt` attributes; SVGs are used for icons.
+- On mobile (<768px):
+  - Header text is hidden; only icons remain.
+  - Post grids become single‑column.
+  - Article titles scale down.
+  - The editor toolbar becomes horizontally scrollable.
+- Sufficient colour contrast (WCAG AA compliant).
+
+---
+
+## 16. Summary
+
+Contraponto’s UI marries classic editorial design with modern interactivity. Every component – from the sticky header to the inline featured toggle – is built to feel responsive, intentional, and calm. The platform treats content as the star, while providing writers and editors with just enough functional power to shape the reading experience without ever overwhelming them.

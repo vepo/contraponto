@@ -13,6 +13,7 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.locators.RelativeLocator;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -89,8 +90,64 @@ public class App {
         }
     }
 
+    public class BlogPage extends Page<BlogPage> {
+        private BlogPage() {}
+
+        public BlogPage assertBlogName(String userName) {
+            WebElement blogHeader = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__name")));
+            assertThat(blogHeader.getText()).isEqualToIgnoringCase(userName);
+            return this;
+        }
+
+    }
+
+    public class Featured {
+        private final WebElement elm;
+
+        private Featured(WebElement elm) {
+            this.elm = elm;
+        }
+
+        public BlogPage accessAuthorBlog() {
+            WebElement authorLink = elm.findElement(cssSelector(".article-meta__author"));
+            // Actually the link's href or data-hx-get attribute contains the username
+            String hxGet = driver.findElement(RelativeLocator.with(By.cssSelector("[data-hx-get"))
+                                                             .near(authorLink))
+                                 .getAttribute("data-hx-get");
+            assertThat(hxGet).isNotNull();
+            //
+            authorLink.click();
+            wait.until(d -> d.getCurrentUrl().contains(hxGet));
+            return new BlogPage();
+        }
+
+        public Featured assertAuthorName(String authorName) {
+            WebElement authorLink = elm.findElement(cssSelector(".article-meta__author"));
+            assertThat(authorLink.getText()).isEqualTo(authorName);
+            return this;
+        }
+
+        public Featured assertLink() {
+            var featuredLink = elm.findElement(By.tagName("a"));
+            assertThat(featuredLink.getAttribute("data-hx-get")).isNotNull();
+            return this;
+        }
+
+        public Featured assertTitle() {
+            var featuredTitle = elm.findElement(className("featured__title"));
+            assertThat(featuredTitle.getText()).isNotBlank();
+            return this;
+        }
+    }
+
     public final class Login extends AccessModal<Login> {
         private Login() {}
+
+        public Login closeModal() {
+            var closeBtn = driver.findElement(By.cssSelector("#authModal .modal__close"));
+            closeBtn.click();
+            return this;
+        }
 
         public Signup switchToSignup() {
             wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a"))).click();
@@ -101,16 +158,15 @@ public class App {
             useFieldValue("input[name=\"login\"]", login);
             return this;
         }
-
-        public Login closeModal() {
-            var closeBtn = driver.findElement(By.cssSelector("#authModal .modal__close"));
-            closeBtn.click();
-            return this;
-        }
     }
 
     public abstract class Page<T extends Page<T>> {
         private Page() {}
+
+        public T assertUrlContains(String urlFragment) {
+            wait.until(ExpectedConditions.urlContains(urlFragment));
+            return (T) this;
+        }
 
         public App home() {
             var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
@@ -256,6 +312,22 @@ public class App {
                 break;
         }
         return this;
+    }
+
+    public BlogPage clickFirstPostTitle() {
+        var firstCard = wait.until(visibilityOfElementLocated(cssSelector(".article-card")));
+        var titleLink = firstCard.findElement(cssSelector(".article-card__title a"));
+
+        String hxGet = titleLink.getAttribute("data-hx-get");
+        assertThat(hxGet).isNotNull();
+
+        // Click the link (it uses htmx, so the main content should update)
+        titleLink.click();
+        return new BlogPage();
+    }
+
+    public Featured featuredCard() {
+        return new Featured(wait.until(visibilityOfElementLocated(cssSelector(".featured"))));
     }
 
     public PostPage goTo(Post post) {

@@ -23,11 +23,11 @@
             {#for post in results.data}
             <article class="search-result">
                 <h2 class="search-result__title">
-                    <a data-hx-get="/{post.author.username}/post/{post.slug}"
+                    <a data-hx-get="{post.url}"
                     hx-select="main"
                     hx-target="main"
                     hx-swap="outerHTML"
-                    hx-push-url="/{post.author.username}/post/{post.slug}">
+                    hx-push-url="{post.url}">
                         {post.title}
                     </a>
                 </h2>

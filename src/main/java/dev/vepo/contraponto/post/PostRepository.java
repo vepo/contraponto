@@ -166,6 +166,7 @@ public class PostRepository {
         return Optional.ofNullable(entityManager.find(Post.class, id));
     }
 
+    @Deprecated
     public Optional<Post> findByUsernameAndSlug(String username, String slug) {
         return this.entityManager.createQuery("""
                                               FROM Post
@@ -199,6 +200,22 @@ public class PostRepository {
                           query.page(),
                           query.limit(),
                           countFeatured());
+    }
+
+    public Optional<Post> findMainBlogPost(String username, String slug) {
+        return this.entityManager.createQuery("""
+                                              FROM Post p
+                                              JOIN FETCH blog b
+                                              JOIN FETCH blog.owner o
+                                              WHERE p.published = TRUE AND
+                                                    b.main = TRUE AND
+                                                    o.username = :username AND
+                                                    p.slug = :slug
+                                              """, Post.class)
+                                 .setParameter("username", username)
+                                 .setParameter("slug", slug)
+                                 .getResultStream()
+                                 .findFirst();
     }
 
     public Page<Post> findPublished(PageQuery query) {

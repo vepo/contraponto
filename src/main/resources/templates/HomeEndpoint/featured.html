@@ -4,10 +4,10 @@
             <div class="featured__content">
                 <div class="featured__category">Featured</div>
                 <h1 class="featured__title">
-                    <a data-hx-get="/{post.author.username}/post/{post.slug}"
+                    <a data-hx-get="{post.url}"
                         hx-select="main"
                         hx-target="main"
-                        hx-push-url="/{post.author.username}/post/{post.slug}">{post.title}</a>
+                        hx-push-url="{post.url}">{post.title}</a>
                 </h1>
                 <div class="featured__excerpt">{post.description.raw}</div>
                 <div class="article-meta">
