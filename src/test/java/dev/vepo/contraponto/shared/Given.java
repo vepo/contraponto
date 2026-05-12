@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -245,6 +246,16 @@ public interface Given {
             this.name = null;
             this.password = null;
             this.role = Role.USER;
+        }
+
+        public User get() {
+            var user = new User(requireNonNull(username, "'username' cannot be null"),
+                                requireNonNull(email, "'email' cannot be null"),
+                                requireNonNull(name, "'name' cannot be null"),
+                                requireNonNull(role, "'role' cannot be null"),
+                                inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
+            user.setBlogs(Set.of(new Blog(user)));
+            return user;
         }
 
         public User persist() {

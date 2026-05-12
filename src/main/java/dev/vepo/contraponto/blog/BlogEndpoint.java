@@ -26,7 +26,7 @@ import jakarta.ws.rs.core.MediaType;
 
 @Path("/{username}")
 @ApplicationScoped
-public class UserBlogEndpoint {
+public class BlogEndpoint {
 
     @CheckedTemplate
     public static class Templates {
@@ -41,13 +41,22 @@ public class UserBlogEndpoint {
         }
     }
 
+    public static String extractUrl(Blog blog) {
+        if (blog.isMain()) {
+            return "/%s".formatted(blog.getOwner().getUsername());
+        } else {
+            return "/%s/%s".formatted(blog.getOwner().getUsername(), blog.getSlug());
+        }
+    }
+
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
+
     private final LoggedUser loggedUser;
 
     @Inject
-    public UserBlogEndpoint(UserRepository userRepository, PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public BlogEndpoint(UserRepository userRepository, PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;

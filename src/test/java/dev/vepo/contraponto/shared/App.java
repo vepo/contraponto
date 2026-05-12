@@ -19,6 +19,7 @@ import org.openqa.selenium.support.locators.RelativeLocator;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.post.Post;
@@ -26,6 +27,7 @@ import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
+import jakarta.ws.rs.core.Response.Status;
 
 public class App {
 
@@ -93,12 +95,72 @@ public class App {
         }
     }
 
+    private void _assertNumberOfPosts(int numberOfPosts) {
+        await().alias("Wait for %d posts...".formatted(numberOfPosts))
+               .until(() -> {
+                   var gridElements = driver.findElements(By.cssSelector("article.article-card"));
+                   var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
+                   return gridElements.size() + featuredPost.size() == numberOfPosts;
+               });
+    }
+
     public class BlogPage extends Page<BlogPage> {
         private BlogPage() {}
 
         public BlogPage assertBlogName(String userName) {
             WebElement blogHeader = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__name")));
             assertThat(blogHeader.getText()).isEqualToIgnoringCase(userName);
+            return this;
+        }
+
+        public BlogPage assertNumberOfPosts(int numberOfPosts) {
+            _assertNumberOfPosts(numberOfPosts);
+            return this;
+        }
+
+        public BlogPage assertLoadMoreIsVisible() {
+            _assertLoadMoreVisibility(true);
+            return this;
+        }
+
+        public BlogPage loadMore() {
+            _loadMore();
+            return this;
+        }
+
+        public BlogPage assertLoadMoreIsNotVisible() {
+            _assertLoadMoreVisibility(false);
+            return this;
+        }
+
+        public BlogPage clickFirstPostTitle() {
+            _clickFirstPostTitle();
+            return this;
+        }
+
+        public BlogPage assertPostTitle(String title) {
+            var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
+            assertThat(postTitle.getText()).isNotBlank().isEqualTo(title);
+            return this;
+        }
+
+        public void assertErrorPage(Status status) {
+            wait.until(visibilityOfElementLocated(cssSelector(".error-page")));
+            var errorCode = driver.findElement(cssSelector(".error-code"));
+            assertThat(errorCode.getText()).contains(Integer.toString(status.getStatusCode()));
+        }
+
+        public Featured featuredCard() {
+            return App.this.featuredCard();
+        }
+
+        public BlogPage assertNoFeaturedCard() {
+            App.this.assertNoFeaturedCard();
+            return this;
+        }
+
+        public BlogPage assertNotPostMessage() {
+            App.this.assertNotPostMessage();
             return this;
         }
 
@@ -141,6 +203,18 @@ public class App {
             assertThat(featuredTitle.getText()).isNotBlank();
             return this;
         }
+
+        public Featured assertTitle(String title) {
+            var featuredTitle = elm.findElement(className("featured__title"));
+            assertThat(featuredTitle.getText()).isEqualTo(title);
+            return this;
+        }
+
+        public BlogPage accessPost() {
+            var featuredTitle = elm.findElement(className("featured__title"));
+            featuredTitle.click();
+            return new BlogPage();
+        }
     }
 
     public final class Login extends AccessModal<Login> {
@@ -168,6 +242,11 @@ public class App {
 
         public T assertUrlContains(String urlFragment) {
             wait.until(ExpectedConditions.urlContains(urlFragment));
+            return (T) this;
+        }
+
+        public T assertPageTitleContains(String... titles) {
+            assertThat(driver.getTitle()).contains(titles);
             return (T) this;
         }
 
@@ -257,6 +336,28 @@ public class App {
         this.rootUri = TestHTTPResourceManager.getUri();
     }
 
+    public App assertNotPostMessage() {
+        var emptyMessage = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__empty")));
+        assertThat(emptyMessage.getText()).contains("No posts published yet");
+        return this;
+    }
+
+    private void _clickFirstPostTitle() {
+        var firstCard = wait.until(visibilityOfElementLocated(cssSelector(".article-card")));
+        var titleLink = firstCard.findElement(cssSelector(".article-card__title a"));
+
+        String hxGet = titleLink.getAttribute("data-hx-get");
+        assertThat(hxGet).isNotNull();
+
+        // Click the link (it uses htmx, so the main content should update)
+        titleLink.click();
+    }
+
+    private void _goTo(String url) {
+        driver.navigate().to(rootUri + url);
+        waitForReady();
+    }
+
     public App access() {
         driver.get(this.rootUri);
         return this;
@@ -309,15 +410,22 @@ public class App {
         return this;
     }
 
-    public App assertLoadMoreIsNotVisible() {
+    void _assertLoadMoreVisibility(boolean visible) {
         var btnLoadMore = driver.findElements(cssSelector("#more-posts"));
-        assertThat(btnLoadMore).isEmpty();
+        if (visible) {
+            assertThat(btnLoadMore).isNotEmpty().hasSize(1);
+        } else {
+            assertThat(btnLoadMore).isEmpty();
+        }
+    }
+
+    public App assertLoadMoreIsNotVisible() {
+        _assertLoadMoreVisibility(false);
         return this;
     }
 
     public App assertLoadMoreIsVisible() {
-        var btnLoadMore = driver.findElements(cssSelector("#more-posts"));
-        assertThat(btnLoadMore).isNotEmpty().hasSize(1);
+        _assertLoadMoreVisibility(true);
         return this;
     }
 
@@ -334,12 +442,7 @@ public class App {
     }
 
     public App assertNumberOfPosts(int numberOfPosts) {
-        await().alias("Wait for %d posts...".formatted(numberOfPosts))
-               .until(() -> {
-                   var gridElements = driver.findElements(By.cssSelector("article.article-card"));
-                   var featuredPost = driver.findElements(By.cssSelector(".featured .featured__grid"));
-                   return gridElements.size() + featuredPost.size() == numberOfPosts;
-               });
+        _assertNumberOfPosts(numberOfPosts);
         return this;
     }
 
@@ -371,14 +474,7 @@ public class App {
     }
 
     public BlogPage clickFirstPostTitle() {
-        var firstCard = wait.until(visibilityOfElementLocated(cssSelector(".article-card")));
-        var titleLink = firstCard.findElement(cssSelector(".article-card__title a"));
-
-        String hxGet = titleLink.getAttribute("data-hx-get");
-        assertThat(hxGet).isNotNull();
-
-        // Click the link (it uses htmx, so the main content should update)
-        titleLink.click();
+        _clickFirstPostTitle();
         return new BlogPage();
     }
 
@@ -386,8 +482,20 @@ public class App {
         return new Featured(wait.until(visibilityOfElementLocated(cssSelector(".featured"))));
     }
 
+    public App assertNoFeaturedCard() {
+        waitForReady();
+        var featured = driver.findElements(cssSelector(".featured"));
+        assertThat(featured).isEmpty();
+        return this;
+    }
+
+    public BlogPage goTo(Blog blog) {
+        _goTo(TemplateExtensions.url(blog));
+        return new BlogPage();
+    }
+
     public PostPage goTo(Post post) {
-        driver.navigate().to(rootUri + TemplateExtensions.url(post));
+        _goTo(TemplateExtensions.url(post));
         waitForReady();
         return new PostPage();
     }
@@ -401,10 +509,14 @@ public class App {
         return new ReviewPage();
     }
 
-    public App loadMore() {
+    private void _loadMore() {
         var btnLoadMore = driver.findElement(cssSelector("#more-posts"));
         btnLoadMore.click();
         waitForReady();
+    }
+
+    public App loadMore() {
+        _loadMore();
         return this;
     }
 
@@ -440,4 +552,5 @@ public class App {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         return this;
     }
+
 }

@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.renderer.Renderer;
@@ -100,7 +102,11 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String url(Blog blog) {
+        return BlogEndpoint.extractUrl(blog);
+    }
 
+    @TemplateExtension
     public static String url(Post post) {
         return PostEndpoint.extractUrl(post);
     }
