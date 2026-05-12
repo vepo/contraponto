@@ -5,6 +5,9 @@ import static org.awaitility.Awaitility.await;
 import static org.openqa.selenium.By.className;
 import static org.openqa.selenium.By.cssSelector;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
+import static org.openqa.selenium.support.ui.ExpectedConditions.invisibilityOfElementLocated;
+import static org.openqa.selenium.support.ui.ExpectedConditions.urlContains;
+import static org.openqa.selenium.support.ui.ExpectedConditions.urlToBe;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfAllElementsLocatedBy;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
@@ -16,7 +19,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.locators.RelativeLocator;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.blog.Blog;
@@ -57,7 +59,7 @@ public class App {
         }
 
         public App assertModalWasClosed() {
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("modal__container")));
+            wait.until(invisibilityOfElementLocated(By.className("modal__container")));
             return App.this;
         }
 
@@ -241,7 +243,7 @@ public class App {
         }
 
         public T assertUrlContains(String urlFragment) {
-            wait.until(ExpectedConditions.urlContains(urlFragment));
+            wait.until(urlContains(urlFragment));
             return (T) this;
         }
 
@@ -254,6 +256,11 @@ public class App {
             var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
             homeBtn.click();
             waitForReady();
+            return App.this;
+        }
+
+        public App logout() {
+            _logout();
             return App.this;
         }
 
@@ -284,6 +291,86 @@ public class App {
         public PostPage toggleFeatured() {
             var postFeaturedButton = driver.findElement(By.cssSelector("#post-featured-toggle"));
             postFeaturedButton.click();
+            return this;
+        }
+    }
+
+    public class ProfilePage extends Page<ProfilePage> {
+        private ProfilePage() {}
+
+        public ProfilePage assertEmailIs(String expected) {
+            var emailInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='email']")));
+            assertThat(emailInput.getAttribute("value")).isEqualTo(expected);
+            return this;
+        }
+
+        public ProfilePage assertErrorMessage(String expectedSubstring) {
+            var errorMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .error-message")));
+            assertThat(errorMsg.getText()).contains(expectedSubstring);
+            return this;
+        }
+
+        public ProfilePage assertNameIs(String expected) {
+            var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='name']")));
+            assertThat(nameInput.getAttribute("value")).isEqualTo(expected);
+            return this;
+        }
+
+        public ProfilePage assertNotPresent() {
+            var form = driver.findElements(cssSelector(".profile-form"));
+            assertThat(form).isEmpty();
+            return this;
+        }
+
+        public ProfilePage assertSuccessMessage(String expectedSubstring) {
+            var successMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .success-message")));
+            assertThat(successMsg.getText()).contains(expectedSubstring);
+            return this;
+        }
+
+        public ProfilePage fillConfirmPassword(String password) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='confirmPassword']")));
+            input.clear();
+            input.sendKeys(password);
+            return this;
+        }
+
+        public ProfilePage fillCurrentPassword(String password) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='currentPassword']")));
+            input.clear();
+            input.sendKeys(password);
+            return this;
+        }
+
+        public ProfilePage fillEmail(String email) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='email']")));
+            input.clear();
+            input.sendKeys(email);
+            return this;
+        }
+
+        public ProfilePage fillName(String name) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='name']")));
+            input.clear();
+            input.sendKeys(name);
+            return this;
+        }
+
+        public ProfilePage fillNewPassword(String password) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='newPassword']")));
+            input.clear();
+            input.sendKeys(password);
+            return this;
+        }
+
+        public ProfilePage refresh() {
+            driver.navigate().refresh();
+            waitForReady();
+            return this;
+        }
+
+        public ProfilePage submit() {
+            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
             return this;
         }
     }
@@ -402,13 +489,21 @@ public class App {
         waitForReady();
     }
 
+    private void _logout() {
+        // Perform logout via user menu
+        var userMenuBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".user-menu__button")));
+        userMenuBtn.click();
+        var logoutBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".user-menu__item[hx-post='/forms/auth/logout']")));
+        logoutBtn.click();
+    }
+
     public App access() {
         driver.get(this.rootUri);
         return this;
     }
 
     public App assertAccessButtonIsDisplayed() {
-        var loginBtn = driver.findElement(className("auth-btn-login"));
+        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
         assertThat(loginBtn.isDisplayed()).isTrue();
         return this;
     }
@@ -489,7 +584,7 @@ public class App {
     }
 
     public App assertUrl(String url) {
-        wait.until(ExpectedConditions.urlToBe(this.rootUri + url));
+        wait.until(urlToBe(this.rootUri + url));
         return this;
     }
 
@@ -535,6 +630,9 @@ public class App {
     public App login(User user) {
         var loggedUser = Given.inject(LoggedUserProvider.class)
                               .login(user);
+        if (!driver.getCurrentUrl().contains(rootUri)) {
+            access();
+        }
         driver.manage()
               .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
         driver.navigate().refresh();
@@ -548,10 +646,13 @@ public class App {
     }
 
     public App logout() {
-        driver.manage()
-              .deleteAllCookies();
-        driver.navigate().refresh();
+        _logout();
         return this;
+    }
+
+    public ProfilePage profile() {
+        _goTo("/profile");
+        return new ProfilePage();
     }
 
     private void useFieldValue(String cssSelector, String value) {
