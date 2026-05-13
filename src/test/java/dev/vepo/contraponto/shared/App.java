@@ -324,7 +324,7 @@ public class App {
         private LibraryPage() {}
 
         public LibraryPage assertDraftNotPresent(String title) {
-            var drafts = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".drafts-list .draft-card__title")));
+            var drafts = driver.findElements(By.cssSelector(".drafts-list .draft-card__title"));
             assertThat(drafts).extracting(WebElement::getText)
                               .doesNotContain(title);
             return this;

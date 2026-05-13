@@ -103,6 +103,25 @@ class DashboardTest {
     }
 
     @Test
+    void deleteDraftTest(App app) {
+        Given.post()
+             .withTitle("Some Draft")
+             .withContent("Content")
+             .withAuthor(testUser)
+             .withPublished(false)
+             .persist();
+        app.login(testUser)
+           .dashboard()
+           .clickViewAllDrafts()
+           // The library page defaults to drafts tab, but we can check the active tab
+           .switchTab("drafts") // ensure we are on drafts
+           .assertDraftPresent("Some Draft")
+           .deleteFirstDraft()
+           .assertDraftNotPresent("Some Draft");
+        // The active tab can be asserted by presence of draft list.
+    }
+
+    @Test
     void emptyStateMessagesWhenNoDraftsOrPublished(App app) {
         app.login(testUser)
            .dashboard()
