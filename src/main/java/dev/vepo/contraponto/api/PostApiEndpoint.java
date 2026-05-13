@@ -13,7 +13,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
-@Logged // Requires authentication
+@Logged
 @Path("/api/posts")
 @ApplicationScoped
 public class PostApiEndpoint {

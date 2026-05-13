@@ -74,25 +74,16 @@ public class PostRepository {
     }
 
     public long countSearch(String term) {
-        if (Objects.nonNull(term) && !term.isBlank()) {
-            return entityManager.createQuery("""
-                                             SELECT COUNT(p)
-                                             FROM Post p
-                                             WHERE p.published = true
-                                             AND (LOWER(p.title) LIKE LOWER(:query)
-                                                  OR LOWER(p.description) LIKE LOWER(:query)
-                                                  OR LOWER(p.content) LIKE LOWER(:query))
-                                             """, Long.class)
-                                .setParameter("query", "%%%s%%".formatted(term))
-                                .getSingleResult();
-        } else {
-            return entityManager.createQuery("""
-                                             SELECT COUNT(p)
-                                             FROM Post p
-                                             WHERE p.published = true
-                                             """, Long.class)
-                                .getSingleResult();
-        }
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.published = true
+                                         AND (LOWER(p.title) LIKE LOWER(:query)
+                                             OR LOWER(p.description) LIKE LOWER(:query)
+                                             OR LOWER(p.content) LIKE LOWER(:query))
+                                         """, Long.class)
+                            .setParameter("query", "%%%s%%".formatted(term))
+                            .getSingleResult();
     }
 
     public long countSearchResults(String query) {
@@ -128,16 +119,6 @@ public class PostRepository {
         return true;
     }
 
-    public List<Post> findAll(int offset, int limit) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              ORDER BY createdAt DESC
-                                              """, Post.class)
-                                 .setFirstResult(offset)
-                                 .setMaxResults(limit)
-                                 .getResultList();
-    }
-
     public Optional<Post> findBlogPost(String username, String blogSlug, String slug) {
         return this.entityManager.createQuery("""
                                               FROM Post p
@@ -156,16 +137,6 @@ public class PostRepository {
                                  .findFirst();
     }
 
-    public List<Post> findByAuthor(long authorId) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              WHERE author.id = :authorId
-                                              ORDER BY createdAt DESC
-                                              """, Post.class)
-                                 .setParameter("authorId", authorId)
-                                 .getResultList();
-    }
-
     public List<Post> findByAuthorAndPublished(long authorId, boolean published) {
         return entityManager.createQuery("""
                                          FROM Post p
@@ -182,21 +153,6 @@ public class PostRepository {
 
     public Optional<Post> findById(Long id) {
         return Optional.ofNullable(entityManager.find(Post.class, id));
-    }
-
-    @Deprecated
-    public Optional<Post> findByUsernameAndSlug(String username, String slug) {
-        return this.entityManager.createQuery("""
-                                              FROM Post
-                                              JOIN FETCH author
-                                              WHERE published = TRUE AND
-                                                    author.username = :username AND
-                                                    slug = :slug
-                                              """, Post.class)
-                                 .setParameter("username", username)
-                                 .setParameter("slug", slug)
-                                 .getResultStream()
-                                 .findFirst();
     }
 
     public List<Post> findDrafts() {
@@ -291,35 +247,21 @@ public class PostRepository {
     }
 
     public Page<Post> search(String term, PageQuery query) {
-        if (Objects.nonNull(term) && !term.isBlank()) {
-            return new Page<>(entityManager.createQuery("""
-                                                        FROM Post p
-                                                        WHERE p.published = true
-                                                        AND (LOWER(p.title) LIKE LOWER(:query)
-                                                             OR LOWER(p.description) LIKE LOWER(:query)
-                                                             OR LOWER(p.content) LIKE LOWER(:query))
-                                                        ORDER BY p.publishedAt DESC
-                                                        """, Post.class)
-                                           .setParameter("query", "%%%s%%".formatted(term))
-                                           .setMaxResults(query.maxResults())
-                                           .setFirstResult(query.skip())
-                                           .getResultList(),
-                              query.page(),
-                              query.limit(),
-                              countSearch(term));
-        } else {
-            return new Page<>(entityManager.createQuery("""
-                                                        FROM Post p
-                                                        WHERE p.published = true
-                                                        ORDER BY p.publishedAt DESC
-                                                        """, Post.class)
-                                           .setMaxResults(query.maxResults())
-                                           .setFirstResult(query.skip())
-                                           .getResultList(),
-                              query.page(),
-                              query.limit(),
-                              countSearch(term));
-        }
+        return new Page<>(entityManager.createQuery("""
+                                                    FROM Post p
+                                                    WHERE p.published = true
+                                                    AND (LOWER(p.title) LIKE LOWER(:query)
+                                                            OR LOWER(p.description) LIKE LOWER(:query)
+                                                            OR LOWER(p.content) LIKE LOWER(:query))
+                                                    ORDER BY p.publishedAt DESC
+                                                    """, Post.class)
+                                       .setParameter("query", "%%%s%%".formatted(term))
+                                       .setMaxResults(query.maxResults())
+                                       .setFirstResult(query.skip())
+                                       .getResultList(),
+                          query.page(),
+                          query.limit(),
+                          countSearch(term));
     }
 
     public boolean slugExists(Long blogId, String slug, Long excludeId) {
