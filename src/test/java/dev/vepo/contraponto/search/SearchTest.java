@@ -72,9 +72,9 @@ class SearchTest {
         // Create extra posts (already done in setup)
         app.searchPage()
            .search("pagination")
-           .assertResultCount(10) // first page should have up to 10 results
+           .assertResultCount(20) // first page should have up to 20 results
            .loadMore()
-           .assertResultCount(5); // second page should have the remaining 5
+           .assertResultCount(25); // second page should have the remaining 5
     }
 
     @Test
@@ -155,7 +155,7 @@ class SearchTest {
              .persist();
 
         // Create posts for pagination test (15 posts containing "pagination")
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 25; i++) {
             Given.post()
                  .withTitle("Pagination Post " + i)
                  .withContent("Content for pagination test.")

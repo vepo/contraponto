@@ -508,7 +508,11 @@ public class App {
         }
 
         public SearchPage assertResultCount(int expectedCount) {
-            wait.until(d -> driver.findElements(cssSelector(".search-result")).size() == expectedCount);
+            await().alias("Wait for %d results...".formatted(expectedCount))
+                   .until(() -> {
+                       var results = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".search-result")));
+                       return results.size() == expectedCount;
+                   });
             return this;
         }
 
