@@ -688,3 +688,19 @@
     color: #8b7a66;
     margin-left: auto;
 }
+
+.write-form__blog {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+.write-form__blog:disabled {
+    background: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
+}

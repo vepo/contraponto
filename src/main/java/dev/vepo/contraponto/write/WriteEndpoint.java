@@ -1,10 +1,13 @@
 package dev.vepo.contraponto.write;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
@@ -28,7 +31,11 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance write(Optional<Post> post, Links links, LoggedUser user);
+        public static native TemplateInstance write(Optional<Post> post,
+                                                    Links links,
+                                                    LoggedUser user,
+                                                    List<Blog> blogs,
+                                                    Long selectedBlogId);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -36,23 +43,40 @@ public class WriteEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public WriteEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public WriteEndpoint(PostRepository postRepository,
+                         CustomPageRepository customPageRepository,
+                         BlogRepository blogRepository,
+                         LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
+        this.blogRepository = blogRepository;
         this.loggedUser = loggedUser;
+    }
+
+    private Long findDefaultBlogId(List<Blog> blogs) {
+        return blogs.stream()
+                    .filter(Blog::isMain)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No main blog! userId=%d".formatted(loggedUser.getId())))
+                    .getId();
     }
 
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write() {
+        var blogs = blogRepository.findActiveBlogs(loggedUser.getId());
+        Long selectedBlogId = findDefaultBlogId(blogs);
         return Templates.write(Optional.empty(),
                                customPageRepository.loadLinks(),
-                               loggedUser);
+                               loggedUser,
+                               blogs,
+                               selectedBlogId);
     }
 
     @GET
@@ -66,6 +90,11 @@ public class WriteEndpoint {
         if (maybePost.isEmpty()) {
             throw new NotFoundException("Draft not found! id=%s".formatted(draftId));
         }
-        return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser);
+        var blogs = blogRepository.findActiveBlogs(loggedUser.getId());
+        Post post = maybePost.get();
+        Long selectedBlogId = post.getBlog().getId(); // editing, preserve blog
+        return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser,
+                               blogs,
+                               selectedBlogId);
     }
 }

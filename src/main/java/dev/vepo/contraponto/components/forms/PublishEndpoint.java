@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.image.ImageRepository;
@@ -37,13 +38,12 @@ public class PublishEndpoint {
     private static final String ERROR_MSG_TITLE_REQUIRED = "Title is required!";
     private static final String ERROR_MSG_INVALID_SLUG = "Slug can only contain lowercase letters, numbers, and hyphens";
     private static final String ERROR_MSG_SLUG_EXISTS = "Slug already exists!";
+    private static final String ERROR_MSG_BLOG_REQUIRED = "Blog selection is required!";
     private static final String SUCCESS_MSG_PUBLISHED = "Post published!";
     private static final int TOAST_DURATION_SHORT = 10_000;
-    private static final int TOAST_DURATION_LONG = 10_000; // Same as short, kept for clarity
+    private static final int TOAST_DURATION_LONG = 10_000;
 
-    // Slug validation pattern (lowercase letters, digits, hyphens)
     private static final Pattern INVALID_SLUG_CHARS = Pattern.compile("[^a-z0-9\\-]");
-    // Slug generation pattern (any letters/digits/hyphens replaced with hyphen)
     private static final Pattern SLUG_GENERATION_PATTERN = Pattern.compile("[^a-zA-Z0-9\\-]");
 
     private final PostRepository postRepository;
@@ -76,7 +76,17 @@ public class PublishEndpoint {
     }
 
     private Response buildSuccessResponse(Post post) {
-        String postUrl = "/%s/post/%s".formatted(post.getAuthor().getUsername(), post.getSlug());
+        Blog blog = post.getBlog();
+        String username = blog.getOwner().getUsername();
+        String slug = post.getSlug();
+
+        String postUrl;
+        if (blog.isMain()) {
+            postUrl = "/" + username + "/post/" + slug;
+        } else {
+            postUrl = "/" + username + "/" + blog.getSlug() + "/post/" + slug;
+        }
+
         return Toast.ok()
                     .message(SUCCESS_MSG_PUBLISHED)
                     .type(Toast.Type.SUCCESS)
@@ -92,10 +102,6 @@ public class PublishEndpoint {
         post.setDescription(request.description());
     }
 
-    /**
-     * Converts a title into a URL‑friendly slug. Anything not a letter, digit or
-     * hyphen is replaced with a hyphen.
-     */
     private String generateSlugFromTitle(String title) {
         return title.toLowerCase()
                     .replaceAll(SLUG_GENERATION_PATTERN.pattern(), "-");
@@ -103,8 +109,7 @@ public class PublishEndpoint {
 
     private void generateSlugIfMissing(Post post, SaveDraftRequest request) {
         if (isBlank(request.slug())) {
-            String generatedSlug = generateSlugFromTitle(request.title());
-            post.setSlug(generatedSlug);
+            post.setSlug(generateSlugFromTitle(request.title()));
         } else {
             post.setSlug(request.slug());
         }
@@ -142,11 +147,14 @@ public class PublishEndpoint {
             return validationError.get();
         }
 
-        var blog = blogRepository.findById(request.blogId())
-                                 .filter(b -> b.getOwner().getId() == loggedUser.getId()) // validating owner
-                                 .orElseThrow(() -> new NotFoundException("Blog not found!! blogId=%s".formatted(request.blogId())));
+        // Fetch and validate blog
+        Blog blog = blogRepository.findById(request.blogId())
+                                  .filter(b -> b.getOwner().getId()
+                                                .equals(loggedUser.getId()))
+                                  .orElseThrow(() -> new NotFoundException(
+                                                                           "Blog not found! blogId=" + request.blogId()));
 
-        var post = getOrCreatePost(request);
+        Post post = getOrCreatePost(request);
         post.setBlog(blog);
         setFormatIfProvided(post, request);
         updateCoverImage(post, request);
@@ -162,30 +170,29 @@ public class PublishEndpoint {
         if (!isBlank(request.format())) {
             post.setFormat(Format.valueOf(request.format().toUpperCase()));
         } else {
-            post.setFormat(Format.MARKDOWN); // sensible default
+            post.setFormat(Format.MARKDOWN);
         }
     }
 
-    private boolean slugAlreadyExistsForDifferentPost(SaveDraftRequest request) {
-        // If no slug provided, no conflict (slug will be generated later)
+    private boolean slugAlreadyExistsForDifferentPost(SaveDraftRequest request, Long blogId) {
         if (isBlank(request.slug())) {
             return false;
         }
-        return postRepository.findByUsernameAndSlug(loggedUser.getUsername(), request.slug())
-                             .filter(existingPost -> !existingPost.getId().equals(request.id()))
-                             .isPresent();
+        return postRepository.slugExists(blogId, request.slug(), request.id());
     }
 
     private void updateCoverImage(Post post, SaveDraftRequest request) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
             imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
         } else if (post.getCover() != null) {
-            // Explicitly remove cover if request has no coverId or empty coverId
             post.setCover(null);
         }
     }
 
     private Optional<Response> validateRequest(SaveDraftRequest request) {
+        if (request.blogId() == null) {
+            return Optional.of(buildErrorResponse(ERROR_MSG_BLOG_REQUIRED));
+        }
         if (isBlank(request.content())) {
             return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
         }
@@ -195,7 +202,7 @@ public class PublishEndpoint {
         if (hasInvalidSlugCharacters(request.slug())) {
             return Optional.of(buildErrorResponse(ERROR_MSG_INVALID_SLUG));
         }
-        if (slugAlreadyExistsForDifferentPost(request)) {
+        if (slugAlreadyExistsForDifferentPost(request, request.blogId())) {
             return Optional.of(buildErrorResponse(ERROR_MSG_SLUG_EXISTS));
         }
         return Optional.empty();

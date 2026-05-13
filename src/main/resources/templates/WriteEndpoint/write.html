@@ -23,6 +23,34 @@
                                    autocomplete="off"/>
                         </div>
 
+                        <!-- Blog selector (always sends blogId, even when disabled) -->
+                        <div class="write-form__group">
+                            <label for="blogSelect" class="write-form__label">Blog</label>
+                            
+                            <!-- Fallback hidden field when only one blog (select disabled) -->
+                            {#if blogs.size() <= 1}
+                                {#for blog in blogs}
+                                    <input type="hidden" name="blogId" value="{blog.id}" />
+                                {/for}
+                            {/if}
+                            
+                            <select name="blogId" id="blogSelect" class="write-form__blog"
+                                {#if blogs.size() <= 1}disabled{/if}>
+                                {#for blog in blogs}
+                                    <option value="{blog.id}"
+                                            {#if blog.id == selectedBlogId}selected{/if}>
+                                        {blog.name}
+                                        {#if blog.main}(default){/if}
+                                        {#if !blog.active}(inactive){/if}
+                                    </option>
+                                {/for}
+                            </select>
+                            
+                            {#if blogs.size() > 1}
+                                <div class="write-form__hint">Choose which blog to publish in.</div>
+                            {/if}
+                        </div>
+
                         <!-- Cover Image upload -->
                         <div class="write-form__group">
                             <label class="write-form__label">Cover image</label>

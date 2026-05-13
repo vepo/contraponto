@@ -35,7 +35,7 @@ public class PostRepository {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
                                          FROM Post p
-                                         WHERE p.author.id = :authorId
+                                         WHERE p.blog.owner.id = :authorId
                                          AND p.published = :published
                                          """, Long.class)
                             .setParameter("authorId", authorId)
@@ -322,20 +322,17 @@ public class PostRepository {
         }
     }
 
-    public boolean slugExists(String slug, Long excludeId) {
-        var query = entityManager.createQuery("""
-                                              SELECT COUNT(p)
-                                              FROM Post p
-                                              WHERE p.slug = :slug
-                                              AND (:excludeId IS NULL OR p.id != :excludeId)
-                                              """, Long.class);
-        query.setParameter("slug", slug);
-        query.setParameter("excludeId", excludeId);
-        return query.getSingleResult() > 0;
-    }
-
-    public Object toogleFeatured(Long postId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toogleFeatured'");
+    public boolean slugExists(Long blogId, String slug, Long excludeId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.slug = :slug AND
+                                               p.blog.id = :blogId AND
+                                               (:excludeId IS NULL OR p.id != :excludeId)
+                                         """, Long.class)
+                            .setParameter("slug", slug)
+                            .setParameter("excludeId", excludeId)
+                            .setParameter("blogId", blogId)
+                            .getSingleResult() > 0;
     }
 }
