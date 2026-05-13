@@ -1230,10 +1230,15 @@ hr:after {
 .drafts-page__empty {
   text-align: center;
   padding: 3rem 0;
+  display: none;               /* hidden by default */
 }
 
 .drafts-page__empty p {
   margin-bottom: 2rem;
+}
+
+.drafts-list:not(:has(article)) + .drafts-page__empty {
+  display: block;              /* show only when list is empty */
 }
 
 .btn--small {

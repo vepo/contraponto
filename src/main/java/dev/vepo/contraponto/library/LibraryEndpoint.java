@@ -12,11 +12,16 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Logged
 @Path("/library")
@@ -28,7 +33,7 @@ public class LibraryEndpoint {
 
         public static native TemplateInstance library(LoggedUser user, Links links);
 
-        public static native TemplateInstance postsList(List<Post> posts, String type);
+        public static native TemplateInstance tab(List<Post> posts, String type);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -46,24 +51,48 @@ public class LibraryEndpoint {
         this.loggedUser = loggedUser;
     }
 
-    // Main library page
+    @DELETE
+    @Path("components/posts/{postId}/delete")
+    @Transactional
+    public Response deletePost(@PathParam("postId") Long id) {
+        Post post = postRepository.findById(id)
+                                  .orElseThrow(() -> new NotFoundException("Post not found"));
+
+        // Check if the current user is the author
+        if (!post.getAuthor().getId().equals(loggedUser.getId())) {
+            return Response.status(Response.Status.FORBIDDEN)
+                           .entity("You are not allowed to delete this post")
+                           .build();
+        }
+
+        // Optionally, prevent deletion of published posts (only drafts)
+        if (post.isPublished()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("Published posts cannot be deleted. Unpublish first.")
+                           .build();
+        }
+
+        // Delete the post
+        postRepository.delete(id);
+
+        // Return no content – HTMX will remove the target element
+        return Response.ok().build();
+    }
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance library() {
         return Templates.library(loggedUser, customPageRepository.loadLinks());
     }
 
-    // Fragment endpoint for each tab – returns only the posts list
     @GET
-    @Path("/tab")
+    @Path("components/tab/{type}")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance postsTab(@QueryParam("type") String type) {
-        List<Post> posts;
-        if ("published".equalsIgnoreCase(type)) {
-            posts = postRepository.findByAuthorAndPublished(loggedUser.getId(), true);
-        } else { // drafts
-            posts = postRepository.findByAuthorAndPublished(loggedUser.getId(), false);
-        }
-        return Templates.postsList(posts, type);
+    public TemplateInstance tab(@PathParam("type") String type) {
+        return Templates.tab(switch (type) {
+            case "published" -> postRepository.findByAuthorAndPublished(loggedUser.getId(), true);
+            case "drafts" -> postRepository.findByAuthorAndPublished(loggedUser.getId(), false);
+            default -> throw new BadRequestException("Type not defined! type=%s".formatted(type));
+        }, type);
     }
 }
