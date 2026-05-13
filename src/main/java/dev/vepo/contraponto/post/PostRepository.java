@@ -273,7 +273,7 @@ public class PostRepository {
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
         return entityManager.createQuery("""
                                          FROM Post p
-                                         WHERE p.author.id = :authorId
+                                         WHERE p.blog.owner.id = :authorId
                                          AND p.published = :published
                                          ORDER BY p.updatedAt DESC
                                          """, Post.class)

@@ -155,6 +155,120 @@ public class App {
         }
     }
 
+    public class DashboardPage extends Page<DashboardPage> {
+        private DashboardPage() {}
+
+        public DashboardPage assertDraftsStatCount(int expected) {
+            var stat = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:first-child .stat-card__value")));
+            assertThat(stat.getText()).isEqualTo(Integer.toString(expected));
+            return this;
+        }
+
+        public DashboardPage assertEmptyDraftsMessage() {
+            var section = wait.until(visibilityOfElementLocated(cssSelector(".recent-section:first-child")));
+            var msg = section.findElement(cssSelector(".recent-section__empty"));
+            assertThat(msg.getText()).contains("No drafts yet");
+            return this;
+        }
+
+        public DashboardPage assertEmptyPublishedMessage() {
+            var section = wait.until(visibilityOfElementLocated(cssSelector(".recent-section:last-child")));
+            var msg = section.findElement(cssSelector(".recent-section__empty"));
+            assertThat(msg.getText()).contains("No published posts yet");
+            return this;
+        }
+
+        public DashboardPage assertPublishedStatCount(int expected) {
+            var stat = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:last-child .stat-card__value")));
+            assertThat(stat.getText()).isEqualTo(Integer.toString(expected));
+            return this;
+        }
+
+        public DashboardPage assertRecentDraftTitle(int index, String expectedTitle) {
+            var items = driver.findElements(cssSelector(".recent-section:first-child .recent-list__item"));
+            assertThat(items).hasSizeGreaterThan(index);
+            var title = items.get(index).findElement(cssSelector(".recent-list__title"));
+            assertThat(title.getText()).contains(expectedTitle);
+            return this;
+        }
+
+        public DashboardPage assertRecentDraftsCount(int expected) {
+            var items = driver.findElements(cssSelector(".recent-section:first-child .recent-list__item"));
+            assertThat(items).hasSize(expected);
+            return this;
+        }
+
+        public DashboardPage assertRecentPublishedCount(int expected) {
+            var items = driver.findElements(cssSelector(".recent-section:last-child .recent-list__item"));
+            assertThat(items).hasSize(expected);
+            return this;
+        }
+
+        public DashboardPage assertRecentPublishedTitle(int index, String expectedTitle) {
+            var items = driver.findElements(cssSelector(".recent-section:last-child .recent-list__item"));
+            assertThat(items).hasSizeGreaterThan(index);
+            var title = items.get(index).findElement(cssSelector(".recent-list__title"));
+            assertThat(title.getText()).contains(expectedTitle);
+            return this;
+        }
+
+        public DashboardPage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".dashboard-page__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public DashboardPage assertViewCountForRecentPublished(int index, int expectedViews) {
+            var items = driver.findElements(cssSelector(".recent-section:last-child .recent-list__item"));
+            assertThat(items).hasSizeGreaterThan(index);
+            var meta = items.get(index).findElement(cssSelector(".recent-list__meta"));
+            var viewsSpan = meta.findElements(cssSelector("span")).stream()
+                                .filter(span -> span.getText().contains("views"))
+                                .findFirst()
+                                .orElseThrow();
+            assertThat(viewsSpan.getText()).contains(expectedViews + " views");
+            return this;
+        }
+
+        public WritePage clickRecentDraft(int index) {
+            var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".recent-section:first-child .recent-list__item")));
+            assertThat(items).hasSizeGreaterThan(index);
+            items.get(index).findElement(cssSelector(".recent-list__title")).click();
+            waitForReady();
+            return new WritePage();
+        }
+
+        public PostPage clickRecentPublished(int index) {
+            var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".recent-section:last-child .recent-list__item")));
+            assertThat(items).hasSizeGreaterThan(index);
+            items.get(index).findElement(cssSelector(".recent-list__title")).click();
+            waitForReady();
+            return new PostPage();
+        }
+
+        public LibraryPage clickViewAllDrafts() {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:first-child .stat-card__link")));
+            link.click();
+            waitForReady();
+            // After click, we expect the library page with drafts tab active
+            return new LibraryPage();
+        }
+
+        public LibraryPage clickViewAllPublished() {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:last-child .stat-card__link")));
+            link.click();
+            waitForReady();
+            return new LibraryPage();
+        }
+
+        public WritePage clickWriteNewStory() {
+            var btn = wait.until(visibilityOfElementLocated(cssSelector(".dashboard-action .btn")));
+            btn.click();
+            waitForReady();
+            return new WritePage();
+        }
+    }
+
     public class Featured {
         private final WebElement elm;
 
@@ -210,7 +324,14 @@ public class App {
         private LibraryPage() {}
 
         public LibraryPage assertDraftNotPresent(String title) {
-            assertThat(driver.getPageSource()).doesNotContain(title);
+            var drafts = wait.until(visibilityOfAllElementsLocatedBy(By.cssSelector(".drafts-list .draft-card__title")));
+            assertThat(drafts).extracting(WebElement::getText)
+                              .doesNotContain(title);
+            return this;
+        }
+
+        public LibraryPage assertDraftPresent(String title) {
+            assertThat(driver.getPageSource()).contains(title);
             return this;
         }
 
@@ -253,6 +374,11 @@ public class App {
     public abstract class Page<T extends Page<T>> {
         private Page() {}
 
+        public App assertAccessButtonIsDisplayed() {
+            App.this.assertAccessButtonIsDisplayed();
+            return App.this;
+        }
+
         public App assertErrorPage(Status status) {
             wait.until(visibilityOfElementLocated(cssSelector(".error-page")));
             var errorCode = driver.findElement(cssSelector(".error-code"));
@@ -272,6 +398,11 @@ public class App {
 
         public T assertUrlContains(String urlFragment) {
             wait.until(urlContains(urlFragment));
+            return (T) this;
+        }
+
+        public T assertUrlEquals(String url) {
+            assertThat(driver.getCurrentUrl()).isEqualTo(rootUri + url);
             return (T) this;
         }
 
@@ -319,6 +450,11 @@ public class App {
             assertThat(elements).hasSize(1);
             var postFeaturedButton = elements.get(0);
             assertThat(postFeaturedButton.isDisplayed()).isTrue();
+            return this;
+        }
+
+        public PostPage assertPostTitle(String string) {
+            // TODO
             return this;
         }
 
@@ -958,6 +1094,11 @@ public class App {
         return new BlogPage();
     }
 
+    public DashboardPage dashboard() {
+        _goTo("/dashboard");
+        return new DashboardPage();
+    }
+
     public WritePage editDraft(Long draftId) {
         _goTo("/write/draft/" + draftId);
         return new WritePage();
@@ -1045,6 +1186,8 @@ public class App {
         input.clear();
         input.sendKeys(value);
     }
+
+    // Inside App class, after LibraryPage
 
     public App waitForReady() {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));

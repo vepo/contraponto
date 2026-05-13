@@ -82,6 +82,7 @@ public class ViewRepository {
         // Try to insert – if duplicate key, it will be ignored (thanks to unique
         // constraint)
         // Using native query to handle conflict gracefully.
+        logger.info("Creating view for post! userId={} post={}", userId, post);
         String sql = """
                      INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
                      VALUES (:postId, :userId, :sessionId, :viewedAt)

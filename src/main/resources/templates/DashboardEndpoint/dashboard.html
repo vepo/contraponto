@@ -33,7 +33,7 @@
 
                 <!-- Recent activity -->
                 <div class="dashboard-recent">
-                    <div class="recent-section">
+                    <div class="recent-section drafts">
                         <h2>Recent drafts</h2>
                         {#if recentDrafts.isEmpty()}
                         <p class="recent-section__empty">No drafts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first story</a>.</p>
@@ -55,7 +55,7 @@
                         {/if}
                     </div>
 
-                    <div class="recent-section">
+                    <div class="recent-section published">
                         <h2>Recent published</h2>
                         {#if recentPublished.isEmpty()}
                         <p class="recent-section__empty">No published posts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first post</a>.</p>
