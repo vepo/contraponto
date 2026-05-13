@@ -101,7 +101,7 @@ public class App {
         private BlogPage() {}
 
         public BlogPage assertBlogName(String userName) {
-            WebElement blogHeader = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__name")));
+            var blogHeader = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__name")));
             assertThat(blogHeader.getText()).isEqualToIgnoringCase(userName);
             return this;
         }
@@ -166,11 +166,11 @@ public class App {
         }
 
         public BlogPage accessAuthorBlog() {
-            WebElement authorLink = elm.findElement(cssSelector(".article-meta__author"));
+            var authorLink = elm.findElement(cssSelector(".article-meta__author"));
             // Actually the link's href or data-hx-get attribute contains the username
-            String hxGet = driver.findElement(RelativeLocator.with(By.cssSelector("[data-hx-get"))
-                                                             .near(authorLink))
-                                 .getAttribute("data-hx-get");
+            var hxGet = driver.findElement(RelativeLocator.with(By.cssSelector("[data-hx-get"))
+                                                          .near(authorLink))
+                              .getAttribute("data-hx-get");
             assertThat(hxGet).isNotNull();
             //
             authorLink.click();
@@ -185,7 +185,7 @@ public class App {
         }
 
         public Featured assertAuthorName(String authorName) {
-            WebElement authorLink = elm.findElement(cssSelector(".article-meta__author"));
+            var authorLink = elm.findElement(cssSelector(".article-meta__author"));
             assertThat(authorLink.getText()).isEqualTo(authorName);
             return this;
         }
@@ -388,6 +388,138 @@ public class App {
             var toggleBtn = wait.until(visibilityOfElementLocated(By.cssSelector("#post-row-%d .btn".formatted(post.getId()))));
             toggleBtn.click();
             waitForReady();
+            return this;
+        }
+    }
+
+    public class SearchModal {
+        private SearchModal() {}
+
+        public SearchModal assertAdvancedLinkExists() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
+            var link = modal.findElement(cssSelector(".search-modal__advanced"));
+            assertThat(link.isDisplayed()).isTrue();
+            return this;
+        }
+
+        public SearchModal assertEmptyState() {
+            var emptyMsg = wait.until(visibilityOfElementLocated(cssSelector(".search-empty")));
+            assertThat(emptyMsg.getText()).contains("No results found");
+            return this;
+        }
+
+        public SearchModal assertResultContains(String text) {
+            var modal = driver.findElement(By.id("searchModal"));
+            var results = modal.findElements(cssSelector(".search-result"));
+            assertThat(results.stream()
+                              .anyMatch(r -> r.getText()
+                                              .toLowerCase()
+                                              .contains(text.toLowerCase()))).isTrue();
+            return this;
+        }
+
+        public SearchModal assertResultsDisplayed() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
+            wait.until(d -> modal.findElements(cssSelector(".search-result")).size() > 0);
+            return this;
+        }
+
+        public SearchModal assertUrl(String url) {
+            App.this.assertUrl(url);
+            return this;
+        }
+
+        public SearchModal close() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
+            var closeBtn = modal.findElement(cssSelector(".modal__close"));
+            closeBtn.click();
+            wait.until(invisibilityOfElementLocated(By.id("searchModal")));
+            return this;
+        }
+
+        public SearchPage goToAdvanced() {
+            var modal = driver.findElement(By.id("searchModal"));
+            var link = modal.findElement(cssSelector(".search-modal__advanced"));
+            link.click();
+            waitForReady();
+            return new SearchPage();
+        }
+
+        public SearchModal type(String query) {
+            var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
+            var input = modal.findElement(cssSelector("input[name='q']"));
+            input.sendKeys(query);
+            return this;
+        }
+    }
+
+    public class SearchPage extends Page<SearchPage> {
+        private SearchPage() {}
+
+        public SearchPage assertEmptyState() {
+            wait.until(visibilityOfElementLocated(cssSelector(".search-empty")));
+            return this;
+        }
+
+        public SearchPage assertHeaderContainsCountAndQuery(String query) {
+            var header = wait.until(visibilityOfElementLocated(cssSelector(".search-results__header")));
+            assertThat(header.getText()).contains("Found").contains(query);
+            return this;
+        }
+
+        public SearchPage assertResultContains(String text) {
+            var results = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".search-result")));
+            assertThat(results.stream().anyMatch(r -> r.getText().toLowerCase().contains(text.toLowerCase()))).isTrue();
+            return this;
+        }
+
+        public SearchPage assertResultCount(int expectedCount) {
+            wait.until(d -> driver.findElements(cssSelector(".search-result")).size() == expectedCount);
+            return this;
+        }
+
+        public SearchPage assertResultHasAuthorAndDate() {
+            var meta = wait.until(visibilityOfElementLocated(cssSelector(".search-result__meta")));
+            var author = meta.findElement(cssSelector(".search-result__author"));
+            var date = meta.findElement(cssSelector(".search-result__date"));
+            assertThat(author.getText()).isNotBlank();
+            assertThat(date.getText()).isNotBlank();
+            return this;
+        }
+
+        public PostPage clickFirstResult() {
+            var firstResultLink = wait.until(visibilityOfElementLocated(cssSelector(".search-result__title a")));
+            firstResultLink.click();
+            waitForReady();
+            return new PostPage();
+        }
+
+        public SearchPage loadMore() {
+            var nextBtn = wait.until(elementToBeClickable(By.xpath("//button[contains(text(), 'Next')]")));
+            nextBtn.click();
+            waitForReady();
+            return this;
+        }
+
+        public SearchPage search(String query) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='q']")));
+            input.sendKeys(query);
+            var submitBtn = driver.findElement(cssSelector(".search-form__button"));
+            submitBtn.click();
+            waitForReady();
+            return this;
+        }
+
+        public SearchPage submit() {
+            var submitBtn = driver.findElement(cssSelector(".search-form__button"));
+            submitBtn.click();
+            waitForReady();
+            return this;
+        }
+
+        public SearchPage type(String query) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='q']")));
+            input.sendKeys(query);
             return this;
         }
     }
@@ -653,6 +785,16 @@ public class App {
     public ProfilePage profile() {
         _goTo("/profile");
         return new ProfilePage();
+    }
+
+    public SearchModal searchModal() {
+        wait.until(visibilityOfElementLocated(cssSelector("#searchBtn"))).click();
+        return new SearchModal();
+    }
+
+    public SearchPage searchPage() {
+        _goTo("/search");
+        return new SearchPage();
     }
 
     private void useFieldValue(String cssSelector, String value) {
