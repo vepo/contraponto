@@ -110,10 +110,6 @@ public class BlogRepository {
                             .findFirst();
     }
 
-    public Blog newSecondaryBlog(dev.vepo.contraponto.user.User owner) {
-        return new Blog(owner, "new-blog", "New Blog", "");
-    }
-
     @Transactional
     public Blog save(Blog blog) {
         if (blog.getId() == null) {

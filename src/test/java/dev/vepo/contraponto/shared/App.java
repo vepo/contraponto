@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.locators.RelativeLocator;
@@ -100,6 +101,162 @@ public class App {
         }
     }
 
+    public class BlogManagePage extends Page<BlogManagePage> {
+        private BlogManagePage() {}
+
+        public BlogManagePage assertBlogCount(int expected) {
+            var rows = driver.findElements(cssSelector(".pages-manage__row"));
+            assertThat(rows).hasSize(expected);
+            return this;
+        }
+
+        public BlogManagePage assertBlogListed(String title, String publicUrl) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            assertThat(rows).anySatisfy(rowElm -> {
+                assertThat(rowElm.findElement(cssSelector(".pages-manage__row-title")).getText()).isEqualTo(title);
+                assertThat(rowElm.findElement(cssSelector(".pages-manage__row-url")).getAttribute("href")).endsWith(publicUrl);
+            });
+            return this;
+        }
+
+        public BlogManagePage assertDeactivateButtonNotPresent() {
+            assertThat(driver.findElements(cssSelector(".pages-form__actions .btn--danger"))).isEmpty();
+            return this;
+        }
+
+        public BlogManagePage assertDeactivateNotAvailableOnList(String title) {
+            var row = findRowByTitle(title);
+            assertThat(row.findElements(cssSelector(".btn--danger"))).isEmpty();
+            return this;
+        }
+
+        public BlogManagePage assertFieldError(String... errorMessages) {
+            var errors = driver.findElements(cssSelector(".form-group .error-message.visible"));
+            assertThat(errors).hasSize(errorMessages.length)
+                              .allMatch(WebElement::isDisplayed)
+                              .extracting(WebElement::getText)
+                              .containsExactlyInAnyOrder(errorMessages);
+            return this;
+        }
+
+        public BlogManagePage assertManagePageNotLoaded() {
+            assertThat(driver.findElements(cssSelector(".pages-manage__title"))).isEmpty();
+            return this;
+        }
+
+        public BlogManagePage assertNameEmpty() {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
+            assertThat(input.getAttribute("value")).isBlank();
+            return this;
+        }
+
+        public BlogManagePage assertSlugEmpty() {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#blogSlug")));
+            assertThat(input.getAttribute("value")).isBlank();
+            return this;
+        }
+
+        public BlogManagePage assertSubmitDisabled() {
+            var btn = wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']")));
+            await().until(() -> !btn.isEnabled());
+            return this;
+        }
+
+        public BlogManagePage assertSubmitEnabled() {
+            var btn = wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']")));
+            await().until(btn::isEnabled);
+            return this;
+        }
+
+        public BlogManagePage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public BlogManagePage assertToastSuccess(String message) {
+            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+            assertThat(toast.getText()).contains(message);
+            return this;
+        }
+
+        public BlogManagePage clearSlug() {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#blogSlug")));
+            input.clear();
+            input.sendKeys(" ");
+            input.sendKeys(Keys.BACK_SPACE);
+            return this;
+        }
+
+        public BlogManagePage clickDeactivate(String title) {
+            var row = findRowByTitle(title);
+            row.findElement(cssSelector(".btn--danger")).click();
+            wait.until(d -> {
+                try {
+                    driver.switchTo().alert().accept();
+                    return true;
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            waitForReady();
+            return this;
+        }
+
+        public BlogManagePage clickEdit(String title) {
+            var row = findRowByTitle(title);
+            row.findElement(By.linkText("Edit")).click();
+            wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
+            return this;
+        }
+
+        public BlogManagePage clickNewBlog() {
+            wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/blogs/new']"))).click();
+            waitForReady();
+            return this;
+        }
+
+        public BlogManagePage fillDescription(String description) {
+            var textarea = wait.until(visibilityOfElementLocated(cssSelector("#blogDescription")));
+            textarea.clear();
+            textarea.sendKeys(description);
+            return this;
+        }
+
+        public BlogManagePage fillName(String name) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
+            input.clear();
+            input.sendKeys(name);
+            return this;
+        }
+
+        public BlogManagePage fillSlug(String slug) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#blogSlug")));
+            input.clear();
+            input.sendKeys(slug);
+            return this;
+        }
+
+        private WebElement findRowByTitle(String title) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            return rows.stream()
+                       .filter(row -> row.findElement(cssSelector(".pages-manage__row-title")).getText().equals(title))
+                       .findFirst()
+                       .orElseThrow();
+        }
+
+        public BlogPage openPublicBlog(String publicPath) {
+            _goTo(publicPath);
+            return new BlogPage();
+        }
+
+        public BlogManagePage submit() {
+            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            waitForReady();
+            return this;
+        }
+    }
+
     public class BlogPage extends Page<BlogPage> {
         private BlogPage() {}
 
@@ -151,6 +308,123 @@ public class App {
 
         public BlogPage loadMore() {
             _loadMore();
+            return this;
+        }
+    }
+
+    public class CustomPageManagePage extends Page<CustomPageManagePage> {
+        private CustomPageManagePage() {}
+
+        public CustomPageManagePage assertManagePageNotLoaded() {
+            assertThat(driver.findElements(cssSelector(".pages-manage__title"))).isEmpty();
+            return this;
+        }
+
+        public CustomPageManagePage assertPageCount(int expected) {
+            var rows = driver.findElements(cssSelector(".pages-manage__row"));
+            assertThat(rows).hasSize(expected);
+            return this;
+        }
+
+        public CustomPageManagePage assertPageListed(String title, String publicUrl) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            assertThat(rows).anySatisfy(rowElm -> {
+                assertThat(rowElm.findElement(cssSelector(".pages-manage__row-title")).getText()).isEqualTo(title);
+                assertThat(rowElm.findElement(cssSelector(".pages-manage__row-url")).getAttribute("href")).endsWith(publicUrl);
+            });
+            return this;
+        }
+
+        public CustomPageManagePage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public CustomPageManagePage assertToastSuccess(String message) {
+            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+            assertThat(toast.getText()).contains(message);
+            return this;
+        }
+
+        public CustomPageManagePage clickDelete(String title) {
+            var row = findRowByTitle(title);
+            row.findElement(cssSelector(".btn--danger")).click();
+            wait.until(d -> {
+                try {
+                    driver.switchTo().alert().accept();
+                    return true;
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            waitForReady();
+            return this;
+        }
+
+        public CustomPageManagePage clickEdit(String title) {
+            var row = findRowByTitle(title);
+            row.findElement(By.linkText("Edit")).click();
+            wait.until(visibilityOfElementLocated(cssSelector("input[name='title']")));
+            return this;
+        }
+
+        public CustomPageManagePage clickNewPage() {
+            wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/pages/new']"))).click();
+            waitForReady();
+            return this;
+        }
+
+        public CustomPageManagePage fillContent(String content) {
+            var textarea = wait.until(visibilityOfElementLocated(cssSelector("textarea[name='content']")));
+            textarea.clear();
+            textarea.sendKeys(content);
+            return this;
+        }
+
+        public CustomPageManagePage fillSection(String section) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='section']")));
+            input.clear();
+            input.sendKeys(section);
+            return this;
+        }
+
+        public CustomPageManagePage fillSlug(String slug) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='slug']")));
+            input.clear();
+            input.sendKeys(slug);
+            return this;
+        }
+
+        public CustomPageManagePage fillTitle(String title) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='title']")));
+            input.clear();
+            input.sendKeys(title);
+            return this;
+        }
+
+        private WebElement findRowByTitle(String title) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            return rows.stream()
+                       .filter(row -> row.findElement(cssSelector(".pages-manage__row-title")).getText().equals(title))
+                       .findFirst()
+                       .orElseThrow();
+        }
+
+        public App openPublicPage(String publicPath) {
+            _goTo(publicPath);
+            return App.this;
+        }
+
+        public CustomPageManagePage selectApplicationScope() {
+            var select = wait.until(visibilityOfElementLocated(cssSelector("#pageScope")));
+            new org.openqa.selenium.support.ui.Select(select).selectByValue("application");
+            return this;
+        }
+
+        public CustomPageManagePage submit() {
+            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            waitForReady();
             return this;
         }
     }
@@ -393,6 +667,11 @@ public class App {
 
         public T assertPageTitleContains(String... titles) {
             assertThat(driver.getTitle()).contains(titles);
+            return (T) this;
+        }
+
+        public T assertUrl(String url) {
+            App.this.assertUrl(url);
             return (T) this;
         }
 
@@ -1084,6 +1363,11 @@ public class App {
         return this;
     }
 
+    public BlogManagePage blogs() {
+        _goTo("/blogs");
+        return new BlogManagePage();
+    }
+
     public App click(PagePlacement placement, String link) {
         _click(placement, link);
         return this;
@@ -1092,6 +1376,11 @@ public class App {
     public BlogPage clickFirstPostTitle() {
         _clickFirstPostTitle();
         return new BlogPage();
+    }
+
+    public CustomPageManagePage customPages() {
+        _goTo("/pages");
+        return new CustomPageManagePage();
     }
 
     public DashboardPage dashboard() {
@@ -1164,6 +1453,16 @@ public class App {
     public App logout() {
         _logout();
         return this;
+    }
+
+    public BlogManagePage newBlog() {
+        _goTo("/blogs/new");
+        return new BlogManagePage();
+    }
+
+    public CustomPageManagePage newCustomPage() {
+        _goTo("/pages/new");
+        return new CustomPageManagePage();
     }
 
     public ProfilePage profile() {

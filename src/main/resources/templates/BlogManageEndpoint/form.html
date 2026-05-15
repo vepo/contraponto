@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     {#include components/head}
-    {#if blog.id}
+    {#if blog.isPresent}
     Edit Blog - contraponto
     {#else}
     New Blog - contraponto
@@ -14,13 +14,15 @@
                 <div class="pages-manage__header">
                     <div>
                         <h1 class="pages-manage__title">
-                            {#if blog.id}Edit Blog{#else}New Blog{/if}
+                            {#if blog.isPresent}Edit Blog{#else}New Blog{/if}
                         </h1>
                         <p class="pages-manage__subtitle">
-                            {#if blog.main}
+                            {#if blog.isPresent && blog.get().main}
                             This is your default blog. Its URL is always your username.
+                            {#else if blog.isPresent}
+                            Secondary blog at <code>/{blog.get().owner.username}/{blog.get().slug}</code>.
                             {#else}
-                            Secondary blogs appear at <code>/{blog.owner.username}/{blog.slug}</code>.
+                            Create a secondary blog at <code>/{username}/<em>your-slug</em></code>.
                             {/if}
                         </p>
                     </div>
@@ -48,30 +50,42 @@
                       hx-target="main"
                       hx-swap="outerHTML"
                       autocomplete="off">
-                    {#if blog.id}
-                    <input type="hidden" name="id" value="{blog.id}">
+                    {#if blog.isPresent}
+                    <input type="hidden" name="id" value="{blog.get().id}">
                     {/if}
 
                     <div class="form-group">
-                        <label>Name</label>
-                        <input type="text" name="name" value="{blog.name}" required min-size="1" max-size="255">
+                        <label for="blogName">Name</label>
+                        <input type="text"
+                               id="blogName"
+                               name="name"
+                               placeholder="Blog name..."
+                               value="{#if blog.isPresent}{blog.get().name}{/if}"
+                               required
+                               min-size="1"
+                               max-size="255"
+                               autocomplete="off"/>
                         <div class="error-message required">Name is required.</div>
                         <div class="error-message min-value">Name is required.</div>
                         <div class="error-message max-value">Name must be no more than 255 characters.</div>
                     </div>
 
-                    {#if !blog.main}
+                    {#if blog.isEmpty || !blog.get().main}
                     <div class="form-group">
-                        <label>Slug</label>
+                        <label for="blogSlug">Slug</label>
                         <div class="pages-form__slug-hint">
-                            URL path: <code>/{blog.owner.username}/<em>your-slug</em></code>
+                            URL path: <code>/{username}/<em>your-slug</em></code>
                         </div>
-                        <input type="text" name="slug"
-                               value="{blog.slug}"
+                        <input type="text"
+                               id="blogSlug"
+                               name="slug"
+                               placeholder="url-friendly-identifier"
+                               value="{#if blog.isPresent}{blog.get().slug}{/if}"
                                pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*"
                                required
                                min-size="1"
-                               max-size="64">
+                               max-size="64"
+                               autocomplete="off"/>
                         <div class="error-message required">Slug is required.</div>
                         <div class="error-message min-value">Slug is required.</div>
                         <div class="error-message max-value">Slug must be no more than 64 characters.</div>
@@ -80,29 +94,34 @@
 
                     <div class="form-group form-group--checkbox">
                         <label>
-                            <input type="checkbox" name="active" {#if blog.active}checked{/if}>
+                            <input type="checkbox"
+                                   name="active"
+                                   {#if blog.isEmpty}checked{#else if blog.get().active}checked{/if}>
                             Active
                         </label>
                     </div>
                     {#else}
                     <div class="form-group">
                         <label>Slug</label>
-                        <input type="text" value="{blog.slug}" disabled>
-                        <input type="hidden" name="slug" value="{blog.slug}">
+                        <input type="text" value="{blog.get().slug}" disabled>
+                        <input type="hidden" name="slug" value="{blog.get().slug}">
                     </div>
                     {/if}
 
                     <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" rows="4">{blog.description}</textarea>
+                        <label for="blogDescription">Description</label>
+                        <textarea id="blogDescription"
+                                  name="description"
+                                  rows="4"
+                                  placeholder="A short description (optional)">{#if blog.isPresent}{blog.get().description}{/if}</textarea>
                     </div>
 
                     <div class="pages-form__actions">
                         <button type="submit" class="btn btn--primary" disabled>Save Blog</button>
-                        {#if canDelete && blog.active}
+                        {#if canDelete && blog.isPresent && blog.get().active}
                         <button type="button"
                                 class="btn btn--danger"
-                                hx-delete="/forms/blogs/{blog.id}"
+                                hx-delete="/forms/blogs/{blog.get().id}"
                                 hx-select="main"
                                 hx-target="main"
                                 hx-swap="outerHTML"

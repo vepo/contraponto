@@ -40,6 +40,7 @@
 
                 <form class="pages-form profile-form"
                       hx-post="/forms/pages"
+                      hx-select="main"
                       hx-target="main"
                       hx-swap="outerHTML"
                       autocomplete="off">
@@ -129,6 +130,7 @@
                         <button type="button"
                                 class="btn btn--danger"
                                 hx-delete="/forms/pages/{page.id}"
+                                hx-select="main"
                                 hx-target="main"
                                 hx-swap="outerHTML"
                                 hx-confirm="Delete this page?">

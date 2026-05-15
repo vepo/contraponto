@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.blog;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
@@ -9,7 +10,6 @@ import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
-import dev.vepo.contraponto.user.UserRepository;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -29,7 +29,8 @@ public class BlogManageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance form(Blog blog,
+        static native TemplateInstance form(Optional<Blog> blog,
+                                            String username,
                                             String publicUrl,
                                             boolean editorView,
                                             boolean canDelete,
@@ -45,19 +46,16 @@ public class BlogManageEndpoint {
 
     private final BlogRepository blogRepository;
     private final BlogAccess blogAccess;
-    private final UserRepository userRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
 
     @Inject
     public BlogManageEndpoint(BlogRepository blogRepository,
                               BlogAccess blogAccess,
-                              UserRepository userRepository,
                               CustomPageRepository customPageRepository,
                               LoggedUser loggedUser) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
-        this.userRepository = userRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
     }
@@ -76,7 +74,8 @@ public class BlogManageEndpoint {
             return forbidden();
         }
 
-        return Response.ok(Templates.form(blog,
+        return Response.ok(Templates.form(Optional.of(blog),
+                                          blog.getOwner().getUsername(),
                                           BlogEndpoint.extractUrl(blog),
                                           blogAccess.canListAll(loggedUser),
                                           blogAccess.canDelete(blog, loggedUser),
@@ -119,10 +118,8 @@ public class BlogManageEndpoint {
             return forbidden();
         }
 
-        var owner = userRepository.findById(loggedUser.getId()).orElseThrow(NotFoundException::new);
-        var blog = blogRepository.newSecondaryBlog(owner);
-
-        return Response.ok(Templates.form(blog,
+        return Response.ok(Templates.form(Optional.empty(),
+                                          loggedUser.getUsername(),
                                           "",
                                           blogAccess.canListAll(loggedUser),
                                           false,
