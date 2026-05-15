@@ -52,14 +52,19 @@ public class BlogEndpoint {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
-
+    private final BlogRepository blogRepository;
     private final LoggedUser loggedUser;
 
     @Inject
-    public BlogEndpoint(UserRepository userRepository, PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public BlogEndpoint(UserRepository userRepository,
+                        PostRepository postRepository,
+                        CustomPageRepository customPageRepository,
+                        BlogRepository blogRepository,
+                        LoggedUser loggedUser) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
+        this.blogRepository = blogRepository;
         this.loggedUser = loggedUser;
     }
 
@@ -69,9 +74,10 @@ public class BlogEndpoint {
         // Check if user exists
         var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
 
+        var mainBlog = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
         return Templates.home(user,
                               postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, 1)),
-                              customPageRepository.loadLinks(user.getDefaultBlog().getId()),
+                              customPageRepository.loadLinks(mainBlog.getId()),
                               loggedUser);
     }
 

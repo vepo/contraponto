@@ -95,6 +95,20 @@ class FormsManager {
                     }
                 }
 
+                if (input.hasAttribute('pattern')) {
+                    const value = input.value;
+                    if (value && value.length > 0) {
+                        const pattern = new RegExp('^(?:' + input.getAttribute('pattern') + ')$');
+                        if (!pattern.test(value)) {
+                            if (input.pristine != undefined && !input.pristine) {
+                                const errorMessage = input.closest('.form-group')?.querySelector('.error-message.pattern');
+                                if (errorMessage) errorMessage.classList.add('visible');
+                            }
+                            isValid = false;
+                        }
+                    }
+                }
+
                 if (input.hasAttribute('min-size') || input.hasAttribute('max-size')) {
                     const value = input.value;
                     if (value && value.length > 0) { // value.length == 0 is validated on required

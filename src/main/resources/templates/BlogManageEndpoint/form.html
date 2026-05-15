@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {#if blog.id}
+    Edit Blog - contraponto
+    {#else}
+    New Blog - contraponto
+    {/if}
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">
+                            {#if blog.id}Edit Blog{#else}New Blog{/if}
+                        </h1>
+                        <p class="pages-manage__subtitle">
+                            {#if blog.main}
+                            This is your default blog. Its URL is always your username.
+                            {#else}
+                            Secondary blogs appear at <code>/{blog.owner.username}/{blog.slug}</code>.
+                            {/if}
+                        </p>
+                    </div>
+                    <a data-hx-get="/blogs"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/blogs"
+                       class="btn btn--secondary"
+                       data-nav>
+                        Back to list
+                    </a>
+                </div>
+
+                {#if publicUrl}
+                <p class="pages-manage__preview">
+                    Public URL:
+                    <a href="{publicUrl}" target="_blank" rel="noopener">{publicUrl}</a>
+                </p>
+                {/if}
+
+                <form class="profile-form pages-form"
+                      hx-post="/forms/blogs"
+                      hx-select="main"
+                      hx-target="main"
+                      hx-swap="outerHTML"
+                      autocomplete="off">
+                    {#if blog.id}
+                    <input type="hidden" name="id" value="{blog.id}">
+                    {/if}
+
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="name" value="{blog.name}" required min-size="1" max-size="255">
+                        <div class="error-message required">Name is required.</div>
+                        <div class="error-message min-value">Name is required.</div>
+                        <div class="error-message max-value">Name must be no more than 255 characters.</div>
+                    </div>
+
+                    {#if !blog.main}
+                    <div class="form-group">
+                        <label>Slug</label>
+                        <div class="pages-form__slug-hint">
+                            URL path: <code>/{blog.owner.username}/<em>your-slug</em></code>
+                        </div>
+                        <input type="text" name="slug"
+                               value="{blog.slug}"
+                               pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*"
+                               required
+                               min-size="1"
+                               max-size="64">
+                        <div class="error-message required">Slug is required.</div>
+                        <div class="error-message min-value">Slug is required.</div>
+                        <div class="error-message max-value">Slug must be no more than 64 characters.</div>
+                        <div class="error-message pattern">Use only letters, numbers, hyphens and underscores.</div>
+                    </div>
+
+                    <div class="form-group form-group--checkbox">
+                        <label>
+                            <input type="checkbox" name="active" {#if blog.active}checked{/if}>
+                            Active
+                        </label>
+                    </div>
+                    {#else}
+                    <div class="form-group">
+                        <label>Slug</label>
+                        <input type="text" value="{blog.slug}" disabled>
+                        <input type="hidden" name="slug" value="{blog.slug}">
+                    </div>
+                    {/if}
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="4">{blog.description}</textarea>
+                    </div>
+
+                    <div class="pages-form__actions">
+                        <button type="submit" class="btn btn--primary" disabled>Save Blog</button>
+                        {#if canDelete && blog.active}
+                        <button type="button"
+                                class="btn btn--danger"
+                                hx-delete="/forms/blogs/{blog.id}"
+                                hx-select="main"
+                                hx-target="main"
+                                hx-swap="outerHTML"
+                                hx-confirm="Deactivate this blog?">
+                            Deactivate
+                        </button>
+                        {/if}
+                    </div>
+                </form>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

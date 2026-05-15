@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    My Blogs - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">My Blogs</h1>
+                        <p class="pages-manage__subtitle">
+                            {#if editorView}
+                            Manage all blogs on the platform. Every user keeps a default blog at their profile URL.
+                            {#else}
+                            Your default blog lives at your profile URL. Create secondary blogs for separate topics.
+                            {/if}
+                        </p>
+                    </div>
+                    <a data-hx-get="/blogs/new"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/blogs/new"
+                       class="btn btn--primary"
+                       data-nav>
+                        New Blog
+                    </a>
+                </div>
+
+                {#if blogs.isEmpty}
+                <div class="pages-manage__empty">
+                    <p>No blogs found.</p>
+                </div>
+                {#else}
+                <div class="pages-manage__list">
+                    {#for row in blogs}
+                    <article class="pages-manage__row" id="blog-row-{row.id}">
+                        <div class="pages-manage__row-main">
+                            <h2 class="pages-manage__row-title">{row.name}</h2>
+                            <div class="pages-manage__row-meta">
+                                {#if editorView}
+                                <span class="pages-manage__badge">{row.owner}</span>
+                                {/if}
+                                {#if row.main}
+                                <span class="pages-manage__badge pages-manage__badge--published">Default</span>
+                                {#else}
+                                <span class="pages-manage__badge">{row.slug}</span>
+                                {/if}
+                                {#if row.active}
+                                <span class="pages-manage__badge pages-manage__badge--published">Active</span>
+                                {#else}
+                                <span class="pages-manage__badge pages-manage__badge--draft">Inactive</span>
+                                {/if}
+                            </div>
+                            {#if row.description}
+                            <p class="pages-manage__row-description">{row.description}</p>
+                            {/if}
+                            <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
+                        </div>
+                        <div class="pages-manage__row-actions">
+                            <a data-hx-get="/blogs/{row.id}/edit"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-swap="outerHTML"
+                               hx-push-url="/blogs/{row.id}/edit"
+                               class="btn btn--secondary btn--small"
+                               data-nav>
+                                Edit
+                            </a>
+                            {#if !row.main && row.active}
+                            <button type="button"
+                                    class="btn btn--small btn--danger"
+                                    hx-delete="/forms/blogs/{row.id}"
+                                    hx-select="main"
+                                    hx-target="main"
+                                    hx-swap="outerHTML"
+                                    hx-confirm="Deactivate this blog? Posts will remain but the blog URL will stop working.">
+                                Deactivate
+                            </button>
+                            {/if}
+                        </div>
+                    </article>
+                    {/for}
+                </div>
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

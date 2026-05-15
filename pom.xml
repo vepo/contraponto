@@ -12,7 +12,7 @@
         <selenium.version>4.39.0</selenium.version>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.platform.version>3.30.5</quarkus.platform.version>
         <sonar.organization>vepo-github</sonar.organization>

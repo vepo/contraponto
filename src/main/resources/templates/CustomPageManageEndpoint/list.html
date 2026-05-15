@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Custom Pages - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">Custom Pages</h1>
+                        <p class="pages-manage__subtitle">
+                            {#if editorView}
+                            Manage application and blog pages. Content is stored as HTML.
+                            {#else}
+                            Create and edit pages for your blogs. Content is stored as HTML.
+                            {/if}
+                        </p>
+                    </div>
+                    <a data-hx-get="/pages/new"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/pages/new"
+                       class="btn btn--primary"
+                       data-nav>
+                        New Page
+                    </a>
+                </div>
+
+                {#if pages.isEmpty}
+                <div class="pages-manage__empty">
+                    <p>No custom pages yet.</p>
+                    <a data-hx-get="/pages/new"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/pages/new"
+                       class="btn btn--secondary"
+                       data-nav>
+                        Create your first page
+                    </a>
+                </div>
+                {#else}
+                <div class="pages-manage__list">
+                    {#for row in pages}
+                    <article class="pages-manage__row" id="page-row-{row.id}">
+                        <div class="pages-manage__row-main">
+                            <h2 class="pages-manage__row-title">{row.title}</h2>
+                            <div class="pages-manage__row-meta">
+                                <span class="pages-manage__badge">{row.scope}</span>
+                                {#if row.section}
+                                <span>{row.section}</span>
+                                {/if}
+                                <span>{row.placement}</span>
+                                {#if row.published}
+                                <span class="pages-manage__badge pages-manage__badge--published">Published</span>
+                                {#else}
+                                <span class="pages-manage__badge pages-manage__badge--draft">Draft</span>
+                                {/if}
+                            </div>
+                            <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
+                        </div>
+                        <div class="pages-manage__row-actions">
+                            <a data-hx-get="/pages/{row.id}/edit"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-swap="outerHTML"
+                               hx-push-url="/pages/{row.id}/edit"
+                               class="btn btn--secondary btn--small"
+                               data-nav>
+                                Edit
+                            </a>
+                            <button type="button"
+                                    class="btn btn--small btn--danger"
+                                    hx-delete="/forms/pages/{row.id}"
+                                    hx-target="main"
+                                    hx-swap="outerHTML"
+                                    hx-confirm="Delete this page?">
+                                Delete
+                            </button>
+                        </div>
+                    </article>
+                    {/for}
+                </div>
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

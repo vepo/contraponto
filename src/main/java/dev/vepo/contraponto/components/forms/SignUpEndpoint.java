@@ -1,6 +1,8 @@
 package dev.vepo.contraponto.components.forms;
 
 import dev.vepo.contraponto.auth.PasswordService;
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.Role;
@@ -34,14 +36,17 @@ public class SignUpEndpoint {
                                                      """;
 
     private final UserRepository userRepository;
+    private final BlogRepository blogRepository;
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
 
     @Inject
     public SignUpEndpoint(UserRepository userRepository,
+                          BlogRepository blogRepository,
                           LoggedUserProvider loggedUserProvider,
                           PasswordService passwordService) {
         this.userRepository = userRepository;
+        this.blogRepository = blogRepository;
         this.loggedUserProvider = loggedUserProvider;
         this.passwordService = passwordService;
     }
@@ -123,6 +128,7 @@ public class SignUpEndpoint {
         newUser.setActive(true);
 
         userRepository.save(newUser);
+        blogRepository.save(new Blog(newUser));
 
         // Auto-login
         var loggedUser = loggedUserProvider.login(newUser);

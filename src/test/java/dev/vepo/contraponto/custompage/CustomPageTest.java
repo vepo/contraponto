@@ -16,20 +16,20 @@ class CustomPageTest {
     @Test
     void accessGlobalPage(App app) {
         app.access()
-           .assertLinks(PagePlacement.FOOTER, "/page-1")
-           .click(PagePlacement.FOOTER, "/page-1")
-           .assertUrl("/page-1")
-           .assertLinks(PagePlacement.FOOTER, "/page-1");
+           .assertLinks(PagePlacement.FOOTER, "/page/page-1")
+           .click(PagePlacement.FOOTER, "/page/page-1")
+           .assertUrl("/page/page-1")
+           .assertLinks(PagePlacement.FOOTER, "/page/page-1");
     }
 
     @Test
     void accessUsersPage(App app) {
         app.access()
            .goTo(regularUser.getDefaultBlog())
-           .assertLinks(PagePlacement.FOOTER, "/page-2", "/page-1")
-           .click(PagePlacement.FOOTER, "/page-1")
-           .assertUrl("/page-1")
-           .assertLinks(PagePlacement.FOOTER, "/page-2", "/page-1");
+           .assertLinks(PagePlacement.FOOTER, "/regular-user/page/page-2", "/page/page-1")
+           .click(PagePlacement.FOOTER, "/page/page-1")
+           .assertUrl("/page/page-1")
+           .assertLinks(PagePlacement.FOOTER, "/regular-user/page/page-2", "/page/page-1");
     }
 
     @BeforeEach

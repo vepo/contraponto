@@ -12,11 +12,12 @@
             <div class="user-menu__name">{user.name.escapeHtml}</div>
             <div class="user-menu__email">{user.email.escapeHtml}</div>
         </div>
+
         <a data-hx-get="/{user.username}"
            hx-select="main"
            hx-target="main"
            hx-push-url="/{user.username}"
-           class="user-menu__item"
+           class="user-menu__item user-menu__item--primary"
            data-nav>
             <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
                 <path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="currentColor" stroke-width="1.5"/>
@@ -24,19 +25,9 @@
             </svg>
             My Blog
         </a>
-        <div class="user-menu__items">
-            <a data-hx-get="/profile"
-               hx-select="main"
-               hx-target="main"
-               hx-swap="outerHTML"
-               hx-push-url="/profile"
-               class="user-menu__item"
-               data-nav>
-                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                    <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21M16 7C16 9.2 14.2 11 12 11C9.8 11 8 9.2 8 7C8 4.8 9.8 3 12 3C14.2 3 16 4.8 16 7Z" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-                Profile
-            </a>
+
+        <div class="user-menu__section">
+            <div class="user-menu__section-label">Writing</div>
             <a data-hx-get="/write"
                hx-select="main"
                hx-target="main"
@@ -60,6 +51,10 @@
                 </svg>
                 Library
             </a>
+        </div>
+
+        <div class="user-menu__section">
+            <div class="user-menu__section-label">Manage</div>
             <a data-hx-get="/dashboard"
                hx-select="main"
                hx-target="main"
@@ -71,7 +66,36 @@
                 </svg>
                 Dashboard
             </a>
-            {#if user.isEditor}
+            <a data-hx-get="/blogs"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/blogs"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M5 9V15L12 20L19 15V9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+                Blogs
+            </a>
+            <a data-hx-get="/pages"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/pages"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M4 4H20V20H4V4ZM8 8H16V10H8V8ZM8 12H16V14H8V12ZM8 16H12V18H8V16Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Custom Pages
+            </a>
+        </div>
+
+        {#if user.isEditor}
+        <div class="user-menu__section">
+            <div class="user-menu__section-label">Review</div>
             <a data-hx-get="/review"
                hx-select="main"
                hx-target="main"
@@ -80,21 +104,37 @@
                class="user-menu__item"
                data-nav>
                 <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                    <!-- Star icon for featured review -->
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
-                        stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          stroke="currentColor" stroke-width="1.5"/>
                 </svg>
-                Review
+                Featured Posts
             </a>
-            {/if}
-            <div class="user-menu__divider"></div>
-            <button class="user-menu__item" hx-post="/forms/auth/logout">
-                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                    <path d="M9 21H5C4.5 21 4 20.5 4 20V4C4 3.5 4.5 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-                Sign out
-            </button>
         </div>
+        {/if}
+
+        <div class="user-menu__section">
+            <div class="user-menu__section-label">Profile</div>
+            <a data-hx-get="/profile"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/profile"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21M16 7C16 9.2 14.2 11 12 11C9.8 11 8 9.2 8 7C8 4.8 9.8 3 12 3C14.2 3 16 4.8 16 7Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Settings
+            </a>
+        </div>
+
+        <div class="user-menu__divider"></div>
+        <button class="user-menu__item" hx-post="/forms/auth/logout">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                <path d="M9 21H5C4.5 21 4 20.5 4 20V4C4 3.5 4.5 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            Sign out
+        </button>
     </div>
 </div>
 {#else}
