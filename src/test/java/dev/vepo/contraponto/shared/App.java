@@ -197,7 +197,7 @@ public class App {
 
         public BlogManagePage clickDeactivate(String title) {
             var row = findRowByTitle(title);
-            row.findElement(cssSelector(".btn--danger")).click();
+            reliableClick(row.findElement(cssSelector(".btn--danger")));
             wait.until(d -> {
                 try {
                     driver.switchTo().alert().accept();
@@ -212,13 +212,13 @@ public class App {
 
         public BlogManagePage clickEdit(String title) {
             var row = findRowByTitle(title);
-            row.findElement(By.linkText("Edit")).click();
+            reliableClick(row.findElement(By.linkText("Edit")));
             wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
             return this;
         }
 
         public BlogManagePage clickNewBlog() {
-            wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/blogs/new']"))).click();
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/blogs/new']"))));
             wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
             waitForReady();
             return this;
@@ -259,7 +259,7 @@ public class App {
         }
 
         public BlogManagePage submit() {
-            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
             waitForReady();
             return this;
         }
@@ -357,7 +357,7 @@ public class App {
 
         public CustomPageManagePage clickDelete(String title) {
             var row = findRowByTitle(title);
-            row.findElement(cssSelector(".btn--danger")).click();
+            reliableClick(row.findElement(cssSelector(".btn--danger")));
             wait.until(d -> {
                 try {
                     driver.switchTo().alert().accept();
@@ -372,13 +372,13 @@ public class App {
 
         public CustomPageManagePage clickEdit(String title) {
             var row = findRowByTitle(title);
-            row.findElement(By.linkText("Edit")).click();
+            reliableClick(row.findElement(By.linkText("Edit")));
             wait.until(visibilityOfElementLocated(cssSelector("input[name='title']")));
             return this;
         }
 
         public CustomPageManagePage clickNewPage() {
-            wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/pages/new']"))).click();
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/pages/new']"))));
             waitForReady();
             return this;
         }
@@ -516,7 +516,7 @@ public class App {
         public WritePage clickRecentDraft(int index) {
             var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".recent-section:first-child .recent-list__item")));
             assertThat(items).hasSizeGreaterThan(index);
-            items.get(index).findElement(cssSelector(".recent-list__title")).click();
+            reliableClick(items.get(index).findElement(cssSelector(".recent-list__title")));
             waitForReady();
             return new WritePage();
         }
@@ -524,14 +524,14 @@ public class App {
         public PostPage clickRecentPublished(int index) {
             var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".recent-section:last-child .recent-list__item")));
             assertThat(items).hasSizeGreaterThan(index);
-            items.get(index).findElement(cssSelector(".recent-list__title")).click();
+            reliableClick(items.get(index).findElement(cssSelector(".recent-list__title")));
             waitForReady();
             return new PostPage();
         }
 
         public LibraryPage clickViewAllDrafts() {
             var link = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:first-child .stat-card__link")));
-            link.click();
+            reliableClick(link);
             waitForReady();
             // After click, we expect the library page with drafts tab active
             return new LibraryPage();
@@ -539,14 +539,14 @@ public class App {
 
         public LibraryPage clickViewAllPublished() {
             var link = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:last-child .stat-card__link")));
-            link.click();
+            reliableClick(link);
             waitForReady();
             return new LibraryPage();
         }
 
         public WritePage clickWriteNewStory() {
             var btn = wait.until(visibilityOfElementLocated(cssSelector(".dashboard-action .btn")));
-            btn.click();
+            reliableClick(btn);
             waitForReady();
             return new WritePage();
         }
@@ -567,14 +567,14 @@ public class App {
                               .getAttribute("data-hx-get");
             assertThat(hxGet).isNotNull();
             //
-            authorLink.click();
+            reliableClick(authorLink);
             wait.until(d -> d.getCurrentUrl().contains(hxGet));
             return new BlogPage();
         }
 
         public BlogPage accessPost() {
             var featuredTitle = elm.findElement(className("featured__title"));
-            featuredTitle.click();
+            reliableClick(featuredTitle);
             return new BlogPage();
         }
 
@@ -620,7 +620,7 @@ public class App {
 
         public LibraryPage deleteFirstDraft() {
             var deleteBtn = wait.until(visibilityOfElementLocated(cssSelector(".draft-card .btn--danger")));
-            deleteBtn.click();
+            reliableClick(deleteBtn);
             driver.switchTo().alert().accept();
             wait.until(d -> driver.findElements(cssSelector(".draft-card")).isEmpty());
             return this;
@@ -628,7 +628,7 @@ public class App {
 
         public LibraryPage switchTab(String tab) { // "drafts" or "published"
             var tabButton = wait.until(elementToBeClickable(cssSelector(".library-tab[data-tab='" + tab + "']")));
-            tabButton.click();
+            reliableClick(tabButton);
             wait.until(visibilityOfElementLocated(cssSelector(".library-tab.library-tab--active[data-tab='" + tab + "']")));
             waitForReady();
             return this;
@@ -640,12 +640,12 @@ public class App {
 
         public Login closeModal() {
             var closeBtn = driver.findElement(By.cssSelector("#authModal .modal__close"));
-            closeBtn.click();
+            reliableClick(closeBtn);
             return this;
         }
 
         public Signup switchToSignup() {
-            wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a"))).click();
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector(".auth-form__switch a"))));
             return new Signup();
         }
 
@@ -702,7 +702,7 @@ public class App {
 
         public App home() {
             var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
-            homeBtn.click();
+            reliableClick(homeBtn);
             waitForReady();
             return App.this;
         }
@@ -755,7 +755,7 @@ public class App {
 
         public PostPage toggleFeatured() {
             var postFeaturedButton = driver.findElement(By.cssSelector("#post-featured-toggle"));
-            postFeaturedButton.click();
+            reliableClick(postFeaturedButton);
             return this;
         }
     }
@@ -835,7 +835,7 @@ public class App {
         }
 
         public ProfilePage submit() {
-            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
             return this;
         }
     }
@@ -851,7 +851,7 @@ public class App {
 
         public ReviewPage toggleFeatured(Post post) {
             var toggleBtn = wait.until(visibilityOfElementLocated(By.cssSelector("#post-row-%d .btn".formatted(post.getId()))));
-            toggleBtn.click();
+            reliableClick(toggleBtn);
             waitForReady();
             return this;
         }
@@ -897,7 +897,7 @@ public class App {
         public SearchModal close() {
             var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
             var closeBtn = modal.findElement(cssSelector(".modal__close"));
-            closeBtn.click();
+            reliableClick(closeBtn);
             wait.until(invisibilityOfElementLocated(By.id("searchModal")));
             return this;
         }
@@ -905,7 +905,7 @@ public class App {
         public SearchPage goToAdvanced() {
             var modal = driver.findElement(By.id("searchModal"));
             var link = modal.findElement(cssSelector(".search-modal__advanced"));
-            link.click();
+            reliableClick(link);
             waitForReady();
             return new SearchPage();
         }
@@ -958,7 +958,7 @@ public class App {
 
         public PostPage clickFirstResult() {
             var firstResultLink = wait.until(visibilityOfElementLocated(cssSelector(".search-result__title a")));
-            firstResultLink.click();
+            reliableClick(firstResultLink);
             waitForReady();
             return new PostPage();
         }
@@ -974,14 +974,14 @@ public class App {
             var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='q']")));
             input.sendKeys(query);
             var submitBtn = driver.findElement(cssSelector(".search-form__button"));
-            submitBtn.click();
+            reliableClick(submitBtn);
             waitForReady();
             return this;
         }
 
         public SearchPage submit() {
             var submitBtn = driver.findElement(cssSelector(".search-form__button"));
-            submitBtn.click();
+            reliableClick(submitBtn);
             waitForReady();
             return this;
         }
@@ -1073,13 +1073,13 @@ public class App {
 
         public UserManagePage clickEdit(String name) {
             var row = findRowByTitle(name);
-            row.findElement(By.linkText("Edit")).click();
+            reliableClick(row.findElement(By.linkText("Edit")));
             wait.until(visibilityOfElementLocated(cssSelector("#userName")));
             return this;
         }
 
         public UserManagePage clickNewUser() {
-            wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/users/new']"))).click();
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/users/new']"))));
             waitForReady();
             return this;
         }
@@ -1130,7 +1130,7 @@ public class App {
         public UserManagePage setActive(boolean active) {
             var checkbox = wait.until(visibilityOfElementLocated(cssSelector("input[name='active']")));
             if (checkbox.isSelected() != active) {
-                checkbox.click();
+                reliableClick(checkbox);
             }
             return this;
         }
@@ -1232,7 +1232,7 @@ public class App {
 
         public WritePage clickToolbarButton(String command) {
             var button = wait.until(visibilityOfElementLocated(cssSelector("button[data-command='" + command + "']")));
-            button.click();
+            reliableClick(button);
             return this;
         }
 
@@ -1279,21 +1279,21 @@ public class App {
 
         public WritePage publish() {
             var publishBtn = wait.until(visibilityOfElementLocated(By.id("publish")));
-            publishBtn.click();
+            reliableClick(publishBtn);
             waitForToast();
             return this;
         }
 
         public WritePage removeCover() {
             var removeBtn = wait.until(visibilityOfElementLocated(By.id("removeCoverBtn")));
-            removeBtn.click();
+            reliableClick(removeBtn);
             wait.until(d -> !driver.findElement(By.id("coverPreview")).isDisplayed());
             return this;
         }
 
         public WritePage saveDraft() {
             var saveBtn = wait.until(visibilityOfElementLocated(By.id("saveDraft")));
-            saveBtn.click();
+            reliableClick(saveBtn);
             waitForToast(); // wait for success/error toast
             return this;
         }
@@ -1307,16 +1307,16 @@ public class App {
 
         public WritePage switchModeTo(String mode) { // "MARKDOWN" or "ASCIIDOC"
             var modeButton = wait.until(visibilityOfElementLocated(cssSelector("#editorModeButton")));
-            modeButton.click();
+            reliableClick(modeButton);
             var option = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='" + mode + "']")));
-            option.click();
+            reliableClick(option);
             wait.until(d -> modeButton.findElement(cssSelector(".editor-mode-label")).getText().equals(mode.equals("MARKDOWN") ? "Markdown" : "AsciiDoc"));
             return this;
         }
 
         public WritePage togglePreview() {
             var previewBtn = wait.until(visibilityOfElementLocated(cssSelector("#previewToggleBtn")));
-            previewBtn.click();
+            reliableClick(previewBtn);
             return this;
         }
 
@@ -1380,8 +1380,9 @@ public class App {
     private void _click(PagePlacement placement, String link) {
         switch (placement) {
             case FOOTER:
-                wait.until(visibilityOfElementLocated(By.cssSelector(".footer__links .custom-page__link[data-hx-get=\"%s\"]".formatted(link))))
-                    .click();
+                var footerLink =
+                        wait.until(visibilityOfElementLocated(By.cssSelector(".footer__links .custom-page__link[data-hx-get=\"%s\"]".formatted(link))));
+                reliableClick(footerLink);
                 break;
 
             default:
@@ -1397,7 +1398,7 @@ public class App {
         assertThat(hxGet).isNotNull();
 
         // Click the link (it uses htmx, so the main content should update)
-        titleLink.click();
+        reliableClick(titleLink);
     }
 
     private void _goTo(String url) {
@@ -1416,8 +1417,7 @@ public class App {
         reliableClick(userMenuBtn);
         wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
         var logoutBtn = wait.until(elementToBeClickable(By.cssSelector("button.user-menu__item[hx-post='/forms/auth/logout']")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", logoutBtn);
-        logoutBtn.click();
+        reliableClick(logoutBtn);
         waitForReady();
     }
 
@@ -1573,8 +1573,7 @@ public class App {
         reliableClick(userMenuBtn);
         wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
         var reviewBtn = wait.until(elementToBeClickable(cssSelector(".user-menu__item[data-hx-get='/review']")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", reviewBtn);
-        reviewBtn.click();
+        reliableClick(reviewBtn);
         wait.until(visibilityOfElementLocated(cssSelector(".review-page")));
         waitForReady();
         return new ReviewPage();
@@ -1662,7 +1661,7 @@ public class App {
     }
 
     public SearchModal searchModal() {
-        wait.until(visibilityOfElementLocated(cssSelector("#searchBtn"))).click();
+        reliableClick(wait.until(visibilityOfElementLocated(cssSelector("#searchBtn"))));
         return new SearchModal();
     }
 

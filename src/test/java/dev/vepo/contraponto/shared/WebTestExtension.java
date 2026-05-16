@@ -47,6 +47,9 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
         var options = new ChromeOptions();
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
+        // Headless Chrome defaults to a small viewport; fixed header/footer then
+        // intercept clicks (CI flakiness).
+        options.addArguments("--window-size=1920,1080");
         // Enable headless only when running in GitHub Actions
         var githubActions = System.getenv("GITHUB_ACTIONS");
         if ("true".equalsIgnoreCase(githubActions)) {
