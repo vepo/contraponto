@@ -2,6 +2,7 @@ package dev.vepo.contraponto.git;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +22,7 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.arc.ClientProxy;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -93,15 +95,33 @@ class BlogGitIntegrationServiceTest {
     }
 
     private static void invokeExportTransactional(BlogGitIntegrationService svc, long postId) throws Exception {
-        Method m = BlogGitIntegrationService.class.getDeclaredMethod("exportPostTransactional", long.class);
-        m.setAccessible(true);
-        m.invoke(svc, postId);
+        QuarkusTransaction.requiringNew().run(() -> {
+            try {
+                Method m = BlogGitIntegrationService.class.getDeclaredMethod("exportPostTransactional", long.class);
+                m.setAccessible(true);
+                m.invoke(svc, postId);
+            } catch (InvocationTargetException e) {
+                Throwable c = e.getCause() != null ? e.getCause() : e;
+                throw new IllegalStateException(c);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        });
     }
 
     private static void invokeSyncTransactional(BlogGitIntegrationService svc, long blogId) throws Exception {
-        Method m = BlogGitIntegrationService.class.getDeclaredMethod("syncBlogFromGitTransactional", long.class);
-        m.setAccessible(true);
-        m.invoke(svc, blogId);
+        QuarkusTransaction.requiringNew().run(() -> {
+            try {
+                Method m = BlogGitIntegrationService.class.getDeclaredMethod("syncBlogFromGitTransactional", long.class);
+                m.setAccessible(true);
+                m.invoke(svc, blogId);
+            } catch (InvocationTargetException e) {
+                Throwable c = e.getCause() != null ? e.getCause() : e;
+                throw new IllegalStateException(c);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        });
     }
 
     private static Blog reloadBlog(Long blogId) {
