@@ -46,19 +46,27 @@ class MainManager {
 
     updateUIElements(evt) {
         if (evt && evt.detail && evt.detail.target && evt.detail.target.id === 'libraryContent') {
-            // Get the full request path (e.g., "/library/tab?type=published")
-            const requestPath = evt.detail.pathInfo.requestPath;
+            const requestPath = evt.detail.pathInfo?.requestPath || '';
             let newActiveValue = null;
             if (requestPath) {
-                // Parse the query string
-                const url = new URL(requestPath, window.location.origin);
-                newActiveValue = url.searchParams.get('type');
+                try {
+                    const url = new URL(requestPath, window.location.origin);
+                    newActiveValue = url.searchParams.get('tab') || url.searchParams.get('type');
+                } catch (e) {
+                    /* ignore malformed path */
+                }
+                if (!newActiveValue) {
+                    const m = requestPath.match(/\/library\/components\/tab\/(drafts|published)(?:\?|$)/);
+                    if (m) newActiveValue = m[1];
+                }
             }
-            const activeTab = document.querySelector('.library-tab--active');
-            if (activeTab && activeTab.dataset.tab !== newActiveValue) {
-                activeTab.classList.remove('library-tab--active');
-                const newActive = document.querySelector(`.library-tab[data-tab="${newActiveValue}"]`);
-                if (newActive) newActive.classList.add('library-tab--active');
+            if (newActiveValue) {
+                const activeTab = document.querySelector('.library-tab--active');
+                if (activeTab && activeTab.dataset.tab !== newActiveValue) {
+                    activeTab.classList.remove('library-tab--active');
+                    const newActive = document.querySelector(`.library-tab[data-tab="${newActiveValue}"]`);
+                    if (newActive) newActive.classList.add('library-tab--active');
+                }
             }
         }
         document.querySelectorAll("[data-disable-pattern]")

@@ -73,20 +73,24 @@ public class App {
         }
 
         public T assertSubmitDisabled() {
-            var btn = wait.until(visibilityOfElementLocated(cssSelector("button[type=\"submit\"]")));
-            await().until(() -> !btn.isEnabled());
+            await().until(() -> {
+                var found = driver.findElements(cssSelector("#authModal button[type=\"submit\"]"));
+                return found.size() == 1 && !found.get(0).isEnabled();
+            });
             return (T) this;
         }
 
         public T assertSubmitEnabled() {
-            var btn = wait.until(visibilityOfElementLocated(cssSelector("button[type=\"submit\"]")));
-            await().until(btn::isEnabled);
+            await().until(() -> {
+                var found = driver.findElements(cssSelector("#authModal button[type=\"submit\"]"));
+                return found.size() == 1 && found.get(0).isEnabled();
+            });
             return (T) this;
         }
 
         public T submit() {
-            driver.findElement(cssSelector("button[type=\"submit\"]"))
-                  .click();
+            wait.until(elementToBeClickable(cssSelector("#authModal button[type=\"submit\"]")))
+                .click();
             return (T) this;
         }
 
@@ -212,6 +216,7 @@ public class App {
 
         public BlogManagePage clickNewBlog() {
             wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/blogs/new']"))).click();
+            wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
             waitForReady();
             return this;
         }
@@ -618,8 +623,9 @@ public class App {
         }
 
         public LibraryPage switchTab(String tab) { // "drafts" or "published"
-            var tabButton = wait.until(visibilityOfElementLocated(cssSelector(".library-tab[data-tab='" + tab + "']")));
+            var tabButton = wait.until(elementToBeClickable(cssSelector(".library-tab[data-tab='" + tab + "']")));
             tabButton.click();
+            wait.until(visibilityOfElementLocated(cssSelector(".library-tab.library-tab--active[data-tab='" + tab + "']")));
             waitForReady();
             return this;
         }
@@ -1364,7 +1370,9 @@ public class App {
     private void _logout() {
         var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
         userMenuBtn.click();
+        wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
         var logoutBtn = wait.until(elementToBeClickable(By.cssSelector("button.user-menu__item[hx-post='/forms/auth/logout']")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", logoutBtn);
         logoutBtn.click();
         waitForReady();
     }
@@ -1517,10 +1525,13 @@ public class App {
     }
 
     public ReviewPage goToReview() {
-        var userMenuBtn = wait.until(elementToBeClickable(className("user-menu__button")));
+        var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
         userMenuBtn.click();
-        var reviewBtn = wait.until(visibilityOfElementLocated(cssSelector(".user-menu__item[data-hx-get='/review']")));
+        wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
+        var reviewBtn = wait.until(elementToBeClickable(cssSelector(".user-menu__item[data-hx-get='/review']")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", reviewBtn);
         reviewBtn.click();
+        wait.until(visibilityOfElementLocated(cssSelector(".review-page")));
         waitForReady();
         return new ReviewPage();
     }

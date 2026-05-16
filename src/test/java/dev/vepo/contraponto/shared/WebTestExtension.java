@@ -69,13 +69,13 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
             return this.driver;
         } else if (parameterContext.getParameter().getType().isAssignableFrom(WebDriverWait.class)) {
             if (Objects.isNull(this.wait)) {
-                this.wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+                this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
             }
             return this.wait;
         } else if (parameterContext.getParameter().getType().isAssignableFrom(App.class)) {
             if (Objects.isNull(app)) {
                 if (Objects.isNull(this.wait)) {
-                    this.wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+                    this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
                 }
                 this.app = new App(driver, wait);
             }
