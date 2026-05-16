@@ -63,6 +63,7 @@ public final class CustomPagePaths {
                 || segment.equals("review")
                 || segment.equals("pages")
                 || segment.equals("blogs")
+                || segment.equals("users")
                 || segment.equals("post")
                 || segment.equals("auth")
                 || segment.equals("_custom_page");

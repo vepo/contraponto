@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Manage Users - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage" id="main-content">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">Manage Users</h1>
+                        <p class="pages-manage__subtitle">
+                            Create accounts, update email settings, reset passwords, and activate or deactivate users.
+                        </p>
+                    </div>
+                    <a data-hx-get="/users/new"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/users/new"
+                       class="btn btn--primary"
+                       data-nav>
+                        New User
+                    </a>
+                </div>
+
+                {#if users.isEmpty}
+                <div class="pages-manage__empty">
+                    <p>No users found.</p>
+                </div>
+                {#else}
+                <div class="pages-manage__list">
+                    {#for row in users}
+                    <article class="pages-manage__row" id="user-row-{row.id}">
+                        <div class="pages-manage__row-main">
+                            <h2 class="pages-manage__row-title">{row.name}</h2>
+                            <div class="pages-manage__row-meta">
+                                <span class="pages-manage__badge">@{row.username}</span>
+                                <span>{row.email}</span>
+                                {#if row.active}
+                                <span class="pages-manage__badge pages-manage__badge--published">Active</span>
+                                {#else}
+                                <span class="pages-manage__badge pages-manage__badge--draft">Inactive</span>
+                                {/if}
+                            </div>
+                            <p class="pages-manage__row-description">{row.rolesLabel}</p>
+                        </div>
+                        <div class="pages-manage__row-actions">
+                            <a data-hx-get="/users/{row.id}/edit"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-swap="outerHTML"
+                               hx-push-url="/users/{row.id}/edit"
+                               class="btn btn--secondary btn--small"
+                               data-nav>
+                                Edit
+                            </a>
+                        </div>
+                    </article>
+                    {/for}
+                </div>
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

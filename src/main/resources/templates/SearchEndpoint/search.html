@@ -5,9 +5,10 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main class="search-page">
+        <main class="search-page" id="main-content">
             <div class="container-narrow">
                 <h1 class="search-page__title">Search</h1>
+                <p class="search-page__subtitle">Find stories across the platform.</p>
                 
                 <form class="search-form" 
                       hx-get="/search/results" 
@@ -22,6 +23,7 @@
                                class="search-form__input" 
                                placeholder="Search articles..." 
                                value="{query}"
+                               aria-label="Search articles"
                                autocomplete="off"/>
                         <button type="submit" class="search-form__button">Search</button>
                     </div>

@@ -1,13 +1,13 @@
 /* Write Page Layout */
 .write-page {
-    background: #fafafa;
+    background: var(--color-bg-offset, #fafafa);
 }
 
 .write-header {
     position: sticky;
     top: 0;
-    background: white;
-    border-bottom: 1px solid #e5e5e5;
+    background: var(--color-bg, #fff);
+    border-bottom: 1px solid var(--color-border, #e5e5e5);
     z-index: 100;
 }
 
@@ -85,9 +85,10 @@
 }
 
 .write-form {
-    background: white;
+    background: var(--color-bg, #fff);
     border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--color-border, #e5e5e5);
     padding: 48px;
 }
 

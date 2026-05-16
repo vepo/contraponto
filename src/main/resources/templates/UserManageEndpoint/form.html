@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {#if creating}
+    New User - contraponto
+    {#else}
+    Edit User - contraponto
+    {/if}
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage" id="main-content">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">
+                            {#if creating}New User{#else}Edit User{/if}
+                        </h1>
+                        <p class="pages-manage__subtitle">
+                            {#if creating}
+                            Create an account with the same fields as public signup. Usernames cannot be reserved words.
+                            {#else}
+                            Update profile details, email, roles, and optionally set a new password.
+                            {/if}
+                        </p>
+                    </div>
+                    <a data-hx-get="/users"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/users"
+                       class="btn btn--secondary"
+                       data-nav>
+                        Back to list
+                    </a>
+                </div>
+
+                <form class="profile-form pages-form"
+                      hx-post="/forms/users"
+                      hx-select="main"
+                      hx-target="main"
+                      hx-swap="outerHTML"
+                      autocomplete="off">
+                    {#if !creating}
+                    <input type="hidden" name="id" value="{account.id}">
+                    {/if}
+
+                    <div class="form-group">
+                        <label for="userUsername">Username</label>
+                        {#if creating}
+                        <input type="text"
+                               id="userUsername"
+                               name="username"
+                               placeholder="url-friendly-identifier"
+                               pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*"
+                               min-size="3"
+                               max-size="20"
+                               required
+                               autocomplete="off">
+                        <div class="pages-form__slug-hint">
+                            Appears at <code>/your-username</code>. Cannot be a reserved word (e.g. pages, blogs, admin).
+                        </div>
+                        <div class="error-message required">Username is required.</div>
+                        <div class="error-message min-value">Username must be at least 3 characters.</div>
+                        <div class="error-message max-value">Username must be no more than 20 characters.</div>
+                        <div class="error-message pattern">Use only letters, numbers, hyphens and underscores.</div>
+                        {#else}
+                        <input type="text" id="userUsername" value="{account.username}" disabled>
+                        <input type="hidden" name="username" value="{account.username}">
+                        {/if}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userName">Full name</label>
+                        <input type="text" id="userName" name="name" value="{account.name}" required>
+                        <div class="error-message required">Name is required.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userEmail">Email</label>
+                        <input type="email" id="userEmail" name="email" value="{account.email}" required email>
+                        <div class="error-message required">Email is required.</div>
+                        <div class="error-message email">Please enter a valid email address.</div>
+                    </div>
+
+                    {#if creating}
+                    <div class="form-group">
+                        <label for="userPassword">Password</label>
+                        <input type="password" id="userPassword" name="password" required min-size="8">
+                        <div class="error-message required">Password is required.</div>
+                        <div class="error-message min-value">Password must be at least 8 characters.</div>
+                    </div>
+                    {#else}
+                    <div class="form-group">
+                        <label for="userNewPassword">New password (optional)</label>
+                        <input type="password" id="userNewPassword" name="newPassword" min-size="8" autocomplete="new-password">
+                        <p class="pages-form__slug-hint">Leave blank to keep the current password.</p>
+                        <div class="error-message min-value">Password must be at least 8 characters.</div>
+                    </div>
+                    {/if}
+
+                    <div class="form-group form-group--checkbox">
+                        <label>
+                            <input type="checkbox" name="active" {#if account.active}checked{/if}>
+                            Active
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Roles</label>
+                        <div class="user-roles">
+                            {#for role in assignableRoles}
+                            <label class="user-roles__item">
+                                <input type="checkbox"
+                                       name="roles"
+                                       value="{role.name}"
+                                       {#if account.roles.contains(role)}checked{/if}>
+                                {role.label}
+                            </label>
+                            {/for}
+                        </div>
+                    </div>
+
+                    <div class="pages-form__actions">
+                        <button type="submit" class="btn btn--primary">
+                            {#if creating}Create User{#else}Save User{/if}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

@@ -1,13 +1,9 @@
 package dev.vepo.contraponto.components.forms;
 
-import dev.vepo.contraponto.auth.PasswordService;
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.Role;
-import dev.vepo.contraponto.user.User;
-import dev.vepo.contraponto.user.UserRepository;
+import dev.vepo.contraponto.user.UserService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -35,20 +31,14 @@ public class SignUpEndpoint {
                                                      </script>
                                                      """;
 
-    private final UserRepository userRepository;
-    private final BlogRepository blogRepository;
     private final LoggedUserProvider loggedUserProvider;
-    private final PasswordService passwordService;
+    private final UserService userService;
 
     @Inject
-    public SignUpEndpoint(UserRepository userRepository,
-                          BlogRepository blogRepository,
-                          LoggedUserProvider loggedUserProvider,
-                          PasswordService passwordService) {
-        this.userRepository = userRepository;
-        this.blogRepository = blogRepository;
+    public SignUpEndpoint(LoggedUserProvider loggedUserProvider,
+                          UserService userService) {
         this.loggedUserProvider = loggedUserProvider;
-        this.passwordService = passwordService;
+        this.userService = userService;
     }
 
     /**
@@ -94,41 +84,16 @@ public class SignUpEndpoint {
                            @FormParam("email") String email,
                            @FormParam("password") String password) {
 
-        // 1. Basic input validation
         if (isBlank(username) || isBlank(name) || isBlank(email) || isBlank(password)) {
             return buildErrorResponse("All fields are required.");
         }
 
-        // 2. Validate email format
-        if (!email.contains("@") || !email.contains(".")) {
-            return buildErrorResponse("Please enter a valid email address.");
+        var validationError = userService.validateNewUser(username, name, email, password);
+        if (validationError.isPresent()) {
+            return buildErrorResponse(validationError.get());
         }
 
-        // 3. Check username length/characters (optional)
-        if (username.length() < 3 || username.length() > 20) {
-            return buildErrorResponse("Username must be between 3 and 20 characters.");
-        }
-
-        // 4. Check uniqueness
-        if (userRepository.existsByUsername(username)) {
-            return buildErrorResponse("Username already taken.");
-        }
-        if (userRepository.existsByEmail(email)) {
-            return buildErrorResponse("Email already registered.");
-        }
-
-        // 5. Hash password and create user
-        String hashedPassword = passwordService.hashPassword(password);
-        User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setName(name);
-        newUser.setEmail(email);
-        newUser.setPasswordHash(hashedPassword);
-        newUser.setRole(Role.USER);
-        newUser.setActive(true);
-
-        userRepository.save(newUser);
-        blogRepository.save(new Blog(newUser));
+        var newUser = userService.createUser(username, name, email, password, java.util.Set.of(Role.USER));
 
         // Auto-login
         var loggedUser = loggedUserProvider.login(newUser);

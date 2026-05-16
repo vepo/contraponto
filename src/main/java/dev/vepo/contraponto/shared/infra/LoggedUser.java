@@ -4,6 +4,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
@@ -26,11 +27,9 @@ public class LoggedUser {
     public String getAvatarUrl() {
         return Optional.ofNullable(user)
                        .map(User::getName)
-                       // Generate avatar URL using UI Avatars service
                        .map(name -> "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,
                                                                                                                                                      StandardCharsets.UTF_8)))
                        .orElse("");
-
     }
 
     public String getEmail() {
@@ -45,7 +44,7 @@ public class LoggedUser {
     }
 
     public long getId() {
-        return Optional.ofNullable(user).map(User::getId).orElse(-1l);
+        return Optional.ofNullable(user).map(User::getId).orElse(-1L);
     }
 
     public String getInitials() {
@@ -65,8 +64,8 @@ public class LoggedUser {
         return Optional.ofNullable(user).map(User::getName).orElse("");
     }
 
-    public Role getRole() {
-        return Optional.ofNullable(user).map(User::getRole).orElse(null);
+    public Set<Role> getRoles() {
+        return Optional.ofNullable(user).map(User::getRoles).orElse(Set.of());
     }
 
     public String getSessionId() {
@@ -81,12 +80,20 @@ public class LoggedUser {
         return Optional.ofNullable(user).map(User::getUsername).orElse("");
     }
 
+    public boolean hasRole(Role role) {
+        return isAuthenticated() && user.hasRole(role);
+    }
+
     public boolean isAuthenticated() {
         return Objects.nonNull(user);
     }
 
     public boolean isEditor() {
-        return isAuthenticated() && (getRole() == Role.ADMIN || getRole() == Role.EDITOR);
+        return hasRole(Role.EDITOR) || hasRole(Role.ADMIN);
+    }
+
+    public boolean isUserAdministrator() {
+        return hasRole(Role.USER_ADMINISTRATOR) || hasRole(Role.ADMIN);
     }
 
     @Override

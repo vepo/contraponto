@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,25 +19,43 @@ public class UserRepository {
     }
 
     public boolean existsByEmail(String email) {
-        return entityManager.createQuery("""
-                                         SELECT id
-                                         FROM User
-                                         WHERE email = :email
-                                         """, Long.class)
-                            .setParameter("email", email)
-                            .getResultStream()
-                            .count() > 0l;
+        return existsByEmail(email, null);
+    }
+
+    public boolean existsByEmail(String email, Long excludeUserId) {
+        var query = new StringBuilder("""
+                                      SELECT COUNT(u) FROM User u
+                                      WHERE u.email = :email
+                                      """);
+        if (excludeUserId != null) {
+            query.append(" AND u.id <> :excludeId");
+        }
+        var typedQuery = entityManager.createQuery(query.toString(), Long.class)
+                                      .setParameter("email", email);
+        if (excludeUserId != null) {
+            typedQuery.setParameter("excludeId", excludeUserId);
+        }
+        return typedQuery.getSingleResult() > 0;
     }
 
     public boolean existsByUsername(String username) {
-        return entityManager.createQuery("""
-                                         SELECT id
-                                         FROM User
-                                         WHERE username = :username
-                                         """, Long.class)
-                            .setParameter("username", username)
-                            .getResultStream()
-                            .count() > 0l;
+        return existsByUsername(username, null);
+    }
+
+    public boolean existsByUsername(String username, Long excludeUserId) {
+        var query = new StringBuilder("""
+                                      SELECT COUNT(u) FROM User u
+                                      WHERE u.username = :username
+                                      """);
+        if (excludeUserId != null) {
+            query.append(" AND u.id <> :excludeId");
+        }
+        var typedQuery = entityManager.createQuery(query.toString(), Long.class)
+                                      .setParameter("username", username);
+        if (excludeUserId != null) {
+            typedQuery.setParameter("excludeId", excludeUserId);
+        }
+        return typedQuery.getSingleResult() > 0;
     }
 
     public Optional<User> findByEmail(String email) {
@@ -58,10 +77,18 @@ public class UserRepository {
     }
 
     public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
-        return entityManager.createQuery("FROM User WHERE username = :usernameOrEmail OR email = :usernameOrEmail", User.class)
-                            .setParameter("usernameOrEmail", usernameOrEmail)
+        return entityManager.createQuery("FROM User WHERE username = :login OR email = :login", User.class)
+                            .setParameter("login", usernameOrEmail)
                             .getResultStream()
                             .findFirst();
+    }
+
+    public List<User> listAllForManagement() {
+        return entityManager.createQuery("""
+                                         SELECT u FROM User u
+                                         ORDER BY u.name, u.username
+                                         """, User.class)
+                            .getResultList();
     }
 
     @Transactional

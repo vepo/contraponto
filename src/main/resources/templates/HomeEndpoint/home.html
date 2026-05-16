@@ -5,7 +5,7 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main>
+        <main id="main-content">
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}
                 {#include HomeEndpoint/featured post=post /}

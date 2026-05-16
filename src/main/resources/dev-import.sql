@@ -8,6 +8,14 @@
 TRUNCATE TABLE tb_posts CASCADE;
 TRUNCATE TABLE tb_images CASCADE;
 
+-- Garantir roles do admin após truncate (schema multi-role: tb_user_roles, sem coluna role em tb_users)
+INSERT INTO tb_user_roles (user_id, role)
+SELECT u.id, r.role
+FROM tb_users u
+CROSS JOIN (VALUES ('ADMIN'), ('USER_ADMINISTRATOR')) AS r(role)
+WHERE u.username = 'admin'
+ON CONFLICT (user_id, role) DO NOTHING;
+
 -- ============================================
 -- 2. Inserir imagens de exemplo
 -- ============================================

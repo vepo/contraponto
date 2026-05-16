@@ -5,10 +5,10 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main class="custom-page">
+        <main class="custom-page article-page" id="main-content">
             <div class="container-narrow">
-                <h1 class="custom-page__title">{page.title}</h1>
-                <div class="custom-page__content">
+                <h1 class="article-page__title">{page.title}</h1>
+                <div class="article-page__content custom-page__content">
                     {page.content.raw}   <!-- raw HTML -->
                 </div>
             </div>

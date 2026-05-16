@@ -5,20 +5,19 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main>
-            <div class="container">
+        <main id="main-content">
+            <header class="user-blog-header container">
                 <h1 class="user-blog__name">{author.name}</h1>
-            </div>
+            </header>
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}
                 {#include BlogEndpoint/featured post=post username=author.username /}
             {/if}
 
             <div class="container">
-                    <div class="posts-grid">
-                        {#include BlogEndpoint/grid ignoreFirst=true username=author.username /}
-                    </div>
-                </article>
+                <div class="posts-grid">
+                    {#include BlogEndpoint/grid ignoreFirst=true username=author.username /}
+                </div>
             </div>
         </main>
 

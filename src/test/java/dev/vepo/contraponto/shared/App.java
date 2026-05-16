@@ -996,6 +996,103 @@ public class App {
         }
     }
 
+    public class UserManagePage extends Page<UserManagePage> {
+        private UserManagePage() {}
+
+        public UserManagePage assertManagePageNotLoaded() {
+            assertThat(driver.findElements(cssSelector(".pages-manage__title"))).isEmpty();
+            return this;
+        }
+
+        public UserManagePage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public UserManagePage assertToastSuccess(String message) {
+            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+            assertThat(toast.getText()).contains(message);
+            return this;
+        }
+
+        public UserManagePage assertUserListed(String name) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            assertThat(rows).anyMatch(row -> row.findElement(cssSelector(".pages-manage__row-title")).getText().equals(name));
+            return this;
+        }
+
+        public UserManagePage clickEdit(String name) {
+            var row = findRowByTitle(name);
+            row.findElement(By.linkText("Edit")).click();
+            wait.until(visibilityOfElementLocated(cssSelector("#userName")));
+            return this;
+        }
+
+        public UserManagePage clickNewUser() {
+            wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/users/new']"))).click();
+            waitForReady();
+            return this;
+        }
+
+        public UserManagePage fillEmail(String email) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#userEmail")));
+            input.clear();
+            input.sendKeys(email);
+            return this;
+        }
+
+        public UserManagePage fillName(String name) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#userName")));
+            input.clear();
+            input.sendKeys(name);
+            return this;
+        }
+
+        public UserManagePage fillNewPassword(String password) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#userNewPassword")));
+            input.clear();
+            input.sendKeys(password);
+            return this;
+        }
+
+        public UserManagePage fillPassword(String password) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#userPassword")));
+            input.clear();
+            input.sendKeys(password);
+            return this;
+        }
+
+        public UserManagePage fillUsername(String username) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#userUsername")));
+            input.clear();
+            input.sendKeys(username);
+            return this;
+        }
+
+        private WebElement findRowByTitle(String title) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            return rows.stream()
+                       .filter(row -> row.findElement(cssSelector(".pages-manage__row-title")).getText().equals(title))
+                       .findFirst()
+                       .orElseThrow();
+        }
+
+        public UserManagePage setActive(boolean active) {
+            var checkbox = wait.until(visibilityOfElementLocated(cssSelector("input[name='active']")));
+            if (checkbox.isSelected() != active) {
+                checkbox.click();
+            }
+            return this;
+        }
+
+        public UserManagePage submit() {
+            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            waitForReady();
+            return this;
+        }
+    }
+
     public class WritePage extends Page<WritePage> {
         private WritePage() {}
 
@@ -1265,11 +1362,11 @@ public class App {
     }
 
     private void _logout() {
-        // Perform logout via user menu
-        var userMenuBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".user-menu__button")));
+        var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
         userMenuBtn.click();
-        var logoutBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".user-menu__item[hx-post='/forms/auth/logout']")));
+        var logoutBtn = wait.until(elementToBeClickable(By.cssSelector("button.user-menu__item[hx-post='/forms/auth/logout']")));
         logoutBtn.click();
+        waitForReady();
     }
 
     public App access() {
@@ -1366,6 +1463,12 @@ public class App {
     public BlogManagePage blogs() {
         _goTo("/blogs");
         return new BlogManagePage();
+    }
+
+    public App clearAuth() {
+        driver.manage().deleteAllCookies();
+        access();
+        return this;
     }
 
     public App click(PagePlacement placement, String link) {
@@ -1465,6 +1568,11 @@ public class App {
         return new CustomPageManagePage();
     }
 
+    public UserManagePage newUser() {
+        _goTo("/users/new");
+        return new UserManagePage();
+    }
+
     public ProfilePage profile() {
         _goTo("/profile");
         return new ProfilePage();
@@ -1484,6 +1592,11 @@ public class App {
         var input = wait.until(visibilityOfElementLocated(cssSelector(cssSelector)));
         input.clear();
         input.sendKeys(value);
+    }
+
+    public UserManagePage users() {
+        _goTo("/users");
+        return new UserManagePage();
     }
 
     // Inside App class, after LibraryPage

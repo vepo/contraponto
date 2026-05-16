@@ -78,6 +78,21 @@ class SignupTest {
            .assertSubmitEnabled();
     }
 
+    @Test
+    void reservedUsernameShowsError(App app) {
+        app.access()
+           .loginModal()
+           .switchToSignup()
+           .useUsername("pages")
+           .useName("Reserved User")
+           .useEmail("reserved@example.com")
+           .usePassword("password12345")
+           .assertSubmitEnabled()
+           .submit()
+           .assertErrorMessage("This username is reserved and cannot be used.")
+           .assertModalIsOpen();
+    }
+
     @BeforeEach
     void setup() {
         // Create an existing user to test duplicate email scenario

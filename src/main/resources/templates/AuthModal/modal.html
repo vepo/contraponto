@@ -14,10 +14,11 @@
         {#if mode == 'signup'}
         <div class="form-group">
           <label>Username</label>
-          <input type="text" name="username" required min-size="3" max-size="20">
+          <input type="text" name="username" required min-size="3" max-size="20" pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*">
           <div class="error-message required">Username is required.</div>
           <div class="error-message min-value">Username must be at least 3 characters.</div>
           <div class="error-message max-value">Username must be no more than 20 characters.</div>
+          <div class="error-message pattern">Use only letters, numbers, hyphens and underscores.</div>
         </div>
         <div class="form-group">
           <label>Full Name</label>

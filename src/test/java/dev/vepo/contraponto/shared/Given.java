@@ -238,21 +238,21 @@ public interface Given {
         private String email;
         private String name;
         private String password;
-        private Role role;
+        private Set<Role> roles;
 
         private UserBuilder() {
             this.username = null;
             this.email = null;
             this.name = null;
             this.password = null;
-            this.role = Role.USER;
+            this.roles = new java.util.HashSet<>(Set.of(Role.USER));
         }
 
         public User get() {
             var user = new User(requireNonNull(username, "'username' cannot be null"),
                                 requireNonNull(email, "'email' cannot be null"),
                                 requireNonNull(name, "'name' cannot be null"),
-                                requireNonNull(role, "'role' cannot be null"),
+                                requireNonNull(roles, "'roles' cannot be null"),
                                 inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
             user.setBlogs(Set.of(new Blog(user)));
             return user;
@@ -264,7 +264,7 @@ public interface Given {
                 var user = new User(requireNonNull(username, "'username' cannot be null"),
                                     requireNonNull(email, "'email' cannot be null"),
                                     requireNonNull(name, "'name' cannot be null"),
-                                    requireNonNull(role, "'role' cannot be null"),
+                                    requireNonNull(roles, "'roles' cannot be null"),
                                     inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
                 entityManager.persist(user);
                 var defaultBlog = new Blog(user);
@@ -296,7 +296,12 @@ public interface Given {
         }
 
         public UserBuilder withRole(Role role) {
-            this.role = role;
+            this.roles = new java.util.HashSet<>(Set.of(role));
+            return this;
+        }
+
+        public UserBuilder withRoles(Role... roles) {
+            this.roles = new java.util.HashSet<>(Set.of(roles));
             return this;
         }
 

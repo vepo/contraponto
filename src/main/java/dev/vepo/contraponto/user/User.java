@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.user;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -9,7 +10,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import dev.vepo.contraponto.blog.Blog;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,6 +20,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -43,9 +47,11 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
-    @Column(nullable = false)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "tb_user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(name = "role", nullable = false)
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
     private Set<Blog> blogs;
@@ -58,17 +64,23 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Constructors
     public User() {}
 
-    public User(String username, String email, String name, Role role, String passwordHash) {
+    public User(String username, String email, String name, Set<Role> roles, String passwordHash) {
         this.username = username;
         this.email = email;
-        this.role = role;
         this.name = name;
+        this.roles = new HashSet<>(roles);
         this.passwordHash = passwordHash;
         this.active = true;
         this.blogs = new HashSet<>();
+    }
+
+    public void addRole(Role role) {
+        if (roles == null) {
+            roles = new HashSet<>();
+        }
+        roles.add(role);
     }
 
     @Override
@@ -104,7 +116,6 @@ public class User {
         return email;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -117,8 +128,8 @@ public class User {
         return passwordHash;
     }
 
-    public Role getRole() {
-        return role;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -127,6 +138,10 @@ public class User {
 
     public String getUsername() {
         return username;
+    }
+
+    public boolean hasRole(Role role) {
+        return roles != null && roles.contains(role);
     }
 
     @Override
@@ -166,8 +181,8 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setRoles(Collection<Role> roles) {
+        this.roles = new HashSet<>(roles);
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
