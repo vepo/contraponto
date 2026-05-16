@@ -19,6 +19,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.quarkus.test.common.http.TestHTTPResourceManager;
+
 public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCallback, AfterAllCallback, ParameterResolver {
 
     private static final Logger logger = LoggerFactory.getLogger(WebTestExtension.class);
@@ -36,9 +38,14 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         logger.info("Navigate to an empty page...");
-        driver.manage().deleteAllCookies();
-        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
-                                                                        "window.localStorage.clear(); window.sessionStorage.clear();");
+        try {
+            driver.get(TestHTTPResourceManager.getUri());
+            driver.manage().deleteAllCookies();
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                                                                            "try { window.localStorage.clear(); window.sessionStorage.clear(); } catch (e) {}");
+        } catch (Exception e) {
+            logger.warn("Test cleanup failed", e);
+        }
         driver.manage().logs().get(LogType.BROWSER).getAll()
               .forEach(logEntry -> logger.info("Browser console: {}", logEntry.getMessage()));
         driver.get("about:blank");

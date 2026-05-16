@@ -109,6 +109,13 @@ public class TemplateExtensions {
         return post != null ? post.getLivePublication() : null;
     }
 
+    private static PostPublication liveOf(PublishedPostView view) {
+        if (view.live() != null) {
+            return view.live();
+        }
+        return liveOf(view.post());
+    }
+
     @TemplateExtension
     public static LocalDateTime livePublishedAt(Post post) {
         PostPublication live = liveOf(post);
@@ -120,7 +127,11 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static LocalDateTime livePublishedAt(PublishedPostView view) {
-        return livePublishedAt(view.post());
+        PostPublication live = liveOf(view);
+        if (live != null) {
+            return live.getPublishedAt();
+        }
+        return view.post().getPublishedAt();
     }
 
     @TemplateExtension
@@ -134,7 +145,11 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static List<Tag> liveTags(PublishedPostView view) {
-        return liveTags(view.post());
+        PostPublication live = liveOf(view);
+        if (live != null && !live.getTags().isEmpty()) {
+            return live.getTags();
+        }
+        return view.post().getTags();
     }
 
     @TemplateExtension
@@ -145,7 +160,9 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String liveTitle(PublishedPostView view) {
-        return liveTitle(view.post());
+        PostPublication live = liveOf(view);
+        Post post = view.post();
+        return live != null && live.getTitle() != null ? live.getTitle() : post.getTitle();
     }
 
     @TemplateExtension
@@ -201,7 +218,8 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static boolean showUpdated(PublishedPostView view) {
-        return showUpdated(view.post());
+        PostPublication live = liveOf(view);
+        return live != null && live.getVersion() > 1;
     }
 
     @TemplateExtension

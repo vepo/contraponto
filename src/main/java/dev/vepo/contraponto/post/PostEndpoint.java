@@ -159,7 +159,8 @@ public class PostEndpoint {
 
         long viewCount = viewRepository.countByPost(post);
 
-        PublishedPostView view = new PublishedPostView(post, post.getLivePublication());
+        PostPublication live = post.getLivePublication();
+        PublishedPostView view = new PublishedPostView(post, live);
         var versions = changeDiffService.buildVersionDiffs(publicationRepository.findByPostIdOrderByVersionDesc(post.getId()));
         BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
         TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, versions, audience);

@@ -1439,6 +1439,7 @@ public class App {
 
         // Click the link (it uses htmx, so the main content should update)
         reliableClick(titleLink);
+        waitForReady();
     }
 
     private void _goTo(String url) {
@@ -1605,6 +1606,7 @@ public class App {
 
     public PostPage goToPost(User user, String slug) {
         driver.navigate().to(this.rootUri + "/" + user.getUsername() + "/post/" + slug);
+        waitForReady();
         return new PostPage();
     }
 
@@ -1644,12 +1646,11 @@ public class App {
     public App login(User user) {
         var loggedUser = Given.inject(LoggedUserProvider.class)
                               .login(user);
-        if (!driver.getCurrentUrl().contains(rootUri)) {
-            access();
-        }
+        access();
         driver.manage()
               .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
         driver.navigate().refresh();
+        waitForReady();
         return this;
     }
 

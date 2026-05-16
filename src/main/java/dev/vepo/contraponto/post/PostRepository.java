@@ -151,6 +151,8 @@ public class PostRepository {
                                               JOIN FETCH p.blog b
                                               JOIN FETCH b.owner o
                                               LEFT JOIN FETCH p.serie
+                                              LEFT JOIN FETCH p.livePublication lp
+                                              LEFT JOIN FETCH lp.tags
                                               WHERE p.published = TRUE AND
                                                     b.main = FALSE AND
                                                     b.slug = :blogSlug AND
@@ -251,6 +253,8 @@ public class PostRepository {
                                               JOIN FETCH p.blog b
                                               JOIN FETCH b.owner o
                                               LEFT JOIN FETCH p.serie
+                                              LEFT JOIN FETCH p.livePublication lp
+                                              LEFT JOIN FETCH lp.tags
                                               WHERE p.published = TRUE AND
                                                     b.main = TRUE AND
                                                     o.username = :username AND
