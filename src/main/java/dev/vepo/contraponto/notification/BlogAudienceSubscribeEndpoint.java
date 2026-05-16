@@ -51,7 +51,7 @@ public class BlogAudienceSubscribeEndpoint {
                         .message(message)
                         .type(Toast.Type.SUCCESS)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .page(BlogAudienceComponentEndpoint.Templates.audienceControls(componentEndpoint.buildView(blog)))
+                        .page(BlogAudienceComponentEndpoint.Templates.audienceControls(componentEndpoint.buildView(blog), true))
                         .build();
         } catch (BadRequestException e) {
             return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();

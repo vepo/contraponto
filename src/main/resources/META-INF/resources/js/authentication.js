@@ -15,11 +15,6 @@ class ContrapontoAuthentication {
         document.body.addEventListener('htmx:xhr:loadend', evt => {
             console.log('HTTP Response', evt);
         });
-
-        const token = _this.loadToken();
-        if (token) {
-            htmx.trigger("body", "loggedIn");
-        }
     }
 
     loadToken() {

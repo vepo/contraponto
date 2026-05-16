@@ -22,8 +22,7 @@ public class SignUpEndpoint {
     // Constants (align with LoginEndpoint)
     public static final String SESSION_COOKIE_NAME = LoginEndpoint.SESSION_COOKIE_NAME;
     private static final String SESSION_COOKIE_PATH = "/";
-    private static final String HX_TRIGGER_HEADER = "HX-Trigger";
-    private static final String LOGGED_IN_EVENT = "loggedIn";
+    private static final String HX_TRIGGER_HEADER = "HX-Trigger-After-Settle";
     private static final String MENU_CONTAINER_ID = "menu-container";
     private static final String MODAL_CLOSE_SCRIPT = """
                                                      <script>
@@ -102,7 +101,7 @@ public class SignUpEndpoint {
 
         return Response.ok(responseBody)
                        .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
-                       .header(HX_TRIGGER_HEADER, LOGGED_IN_EVENT)
+                       .header(HX_TRIGGER_HEADER, LoginEndpoint.HX_TRIGGER_LOGGED_IN)
                        .build();
     }
 }

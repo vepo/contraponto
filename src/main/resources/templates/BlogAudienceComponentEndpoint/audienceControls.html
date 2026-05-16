@@ -1,5 +1,5 @@
 {#if audience.showControls}
-<div id="blog-audience-{audience.blogId}" class="blog-audience">
+<div id="blog-audience-{audience.blogId}" class="blog-audience"{#if oob.or(false)} hx-swap-oob="outerHTML"{/if}>
     {#if audience.authenticated}
     <button type="button"
             class="btn btn--outline btn--sm {#if audience.following}btn--active{/if}"

@@ -37,6 +37,8 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     public void afterTestExecution(ExtensionContext context) throws Exception {
         logger.info("Navigate to an empty page...");
         driver.manage().deleteAllCookies();
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                                                                        "window.localStorage.clear(); window.sessionStorage.clear();");
         driver.manage().logs().get(LogType.BROWSER).getAll()
               .forEach(logEntry -> logger.info("Browser console: {}", logEntry.getMessage()));
         driver.get("about:blank");

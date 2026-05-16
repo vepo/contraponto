@@ -67,6 +67,7 @@ public class App {
 
         public App assertModalWasClosed() {
             wait.until(invisibilityOfElementLocated(By.className("modal__container")));
+            App.this.waitForReady();
             return App.this;
         }
 
@@ -720,6 +721,8 @@ public class App {
     }
 
     public class PostPage extends Page<PostPage> {
+        private static final String FOLLOW_BUTTON_SELECTOR = ".blog-audience button[hx-post*='/follow']";
+
         private PostPage() {}
 
         public PostPage assertCoverImagePresent() {
@@ -742,6 +745,32 @@ public class App {
             return this;
         }
 
+        public PostPage assertFollowButtonIsAuthenticated() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var buttons = driver.findElements(cssSelector(FOLLOW_BUTTON_SELECTOR));
+                return buttons.size() == 1
+                        && buttons.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertFollowButtonOpensLoginModal() {
+            var follow = wait.until(visibilityOfElementLocated(
+                                                               cssSelector(".blog-audience button[hx-get*='/auth/modal']")));
+            assertThat(follow.getAttribute("hx-get")).contains("/auth/modal");
+            return this;
+        }
+
+        public PostPage assertFollowButtonShowsFollowing() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var buttons = driver.findElements(cssSelector(FOLLOW_BUTTON_SELECTOR));
+                return buttons.size() == 1
+                        && buttons.get(0).isDisplayed()
+                        && "Following".equals(buttons.get(0).getText().trim());
+            });
+            return this;
+        }
+
         public PostPage assertPostTitle(String string) {
             // TODO
             return this;
@@ -750,6 +779,17 @@ public class App {
         public PostPage assertSeriesLinkVisible(String seriesTitle) {
             var link = wait.until(visibilityOfElementLocated(cssSelector(".article-page__serie-link")));
             assertThat(link.getText()).isEqualTo(seriesTitle);
+            return this;
+        }
+
+        public PostPage clickFollowButton() {
+            var follow = wait.until(elementToBeClickable(cssSelector(FOLLOW_BUTTON_SELECTOR)));
+            reliableClick(follow);
+            waitForReady();
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var buttons = driver.findElements(cssSelector(FOLLOW_BUTTON_SELECTOR));
+                return !buttons.isEmpty() && "Following".equals(buttons.get(0).getText().trim());
+            });
             return this;
         }
 
@@ -1692,6 +1732,8 @@ public class App {
 
     public App waitForReady() {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+        wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                                                                                   "return typeof htmx === 'undefined' || !document.querySelector('.htmx-request');")));
         return this;
     }
     // Inside App class, after SearchPage

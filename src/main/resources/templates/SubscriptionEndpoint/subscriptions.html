@@ -5,7 +5,12 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main class="subscriptions-page" id="main-content">
+        <main class="subscriptions-page" id="main-content"
+              hx-get="/subscriptions"
+              hx-select="main"
+              hx-target="main"
+              hx-swap="outerHTML"
+              hx-trigger="loggedIn from:body, loggedOut from:body">
             <div class="container-narrow">
                 <h1 class="subscriptions-page__title">Subscriptions</h1>
                 <p class="subscriptions-page__subtitle">Blogs you follow or receive by email.</p>

@@ -20,7 +20,7 @@ public class BlogAudienceComponentEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance audienceControls(BlogAudienceView audience);
+        public static native TemplateInstance audienceControls(BlogAudienceView audience, boolean oob);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -44,7 +44,7 @@ public class BlogAudienceComponentEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance audience(@PathParam("blogId") long blogId) {
         Blog blog = blogRepository.findById(blogId).filter(Blog::isActive).orElseThrow(NotFoundException::new);
-        return Templates.audienceControls(buildView(blog));
+        return Templates.audienceControls(buildView(blog), false);
     }
 
     public BlogAudienceView buildView(Blog blog) {

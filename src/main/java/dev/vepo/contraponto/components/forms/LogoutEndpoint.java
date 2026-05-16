@@ -47,7 +47,7 @@ public class LogoutEndpoint {
                            </script>
                            """.formatted(MenuEndpoint.Templates.menu(new LoggedUser()).render(),
                                          SignUpEndpoint.SESSION_COOKIE_NAME))
-                       .header("HX-Trigger", "loggedOut")
+                       .header("HX-Trigger-After-Settle", LoginEndpoint.HX_TRIGGER_LOGGED_OUT)
                        .build();
     }
 }

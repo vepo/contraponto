@@ -31,15 +31,17 @@ public class LoginEndpoint {
     // Constants for better maintainability
     public static final String SESSION_COOKIE_NAME = "__session";
     private static final String SESSION_COOKIE_PATH = "/";
-    private static final String HX_TRIGGER_HEADER = "HX-Trigger";
-    private static final String LOGGED_IN_EVENT = "loggedIn";
+    private static final String HX_TRIGGER_HEADER = "HX-Trigger-After-Settle";
+    /**
+     * HTMX trigger so listeners using {@code loggedIn from:body} refresh (e.g.
+     * follow buttons).
+     */
+    public static final String HX_TRIGGER_LOGGED_IN = "{\"loggedIn\":{\"target\":\"body\"}}";
+    public static final String HX_TRIGGER_LOGGED_OUT = "{\"loggedOut\":{\"target\":\"body\"}}";
     private static final String ERROR_MESSAGE_HTML = "<div class='error-message'>%s</div>";
     private static final String MENU_CONTAINER_ID = "menu-container";
-    private static final String MODAL_CLOSE_SCRIPT = """
-                                                     <script>
-                                                         document.getElementById('authModal').classList.remove('modal--open');
-                                                     </script>
-                                                     """;
+    private static final String MODAL_CLEAR_OOB =
+            "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
 
     private final UserRepository userRepository;
     private final ViewRepository viewRepository;
@@ -76,13 +78,13 @@ public class LoginEndpoint {
 
     /**
      * Builds the HTML response for a successful login. Uses OOB swap to replace the
-     * menu and a script to close the modal.
+     * menu and clear the auth modal.
      */
     private String buildSuccessResponseBody(String menuHtml) {
         return String.format("""
                              <div hx-swap-oob="true" id="%s">%s</div>
                              %s
-                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLOSE_SCRIPT);
+                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
     }
 
     /**
@@ -134,7 +136,7 @@ public class LoginEndpoint {
 
                                  return Response.ok(responseBody)
                                                 .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
-                                                .header(HX_TRIGGER_HEADER, LOGGED_IN_EVENT)
+                                                .header(HX_TRIGGER_HEADER, HX_TRIGGER_LOGGED_IN)
                                                 .build();
                              })
                              .orElseGet(() -> buildErrorResponse("Invalid username/email or password."));
