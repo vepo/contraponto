@@ -19,8 +19,25 @@ public class BlogForm {
     @FormParam("active")
     private String active;
 
+    @FormParam("git_enabled")
+    private String gitEnabled;
+
+    @FormParam("git_remote_url")
+    private String gitRemoteUrl;
+
+    @FormParam("git_branch")
+    private String gitBranch;
+
     public String getDescription() {
         return description;
+    }
+
+    public String getGitBranch() {
+        return gitBranch;
+    }
+
+    public String getGitRemoteUrl() {
+        return gitRemoteUrl;
     }
 
     public Long getId() {
@@ -37,5 +54,9 @@ public class BlogForm {
 
     public boolean isActive() {
         return active != null;
+    }
+
+    public boolean isGitEnabled() {
+        return gitEnabled != null;
     }
 }

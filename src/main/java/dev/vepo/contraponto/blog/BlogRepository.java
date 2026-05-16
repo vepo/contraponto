@@ -46,6 +46,19 @@ public class BlogRepository {
         return typedQuery.getSingleResult() > 0;
     }
 
+    public List<Long> findActiveBlogIdsForGitPoll() {
+        return entityManager.createQuery("""
+                                         SELECT b.id FROM Blog b
+                                         WHERE b.active = true AND
+                                               b.gitEnabled = true AND
+                                               b.gitRemoteUrl IS NOT NULL AND
+                                               TRIM(b.gitRemoteUrl) <> ''
+                                         ORDER BY b.id ASC
+                                         """,
+                                         Long.class)
+                            .getResultList();
+    }
+
     public List<Blog> findActiveBlogs(long ownerId) {
         return entityManager.createQuery("""
                                          FROM Blog

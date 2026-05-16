@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
+import dev.vepo.contraponto.git.BlogGitIntegrationService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -45,6 +46,8 @@ public class BlogSaveEndpoint {
 
     private final CustomPageRepository customPageRepository;
 
+    private final BlogGitIntegrationService blogGitIntegrationService;
+
     private final LoggedUser loggedUser;
 
     @Inject
@@ -52,12 +55,20 @@ public class BlogSaveEndpoint {
                             BlogAccess blogAccess,
                             UserRepository userRepository,
                             CustomPageRepository customPageRepository,
+                            BlogGitIntegrationService blogGitIntegrationService,
                             LoggedUser loggedUser) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
         this.customPageRepository = customPageRepository;
+        this.blogGitIntegrationService = blogGitIntegrationService;
         this.loggedUser = loggedUser;
+    }
+
+    private void applyGitIntegrationFields(Blog blog, BlogForm form) {
+        blog.setGitEnabled(form.isGitEnabled());
+        blog.setGitRemoteUrl(form.getGitRemoteUrl());
+        blog.setGitBranch(form.getGitBranch());
     }
 
     private Response badRequest(String message) {
@@ -151,8 +162,10 @@ public class BlogSaveEndpoint {
             if (updateError != null) {
                 return badRequest(updateError);
             }
+            applyGitIntegrationFields(blog, form);
             blogRepository.save(blog);
             logger.info("Updated blog id={} slug={}", blog.getId(), blog.getSlug());
+            triggerGitWarmupIfConfigured(blog);
             return successList();
         } else {
             if (!blogAccess.canCreate(loggedUser)) {
@@ -171,8 +184,10 @@ public class BlogSaveEndpoint {
             }
             blog = new Blog(owner, slug, form.getName().trim(), nullToEmpty(form.getDescription()));
             blog.setActive(form.isActive());
+            applyGitIntegrationFields(blog, form);
             blogRepository.save(blog);
             logger.info("Created blog id={} slug={}", blog.getId(), blog.getSlug());
+            triggerGitWarmupIfConfigured(blog);
             return successList();
         }
     }
@@ -186,6 +201,12 @@ public class BlogSaveEndpoint {
                     .url("/blogs")
                     .page(BlogManageEndpoint.Templates.list(listRows(), editorView, customPageRepository.loadLinks(), loggedUser))
                     .build();
+    }
+
+    private void triggerGitWarmupIfConfigured(Blog blog) {
+        if (blog.isGitEnabled() && blog.getGitRemoteUrl() != null && !blog.getGitRemoteUrl().isBlank()) {
+            blogGitIntegrationService.scheduleBlogRemoteSync(blog.getId());
+        }
     }
 
     private String updateExisting(Blog blog, BlogForm form) {
@@ -245,6 +266,22 @@ public class BlogSaveEndpoint {
                     return "This slug is reserved.";
                 }
             }
+        }
+        String gitIssue = validateGitIntegration(form);
+        if (gitIssue != null) {
+            return gitIssue;
+        }
+        return null;
+    }
+
+    private String validateGitIntegration(BlogForm form) {
+        if (form.isGitEnabled()) {
+            if (form.getGitRemoteUrl() == null || form.getGitRemoteUrl().isBlank()) {
+                return "Git remote URL is required when Git integration is enabled.";
+            }
+        }
+        if (form.getGitBranch() != null && form.getGitBranch().strip().length() > 255) {
+            return "Git branch name must be no more than 255 characters.";
         }
         return null;
     }

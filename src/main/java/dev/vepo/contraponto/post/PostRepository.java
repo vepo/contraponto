@@ -164,6 +164,21 @@ public class PostRepository {
                             .getResultList();
     }
 
+    public Optional<Post> findByBlogIdAndSlugWithTags(Long blogId, String slug) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         LEFT JOIN FETCH p.tags
+                                         LEFT JOIN FETCH p.serie
+                                         WHERE b.id = :blogId AND
+                                               p.slug = :slug
+                                         """, Post.class)
+                            .setParameter("blogId", blogId)
+                            .setParameter("slug", slug)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public Optional<Post> findById(Long id) {
         return Optional.ofNullable(entityManager.find(Post.class, id));
     }
@@ -312,6 +327,13 @@ public class PostRepository {
     public Post save(Post post) {
         entityManager.persist(post);
         logger.info("Updated post: {}", post.getSlug());
+        return post;
+    }
+
+    @Transactional
+    public Post saveFromGit(Post post) {
+        entityManager.persist(post);
+        logger.info("Git import persisted new post slug={}", post.getSlug());
         return post;
     }
 

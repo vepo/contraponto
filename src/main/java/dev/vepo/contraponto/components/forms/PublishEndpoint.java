@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
@@ -18,6 +19,7 @@ import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
@@ -55,6 +57,7 @@ public class PublishEndpoint {
     private final TagService tagService;
     private final SerieService serieService;
     private final LoggedUser loggedUser;
+    private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -63,6 +66,7 @@ public class PublishEndpoint {
                            ImageRepository imageRepository,
                            TagService tagService,
                            SerieService serieService,
+                           Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                            LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
@@ -70,6 +74,7 @@ public class PublishEndpoint {
         this.imageRepository = imageRepository;
         this.tagService = tagService;
         this.serieService = serieService;
+        this.postGitSyncEvents = postGitSyncEvents;
         this.loggedUser = loggedUser;
     }
 
@@ -172,6 +177,8 @@ public class PublishEndpoint {
         markAsPublishedIfNeeded(post);
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
+
+        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
 
         return buildSuccessResponse(post);
     }

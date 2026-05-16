@@ -3,6 +3,7 @@ package dev.vepo.contraponto.components.forms;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
@@ -13,6 +14,7 @@ import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
@@ -40,6 +42,7 @@ public class SaveDraftEndpoint {
     private final TagService tagService;
     private final SerieService serieService;
     private final LoggedUser loggedUser;
+    private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
 
     @Inject
     public SaveDraftEndpoint(PostRepository postRepository,
@@ -47,12 +50,14 @@ public class SaveDraftEndpoint {
                              ImageRepository imageRepository,
                              TagService tagService,
                              SerieService serieService,
+                             Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                              LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.imageRepository = imageRepository;
         this.tagService = tagService;
         this.serieService = serieService;
+        this.postGitSyncEvents = postGitSyncEvents;
         this.loggedUser = loggedUser;
     }
 
@@ -115,6 +120,8 @@ public class SaveDraftEndpoint {
         serieService.applySerieTitleToPost(post, request.serieTitle());
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
+
+        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
 
         return buildSuccessResponse(post);
     }

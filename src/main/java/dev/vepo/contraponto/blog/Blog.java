@@ -48,6 +48,18 @@ public class Blog {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "git_enabled", nullable = false)
+    private boolean gitEnabled;
+
+    @Column(name = "git_remote_url", length = 2048)
+    private String gitRemoteUrl;
+
+    @Column(name = "git_branch", nullable = false, length = 255)
+    private String gitBranch = "main";
+
+    @Column(name = "git_last_known_commit", length = 64)
+    private String gitLastKnownCommit;
+
     public Blog() {}
 
     public Blog(User user) {
@@ -89,6 +101,18 @@ public class Blog {
         return description;
     }
 
+    public String getGitBranch() {
+        return gitBranch;
+    }
+
+    public String getGitLastKnownCommit() {
+        return gitLastKnownCommit;
+    }
+
+    public String getGitRemoteUrl() {
+        return gitRemoteUrl;
+    }
+
     public Long getId() {
         return id;
     }
@@ -114,6 +138,10 @@ public class Blog {
         return active;
     }
 
+    public boolean isGitEnabled() {
+        return gitEnabled;
+    }
+
     public boolean isMain() {
         return main;
     }
@@ -128,6 +156,27 @@ public class Blog {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setGitBranch(String gitBranch) {
+        this.gitBranch = gitBranch == null || gitBranch.isBlank() ? "main" : gitBranch.trim();
+    }
+
+    public void setGitEnabled(boolean gitEnabled) {
+        this.gitEnabled = gitEnabled;
+    }
+
+    public void setGitLastKnownCommit(String gitLastKnownCommit) {
+        this.gitLastKnownCommit = gitLastKnownCommit;
+    }
+
+    public void setGitRemoteUrl(String gitRemoteUrl) {
+        if (gitRemoteUrl == null) {
+            this.gitRemoteUrl = null;
+        } else {
+            String trimmed = gitRemoteUrl.trim();
+            this.gitRemoteUrl = trimmed.isEmpty() ? null : trimmed;
+        }
     }
 
     public void setId(Long id) {
@@ -152,8 +201,12 @@ public class Blog {
 
     @Override
     public String toString() {
-        return "Blog [id=%d, name=%s, slug=%s, description=%s, owner=%s, main=%b, active=%b, createdAt=%s]".formatted(id, name, slug, description, owner,
-                                                                                                                      main, active, createdAt);
+        return "Blog [id=%d, name=%s, slug=%s, description=%s, owner=%s, main=%b, active=%b, gitEnabled=%b, createdAt=%s]".formatted(id, name, slug,
+                                                                                                                                     description,
+                                                                                                                                     owner,
+                                                                                                                                     main, active,
+                                                                                                                                     gitEnabled,
+                                                                                                                                     createdAt);
     }
 
 }
