@@ -1,166 +1,114 @@
-# Contraponto
+# Contraponto — A Blog Platform
 
-Plataforma de publicação de artigos com foco em escrita de qualidade, experiência de leitura imersiva e gerenciamento de conteúdo.
+Multi-author publishing with HTMX-driven navigation, per-user blogs, versioning, tags, series, notifications, and optional Git/Jekyll sync.
 
-## ✨ Funcionalidades
+## Tech stack
 
-- **Autenticação de usuários** – Cadastro, login, logout, perfil de usuário (com avatar via UI Avatars).
-- **Editor de artigos** – Editor WYSIWYG com suporte a Markdown, toolbar para formatação, slug personalizado, descrição resumida.
-- **Publicação e rascunhos** – Salvar como rascunho, publicar, editar posts já publicados.
-- **Biblioteca pessoal** – Lista organizada em abas (Rascunhos / Publicados) com ações de edição e exclusão (apenas rascunhos).
-- **Busca** – Busca em tempo real via modal ou página dedicada, pesquisa por título, descrição ou conteúdo.
-- **Página inicial** – Exibe posts publicados com destaque para o mais recente, grid responsivo.
-- **Upload de imagens** – Suporte a JPEG, PNG, GIF, WebP, redimensionamento e cache.
-- **HTMX** – Navegação sem recarregamento total da página, trocas parciais de conteúdo, requisições assíncronas.
-- **Design responsivo** – Adaptado para desktop, tablet e dispositivos móveis com tipografia elegante.
+| Layer | Technology |
+|-------|------------|
+| Backend | Quarkus (Java 17+) |
+| Templates | Qute |
+| UI dynamics | HTMX |
+| Database | PostgreSQL, Hibernate ORM, Flyway |
+| Tests | JUnit 5, Selenium, `App` DSL + `Given` builders |
+| Build | Maven |
 
-## 🧱 Tecnologias
-
-| Camada          | Tecnologias                                                                 |
-|-----------------|-----------------------------------------------------------------------------|
-| Backend         | Java 17+, Quarkus, RESTEasy Reactive, Hibernate ORM, CDI, Qute Templates    |
-| Frontend        | HTMX, CSS puro (design system customizado), JavaScript (validação, toasts) |
-| Banco de dados  | PostgreSQL (ou qualquer banco relacional via Hibernate)                    |
-| Autenticação    | Sessão gerenciada em memória (custom `LoggedUserProvider`), JCrypt para hash |
-| Imagens         | Upload para sistema de arquivos, geração automática de URLs                |
-| Build           | Maven, Quarkus Dev Services (para desenvolvimento)                         |
-
-## 📦 Pré‑requisitos
-
-- Java 17 ou superior
-- Maven 3.8+
-- PostgreSQL (ou configure outro banco no `application.properties`)
-- (Opcional) Docker – para rodar o banco via container
-
-## 🚀 Instalação e execução
-
-### Desenvolvimento (modo dev)
+## Quick start
 
 ```bash
-# Clonar o repositório
-git clone https://github.com/vepo/contraponto.git
-cd contraponto
-
-# Executar com Quarkus Dev Mode
 ./mvnw quarkus:dev
 ```
 
-A aplicação estará disponível em `http://localhost:8080`.  
-O modo dev oferece live reload, console Dev UI e configuração automática do banco via Dev Services (se não houver configuração explícita).
+Open [http://localhost:8080](http://localhost:8080). Dev mode runs Flyway clean+migrate (`%dev.quarkus.flyway.clean-at-start=true`) and loads sample data from `dev-import.sql`.
 
-### Produção
+Default admin (from migration): `admin` / password hash in `V0.0.1__Initial_schema.sql`.
 
-1. **Build**:
-   ```bash
-   ./mvnw clean package -Pprod
-   ```
+## Documentation
 
-2. **Executar**:
-   ```bash
-   java -jar target/quarkus-app/quarkus-run.jar
-   ```
+| Doc | Contents |
+|-----|----------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Patterns, URL map, schema overview, how to add features |
+| [AGENTS.md](AGENTS.md) | Index for AI / Cursor agents |
+| [docs/CONVENTIONS_CHECKLIST.md](docs/CONVENTIONS_CHECKLIST.md) | Doc gaps and conventions still to formalize |
+| [docs/Application-Guidelines.md](docs/Application-Guidelines.md) | Route and flow descriptions |
+| [docs/UI-Guidelines.md](docs/UI-Guidelines.md) | Typography, colors, components |
+| [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git repository layout for sync |
+| [.cursor/rules/](.cursor/rules/) | Cursor project rules |
 
-   Ou use a imagem Docker gerada:
-   ```bash
-   docker build -f src/main/docker/Dockerfile.jvm -t contraponto .
-   docker run -i --rm -p 8080:8080 contraponto
-   ```
-
-### Configuração do banco de dados
-
-Crie um arquivo `application.properties` (ou use variáveis de ambiente):
-
-```properties
-quarkus.datasource.db-kind=postgresql
-quarkus.datasource.username=meuusuario
-quarkus.datasource.password=minhasenha
-quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/contraponto
-
-quarkus.hibernate-orm.database.generation=update
-```
-
-O schema será criado automaticamente na primeira execução (`update`).
-
-## 📂 Estrutura de diretórios (relevante)
+## Project structure
 
 ```
-src/main/
-├── java/dev/vepo/contraponto/
-│   ├── auth/               # Serviço de hash de senha (BCrypt)
-│   ├── components/         # Endpoints de componentes reutilizáveis (menu, modal de auth)
-│   ├── home/               # Página inicial
-│   ├── image/              # Upload, armazenamento e recuperação de imagens
-│   ├── library/            # Página "Minha Biblioteca" (rascunhos + publicados)
-│   ├── post/               # Entidade Post, repositório, endpoints de visualização
-│   ├── search/             # Busca (página e modal)
-│   ├── shared/             # Infraestrutura: LoggedUser, filtros, extensões Qute
-│   ├── user/               # Entidade User, repositório
-│   └── write/              # Editor de artigos
-├── resources/
-│   ├── templates/          # Templates Qute (.html)
-│   ├── META-INF/resources/ # Arquivos estáticos (CSS, JS, imagens)
-│   └── application.properties
+src/main/java/dev/vepo/contraponto/
+├── admin/          # Editor review (/review)
+├── auth/           # Password service
+├── blog/           # Blogs (multi per user), public blog pages
+├── components/     # Header, menu, auth/publish forms
+├── custompage/     # Static pages + cache filter
+├── dashboard/      # Author dashboard
+├── git/            # Git ↔ Jekyll import/export
+├── home/           # Featured homepage
+├── image/          # Image upload API
+├── library/        # Drafts & published lists
+├── notification/   # Follow, subscribe, in-app + email
+├── post/           # Posts, publication snapshots
+├── profile/        # Profile settings
+├── renderer/       # Markdown / AsciiDoc
+├── rss/            # RSS feeds
+├── search/         # Modal + full-page search
+├── serie/          # Post series
+├── shared/         # LoggedUser, pagination, test helpers
+├── tag/            # Tag pages & curation
+├── user/           # Users & admin (/users)
+├── view/           # View counts
+└── write/          # Editor
 ```
 
-## 🔐 Autenticação
+## Features
 
-- O login/signup é feito via forms HTML + HTMX.
-- Após autenticação, um cookie `__session` é definido e uma sessão é mantida em memória (`LoggedUserProvider`).
-- A anotação `@Logged` em endpoints exige usuário autenticado (redireciona para home se não estiver).
-- O componente de menu é atualizado via OOB swap após login/logout.
-- A senha é armazenada usando BCrypt.
+- **Multi-blog** — main + secondary blogs per user; public URLs by username and blog slug
+- **Draft / publish** — working copy on `Post`; immutable `PostPublication` per publish; version history
+- **Tags & series** — taxonomy, tag landing pages, serialized posts
+- **Custom pages** — global, per-user main blog, or per secondary blog (`/page/...` URLs)
+- **Audience** — follow (in-app notifications) and email subscribe per blog
+- **Notifications** — in-app inbox, badge, mark-as-read
+- **Featured posts** — editors curate the homepage (`/review`)
+- **Search** — HTMX modal + paginated `/search`
+- **RSS** — site, blog, serie, and tag feeds
+- **Git sync** — optional Jekyll-shaped repos per blog ([convention](docs/git-jekyll-convention.md))
+- **Roles** — `USER`, `EDITOR`, `USER_ADMINISTRATOR`, `ADMIN`
+- **HTMX** — SPA-like navigation, toasts, modals
 
-## 🖼️ Upload de imagens
+## Useful routes
 
-- Endpoint: `POST /api/images` (multipart/form-data).
-- As imagens são salvas no diretório configurado (`image.storage.path`).
-- O nome do arquivo é renomeado para UUID + extensão original.
-- A URL de acesso é `/api/images/{uuid}`.
-- As imagens são cacheadas por 1 ano (Cache-Control).
+| Area | Path |
+|------|------|
+| Home | `/` |
+| Write | `/write`, `/write/draft/{id}` |
+| Library | `/library` |
+| Dashboard | `/dashboard` |
+| Profile | `/profile` |
+| Search | `/search` |
+| Review (editor) | `/review` |
+| Notifications | `/notifications` |
+| Subscriptions | `/subscriptions` |
+| Manage blogs | `/blogs` |
+| Manage users | `/users` |
+| Manage pages | `/pages` |
+| Tags | `/tags/{slug}` |
+| Site RSS | `/feed` |
 
-## 📝 Editor de artigos
+Post and blog URLs: `/{username}/post/{slug}`, `/{username}/{blogSlug}/post/{slug}`, etc. (see ARCHITECTURE.md).
 
-- Utiliza `<textarea>` com toolbar JavaScript que insere sintaxe Markdown.
-- Suporte a negrito, itálico, títulos, listas, citações, código e links.
-- O formulário envia dados para `/forms/write/draft` (salvar rascunho) ou `/forms/write/publish` (publicar).
-- Após publicação, redireciona para a página do post.
+## Testing
 
-## 🔍 Busca
+```bash
+./mvnw test
+```
 
-- **Modal**: acionada pelo ícone de lupa no cabeçalho. Mostra resultados em tempo real conforme digitação.
-- **Página dedicada**: acessível via `/search`. Permite paginação e visualização completa dos resultados.
-- A busca é feita no backend via HQL, pesquisando em título, descrição e conteúdo de posts publicados.
+- `@WebTest` — Quarkus + Selenium; inject `App` for navigation.
+- `Given.user()`, `Given.post()`, `Given.blog()`, `Given.customPage()` for data setup.
+- `Given.cleanup()` when tests leave shared data behind.
 
-## 🎨 Estilos e JavaScript
+## Cursor / AI setup
 
-- Arquivos CSS:
-  - `main.css` – sistema de design, componentes gerais, responsividade.
-  - `write.css` – estilos específicos da página de escrita.
-  - `fonts.css` – fontes auto-hospedadas (Cormorant Garamond, Inter, Playfair Display).
-- Scripts JS (em `META-INF/resources/js`):
-  - `main.js` – gerencia proteção de rotas, organização de elementos.
-  - `forms.js` – validação de formulários (pristine, mensagens de erro).
-  - `authentication.js` – injeta token JWT (se usado – atualmente não essencial).
-  - `header.js` – controla dropdown do menu do usuário.
-  - `write.js` – toolbar do editor.
-  - `toast.js` – notificações via cabeçalhos HTTP (`X-Toast-Message`).
-
-## 🧪 Testes (sugestão)
-
-A aplicação não possui testes automatizados no momento, mas é possível adicionar testes de integração com `@QuarkusTest` e `RestAssured`. Contribuições são bem‑vindas.
-
-## 🤝 Contribuindo
-
-1. Faça um fork do projeto.
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`).
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`).
-4. Push para a branch (`git push origin feature/nova-feature`).
-5. Abra um Pull Request.
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais informações.
-
----
-
-Desenvolvido com ❤️ e ☕ por [Victor Osório](https://github.com/vepo).
+Rules live in `.cursor/rules/` (`contraponto-core.mdc` always applies). Start from [AGENTS.md](AGENTS.md).

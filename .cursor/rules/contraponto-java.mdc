@@ -1,0 +1,39 @@
+---
+description: Java endpoint, repository, and entity conventions
+globs: src/main/java/**/*.java
+alwaysApply: false
+---
+
+# Java conventions
+
+## Import order
+
+1. `java.*` / `javax.*`
+2. `io.quarkus.*`
+3. Third-party
+4. `dev.vepo.contraponto.*`
+
+## Style
+
+- 4 spaces, K&R braces, ~120 char lines, `var` when type is obvious.
+
+## Entities
+
+- `jakarta.persistence`; `Long` ids; `LocalDateTime` timestamps.
+- Lazy associations by default; `JOIN FETCH` in queries when templates need them.
+- Posts belong to a `Blog` (`blog_id`), not directly to `User`.
+
+## Forms vs components
+
+- Mutations: `@Path("/forms/...")` with `hx-post` / `hx-put` / `hx-delete`.
+- HTMX partials: `@Path("/components/...")` (menu, grids, badges, audience widget).
+
+## Publishing
+
+- Publishing creates a `PostPublication` snapshot and sets `Post.livePublication`.
+- Fire `PostPublishedEvent` via `PostPublicationService` (notifications/email observer handles audience).
+
+## Git sync
+
+- After publish, `PostGitSyncRequestedEvent` may trigger export when blog has `gitEnabled`.
+- Layout: [docs/git-jekyll-convention.md](../../docs/git-jekyll-convention.md).

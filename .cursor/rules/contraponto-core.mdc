@@ -1,0 +1,50 @@
+---
+description: Core Contraponto conventions (HTMX, Qute, packages)
+alwaysApply: true
+---
+
+# Contraponto — core rules
+
+Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) and existing code in the same package.
+
+## Stack
+
+- Quarkus + Qute + HTMX (no SPA framework). PostgreSQL + Flyway (`db/migration/`).
+- Prefer server-rendered HTML fragments over client-side JS.
+
+## Endpoints
+
+- `@ApplicationScoped` + `@Path`. Constructor injection for repositories/services.
+- Prefer `Response` for status codes and headers (`X-Toast-Message` via toast helpers).
+- Qute: `@CheckedTemplate` inner class; templates co-located as `kebab-case.html` in the same package.
+
+## Data access
+
+- Repositories: `EntityManager` directly, no base class; `Optional` for single results; `@Transactional` on mutating methods.
+- Non-trivial domain logic: `@ApplicationScoped` `XxxService` (e.g. `PostPublicationService`, `BlogAudienceService`).
+- Side effects across aggregates: CDI events + `@Observes` observers (e.g. `PostPublishedEvent`).
+
+## URLs (do not hardcode in templates)
+
+- Posts: `PostEndpoint.extractUrl(post)` — `/{username}/post/{slug}` or `/{username}/{blogSlug}/post/{slug}`.
+- Custom pages: `CustomPagePaths.publicUrl(page)` — always includes `/page/` segment.
+- Links in Qute: `TemplateExtensions.url(...)`.
+
+## Auth
+
+- `@Logged` on protected endpoints. Authorization via `LoggedUser`, `BlogAccess`, `UserAccess`, `CustomPageAccess`.
+- Roles (`Role` enum): `USER`, `EDITOR`, `USER_ADMINISTRATOR`, `ADMIN` (multi-role via `tb_user_roles`).
+
+## Never
+
+- `System.out.println` — use SLF4J.
+- Raw HTML strings for pages — use Qute.
+- Modify `CustomPageFilter` without updating `CustomPageCache`; fire `CustomPageChangedEvent` after custom page CUD.
+
+## When adding a feature
+
+ARCHITECTURE.md §9 — entity → repository → service (if needed) → endpoint → template → test → links/navigation.
+
+## When fixing a test
+
+Understand failure first; fix `App` DSL or production code. Do not bypass the DSL with raw WebDriver calls.

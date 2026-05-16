@@ -2,6 +2,8 @@
 
 *This document describes the structural blueprint of the Contraponto publishing platform. It defines routes, their responsibilities, data sources, user roles, and internal navigation logic. It is intended for developers and system architects.*
 
+> **Note (2026-05):** Several sections predate multi-blog publications, notifications, tags, series, Git sync, and RSS. For an up-to-date URL map and patterns, see [ARCHITECTURE.md](../ARCHITECTURE.md). Track doc updates in [CONVENTIONS_CHECKLIST.md](CONVENTIONS_CHECKLIST.md).
+
 ---
 
 ## 1. Overview

@@ -1,0 +1,28 @@
+---
+description: WebTest, App DSL, and Given builder conventions
+globs: src/test/java/**/*.java
+alwaysApply: false
+---
+
+# Test conventions
+
+## Annotations
+
+- `@WebTest` on browser tests (Quarkus + Selenium via `WebTestExtension`).
+- `@QuarkusTest` for unit/integration tests without a browser.
+
+## App DSL
+
+- Inject `App app` in test methods; chain navigation (`app.access().loginModal()...`).
+- Add new page objects as inner classes on `App`, not raw `WebDriver` in tests.
+
+## Given builders
+
+- `Given.user()`, `Given.post()`, `Given.blog()`, `Given.customPage()`.
+- `Given.cleanup()` when tests create data that could affect others (shared DB).
+- `Given.randomCover()` / `Given.randomImage()` for upload flows.
+- `Given.transaction(...)` for custom persistence in builders.
+
+## URLs in tests
+
+- Use relative paths matching production routes; prefer `@TestHTTPResource` for base URL when needed.
