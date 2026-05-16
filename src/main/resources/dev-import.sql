@@ -8,6 +8,7 @@
 TRUNCATE TABLE tb_post_tags CASCADE;
 TRUNCATE TABLE tb_views CASCADE;
 TRUNCATE TABLE tb_posts CASCADE;
+TRUNCATE TABLE tb_series CASCADE;
 TRUNCATE TABLE tb_tags CASCADE;
 TRUNCATE TABLE tb_images CASCADE;
 
@@ -125,6 +126,15 @@ VALUES
     TRUE,
     '2024-04-01 08:00:00'
 );
+
+-- ============================================
+-- 2b. Séries do blog principal (tb_blogs.id = 1 admin)
+-- ============================================
+INSERT INTO tb_series (blog_id, title, slug, created_at)
+VALUES
+    (1, 'Distributed systems foundations', 'distributed-foundations', NOW()),
+    (1, 'Event streaming & messaging', 'event-streaming', NOW()),
+    (1, 'Spring ecosystem & resilience', 'spring-ecosystem', NOW());
 
 -- ============================================
 -- 3. Inserir posts publicados
@@ -1505,6 +1515,33 @@ Will include Spring Security 6 examples and Keycloak integration.',
     );
 
 END $$;
+
+-- ============================================
+-- 4b. Associar alguns posts a séries (resto permanece série NULL)
+-- ============================================
+UPDATE tb_posts SET serie_id = (SELECT id FROM tb_series WHERE blog_id = 1 AND slug = 'distributed-foundations')
+WHERE blog_id = 1 AND slug IN (
+    'introduction-to-distributed-systems-java',
+    'distributed-transactions-saga-pattern',
+    'observability-java-distributed-systems',
+    'grpc-java-performance-comparison',
+    'distributed-caching-java',
+    'virtual-threads-project-loom');
+
+UPDATE tb_posts SET serie_id = (SELECT id FROM tb_series WHERE blog_id = 1 AND slug = 'event-streaming')
+WHERE blog_id = 1 AND slug IN (
+    'apache-kafka-spring-boot-tutorial',
+    'apache-pulsar-vs-kafka',
+    'cdc-debezium-kafka');
+
+UPDATE tb_posts SET serie_id = (SELECT id FROM tb_series WHERE blog_id = 1 AND slug = 'spring-ecosystem')
+WHERE blog_id = 1 AND slug IN (
+    'microservices-patterns-spring-boot',
+    'kubernetes-java-microservices-deployment',
+    'resilience4j-practical-guide',
+    'spring-boot-3-native-docker',
+    'spring-cloud-gateway-jwt',
+    'graphql-java-spring-boot');
 
 -- ============================================
 -- 5. Tags e associações post ↔ tag
