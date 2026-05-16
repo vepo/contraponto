@@ -4,6 +4,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
+import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -34,7 +36,12 @@ public class BlogEndpoint {
 
         static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
 
-        public static native TemplateInstance home(User author, Page<Post> posts, Links links, LoggedUser user);
+        public static native TemplateInstance home(User author,
+                                                   Blog mainBlog,
+                                                   Page<Post> posts,
+                                                   Links links,
+                                                   LoggedUser user,
+                                                   BlogAudienceView audience);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -54,17 +61,20 @@ public class BlogEndpoint {
     private final CustomPageRepository customPageRepository;
     private final BlogRepository blogRepository;
     private final LoggedUser loggedUser;
+    private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
 
     @Inject
     public BlogEndpoint(UserRepository userRepository,
                         PostRepository postRepository,
                         CustomPageRepository customPageRepository,
                         BlogRepository blogRepository,
+                        BlogAudienceComponentEndpoint audienceComponentEndpoint,
                         LoggedUser loggedUser) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.blogRepository = blogRepository;
+        this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.loggedUser = loggedUser;
     }
 
@@ -76,9 +86,11 @@ public class BlogEndpoint {
 
         var mainBlog = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
         return Templates.home(user,
+                              mainBlog,
                               postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, 1)),
                               customPageRepository.loadLinks(mainBlog.getId()),
-                              loggedUser);
+                              loggedUser,
+                              audienceComponentEndpoint.buildView(mainBlog));
     }
 
     @GET

@@ -1,0 +1,62 @@
+package dev.vepo.contraponto.notification;
+
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.shared.infra.Logged;
+import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.toast.Toast;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+
+@Logged
+@ApplicationScoped
+@Path("/forms/blogs/{blogId}/follow")
+public class BlogAudienceFollowEndpoint {
+
+    private final BlogAudienceService audienceService;
+    private final BlogRepository blogRepository;
+    private final BlogAudienceComponentEndpoint componentEndpoint;
+    private final LoggedUser loggedUser;
+
+    @Inject
+    public BlogAudienceFollowEndpoint(BlogAudienceService audienceService,
+                                      BlogRepository blogRepository,
+                                      BlogAudienceComponentEndpoint componentEndpoint,
+                                      LoggedUser loggedUser) {
+        this.audienceService = audienceService;
+        this.blogRepository = blogRepository;
+        this.componentEndpoint = componentEndpoint;
+        this.loggedUser = loggedUser;
+    }
+
+    @POST
+    @Transactional
+    @Produces(MediaType.TEXT_HTML)
+    public Response toggle(@PathParam("blogId") long blogId) {
+        try {
+            boolean following = audienceService.toggleFollow(loggedUser.getId(), blogId);
+            Blog blog = blogRepository.findById(blogId).orElseThrow(NotFoundException::new);
+            String message = following ? "You are now following this blog." : "You unfollowed this blog.";
+            return Toast.ok()
+                        .message(message)
+                        .type(Toast.Type.SUCCESS)
+                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                        .page(BlogAudienceComponentEndpoint.Templates.audienceControls(componentEndpoint.buildView(blog)))
+                        .build();
+        } catch (BadRequestException e) {
+            return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
+        } catch (NotFoundException e) {
+            return Toast.response(Status.NOT_FOUND).message("Blog not found.").type(Toast.Type.ERROR).build();
+        }
+    }
+}

@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.notification.Notification;
+import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
@@ -220,6 +222,36 @@ public class TemplateExtensions {
     @TemplateExtension
     public static String url(Tag tag) {
         return TagPageEndpoint.url(tag);
+    }
+
+    @TemplateExtension
+    public static String message(Notification notification) {
+        String blogName = notification.getBlog().getName();
+        return switch (notification.getType()) {
+            case NEW_POST -> {
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : "a post";
+                if (title == null || title.isBlank()) {
+                    title = notification.getPost() != null ? notification.getPost().getSlug() : "a post";
+                }
+                yield blogName + " published " + title;
+            }
+            case NEW_FOLLOW -> {
+                String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
+                yield actor + " started following " + blogName;
+            }
+            case NEW_SUBSCRIBE -> {
+                String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
+                yield actor + " subscribed by email to " + blogName;
+            }
+        };
+    }
+
+    @TemplateExtension
+    public static String linkUrl(Notification notification) {
+        if (notification.getType() == NotificationType.NEW_POST && notification.getPost() != null) {
+            return PostEndpoint.extractUrl(notification.getPost());
+        }
+        return BlogEndpoint.extractUrl(notification.getBlog());
     }
 
     private TemplateExtensions() {

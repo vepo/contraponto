@@ -9,6 +9,7 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
+import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
@@ -63,6 +64,7 @@ public class PublishEndpoint {
     private final SerieService serieService;
     private final LoggedUser loggedUser;
     private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
+    private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -73,6 +75,7 @@ public class PublishEndpoint {
                            TagService tagService,
                            SerieService serieService,
                            Event<PostGitSyncRequestedEvent> postGitSyncEvents,
+                           BlogAudienceComponentEndpoint audienceComponentEndpoint,
                            LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
@@ -82,6 +85,7 @@ public class PublishEndpoint {
         this.tagService = tagService;
         this.serieService = serieService;
         this.postGitSyncEvents = postGitSyncEvents;
+        this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.loggedUser = loggedUser;
     }
 
@@ -115,7 +119,12 @@ public class PublishEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(TOAST_DURATION_LONG)
                     .url(postUrl)
-                    .page(PostEndpoint.Templates.post(view, links, loggedUser, 0L, List.of()))
+                    .page(PostEndpoint.Templates.post(view,
+                                                      links,
+                                                      loggedUser,
+                                                      0L,
+                                                      List.of(),
+                                                      audienceComponentEndpoint.buildView(blog)))
                     .build();
     }
 

@@ -1,0 +1,31 @@
+{#if audience.showControls}
+<div id="blog-audience-{audience.blogId}" class="blog-audience">
+    {#if audience.authenticated}
+    <button type="button"
+            class="btn btn--outline btn--sm {#if audience.following}btn--active{/if}"
+            hx-post="/forms/blogs/{audience.blogId}/follow"
+            hx-target="#blog-audience-{audience.blogId}"
+            hx-swap="outerHTML">
+        {#if audience.following}Following{#else}Follow{/if}
+    </button>
+    <button type="button"
+            class="btn btn--outline btn--sm {#if audience.emailSubscribed}btn--active{/if}"
+            hx-post="/forms/blogs/{audience.blogId}/subscribe"
+            hx-target="#blog-audience-{audience.blogId}"
+            hx-swap="outerHTML">
+        {#if audience.emailSubscribed}Subscribed{#else}Subscribe by email{/if}
+    </button>
+    {#else}
+    <button type="button"
+            class="btn btn--outline btn--sm"
+            hx-get="/auth/modal?mode=login"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">Follow</button>
+    <button type="button"
+            class="btn btn--outline btn--sm"
+            hx-get="/auth/modal?mode=login"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">Subscribe by email</button>
+    {/if}
+</div>
+{/if}

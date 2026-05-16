@@ -8,6 +8,7 @@
         <main id="main-content">
             <header class="user-blog-header container">
                 <h1 class="user-blog__name">{author.name}</h1>
+                {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
             </header>
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}

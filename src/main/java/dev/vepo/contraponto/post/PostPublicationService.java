@@ -7,8 +7,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.vepo.contraponto.notification.PostPublishedEvent;
 import dev.vepo.contraponto.tag.Tag;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -29,12 +31,15 @@ public class PostPublicationService {
 
     private final PostPublicationRepository publicationRepository;
     private final EntityManager entityManager;
+    private final Event<PostPublishedEvent> postPublishedEvents;
 
     @Inject
     public PostPublicationService(PostPublicationRepository publicationRepository,
-                                  EntityManager entityManager) {
+                                  EntityManager entityManager,
+                                  Event<PostPublishedEvent> postPublishedEvents) {
         this.publicationRepository = publicationRepository;
         this.entityManager = entityManager;
+        this.postPublishedEvents = postPublishedEvents;
     }
 
     public boolean hasUnpublishedChanges(Post post) {
@@ -86,7 +91,13 @@ public class PostPublicationService {
             post.setPublishedAt(candidate.getPublishedAt());
         }
         publicationRepository.findLatestByPostId(post.getId()).ifPresent(post::setLivePublication);
-        return publicationRepository.findLatestByPostId(post.getId()).orElse(candidate);
+        PostPublication published = publicationRepository.findLatestByPostId(post.getId()).orElse(candidate);
+        long authorUserId = post.getBlog().getOwner().getId();
+        postPublishedEvents.fire(new PostPublishedEvent(post.getId(),
+                                                        published.getId(),
+                                                        post.getBlog().getId(),
+                                                        authorUserId));
+        return published;
     }
 
     public PostPublication snapshotFrom(Post post) {

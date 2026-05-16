@@ -27,6 +27,11 @@
                     </a>
                     {/if}
                     {#include PostEndpoint/toggle post=view.post /}
+                    {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
+                </div>
+                {#else}
+                <div class="article-page__actions">
+                    {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
                 </div>
                 {/if}
 

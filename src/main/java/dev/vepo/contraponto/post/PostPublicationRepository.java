@@ -18,6 +18,10 @@ public class PostPublicationRepository {
         this.entityManager = entityManager;
     }
 
+    public Optional<PostPublication> findById(long id) {
+        return Optional.ofNullable(entityManager.find(PostPublication.class, id));
+    }
+
     public List<PostPublication> findByPostIdOrderByVersionDesc(long postId) {
         return entityManager.createQuery("""
                                          SELECT p FROM PostPublication p

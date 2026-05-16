@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{postTitle}</title>
+</head>
+<body>
+    <p><strong>{blogName}</strong> published a new post:</p>
+    <h2><a href="{postUrl}">{postTitle}</a></h2>
+    {#if !excerpt.isBlank()}
+    <p>{excerpt}</p>
+    {/if}
+    <p><a href="{postUrl}">Read on contraponto</a></p>
+    <hr>
+    <p style="font-size: 12px; color: #666;">
+        You receive this email because you subscribed to {blogName}.
+        <a href="{baseUrl}/subscriptions">Manage subscriptions</a>
+    </p>
+</body>
+</html>

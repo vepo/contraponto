@@ -32,6 +32,11 @@
             <div hx-get="/components/write-btn" hx-trigger="loggedIn from:body, loggedOut from:body">
                 {#include WriteButtonEndpoint/writeBtn /}
             </div>
+            <div id="notification-badge-container"
+                 hx-get="/components/notifications/badge"
+                 hx-trigger="loggedIn from:body, loggedOut from:body">
+                {#include NotificationBadgeEndpoint/badge unreadCount=0 authenticated=false /}
+            </div>
             <div id="menu-container" hx-get="/components/menu" hx-trigger="loggedIn from:body, loggedOut from:body">
                 {#include MenuEndpoint/menu /}
             </div>

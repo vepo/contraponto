@@ -9,6 +9,8 @@ import java.util.List;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
+import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.view.SessionIdProvider;
@@ -41,7 +43,8 @@ public class PostEndpoint {
                                                    Links links,
                                                    LoggedUser user,
                                                    long viewCount,
-                                                   List<PostChangeDiffService.VersionDiff> versions);
+                                                   List<PostChangeDiffService.VersionDiff> versions,
+                                                   BlogAudienceView audience);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
 
@@ -67,6 +70,7 @@ public class PostEndpoint {
     private final ViewRepository viewRepository;
 
     private final SessionIdProvider sessionIdProvider;
+    private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -75,7 +79,8 @@ public class PostEndpoint {
                         CustomPageRepository customPageRepository,
                         LoggedUser loggedUser,
                         ViewRepository viewRepository,
-                        SessionIdProvider sessionIdProvider) {
+                        SessionIdProvider sessionIdProvider,
+                        BlogAudienceComponentEndpoint audienceComponentEndpoint) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -83,6 +88,7 @@ public class PostEndpoint {
         this.loggedUser = loggedUser;
         this.viewRepository = viewRepository;
         this.sessionIdProvider = sessionIdProvider;
+        this.audienceComponentEndpoint = audienceComponentEndpoint;
     }
 
     @GET
@@ -155,7 +161,8 @@ public class PostEndpoint {
 
         PublishedPostView view = new PublishedPostView(post, post.getLivePublication());
         var versions = changeDiffService.buildVersionDiffs(publicationRepository.findByPostIdOrderByVersionDesc(post.getId()));
-        TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, versions);
+        BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
+        TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, versions, audience);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));
