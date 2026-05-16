@@ -53,6 +53,8 @@ public final class CustomPagePaths {
 
     public static boolean isReservedSegment(String segment) {
         return segment.equals("components")
+                || segment.equals("feed")
+                || segment.equals("main-blog")
                 || segment.equals("forms")
                 || segment.equals("api")
                 || segment.equals("write")

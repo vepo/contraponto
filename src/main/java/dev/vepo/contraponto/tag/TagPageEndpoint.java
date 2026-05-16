@@ -6,6 +6,7 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.rss.RssFeedRenderer;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -21,8 +22,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 @Path("/tags")
 @ApplicationScoped
@@ -40,6 +43,8 @@ public class TagPageEndpoint {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
         }
     }
+
+    private static final int FEED_LIMIT = 50;
 
     public static String url(Tag tag) {
         return "/tags/%s".formatted(tag.getSlug());
@@ -95,5 +100,20 @@ public class TagPageEndpoint {
                              postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, 1)),
                              customPageRepository.loadLinks(),
                              loggedUser);
+    }
+
+    @GET
+    @Path("{slug}/feed")
+    @Operation(hidden = true)
+    @Produces("application/rss+xml;charset=UTF-8")
+    public Response tagFeed(@PathParam("slug") String slug, @Context UriInfo uriInfo) {
+        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException("Tag not found: " + slug));
+        var posts = postRepository.findPublishedFeedByTagSlug(tag.getSlug(), FEED_LIMIT);
+        String desc = tag.getDescription();
+        if (desc == null || desc.isBlank()) {
+            desc = "Posts tagged %s".formatted(tag.getName());
+        }
+        var channel = new RssFeedRenderer.Channel(tag.getName(), url(tag), desc);
+        return Response.ok(RssFeedRenderer.render(channel, posts, uriInfo.getBaseUri())).build();
     }
 }

@@ -69,6 +69,20 @@ public class BlogRepository {
                             .getResultList();
     }
 
+    public Optional<Blog> findActiveByOwnerUsernameAndSlug(String username, String slug) {
+        return entityManager.createQuery("""
+                                         FROM Blog b
+                                         JOIN FETCH b.owner o
+                                         WHERE b.active = true AND
+                                               o.username = :username AND
+                                               b.slug = :slug
+                                         """, Blog.class)
+                            .setParameter("username", username)
+                            .setParameter("slug", slug)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public List<Blog> findAllActiveWithOwner() {
         return entityManager.createQuery("""
                                          FROM Blog b

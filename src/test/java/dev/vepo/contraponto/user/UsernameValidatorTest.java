@@ -22,4 +22,9 @@ class UsernameValidatorTest {
     void rejectsReservedUsername() {
         assertThat(usernameValidator.validate("pages")).hasValue("This username is reserved and cannot be used.");
     }
+
+    @Test
+    void rejects_feed_username() {
+        assertThat(usernameValidator.validate("feed")).hasValue("This username is reserved and cannot be used.");
+    }
 }

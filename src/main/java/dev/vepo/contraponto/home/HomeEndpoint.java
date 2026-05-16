@@ -23,6 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 @Path("/")
 @ApplicationScoped
 public class HomeEndpoint {
+
     @CheckedTemplate
     public static class Templates {
         static native TemplateInstance featured(Post post);

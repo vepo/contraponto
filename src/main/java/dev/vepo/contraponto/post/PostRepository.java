@@ -309,6 +309,91 @@ public class PostRepository {
                           countPublishedByTagSlug(tagSlug));
     }
 
+    public List<Post> findPublishedFeedByAuthor(long authorId, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE b.owner.id = :authorId AND p.published = true
+                                         ORDER BY p.publishedAt DESC NULLS LAST, p.id DESC
+                                         """, Post.class)
+                            .setParameter("authorId", authorId)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
+    public List<Post> findPublishedFeedByBlog(long blogId, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE b.id = :blogId AND p.published = true
+                                         ORDER BY p.publishedAt DESC NULLS LAST, p.id DESC
+                                         """, Post.class)
+                            .setParameter("blogId", blogId)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
+    public List<Post> findPublishedFeedBySerie(long serieId, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.serie.id = :serieId AND p.published = true
+                                         ORDER BY p.publishedAt DESC NULLS LAST, p.id DESC
+                                         """, Post.class)
+                            .setParameter("serieId", serieId)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
+    public List<Post> findPublishedFeedByTagSlug(String tagSlug, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.published = true AND
+                                               EXISTS (SELECT 1 FROM Post p2 JOIN p2.tags t
+                                                       WHERE p2.id = p.id AND t.slug = :slug)
+                                         ORDER BY p.publishedAt DESC NULLS LAST, p.id DESC
+                                         """, Post.class)
+                            .setParameter("slug", tagSlug)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
+    public List<Post> findPublishedFeedGlobal(int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.published = true
+                                         ORDER BY p.publishedAt DESC NULLS LAST, p.id DESC
+                                         """, Post.class)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
+    public List<Post> findPublishedFeedMainBlogByOwner(long ownerId, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE b.owner.id = :ownerId AND b.main = true AND p.published = true
+                                         ORDER BY p.publishedAt DESC NULLS LAST, p.id DESC
+                                         """, Post.class)
+                            .setParameter("ownerId", ownerId)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
         return entityManager.createQuery("""
                                          SELECT DISTINCT p FROM Post p
