@@ -37,6 +37,16 @@
                 </div>
                 {/if}
 
+                {#if post.serie}
+                <p class="article-page__serie">
+                    <a data-hx-get="{post.serie.url}"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-push-url="{post.serie.url}"
+                       class="article-page__serie-link">{post.serie.title}</a>
+                </p>
+                {/if}
+
                 <h1 class="article-page__title">{post.title}</h1>
 
                 {#include components/post-tags post=post /}

@@ -37,7 +37,8 @@ public class WriteEndpoint {
                                                     LoggedUser user,
                                                     List<Blog> blogs,
                                                     Long selectedBlogId,
-                                                    String initialTagsJson);
+                                                    String initialTagsJson,
+                                                    String initialSerieTitle);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -82,7 +83,8 @@ public class WriteEndpoint {
                                loggedUser,
                                blogs,
                                selectedBlogId,
-                               "[]");
+                               "[]",
+                               "");
     }
 
     @GET
@@ -100,9 +102,11 @@ public class WriteEndpoint {
         Post post = maybePost.get();
         Long selectedBlogId = post.getBlog().getId(); // editing, preserve blog
         String initialTagsJson = tagService.tagsToJson(post);
+        String initialSerieTitle = post.getSerie() != null ? post.getSerie().getTitle() : "";
         return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser,
                                blogs,
                                selectedBlogId,
-                               initialTagsJson);
+                               initialTagsJson,
+                               initialSerieTitle);
     }
 }

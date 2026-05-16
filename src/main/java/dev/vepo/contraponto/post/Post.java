@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.User;
@@ -50,6 +51,10 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "serie_id")
+    private Serie serie;
 
     @ManyToMany
     @JoinTable(name = "tb_post_tags", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
@@ -155,6 +160,10 @@ public class Post {
         return publishedAt;
     }
 
+    public Serie getSerie() {
+        return serie;
+    }
+
     public String getSlug() {
         return slug;
     }
@@ -222,6 +231,10 @@ public class Post {
 
     public void setPublishedAt(LocalDateTime publishedAt) {
         this.publishedAt = publishedAt;
+    }
+
+    public void setSerie(Serie serie) {
+        this.serie = serie;
     }
 
     public void setSlug(String slug) {

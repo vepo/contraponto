@@ -136,6 +136,7 @@ public class PostRepository {
                                               JOIN FETCH p.blog b
                                               JOIN FETCH b.owner o
                                               LEFT JOIN FETCH p.tags
+                                              LEFT JOIN FETCH p.serie
                                               WHERE p.published = TRUE AND
                                                     b.main = FALSE AND
                                                     b.slug = :blogSlug AND
@@ -171,6 +172,7 @@ public class PostRepository {
         return entityManager.createQuery("""
                                          SELECT DISTINCT p FROM Post p
                                          LEFT JOIN FETCH p.tags
+                                         LEFT JOIN FETCH p.serie
                                          WHERE p.id = :id
                                          """, Post.class)
                             .setParameter("id", id)
@@ -211,6 +213,7 @@ public class PostRepository {
                                               JOIN FETCH p.blog b
                                               JOIN FETCH b.owner o
                                               LEFT JOIN FETCH p.tags
+                                              LEFT JOIN FETCH p.serie
                                               WHERE p.published = TRUE AND
                                                     b.main = TRUE AND
                                                     o.username = :username AND
@@ -256,6 +259,19 @@ public class PostRepository {
                           query.page(),
                           query.limit(),
                           countPublishedByAuthor(authorId));
+    }
+
+    public List<Post> findPublishedBySerieOrdered(long serieId) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.serie.id = :serieId AND p.published = true
+                                         ORDER BY p.publishedAt ASC NULLS LAST, p.id ASC
+                                         """, Post.class)
+                            .setParameter("serieId", serieId)
+                            .getResultList();
     }
 
     public Page<Post> findPublishedByTagSlug(String tagSlug, PageQuery query) {

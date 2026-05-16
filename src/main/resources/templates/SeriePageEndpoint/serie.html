@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {serie.title} — serie — contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main id="main-content" class="user-blog-page">
+            <header class="serie-page-header container">
+                <p class="serie-page__label">Serie</p>
+                <h1 class="serie-page__title">{serie.title}</h1>
+            </header>
+
+            <div class="container">
+                <div class="posts-grid">
+                    {#if posts.size == 0}
+                    <div class="user-blog__empty">
+                        No published posts in this series yet.
+                    </div>
+                    {/if}
+                    {#for post in posts}
+                    <article class="article-card">
+                        {#if post.cover}
+                        <div class="article-card__image">
+                            <a data-hx-get="{post.url}"
+                                hx-select="main"
+                                hx-target="main"
+                                hx-push-url="{post.url}">
+                                <img src="{post.cover.url}" alt="{post.title}"/>
+                            </a>
+                        </div>
+                        {/if}
+                        <div class="article-card__content">
+                            <div class="article-card__category">Article</div>
+                            <h2 class="article-card__title">
+                                <a data-hx-get="{post.url}"
+                                    hx-select="main"
+                                    hx-target="main"
+                                    hx-push-url="{post.url}">{post.title}</a>
+                            </h2>
+                            <p class="article-card__excerpt">{post.description}</p>
+                            {#include components/post-tags post=post /}
+                            <div class="article-meta">
+                                <a data-hx-get="/{post.author.username}"
+                                    hx-select="main"
+                                    hx-target="main"
+                                    hx-push-url="/{post.author.username}">
+                                    <span class="article-meta__author">{post.author.name}</span>
+                                </a>
+                                <span class="article-meta__dot">•</span>
+                                <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
+                                <span class="article-meta__dot">•</span>
+                                <span>{post.content.readTime}</span>
+                            </div>
+                        </div>
+                    </article>
+                    {/for}
+                </div>
+            </div>
+        </main>
+
+        {#include components/footer /}
+    </body>
+</html>

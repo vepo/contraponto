@@ -114,6 +114,18 @@
     color: #cbd5e0;
 }
 
+.write-form__serie {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.write-form__optional {
+    font-weight: 400;
+    color: #6b6b6b;
+    font-size: 0.85em;
+}
+
 .write-form__slug {
     width: 100%;
     font-family: 'Inter', Helvetica, sans-serif;

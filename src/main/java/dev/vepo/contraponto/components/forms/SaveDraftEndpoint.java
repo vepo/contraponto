@@ -7,6 +7,7 @@ import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -37,6 +38,7 @@ public class SaveDraftEndpoint {
     private final BlogRepository blogRepository;
     private final ImageRepository imageRepository;
     private final TagService tagService;
+    private final SerieService serieService;
     private final LoggedUser loggedUser;
 
     @Inject
@@ -44,11 +46,13 @@ public class SaveDraftEndpoint {
                              BlogRepository blogRepository,
                              ImageRepository imageRepository,
                              TagService tagService,
+                             SerieService serieService,
                              LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.imageRepository = imageRepository;
         this.tagService = tagService;
+        this.serieService = serieService;
         this.loggedUser = loggedUser;
     }
 
@@ -108,6 +112,7 @@ public class SaveDraftEndpoint {
         updateCoverImageIfProvided(post, request);
         setFormat(post, request);
         fillPostMetadata(post, request);
+        serieService.applySerieTitleToPost(post, request.serieTitle());
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
 

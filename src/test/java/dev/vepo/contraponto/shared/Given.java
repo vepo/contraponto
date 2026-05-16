@@ -28,8 +28,11 @@ import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.ImageService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.serie.Serie;
+import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagRepository;
+import dev.vepo.contraponto.tag.TagSlug;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -154,6 +157,7 @@ public interface Given {
         private boolean published;
         private boolean featured;
         private java.util.List<String> tagLabels = new java.util.ArrayList<>();
+        private String serieTitle;
 
         private PostBuilder() {
             this.title = null;
@@ -183,6 +187,17 @@ public interface Given {
                 }
                 if (Objects.isNull(post.getDescription()) || post.getDescription().isBlank()) {
                     post.setDescription(post.getTitle());
+                }
+                if (serieTitle != null && !serieTitle.isBlank()) {
+                    String trimmed = serieTitle.trim();
+                    String seriesSlug = TagSlug.slugify(trimmed);
+                    if (!seriesSlug.isEmpty()) {
+                        Blog b = post.getBlog();
+                        var sr = inject(SerieRepository.class);
+                        Serie serie = sr.findByBlogIdAndSlug(b.getId(), seriesSlug)
+                                        .orElseGet(() -> sr.persist(new Serie(b, trimmed, seriesSlug)));
+                        post.setSerie(serie);
+                    }
                 }
                 inject(EntityManager.class).persist(post);
                 for (String label : tagLabels) {
@@ -224,6 +239,11 @@ public interface Given {
 
         public PostBuilder withPublished(boolean published) {
             this.published = published;
+            return this;
+        }
+
+        public PostBuilder withSerieTitle(String serieTitle) {
+            this.serieTitle = serieTitle;
             return this;
         }
 
@@ -328,7 +348,7 @@ public interface Given {
 
     public static void cleanup() {
         transaction(() -> {
-            Stream.of(Post.class, Tag.class, CustomPage.class, Blog.class, User.class)
+            Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Blog.class, User.class)
                   .sequential()
                   .forEachOrdered(Given::deleteAll);
         });

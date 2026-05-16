@@ -12,6 +12,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -52,6 +53,7 @@ public class PublishEndpoint {
     private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
     private final TagService tagService;
+    private final SerieService serieService;
     private final LoggedUser loggedUser;
 
     @Inject
@@ -60,12 +62,14 @@ public class PublishEndpoint {
                            CustomPageRepository customPageRepository,
                            ImageRepository imageRepository,
                            TagService tagService,
+                           SerieService serieService,
                            LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
         this.tagService = tagService;
+        this.serieService = serieService;
         this.loggedUser = loggedUser;
     }
 
@@ -164,6 +168,7 @@ public class PublishEndpoint {
         updateCoverImage(post, request);
         fillPostMetadata(post, request);
         generateSlugIfMissing(post, request);
+        serieService.applySerieTitleToPost(post, request.serieTitle());
         markAsPublishedIfNeeded(post);
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());

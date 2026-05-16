@@ -747,6 +747,12 @@ public class App {
             return this;
         }
 
+        public PostPage assertSeriesLinkVisible(String seriesTitle) {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".article-page__serie-link")));
+            assertThat(link.getText()).isEqualTo(seriesTitle);
+            return this;
+        }
+
         public PostPage toggleFeatured() {
             var postFeaturedButton = driver.findElement(By.cssSelector("#post-featured-toggle"));
             postFeaturedButton.click();
@@ -983,6 +989,28 @@ public class App {
         public SearchPage type(String query) {
             var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='q']")));
             input.sendKeys(query);
+            return this;
+        }
+    }
+
+    public class SerieBrowsePage extends Page<SerieBrowsePage> {
+        private SerieBrowsePage() {}
+
+        public SerieBrowsePage assertListsPostTitle(String title) {
+            wait.until(visibilityOfElementLocated(cssSelector(".article-card__title")));
+            var main = wait.until(visibilityOfElementLocated(By.tagName("main")));
+            assertThat(main.getText()).contains(title);
+            return this;
+        }
+
+        /**
+         * Published order is oldest-first; body text should list part1 before part2.
+         */
+        public SerieBrowsePage assertPostListedBefore(String earlierTitle, String laterTitle) {
+            wait.until(visibilityOfElementLocated(cssSelector(".article-card__title")));
+            var main = wait.until(visibilityOfElementLocated(By.tagName("main")));
+            String text = main.getText();
+            assertThat(text.indexOf(earlierTitle)).isLessThan(text.indexOf(laterTitle));
             return this;
         }
     }
@@ -1550,6 +1578,12 @@ public class App {
         wait.until(visibilityOfElementLocated(cssSelector(".review-page")));
         waitForReady();
         return new ReviewPage();
+    }
+
+    public SerieBrowsePage goToSerie(String username, String serieSlug) {
+        _goTo("/" + username + "/serie/" + serieSlug);
+        waitForReady();
+        return new SerieBrowsePage();
     }
 
     public TagBrowsePage goToTag(String slug) {
