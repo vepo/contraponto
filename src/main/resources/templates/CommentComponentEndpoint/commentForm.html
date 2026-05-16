@@ -1,0 +1,16 @@
+<form class="comment-form"
+      hx-post="{#if parentId}/forms/posts/{postId}/comments/{parentId}/replies{#else}/forms/posts/{postId}/comments{/if}"
+      hx-target="#comments"
+      hx-swap="innerHTML">
+    <label class="sr-only" for="comment-body-{postId}-{parentId ?: 'root'}">Comment</label>
+    <textarea id="comment-body-{postId}-{parentId ?: 'root'}"
+              name="body"
+              class="comment-form__input"
+              rows="3"
+              maxlength="2000"
+              placeholder="{#if parentId}Write a reply…{#else}Write a comment…{/if}"
+              required></textarea>
+    <button type="submit" class="btn btn--outline btn--sm comment-form__submit">
+        {#if parentId}Reply{#else}Comment{/if}
+    </button>
+</form>

@@ -1,0 +1,42 @@
+<section id="comments" class="comments-section">
+    <h2 class="comments-section__title">Comments</h2>
+
+    {#if section.postOwner && !section.pending.isEmpty}
+    <div class="comments-section__pending">
+        <h3 class="comments-section__subtitle">Pending moderation</h3>
+        <ul class="comment-list">
+            {#for c in section.pending}
+            <li class="comment-list__item">
+                {#include CommentComponentEndpoint/comment comment=c post=section.post commentsUrl=section.commentsUrl authenticated=section.authenticated postOwner=section.postOwner /}
+            </li>
+            {/for}
+        </ul>
+    </div>
+    {/if}
+
+    {#if section.authenticated}
+    {#include CommentComponentEndpoint/commentForm postId=section.post.id parentId=null commentsUrl=section.commentsUrl /}
+    {#else}
+    <p class="comments-section__login-hint">
+        <button type="button"
+                class="btn btn--outline btn--sm"
+                hx-get="/auth/modal?mode=login"
+                hx-target="#modal-container"
+                hx-swap="innerHTML">Sign in</button>
+        to leave a comment.
+    </p>
+    {/if}
+
+    {#if section.roots.isEmpty}
+    <p class="comments-section__empty">No comments yet.</p>
+    {#else}
+    <ul class="comment-list">
+        {#for c in section.roots}
+        <li class="comment-list__item" id="comment-{c.id}">
+            {#include CommentComponentEndpoint/comment comment=c post=section.post commentsUrl=section.commentsUrl authenticated=section.authenticated postOwner=section.postOwner /}
+            <div id="replies-{c.id}" class="comment-replies"></div>
+        </li>
+        {/for}
+    </ul>
+    {/if}
+</section>

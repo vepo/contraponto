@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.comment.PostComment;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
@@ -23,6 +24,7 @@ public class NotificationService {
                         Blog blog,
                         Post post,
                         PostPublication publication,
+                        PostComment comment,
                         User actor) {
         Notification notification = new Notification();
         notification.setRecipient(recipient);
@@ -30,23 +32,29 @@ public class NotificationService {
         notification.setBlog(blog);
         notification.setPost(post);
         notification.setPublication(publication);
+        notification.setComment(comment);
         notification.setActor(actor);
         notification.setRead(false);
         notificationRepository.create(notification);
     }
 
     @Transactional
+    public void notifyNewComment(User recipient, Post post, PostComment comment, User actor) {
+        create(recipient, NotificationType.NEW_COMMENT, post.getBlog(), post, null, comment, actor);
+    }
+
+    @Transactional
     public void notifyNewFollow(User recipient, Blog blog, User actor) {
-        create(recipient, NotificationType.NEW_FOLLOW, blog, null, null, actor);
+        create(recipient, NotificationType.NEW_FOLLOW, blog, null, null, null, actor);
     }
 
     @Transactional
     public void notifyNewPost(User recipient, Blog blog, Post post, PostPublication publication) {
-        create(recipient, NotificationType.NEW_POST, blog, post, publication, null);
+        create(recipient, NotificationType.NEW_POST, blog, post, publication, null, null);
     }
 
     @Transactional
     public void notifyNewSubscribe(User recipient, Blog blog, User actor) {
-        create(recipient, NotificationType.NEW_SUBSCRIBE, blog, null, null, actor);
+        create(recipient, NotificationType.NEW_SUBSCRIBE, blog, null, null, null, actor);
     }
 }

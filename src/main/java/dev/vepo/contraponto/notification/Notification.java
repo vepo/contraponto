@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.comment.PostComment;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
@@ -52,6 +53,10 @@ public class Notification {
     @JoinColumn(name = "actor_user_id")
     private User actor;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private PostComment comment;
+
     @Column(nullable = false)
     private boolean read;
 
@@ -81,6 +86,10 @@ public class Notification {
 
     public Blog getBlog() {
         return blog;
+    }
+
+    public PostComment getComment() {
+        return comment;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -129,6 +138,10 @@ public class Notification {
 
     public void setBlog(Blog blog) {
         this.blog = blog;
+    }
+
+    public void setComment(PostComment comment) {
+        this.comment = comment;
     }
 
     public void setPost(Post post) {

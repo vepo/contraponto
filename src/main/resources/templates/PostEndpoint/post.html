@@ -77,6 +77,13 @@
                     {view.render.raw}
                 </article>
 
+                <div id="comments"
+                     class="comments-section comments-section--loading"
+                     hx-get="{view.post.url}/components/comments"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                </div>
+
                 {#include PostEndpoint/history versions=versions /}
             </div>
         </main>

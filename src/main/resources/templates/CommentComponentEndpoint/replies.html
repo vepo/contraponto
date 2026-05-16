@@ -1,0 +1,17 @@
+<div class="comment-replies__panel">
+    {#if replies.isEmpty}
+    <p class="comment-replies__empty">No replies yet.</p>
+    {#else}
+    <ul class="comment-list comment-list--replies">
+        {#for c in replies}
+        <li class="comment-list__item">
+            {#include CommentComponentEndpoint/comment comment=c post=post commentsUrl=commentsUrl authenticated=authenticated postOwner=postOwner /}
+        </li>
+        {/for}
+    </ul>
+    {/if}
+
+    {#if authenticated}
+    {#include CommentComponentEndpoint/commentForm postId=post.id parentId=root.id commentsUrl=commentsUrl /}
+    {/if}
+</div>

@@ -1,0 +1,45 @@
+<article class="comment {#if comment.depth > 0}comment--reply{/if}" style="--comment-depth: {comment.depth}">
+    <header class="comment__header">
+        <span class="comment__author">{comment.authorName}</span>
+        <time class="comment__time">{comment.createdAt.format('dd/MM/yyyy HH:mm')}</time>
+        {#if comment.pendingOwn}
+        <span class="comment__badge">Pending approval</span>
+        {/if}
+    </header>
+    <p class="comment__body">{comment.body}</p>
+
+    {#if comment.canModerate}
+    <div class="comment__actions">
+        <button type="button"
+                class="btn btn--outline btn--sm"
+                hx-post="/forms/posts/{post.id}/comments/{comment.id}/approve"
+                hx-target="#comments"
+                hx-swap="innerHTML">Approve</button>
+        <button type="button"
+                class="btn btn--outline btn--sm"
+                hx-post="/forms/posts/{post.id}/comments/{comment.id}/reject"
+                hx-target="#comments"
+                hx-swap="innerHTML">Reject</button>
+    </div>
+    {/if}
+
+    {#if comment.depth == 0}
+    <footer class="comment__footer">
+        {#if comment.replyCount > 0}
+        <span class="comment__reply-count">{comment.replyCount} {#if comment.replyCount == 1}reply{#else}replies{/if}</span>
+        {/if}
+        <button type="button"
+                class="comment__view-replies"
+                hx-get="{commentsUrl}/{comment.id}/replies"
+                hx-target="#replies-{comment.id}"
+                hx-swap="innerHTML">View replies</button>
+    </footer>
+    {#else if authenticated}
+    <footer class="comment__footer">
+        <details class="comment__reply-details">
+            <summary class="comment__view-replies">Reply</summary>
+            {#include CommentComponentEndpoint/commentForm postId=post.id parentId=comment.id commentsUrl=commentsUrl /}
+        </details>
+    </footer>
+    {/if}
+</article>

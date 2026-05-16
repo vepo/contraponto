@@ -243,13 +243,27 @@ public class TemplateExtensions {
                 String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
                 yield actor + " subscribed by email to " + blogName;
             }
+            case NEW_COMMENT -> {
+                String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : "a post";
+                if (title == null || title.isBlank()) {
+                    title = notification.getPost() != null ? notification.getPost().getSlug() : "a post";
+                }
+                yield actor + " commented on " + title;
+            }
         };
     }
 
     @TemplateExtension
     public static String linkUrl(Notification notification) {
-        if (notification.getType() == NotificationType.NEW_POST && notification.getPost() != null) {
-            return PostEndpoint.extractUrl(notification.getPost());
+        if ((notification.getType() == NotificationType.NEW_POST
+                || notification.getType() == NotificationType.NEW_COMMENT)
+                && notification.getPost() != null) {
+            String url = PostEndpoint.extractUrl(notification.getPost());
+            if (notification.getType() == NotificationType.NEW_COMMENT) {
+                return url + "#comments";
+            }
+            return url;
         }
         return BlogEndpoint.extractUrl(notification.getBlog());
     }
