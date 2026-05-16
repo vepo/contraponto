@@ -16,6 +16,7 @@
                       hx-post="/forms/profile" 
                       hx-target="#profileMessage" 
                       hx-swap="innerHTML"
+                      hx-indicator="#profile-htmx-indicator"
 					  autocomplete="off">
 
 					<h2>Account</h2>
@@ -53,6 +54,7 @@
                         <div class="error-message match">Passwords do not match.</div>
                     </div>
                     
+                    {#include components/htmx-spinner id='profile-htmx-indicator' /}
                     <button type="submit" class="btn btn--primary">Save Changes</button>
                 </form>
             </div>

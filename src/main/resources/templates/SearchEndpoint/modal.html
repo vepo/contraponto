@@ -5,13 +5,14 @@
             <button class="modal__close" onclick="this.closest('.modal').remove()">✕</button>
         </div>
         <div class="modal__body">
-            <form class="search-form" 
-                  hx-get="/search/results" 
-                  hx-target="#modalSearchResults"
-                  hx-select="#searchResults"
-                  hx-trigger="keyup changed delay:300ms"
-                  hx-push-url="false"
-                  hx-params="q">
+                <form class="search-form" 
+                      hx-get="/search/results" 
+                      hx-target="#modalSearchResults"
+                      hx-select="#searchResults"
+                      hx-trigger="keyup changed delay:300ms"
+                      hx-push-url="false"
+                      hx-indicator="#search-modal-htmx-indicator"
+                      hx-params="q">
                 <div class="search-form__group">
                     <input type="search" 
                            name="q" 
@@ -20,6 +21,7 @@
                            autocomplete="off"
                            value="" 
                            autofocus/>
+                    {#include components/htmx-spinner id='search-modal-htmx-indicator' /}
                 </div>
             </form>
             <div id="modalSearchResults" class="search-results-modal">
@@ -37,7 +39,7 @@
                         hx-target="main"
                         hx-push-url="/search"
                         hx-swap="outerHTML"
-                        style="display: none;">Go to advanced</button>
+                        class="u-hidden">Go to advanced</button>
             </div>
             <div class="search-modal__footer">
                 <a onclick="main.closeModal('#btnGoToAdvanced')"

@@ -34,7 +34,7 @@ class ToastManager {
         this.toastElement = document.createElement('div');
         this.toastElement.id = 'toast';
         this.toastElement.className = 'toast';
-        this.toastElement.style.display = 'none';
+        this.toastElement.className = 'toast u-hidden';
         this.toastElement.innerHTML = `
             <div class="toast__content">
                 <span id="toastMessage"></span>
@@ -72,7 +72,7 @@ class ToastManager {
         }
 
         // Show the toast
-        toast.style.display = 'block';
+        toast.classList.remove('u-hidden');
         toast.classList.add('toast--visible');
 
         // Auto-hide after duration
@@ -86,7 +86,7 @@ class ToastManager {
      */
     hide() {
         const toast = this.getToastElement();
-        toast.style.display = 'none';
+        toast.classList.add('u-hidden');
         toast.classList.remove('toast--visible');
         if (this.timeoutId) {
             clearTimeout(this.timeoutId);

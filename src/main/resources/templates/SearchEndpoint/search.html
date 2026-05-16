@@ -16,7 +16,8 @@
                       hx-select="#searchResults"
                       hx-trigger="keyup changed delay:500ms, search"
                       hx-swap="outerHTML"
-                      hx-push-url="true">
+                      hx-push-url="true"
+                      hx-indicator="#search-page-htmx-indicator">
                     <div class="search-form__group">
                         <input type="search" 
                                name="q" 
@@ -26,6 +27,7 @@
                                aria-label="Search articles"
                                autocomplete="off"/>
                         <button type="submit" class="search-form__button">Search</button>
+                        {#include components/htmx-spinner id='search-page-htmx-indicator' /}
                     </div>
                 </form>
                 {#if results == null}

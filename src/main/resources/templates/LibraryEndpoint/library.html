@@ -11,23 +11,28 @@
                 <p class="library-page__subtitle">Drafts and published posts in one place.</p>
 
                 <!-- Tabs -->
+                <div class="library-tabs__row">
                 <div class="library-tabs">
-                    <button class="library-tab library-tab--active" 
+                    <button type="button" class="library-tab library-tab--active" 
                             data-tab="drafts"
                             hx-get="/library/components/tab/drafts"
                             hx-target="#libraryContent"
                             hx-swap="innerHTML"
-                            hx-push-url="false">
+                            hx-push-url="false"
+                            hx-indicator="#library-htmx-indicator">
                         Drafts
                     </button>
-                    <button class="library-tab"
+                    <button type="button" class="library-tab"
                             data-tab="published"
                             hx-get="/library/components/tab/published"
                             hx-target="#libraryContent"
                             hx-swap="innerHTML"
-                            hx-push-url="false">
+                            hx-push-url="false"
+                            hx-indicator="#library-htmx-indicator">
                         Published
                     </button>
+                </div>
+                {#include components/htmx-spinner id='library-htmx-indicator' /}
                 </div>
 
                 <!-- Dynamic content container -->

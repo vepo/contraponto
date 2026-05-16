@@ -43,6 +43,7 @@
                       hx-select="main"
                       hx-target="main"
                       hx-swap="outerHTML"
+                      hx-indicator="#pages-form-htmx-indicator"
                       autocomplete="off">
                     {#if page.id}
                     <input type="hidden" name="id" value="{page.id}">
@@ -58,7 +59,7 @@
                     </div>
                     {/if}
 
-                    <div class="form-group" id="blogSelectGroup" {#if editorView && applicationScope}style="display:none"{/if}>
+                    <div class="form-group{#if editorView && applicationScope} u-hidden{/if}" id="blogSelectGroup">
                         <label>Blog</label>
                         <select name="blogId" {#if !editorView}required{/if}>
                             {#for blog in blogs}
@@ -125,6 +126,7 @@
                     </div>
 
                     <div class="pages-form__actions">
+                        {#include components/htmx-spinner id='pages-form-htmx-indicator' /}
                         <button type="submit" class="btn btn--primary">Save Page</button>
                         {#if page.id}
                         <button type="button"
@@ -147,7 +149,11 @@
             document.getElementById('pageScope')?.addEventListener('change', function () {
                 const blogGroup = document.getElementById('blogSelectGroup');
                 if (!blogGroup) return;
-                blogGroup.style.display = this.value === 'application' ? 'none' : '';
+                if (this.value === 'application') {
+                    blogGroup.classList.add('u-hidden');
+                } else {
+                    blogGroup.classList.remove('u-hidden');
+                }
             });
         </script>
         {/if}

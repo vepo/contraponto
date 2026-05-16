@@ -10,6 +10,7 @@
             hx-target="#authError" 
             hx-target-error="#modal-container .response.error" 
             hx-swap="innerHTML"
+            hx-indicator="#auth-htmx-indicator"
             autocomplete="off">
         {#if mode == 'signup'}
         <div class="form-group">
@@ -44,7 +45,8 @@
           <div class="error-message required">Password is required.</div>
         </div>
         <div class="response error"></div>
-        <button type="submit" disabled class="auth-form__submit">
+        {#include components/htmx-spinner id='auth-htmx-indicator' /}
+        <button type="submit" disabled class="btn btn--primary btn--block">
           {#if mode == 'signup'}Sign Up{#else}Sign In{/if}
         </button>
       </form>

@@ -40,6 +40,7 @@
                       hx-select="main"
                       hx-target="main"
                       hx-swap="outerHTML"
+                      hx-indicator="#users-form-htmx-indicator"
                       autocomplete="off">
                     {#if !creating}
                     <input type="hidden" name="id" value="{account.id}">
@@ -122,6 +123,7 @@
                     </div>
 
                     <div class="pages-form__actions">
+                        {#include components/htmx-spinner id='users-form-htmx-indicator' /}
                         <button type="submit" class="btn btn--primary">
                             {#if creating}Create User{#else}Save User{/if}
                         </button>

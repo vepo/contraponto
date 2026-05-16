@@ -1,6 +1,6 @@
 {#if user.isAuthenticated}
     <button type="button" 
-            class="btn-header" 
+            class="btn btn--header" 
             data-hx-get="/write"
             hx-select="main"
             hx-target="main"
@@ -11,7 +11,7 @@
     </button>
     <button id="publish"
             type="button" 
-            class="btn-header"
+            class="btn btn--header"
             hx-post="/forms/write/publish"
             hx-include="#postForm"
             hx-target="main"
@@ -21,7 +21,7 @@
     </button>
     <button id="saveDraft" 
             type="button" 
-            class="btn-header"
+            class="btn btn--header"
             hx-post="/forms/write/draft"
             hx-include="#postForm"
             hx-swap="none"

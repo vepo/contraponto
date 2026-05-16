@@ -49,8 +49,8 @@ class ImageUploader {
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             coverIdField.value = '';
-            coverPreview.style.display = 'none';
-            coverPlaceholder.style.display = 'flex';
+            coverPreview.classList.add('u-hidden');
+            coverPlaceholder.classList.remove('u-hidden');
             coverInput.value = '';
         });
     }
@@ -84,8 +84,8 @@ class ImageUploader {
 
         coverIdField.value = id;
         coverPreviewImg.src = url;
-        coverPlaceholder.style.display = 'none';
-        coverPreview.style.display = 'block';
+        coverPlaceholder.classList.add('u-hidden');
+        coverPreview.classList.remove('u-hidden');
     }
 }
 

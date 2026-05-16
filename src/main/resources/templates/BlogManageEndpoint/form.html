@@ -49,6 +49,7 @@
                       hx-select="main"
                       hx-target="main"
                       hx-swap="outerHTML"
+                      hx-indicator="#blogs-form-htmx-indicator"
                       autocomplete="off">
                     {#if blog.isPresent}
                     <input type="hidden" name="id" value="{blog.get().id}">
@@ -117,6 +118,7 @@
                     </div>
 
                     <div class="pages-form__actions">
+                        {#include components/htmx-spinner id='blogs-form-htmx-indicator' /}
                         <button type="submit" class="btn btn--primary" disabled>Save Blog</button>
                         {#if canDelete && blog.isPresent && blog.get().active}
                         <button type="button"

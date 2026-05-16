@@ -158,11 +158,11 @@
 </div>
 {#else}
 <div class="auth-buttons">
-  <button class="auth-btn auth-btn-signup"
+  <button type="button" class="btn btn--auth-signup"
           hx-get="/auth/modal?mode=signup"
           hx-target="#modal-container"
           hx-swap="innerHTML">Sign Up</button>
-  <button class="auth-btn auth-btn-login"
+  <button type="button" class="btn btn--auth-login"
           hx-get="/auth/modal?mode=login"
           hx-target="#modal-container"
           hx-swap="innerHTML">Sign In</button>

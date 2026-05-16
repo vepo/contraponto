@@ -261,13 +261,13 @@ class WriteEditor {
 
         if (this.isPreviewMode) {
             this.renderPreview();
-            editor.style.display = 'none';
-            previewDiv.style.display = 'block';
+            editor.classList.add('u-hidden');
+            previewDiv.classList.remove('u-hidden');
             toolbar.classList.add('preview-mode');
             toggleBtn.textContent = '✏️ Edit';
         } else {
-            editor.style.display = 'block';
-            previewDiv.style.display = 'none';
+            editor.classList.remove('u-hidden');
+            previewDiv.classList.add('u-hidden');
             toolbar.classList.remove('preview-mode');
             toggleBtn.textContent = '👁️ Preview';
         }

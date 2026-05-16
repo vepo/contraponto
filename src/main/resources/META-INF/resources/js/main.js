@@ -26,7 +26,7 @@ class MainManager {
                 const errorElm = document.querySelector(errorElmSelector.value);
                 errorElm.innerHTML = msg;
                 const errorMessages = errorElm.querySelectorAll('.error-message');
-                errorMessages.forEach(elm => elm.style.display = 'block');
+                errorMessages.forEach(elm => elm.classList.add('visible'));
             } else {
                 const errorElm = document.querySelector(errorElmSelector.value);
                 while (errorElm.firstChild) {

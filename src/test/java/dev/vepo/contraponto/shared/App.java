@@ -23,6 +23,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.locators.RelativeLocator;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.blog.Blog;
@@ -1362,7 +1363,7 @@ public class App {
     }
 
     private void _loadMore() {
-        var btnLoadMore = driver.findElement(cssSelector("#more-posts"));
+        var btnLoadMore = wait.until(elementToBeClickable(cssSelector("#more-posts")));
         btnLoadMore.click();
         waitForReady();
     }
@@ -1383,7 +1384,7 @@ public class App {
     }
 
     public App assertAccessButtonIsDisplayed() {
-        var loginBtn = wait.until(visibilityOfElementLocated(className("auth-btn-login")));
+        var loginBtn = wait.until(visibilityOfElementLocated(cssSelector("button.btn--auth-login")));
         assertThat(loginBtn.isDisplayed()).isTrue();
         return this;
     }
@@ -1559,7 +1560,7 @@ public class App {
     }
 
     public Login loginModal() {
-        wait.until(visibilityOfElementLocated(className("auth-btn-login")))
+        wait.until(visibilityOfElementLocated(cssSelector("button.btn--auth-login")))
             .click();
         return new Login();
     }
