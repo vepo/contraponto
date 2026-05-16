@@ -13,12 +13,15 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfAllE
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -90,8 +93,8 @@ public class App {
         }
 
         public T submit() {
-            wait.until(elementToBeClickable(cssSelector("#authModal button[type=\"submit\"]")))
-                .click();
+            var btn = wait.until(elementToBeClickable(cssSelector("#authModal button[type=\"submit\"]")));
+            reliableClick(btn);
             return (T) this;
         }
 
@@ -429,7 +432,8 @@ public class App {
         }
 
         public CustomPageManagePage submit() {
-            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            var submitBtn = wait.until(elementToBeClickable(cssSelector("main form.pages-form button[type='submit']")));
+            reliableClick(submitBtn);
             waitForReady();
             return this;
         }
@@ -956,7 +960,7 @@ public class App {
 
         public SearchPage loadMore() {
             var nextBtn = wait.until(elementToBeClickable(By.xpath("//button[contains(text(), 'Next')]")));
-            nextBtn.click();
+            reliableClick(nextBtn);
             waitForReady();
             return this;
         }
@@ -1094,7 +1098,8 @@ public class App {
         }
 
         public UserManagePage submit() {
-            wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))).click();
+            var submitBtn = wait.until(elementToBeClickable(cssSelector("main form.profile-form button[type='submit']")));
+            reliableClick(submitBtn);
             waitForReady();
             return this;
         }
@@ -1363,14 +1368,14 @@ public class App {
     }
 
     private void _loadMore() {
-        var btnLoadMore = wait.until(elementToBeClickable(cssSelector("#more-posts")));
-        btnLoadMore.click();
+        var loadMoreBtn = wait.until(elementToBeClickable(cssSelector("#more-posts button")));
+        reliableClick(loadMoreBtn);
         waitForReady();
     }
 
     private void _logout() {
         var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
-        userMenuBtn.click();
+        reliableClick(userMenuBtn);
         wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
         var logoutBtn = wait.until(elementToBeClickable(By.cssSelector("button.user-menu__item[hx-post='/forms/auth/logout']")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", logoutBtn);
@@ -1527,7 +1532,7 @@ public class App {
 
     public ReviewPage goToReview() {
         var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
-        userMenuBtn.click();
+        reliableClick(userMenuBtn);
         wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
         var reviewBtn = wait.until(elementToBeClickable(cssSelector(".user-menu__item[data-hx-get='/review']")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", reviewBtn);
@@ -1560,8 +1565,8 @@ public class App {
     }
 
     public Login loginModal() {
-        wait.until(visibilityOfElementLocated(cssSelector("button.btn--auth-login")))
-            .click();
+        var loginBtn = wait.until(elementToBeClickable(cssSelector("button.btn--auth-login")));
+        reliableClick(loginBtn);
         return new Login();
     }
 
@@ -1590,6 +1595,22 @@ public class App {
         return new ProfilePage();
     }
 
+    /**
+     * Scrolls the element into view and clicks; falls back to a JS click when
+     * another layer intercepts the native click (fixed chrome, overlapping grid
+     * quirks, etc.).
+     */
+    private void reliableClick(WebElement element) {
+        ((JavascriptExecutor) driver).executeScript(
+                                                    "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
+        wait.until(elementToBeClickable(element));
+        try {
+            element.click();
+        } catch (ElementClickInterceptedException e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        }
+    }
+
     public SearchModal searchModal() {
         wait.until(visibilityOfElementLocated(cssSelector("#searchBtn"))).click();
         return new SearchModal();
@@ -1600,10 +1621,17 @@ public class App {
         return new SearchPage();
     }
 
-    private void useFieldValue(String cssSelector, String value) {
-        var input = wait.until(visibilityOfElementLocated(cssSelector(cssSelector)));
-        input.clear();
-        input.sendKeys(value);
+    private void useFieldValue(String selector, String value) {
+        var by = By.cssSelector(selector);
+        await().atMost(Duration.ofSeconds(10))
+               .pollInterval(Duration.ofMillis(50))
+               .ignoreException(StaleElementReferenceException.class)
+               .until(() -> {
+                   var input = wait.until(visibilityOfElementLocated(by));
+                   input.clear();
+                   input.sendKeys(value);
+                   return true;
+               });
     }
 
     public UserManagePage users() {
