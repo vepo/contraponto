@@ -1136,7 +1136,7 @@ hr:after {
 }
 
 [data-disable-pattern].disabled {
-  display: none;
+  display: none !important;
 }
 
 /* Profile page */
