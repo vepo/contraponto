@@ -385,6 +385,78 @@ a {
   margin-bottom: 64px;
 }
 
+/* ========== POST CHANGE HISTORY ========== */
+.post-history {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border, #e5e5e5);
+}
+
+.post-history__title {
+  font-family: var(--font-serif-display);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.post-history__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-history__item {
+  margin-bottom: 1.25rem;
+}
+
+.post-history__version-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+.post-history__badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 3px;
+}
+
+.post-history__details summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  margin-top: 0.35rem;
+}
+
+.post-history__diff {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f8f8;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.post-history__diff-del {
+  color: #b91c1c;
+  display: block;
+}
+
+.post-history__diff-ins {
+  color: #15803d;
+  display: block;
+}
+
 /* ========== ARTICLE PAGE ========== */
 .article-page {
   padding: 2rem 0 4rem;

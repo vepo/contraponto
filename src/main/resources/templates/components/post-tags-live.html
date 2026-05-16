@@ -1,0 +1,11 @@
+{#if !tags.isEmpty}
+<div class="post-tags" aria-label="Tags">
+    {#for tag in tags}
+    <a data-hx-get="{tag.url}"
+       hx-select="main"
+       hx-target="main"
+       hx-push-url="{tag.url}"
+       class="post-tag">{tag.name}</a>
+    {/for}
+</div>
+{/if}

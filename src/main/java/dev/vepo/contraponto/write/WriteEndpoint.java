@@ -11,6 +11,7 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -38,7 +39,8 @@ public class WriteEndpoint {
                                                     List<Blog> blogs,
                                                     Long selectedBlogId,
                                                     String initialTagsJson,
-                                                    String initialSerieTitle);
+                                                    String initialSerieTitle,
+                                                    boolean hasUnpublishedChanges);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -46,6 +48,7 @@ public class WriteEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final PostPublicationService publicationService;
     private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final TagService tagService;
@@ -53,11 +56,13 @@ public class WriteEndpoint {
 
     @Inject
     public WriteEndpoint(PostRepository postRepository,
+                         PostPublicationService publicationService,
                          CustomPageRepository customPageRepository,
                          BlogRepository blogRepository,
                          TagService tagService,
                          LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.publicationService = publicationService;
         this.customPageRepository = customPageRepository;
         this.blogRepository = blogRepository;
         this.tagService = tagService;
@@ -84,7 +89,8 @@ public class WriteEndpoint {
                                blogs,
                                selectedBlogId,
                                "[]",
-                               "");
+                               "",
+                               false);
     }
 
     @GET
@@ -103,10 +109,12 @@ public class WriteEndpoint {
         Long selectedBlogId = post.getBlog().getId(); // editing, preserve blog
         String initialTagsJson = tagService.tagsToJson(post);
         String initialSerieTitle = post.getSerie() != null ? post.getSerie().getTitle() : "";
+        boolean hasUnpublishedChanges = publicationService.hasUnpublishedChanges(post);
         return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser,
                                blogs,
                                selectedBlogId,
                                initialTagsJson,
-                               initialSerieTitle);
+                               initialSerieTitle,
+                               hasUnpublishedChanges);
     }
 }

@@ -1,17 +1,21 @@
 package dev.vepo.contraponto.components.forms;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagService;
@@ -51,6 +55,7 @@ public class PublishEndpoint {
     private static final Pattern SLUG_GENERATION_PATTERN = Pattern.compile("[^a-zA-Z0-9\\-]");
 
     private final PostRepository postRepository;
+    private final PostPublicationService publicationService;
     private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
@@ -61,6 +66,7 @@ public class PublishEndpoint {
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
+                           PostPublicationService publicationService,
                            BlogRepository blogRepository,
                            CustomPageRepository customPageRepository,
                            ImageRepository imageRepository,
@@ -69,6 +75,7 @@ public class PublishEndpoint {
                            Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                            LoggedUser loggedUser) {
         this.postRepository = postRepository;
+        this.publicationService = publicationService;
         this.blogRepository = blogRepository;
         this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
@@ -88,7 +95,8 @@ public class PublishEndpoint {
                     .build();
     }
 
-    private Response buildSuccessResponse(Post post) {
+    private Response buildSuccessResponse(PublishedPostView view) {
+        Post post = view.post();
         Blog blog = post.getBlog();
         String username = blog.getOwner().getUsername();
         String slug = post.getSlug();
@@ -100,12 +108,14 @@ public class PublishEndpoint {
             postUrl = "/" + username + "/" + blog.getSlug() + "/post/" + slug;
         }
 
+        Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
+
         return Toast.ok()
                     .message(SUCCESS_MSG_PUBLISHED)
                     .type(Toast.Type.SUCCESS)
                     .duration(TOAST_DURATION_LONG)
                     .url(postUrl)
-                    .page(PostEndpoint.Templates.post(post, customPageRepository.loadLinks(), loggedUser, 0L))
+                    .page(PostEndpoint.Templates.post(view, links, loggedUser, 0L, List.of()))
                     .build();
     }
 
@@ -143,13 +153,6 @@ public class PublishEndpoint {
         return value == null || value.isBlank();
     }
 
-    private void markAsPublishedIfNeeded(Post post) {
-        if (!post.isPublished()) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-    }
-
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -174,13 +177,14 @@ public class PublishEndpoint {
         fillPostMetadata(post, request);
         generateSlugIfMissing(post, request);
         serieService.applySerieTitleToPost(post, request.serieTitle());
-        markAsPublishedIfNeeded(post);
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
+        publicationService.publish(post);
 
         postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
 
-        return buildSuccessResponse(post);
+        Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
+        return buildSuccessResponse(new PublishedPostView(rendered, rendered.getLivePublication()));
     }
 
     private void setFormatIfProvided(Post post, SaveDraftRequest request) {

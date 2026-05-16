@@ -13,11 +13,15 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.renderer.Renderer;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagPageEndpoint;
+import java.util.List;
+
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
@@ -48,11 +52,17 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String coverUrl(Post post) {
-        if (Objects.nonNull(post) && Objects.nonNull(post.getCover())) {
-            return post.getCover().getUrl();
-        } else {
+        if (post == null) {
             return null;
         }
+        PostPublication live = post.getLivePublication();
+        if (live != null && live.getCover() != null) {
+            return live.getCover().getUrl();
+        }
+        if (post.getCover() != null) {
+            return post.getCover().getUrl();
+        }
+        return null;
     }
 
     @TemplateExtension
@@ -75,7 +85,65 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String formatDate(LocalDateTime date) {
+        if (date == null) {
+            return "";
+        }
         return date.format(formatter);
+    }
+
+    @TemplateExtension
+    public static String liveContent(Post post) {
+        PostPublication live = liveOf(post);
+        return live != null && live.getContent() != null ? live.getContent() : post.getContent();
+    }
+
+    @TemplateExtension
+    public static String liveDescription(Post post) {
+        PostPublication live = liveOf(post);
+        return live != null && live.getDescription() != null ? live.getDescription() : post.getDescription();
+    }
+
+    private static PostPublication liveOf(Post post) {
+        return post != null ? post.getLivePublication() : null;
+    }
+
+    @TemplateExtension
+    public static LocalDateTime livePublishedAt(Post post) {
+        PostPublication live = liveOf(post);
+        if (live != null) {
+            return live.getPublishedAt();
+        }
+        return post.getPublishedAt();
+    }
+
+    @TemplateExtension
+    public static LocalDateTime livePublishedAt(PublishedPostView view) {
+        return livePublishedAt(view.post());
+    }
+
+    @TemplateExtension
+    public static List<Tag> liveTags(Post post) {
+        PostPublication live = liveOf(post);
+        if (live != null && !live.getTags().isEmpty()) {
+            return live.getTags();
+        }
+        return post.getTags();
+    }
+
+    @TemplateExtension
+    public static List<Tag> liveTags(PublishedPostView view) {
+        return liveTags(view.post());
+    }
+
+    @TemplateExtension
+    public static String liveTitle(Post post) {
+        PostPublication live = liveOf(post);
+        return live != null && live.getTitle() != null ? live.getTitle() : post.getTitle();
+    }
+
+    @TemplateExtension
+    public static String liveTitle(PublishedPostView view) {
+        return liveTitle(view.post());
     }
 
     @TemplateExtension
@@ -97,12 +165,41 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String render(Post post) {
+        PostPublication live = post != null ? post.getLivePublication() : null;
+        if (live != null) {
+            return render(live);
+        }
         if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
             return "";
         }
+        return Renderer.get(post.getFormat()).render(post.getContent());
+    }
 
-        return Renderer.get(post.getFormat())
-                       .render(post.getContent());
+    @TemplateExtension
+    public static String render(PostPublication publication) {
+        if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
+            return "";
+        }
+        return Renderer.get(publication.getFormat()).render(publication.getContent());
+    }
+
+    @TemplateExtension
+    public static String render(PublishedPostView view) {
+        if (view.live() != null) {
+            return render(view.live());
+        }
+        return render(view.post());
+    }
+
+    @TemplateExtension
+    public static boolean showUpdated(Post post) {
+        PostPublication live = liveOf(post);
+        return live != null && live.getVersion() > 1;
+    }
+
+    @TemplateExtension
+    public static boolean showUpdated(PublishedPostView view) {
+        return showUpdated(view.post());
     }
 
     @TemplateExtension

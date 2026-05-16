@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import java.util.List;
+
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -33,7 +35,13 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 public class PostEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance post(Post post, Links links, LoggedUser user, long viewCount);
+        public static native TemplateInstance history(List<PostChangeDiffService.VersionDiff> versions);
+
+        public static native TemplateInstance post(PublishedPostView view,
+                                                   Links links,
+                                                   LoggedUser user,
+                                                   long viewCount,
+                                                   List<PostChangeDiffService.VersionDiff> versions);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
 
@@ -52,6 +60,8 @@ public class PostEndpoint {
     }
 
     private final PostRepository postRepository;
+    private final PostPublicationRepository publicationRepository;
+    private final PostChangeDiffService changeDiffService;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final ViewRepository viewRepository;
@@ -60,11 +70,15 @@ public class PostEndpoint {
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
+                        PostPublicationRepository publicationRepository,
+                        PostChangeDiffService changeDiffService,
                         CustomPageRepository customPageRepository,
                         LoggedUser loggedUser,
                         ViewRepository viewRepository,
                         SessionIdProvider sessionIdProvider) {
         this.postRepository = postRepository;
+        this.publicationRepository = publicationRepository;
+        this.changeDiffService = changeDiffService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.viewRepository = viewRepository;
@@ -82,6 +96,22 @@ public class PostEndpoint {
         return renderPost(postRepository.findBlogPost(username, blogSlug, slug)
                                         .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))),
                           headers);
+    }
+
+    @GET
+    @Path("{blogSlug}/post/{slug}/components/history")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance blogPostHistory(@PathParam("username") String username,
+                                            @PathParam("blogSlug") String blogSlug,
+                                            @PathParam("slug") String slug) {
+        return historyFor(postRepository.findBlogPost(username, blogSlug, slug));
+    }
+
+    private TemplateInstance historyFor(Optional<Post> maybePost) {
+        Post post = maybePost.orElseThrow(() -> new NotFoundException("Post not found"));
+        List<PostPublication> publications = publicationRepository.findByPostIdOrderByVersionDesc(post.getId());
+        return Templates.history(changeDiffService.buildVersionDiffs(publications));
     }
 
     private Links loadLinks(Post post) {
@@ -104,6 +134,15 @@ public class PostEndpoint {
                           headers);
     }
 
+    @GET
+    @Path("post/{slug}/components/history")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance mainBlogPostHistory(@PathParam("username") String username,
+                                                @PathParam("slug") String slug) {
+        return historyFor(postRepository.findMainBlogPost(username, slug));
+    }
+
     private Response renderPost(Post post, HttpHeaders headers) {
         // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));
@@ -114,7 +153,9 @@ public class PostEndpoint {
 
         long viewCount = viewRepository.countByPost(post);
 
-        TemplateInstance template = Templates.post(post, loadLinks(post), loggedUser, viewCount);
+        PublishedPostView view = new PublishedPostView(post, post.getLivePublication());
+        var versions = changeDiffService.buildVersionDiffs(publicationRepository.findByPostIdOrderByVersionDesc(post.getId()));
+        TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, versions);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));

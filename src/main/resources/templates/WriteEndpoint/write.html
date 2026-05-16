@@ -11,6 +11,11 @@
         {#include components/header /}
         <main class="write-main">
             <div class="write-container">
+                {#if hasUnpublishedChanges}
+                <div class="write-form__banner write-form__banner--warning" role="status">
+                    You have unpublished changes. Readers still see the last published version until you publish again.
+                </div>
+                {/if}
                 <form id="postForm" class="write-form">
                     <input type="hidden" name="postId" value="{#if post.isPresent}{post.get().id}{/if}"/>
 

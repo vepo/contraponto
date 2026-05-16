@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -114,9 +115,12 @@ public class BlogGitIntegrationService {
 
             Files.createDirectories(markdownPath.getParent());
 
+            PostPublication live = post.getLivePublication();
             LinkedHashMap<String, Object> fm =
                     BlogGitMarkdownMapper.buildFrontMatter(post, convention);
-            String markdown = markdownCodec.writeMarkdownDocument(fm, post.getContent() == null ? "" : post.getContent());
+            String body = live != null && live.getContent() != null ? live.getContent()
+                                                                    : (post.getContent() == null ? "" : post.getContent());
+            String markdown = markdownCodec.writeMarkdownDocument(fm, body);
             Files.writeString(markdownPath, markdown, StandardCharsets.UTF_8);
 
             Path repoRoot = workspace.toAbsolutePath().normalize();

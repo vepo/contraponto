@@ -3,6 +3,21 @@
     background: var(--color-bg-offset, #fafafa);
 }
 
+.write-form__banner {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-family: var(--font-sans, system-ui, sans-serif);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.write-form__banner--warning {
+    background: #fff8e6;
+    border: 1px solid #e6c200;
+    color: #5c4a00;
+}
+
 .write-header {
     position: sticky;
     top: 0;

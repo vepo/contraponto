@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
@@ -42,6 +43,7 @@ public class BlogGitImportService {
     private static final Logger LOG = LoggerFactory.getLogger(BlogGitImportService.class);
 
     private final PostRepository postRepository;
+    private final PostPublicationService publicationService;
     private final TagService tagService;
     private final SerieService serieService;
     private final EntityManager entityManager;
@@ -50,12 +52,14 @@ public class BlogGitImportService {
 
     @Inject
     public BlogGitImportService(PostRepository postRepository,
+                                PostPublicationService publicationService,
                                 TagService tagService,
                                 SerieService serieService,
                                 EntityManager entityManager,
                                 ObjectMapper objectMapper,
                                 PostGitMarkdownCodec markdownCodec) {
         this.postRepository = postRepository;
+        this.publicationService = publicationService;
         this.tagService = tagService;
         this.serieService = serieService;
         this.entityManager = entityManager;
@@ -143,6 +147,9 @@ public class BlogGitImportService {
             postRepository.saveFromGit(post);
         }
         attachTags(doc.frontMatter().get("tags"), post);
+        if (published) {
+            publicationService.publish(post);
+        }
         entityManager.flush();
     }
 

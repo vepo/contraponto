@@ -10,6 +10,7 @@ import java.util.Locale;
 
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPublication;
 
 public final class RssFeedRenderer {
 
@@ -41,10 +42,19 @@ public final class RssFeedRenderer {
         return resolve(baseUri, PostEndpoint.extractUrl(post));
     }
 
+    private static String liveTitle(Post post, PostPublication live) {
+        if (live != null && live.getTitle() != null) {
+            return live.getTitle();
+        }
+        return post.getTitle();
+    }
+
     private static LocalDateTime newestTimestamp(List<Post> posts) {
         LocalDateTime max = null;
         for (Post p : posts) {
-            LocalDateTime candidate = p.getPublishedAt() != null ? p.getPublishedAt() : p.getUpdatedAt();
+            PostPublication live = p.getLivePublication();
+            LocalDateTime candidate = live != null ? live.getPublishedAt()
+                                                   : (p.getPublishedAt() != null ? p.getPublishedAt() : p.getUpdatedAt());
             if (candidate != null && (max == null || candidate.isAfter(max))) {
                 max = candidate;
             }
@@ -69,15 +79,18 @@ public final class RssFeedRenderer {
 
         for (Post post : posts) {
             URI itemLink = itemUri(baseUri, post);
-            LocalDateTime pub = post.getPublishedAt() != null ? post.getPublishedAt() : post.getUpdatedAt();
+            PostPublication live = post.getLivePublication();
+            LocalDateTime pub = live != null ? live.getPublishedAt()
+                                             : (post.getPublishedAt() != null ? post.getPublishedAt() : post.getUpdatedAt());
+            String title = liveTitle(post, live);
             sb.append("<item>");
-            appendElement(sb, "title", escapeXml(post.getTitle()));
+            appendElement(sb, "title", escapeXml(title));
             appendElement(sb, "link", escapeXml(itemLink.toString()));
             sb.append("<guid isPermaLink=\"true\">").append(escapeXml(itemLink.toString())).append("</guid>");
             appendElement(sb, "pubDate", formatRfc1123(pub != null ? pub : post.getCreatedAt()));
-            String summary = post.getDescription();
+            String summary = live != null ? live.getDescription() : post.getDescription();
             if (summary == null || summary.isBlank()) {
-                summary = post.getTitle();
+                summary = title;
             }
             appendElement(sb, "description", escapeXml(summary));
             sb.append("</item>");

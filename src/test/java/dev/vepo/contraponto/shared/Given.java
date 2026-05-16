@@ -27,6 +27,7 @@ import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.ImageService;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SerieRepository;
@@ -202,6 +203,9 @@ public interface Given {
                 inject(EntityManager.class).persist(post);
                 for (String label : tagLabels) {
                     post.getTags().add(inject(TagRepository.class).findOrCreateByLabel(label));
+                }
+                if (published) {
+                    inject(PostPublicationService.class).publish(post);
                 }
                 return post;
             });

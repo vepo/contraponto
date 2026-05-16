@@ -1,0 +1,40 @@
+<section class="post-history">
+    <h2 class="post-history__title">Change history</h2>
+    {#if versions.isEmpty}
+    <p class="post-history__empty">No published versions yet.</p>
+    {#else}
+    <ol class="post-history__list">
+        {#for version in versions}
+        <li class="post-history__item">
+            <div class="post-history__version-header">
+                <span class="post-history__version-label">
+                    Version {version.publication.version}
+                    {#if version_count == 1}
+                    <span class="post-history__badge">current</span>
+                    {/if}
+                </span>
+                <time class="post-history__date">{version.publication.publishedAt.formatDate}</time>
+            </div>
+            {#if !version.isFirstVersion}
+                {#if version.diffFromPrevious.hasChanges}
+            <details class="post-history__details">
+                <summary>Changes from version {version.publication.version - 1}</summary>
+                <div class="post-history__changes">
+                    {#if version.diffFromPrevious.titleChanged}
+                    <p class="post-history__meta">{version.diffFromPrevious.titleChangeSummary}</p>
+                    {/if}
+                    {#if version.diffFromPrevious.descriptionChanged}
+                    <p class="post-history__meta">{version.diffFromPrevious.descriptionChangeSummary}</p>
+                    {/if}
+                    {#if version.diffFromPrevious.contentChanged}
+                    {version.diffFromPrevious.contentDiffHtml.raw}
+                    {/if}
+                </div>
+            </details>
+                {/if}
+            {/if}
+        </li>
+        {/for}
+    </ol>
+    {/if}
+</section>

@@ -26,7 +26,7 @@
                                 hx-select="main"
                                 hx-target="main"
                                 hx-push-url="{post.url}">
-                                <img src="{post.cover.url}" alt="{post.title}"/>
+                                <img src="{post.coverUrl}" alt="{post.liveTitle}"/>
                             </a>
                         </div>
                         {/if}
@@ -36,7 +36,7 @@
                                 <a data-hx-get="{post.url}"
                                     hx-select="main"
                                     hx-target="main"
-                                    hx-push-url="{post.url}">{post.title}</a>
+                                    hx-push-url="{post.url}">{post.liveTitle}</a>
                             </h2>
                             <p class="article-card__excerpt">{post.description}</p>
                             {#include components/post-tags post=post /}
@@ -50,7 +50,7 @@
                                 <span class="article-meta__dot">•</span>
                                 <time datetime="{post.publishedAt}">{post.publishedAt.formatDate}</time>
                                 <span class="article-meta__dot">•</span>
-                                <span>{post.content.readTime}</span>
+                                <span>{post.liveContent.readTime}</span>
                             </div>
                         </div>
                     </article>

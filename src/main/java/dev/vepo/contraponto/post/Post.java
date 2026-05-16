@@ -88,6 +88,10 @@ public class Post {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "live_publication_id")
+    private PostPublication livePublication;
+
     public Post() {}
 
     public Post(String title,
@@ -154,6 +158,10 @@ public class Post {
 
     public Long getId() {
         return id;
+    }
+
+    public PostPublication getLivePublication() {
+        return livePublication;
     }
 
     public LocalDateTime getPublishedAt() {
@@ -223,6 +231,10 @@ public class Post {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setLivePublication(PostPublication livePublication) {
+        this.livePublication = livePublication;
     }
 
     public void setPublished(boolean published) {

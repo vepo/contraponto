@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
     {#include components/head}
-    {post.title}
+    {view.liveTitle}
     {/include}
     <body hx-history-elt>
         {#include components/header /}
         <main class="article-page" id="main-content"
-              hx-get="{post.url}" 
+              hx-get="{view.post.url}" 
               hx-select="main"
               hx-target="main"
               hx-swap="outerHTML"
@@ -14,11 +14,11 @@
             <div class="container-narrow">
             {#if user.isAuthenticated}
                 <div class="article-page__actions">
-                    {#if user.id == post.author.id}
-                    <a data-hx-get="/write/draft/{post.id}"
+                    {#if user.id == view.post.author.id}
+                    <a data-hx-get="/write/draft/{view.post.id}"
                     hx-select="main"
                     hx-target="main"
-                    hx-push-url="/write/draft/{post.id}"
+                    hx-push-url="/write/draft/{view.post.id}"
                     class="btn btn--icon btn--outline">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z"/>
@@ -26,52 +26,53 @@
                         Edit
                     </a>
                     {/if}
-                    {#include PostEndpoint/toggle post=post /}
+                    {#include PostEndpoint/toggle post=view.post /}
                 </div>
                 {/if}
 
-                <!-- Cover image -->
-                {#if post.cover}
+                {#if view.post.coverUrl}
                 <div class="article-page__cover">
-                    <img src="{post.cover.url}" alt="{post.title}" class="article-page__cover-image"/>
+                    <img src="{view.post.coverUrl}" alt="{view.liveTitle}" class="article-page__cover-image"/>
                 </div>
                 {/if}
 
-                {#if post.serie}
+                {#if view.post.serie}
                 <p class="article-page__serie">
-                    <a data-hx-get="{post.serie.url}"
+                    <a data-hx-get="{view.post.serie.url}"
                        hx-select="main"
                        hx-target="main"
-                       hx-push-url="{post.serie.url}"
-                       class="article-page__serie-link">{post.serie.title}</a>
+                       hx-push-url="{view.post.serie.url}"
+                       class="article-page__serie-link">{view.post.serie.title}</a>
                 </p>
                 {/if}
 
-                <h1 class="article-page__title">{post.title}</h1>
+                <h1 class="article-page__title">{view.liveTitle}</h1>
 
-                {#include components/post-tags post=post /}
+                {#include components/post-tags-live tags=view.liveTags /}
 
                 <div class="article-page__byline">
-                    By <a data-hx-get="/{post.author.username}"
+                    By <a data-hx-get="/{view.post.author.username}"
                         hx-select="main"
                         hx-target="main"
-                        hx-push-url="/{post.author.username}"
+                        hx-push-url="/{view.post.author.username}"
                         class="author-link">
-                        {post.author.name}
+                        {view.post.author.name}
                     </a>
                 </div>
 
                 <div class="article-page__metadata">
-                    <div>Published: {post.publishedAt.formatDate}</div>
-                    {#if post.updatedAt && post.updatedAt != post.publishedAt}
-                    <div>Updated: {post.updatedAt.formatDate}</div>
+                    <div>Published: {view.livePublishedAt.formatDate}</div>
+                    {#if view.showUpdated}
+                    <div>Updated: {view.livePublishedAt.formatDate}</div>
                     {/if}
                     <div>👁️ {viewCount} views</div>
                 </div>
 
                 <article class="article-page__content">
-                    {post.render.raw}
+                    {view.render.raw}
                 </article>
+
+                {#include PostEndpoint/history versions=versions /}
             </div>
         </main>
 
