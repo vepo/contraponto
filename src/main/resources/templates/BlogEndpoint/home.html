@@ -5,12 +5,7 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main id="main-content"
-              hx-get="/{author.username}"
-              hx-select="main"
-              hx-target="main"
-              hx-swap="outerHTML"
-              hx-trigger="loggedIn from:body, loggedOut from:body">
+        <main id="main-content">
             <header class="user-blog-header container">
                 <h1 class="user-blog__name">{author.name}</h1>
                 {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}

@@ -1,5 +1,9 @@
 {#if audience.showControls}
-<div id="blog-audience-{audience.blogId}" class="blog-audience"{#if oob.or(false)} hx-swap-oob="outerHTML"{/if}>
+<div id="blog-audience-{audience.blogId}" class="blog-audience"
+     hx-get="/components/blogs/{audience.blogId}/audience"
+     hx-trigger="loggedIn from:body, loggedOut from:body"
+     hx-swap="outerHTML"
+     {#if oob.or(false)} hx-swap-oob="outerHTML"{/if}>
     {#if audience.authenticated}
     <button type="button"
             class="btn btn--outline btn--sm {#if audience.following}btn--active{/if}"

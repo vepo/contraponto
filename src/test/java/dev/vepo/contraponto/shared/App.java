@@ -1468,6 +1468,7 @@ public class App {
     }
 
     public App assertAccessButtonIsDisplayed() {
+        waitForReady();
         var loginBtn = wait.until(visibilityOfElementLocated(cssSelector("button.btn--auth-login")));
         assertThat(loginBtn.isDisplayed()).isTrue();
         return this;

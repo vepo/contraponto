@@ -94,7 +94,7 @@ public class BlogEndpoint {
     }
 
     @GET
-    @Path("components/home/grid")
+    @Path("components/grid")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,

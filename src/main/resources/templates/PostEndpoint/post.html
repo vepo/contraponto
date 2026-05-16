@@ -5,12 +5,7 @@
     {/include}
     <body hx-history-elt>
         {#include components/header /}
-        <main class="article-page" id="main-content"
-              hx-get="{view.post.url}" 
-              hx-select="main"
-              hx-target="main"
-              hx-swap="outerHTML"
-              hx-trigger="loggedIn from:body, loggedOut from:body">
+        <main class="article-page" id="main-content">
             <div class="container-narrow">
             {#if user.isAuthenticated}
                 <div class="article-page__actions">
@@ -81,6 +76,7 @@
                      class="comments-section comments-section--loading"
                      hx-get="{view.post.url}/components/comments"
                      hx-trigger="load"
+                     hx-target="#comments"
                      hx-swap="innerHTML">
                 </div>
 
