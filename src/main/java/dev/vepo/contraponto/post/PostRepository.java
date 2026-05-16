@@ -73,6 +73,17 @@ public class PostRepository {
                             .getSingleResult();
     }
 
+    private long countPublishedByTagSlug(String tagSlug) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(DISTINCT p.id)
+                                         FROM Post p
+                                         JOIN p.tags t
+                                         WHERE t.slug = :slug AND p.published = true
+                                         """, Long.class)
+                            .setParameter("slug", tagSlug)
+                            .getSingleResult();
+    }
+
     public long countSearch(String term) {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
@@ -121,9 +132,10 @@ public class PostRepository {
 
     public Optional<Post> findBlogPost(String username, String blogSlug, String slug) {
         return this.entityManager.createQuery("""
-                                              FROM Post p
-                                              JOIN FETCH blog b
-                                              JOIN FETCH blog.owner o
+                                              SELECT DISTINCT p FROM Post p
+                                              JOIN FETCH p.blog b
+                                              JOIN FETCH b.owner o
+                                              LEFT JOIN FETCH p.tags
                                               WHERE p.published = TRUE AND
                                                     b.main = FALSE AND
                                                     b.slug = :blogSlug AND
@@ -139,11 +151,11 @@ public class PostRepository {
 
     public List<Post> findByAuthorAndPublished(long authorId, boolean published) {
         return entityManager.createQuery("""
-                                         FROM Post p
-                                         WHERE blog.owner.id = :authorId AND
-                                               published = :published
-
-                                         ORDER BY updatedAt DESC
+                                         SELECT DISTINCT p FROM Post p
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.blog.owner.id = :authorId AND
+                                               p.published = :published
+                                         ORDER BY p.updatedAt DESC
                                          """,
                                          Post.class)
                             .setParameter("authorId", authorId)
@@ -155,18 +167,35 @@ public class PostRepository {
         return Optional.ofNullable(entityManager.find(Post.class, id));
     }
 
+    public Optional<Post> findByIdWithTags(Long id) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.id = :id
+                                         """, Post.class)
+                            .setParameter("id", id)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public List<Post> findDrafts() {
-        return entityManager.createQuery("FROM Post WHERE published = false", Post.class).getResultList();
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.published = false
+                                         """, Post.class)
+                            .getResultList();
     }
 
     public Page<Post> findFeatured(PageQuery query) {
         return new Page<>(entityManager.createQuery("""
-                                                    FROM Post
-                                                    JOIN FETCH blog
-                                                    JOIN FETCH blog.owner
-                                                    WHERE published = true AND
-                                                          featured = true
-                                                    ORDER BY publishedAt DESC
+                                                    SELECT DISTINCT p FROM Post p
+                                                    JOIN FETCH p.blog b
+                                                    JOIN FETCH b.owner o
+                                                    LEFT JOIN FETCH p.tags
+                                                    WHERE p.published = true AND
+                                                          p.featured = true
+                                                    ORDER BY p.publishedAt DESC
                                                     """, Post.class)
                                        .setMaxResults(query.maxResults())
                                        .setFirstResult(query.skip())
@@ -178,9 +207,10 @@ public class PostRepository {
 
     public Optional<Post> findMainBlogPost(String username, String slug) {
         return this.entityManager.createQuery("""
-                                              FROM Post p
-                                              JOIN FETCH blog b
-                                              JOIN FETCH blog.owner o
+                                              SELECT DISTINCT p FROM Post p
+                                              JOIN FETCH p.blog b
+                                              JOIN FETCH b.owner o
+                                              LEFT JOIN FETCH p.tags
                                               WHERE p.published = TRUE AND
                                                     b.main = TRUE AND
                                                     o.username = :username AND
@@ -194,11 +224,12 @@ public class PostRepository {
 
     public Page<Post> findPublished(PageQuery query) {
         return new Page<>(entityManager.createQuery("""
-                                                    FROM Post
-                                                    JOIN FETCH blog
-                                                    JOIN FETCH blog.owner
-                                                    WHERE published = true
-                                                    ORDER BY publishedAt DESC
+                                                    SELECT DISTINCT p FROM Post p
+                                                    JOIN FETCH p.blog b
+                                                    JOIN FETCH b.owner o
+                                                    LEFT JOIN FETCH p.tags
+                                                    WHERE p.published = true
+                                                    ORDER BY p.publishedAt DESC
                                                     """, Post.class)
                                        .setMaxResults(query.maxResults())
                                        .setFirstResult(query.skip())
@@ -210,12 +241,13 @@ public class PostRepository {
 
     public Page<Post> findPublishedByAuthor(long authorId, PageQuery query) {
         return new Page<>(entityManager.createQuery("""
-                                                    FROM Post
-                                                    JOIN FETCH blog
-                                                    JOIN FETCH blog.owner
-                                                    WHERE blog.owner.id = :authorId AND
-                                                          published = true
-                                                    ORDER BY publishedAt DESC
+                                                    SELECT DISTINCT p FROM Post p
+                                                    JOIN FETCH p.blog b
+                                                    JOIN FETCH b.owner o
+                                                    LEFT JOIN FETCH p.tags
+                                                    WHERE b.owner.id = :authorId AND
+                                                          p.published = true
+                                                    ORDER BY p.publishedAt DESC
                                                     """, Post.class)
                                        .setParameter("authorId", authorId)
                                        .setMaxResults(query.maxResults())
@@ -226,9 +258,30 @@ public class PostRepository {
                           countPublishedByAuthor(authorId));
     }
 
+    public Page<Post> findPublishedByTagSlug(String tagSlug, PageQuery query) {
+        return new Page<>(entityManager.createQuery("""
+                                                    SELECT DISTINCT p FROM Post p
+                                                    JOIN FETCH p.blog b
+                                                    JOIN FETCH b.owner o
+                                                    LEFT JOIN FETCH p.tags
+                                                    WHERE p.published = true AND
+                                                          EXISTS (SELECT 1 FROM Post p2 JOIN p2.tags t
+                                                                  WHERE p2.id = p.id AND t.slug = :slug)
+                                                    ORDER BY p.publishedAt DESC
+                                                    """, Post.class)
+                                       .setParameter("slug", tagSlug)
+                                       .setMaxResults(query.maxResults())
+                                       .setFirstResult(query.skip())
+                                       .getResultList(),
+                          query.page(),
+                          query.limit(),
+                          countPublishedByTagSlug(tagSlug));
+    }
+
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
         return entityManager.createQuery("""
-                                         FROM Post p
+                                         SELECT DISTINCT p FROM Post p
+                                         LEFT JOIN FETCH p.tags
                                          WHERE p.blog.owner.id = :authorId
                                          AND p.published = :published
                                          ORDER BY p.updatedAt DESC
@@ -248,7 +301,10 @@ public class PostRepository {
 
     public Page<Post> search(String term, PageQuery query) {
         return new Page<>(entityManager.createQuery("""
-                                                    FROM Post p
+                                                    SELECT DISTINCT p FROM Post p
+                                                    JOIN FETCH p.blog b
+                                                    JOIN FETCH b.owner o
+                                                    LEFT JOIN FETCH p.tags
                                                     WHERE p.published = true
                                                     AND (LOWER(p.title) LIKE LOWER(:query)
                                                             OR LOWER(p.description) LIKE LOWER(:query)

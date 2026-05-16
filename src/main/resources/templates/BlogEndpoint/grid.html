@@ -26,6 +26,7 @@
                     hx-push-url="{post.url}">{post.title}</a>
             </h2>
             <p class="article-card__excerpt">{post.description}</p>
+            {#include components/post-tags post=post /}
             <div class="article-meta">
                 <a data-hx-get="/{post.author.username}"
                     hx-select="main"

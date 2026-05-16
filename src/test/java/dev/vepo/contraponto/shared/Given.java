@@ -28,6 +28,8 @@ import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.ImageService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.tag.Tag;
+import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -151,6 +153,7 @@ public interface Given {
         private String slug;
         private boolean published;
         private boolean featured;
+        private java.util.List<String> tagLabels = new java.util.ArrayList<>();
 
         private PostBuilder() {
             this.title = null;
@@ -182,6 +185,9 @@ public interface Given {
                     post.setDescription(post.getTitle());
                 }
                 inject(EntityManager.class).persist(post);
+                for (String label : tagLabels) {
+                    post.getTags().add(inject(TagRepository.class).findOrCreateByLabel(label));
+                }
                 return post;
             });
         }
@@ -223,6 +229,11 @@ public interface Given {
 
         public PostBuilder withSlug(String slug) {
             this.slug = slug;
+            return this;
+        }
+
+        public PostBuilder withTags(String... labels) {
+            this.tagLabels = java.util.List.of(labels);
             return this;
         }
 
@@ -317,7 +328,7 @@ public interface Given {
 
     public static void cleanup() {
         transaction(() -> {
-            Stream.of(Post.class, CustomPage.class, Blog.class, User.class)
+            Stream.of(Post.class, Tag.class, CustomPage.class, Blog.class, User.class)
                   .sequential()
                   .forEachOrdered(Given::deleteAll);
         });

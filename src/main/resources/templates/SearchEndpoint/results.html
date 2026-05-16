@@ -38,6 +38,7 @@
                 {#if post.description}
                 <p class="search-result__excerpt">{post.description}</p>
                 {/if}
+                {#include components/post-tags post=post /}
             </article>
             {/for}
             <div id="search-more-results">

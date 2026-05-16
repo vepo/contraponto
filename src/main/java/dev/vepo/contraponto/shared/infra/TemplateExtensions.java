@@ -14,6 +14,8 @@ import dev.vepo.contraponto.blog.BlogEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.renderer.Renderer;
+import dev.vepo.contraponto.tag.Tag;
+import dev.vepo.contraponto.tag.TagPageEndpoint;
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
@@ -109,6 +111,11 @@ public class TemplateExtensions {
     @TemplateExtension
     public static String url(Post post) {
         return PostEndpoint.extractUrl(post);
+    }
+
+    @TemplateExtension
+    public static String url(Tag tag) {
+        return TagPageEndpoint.url(tag);
     }
 
     private TemplateExtensions() {

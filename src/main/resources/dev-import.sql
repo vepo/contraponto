@@ -5,7 +5,10 @@
 -- ============================================
 -- 1. Limpar dados existentes (opcional - para desenvolvimento)
 -- ============================================
+TRUNCATE TABLE tb_post_tags CASCADE;
+TRUNCATE TABLE tb_views CASCADE;
 TRUNCATE TABLE tb_posts CASCADE;
+TRUNCATE TABLE tb_tags CASCADE;
 TRUNCATE TABLE tb_images CASCADE;
 
 -- Garantir roles do admin após truncate (schema multi-role: tb_user_roles, sem coluna role em tb_users)
@@ -1502,3 +1505,94 @@ Will include Spring Security 6 examples and Keycloak integration.',
     );
 
 END $$;
+
+-- ============================================
+-- 5. Tags e associações post ↔ tag
+-- ============================================
+
+INSERT INTO tb_tags (slug, name, description) VALUES
+    ('java', 'Java', 'JVM, linguagens na plataforma Java e ecossistema.'),
+    ('spring-boot', 'Spring Boot', 'Spring Framework, Spring Boot e Spring Cloud.'),
+    ('kafka', 'Kafka', 'Apache Kafka e arquitetura orientada a eventos.'),
+    ('kubernetes', 'Kubernetes', 'Orquestração de contêineres e deploy em cluster.'),
+    ('microservices', 'Microservices', 'Arquitetura de microsserviços e padrões associados.'),
+    ('distributed-systems', 'Distributed systems', 'Sistemas distribuídos, consistência e resiliência.'),
+    ('grpc', 'gRPC', 'RPC e Protocol Buffers em microsserviços.'),
+    ('observability', 'Observability', 'Métricas, logs, tracing e OpenTelemetry.'),
+    ('quarkus', 'Quarkus', 'Quarkus e Java nativo em cloud.'),
+    ('testing', 'Testing', 'Testes de integração, Testcontainers e qualidade.'),
+    ('graphql', 'GraphQL', 'APIs GraphQL e federation.'),
+    ('caching', 'Caching', 'Cache distribuído e invalidação.'),
+    ('jvm', 'JVM', 'Garbage collection, performance e tuning da JVM.'),
+    ('cdc', 'CDC', 'Change data capture e streaming de dados.'),
+    ('security', 'Security', 'OAuth2, JWT, API gateway e segurança em microsserviços.')
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO tb_post_tags (post_id, tag_id)
+SELECT p.id, t.id
+FROM (VALUES
+    ('introduction-to-distributed-systems-java', 'java'),
+    ('introduction-to-distributed-systems-java', 'distributed-systems'),
+    ('microservices-patterns-spring-boot', 'java'),
+    ('microservices-patterns-spring-boot', 'spring-boot'),
+    ('microservices-patterns-spring-boot', 'microservices'),
+    ('apache-kafka-spring-boot-tutorial', 'java'),
+    ('apache-kafka-spring-boot-tutorial', 'spring-boot'),
+    ('apache-kafka-spring-boot-tutorial', 'kafka'),
+    ('distributed-transactions-saga-pattern', 'java'),
+    ('distributed-transactions-saga-pattern', 'microservices'),
+    ('distributed-transactions-saga-pattern', 'distributed-systems'),
+    ('kubernetes-java-microservices-deployment', 'java'),
+    ('kubernetes-java-microservices-deployment', 'kubernetes'),
+    ('kubernetes-java-microservices-deployment', 'microservices'),
+    ('grpc-java-performance-comparison', 'java'),
+    ('grpc-java-performance-comparison', 'grpc'),
+    ('grpc-java-performance-comparison', 'microservices'),
+    ('observability-java-distributed-systems', 'java'),
+    ('observability-java-distributed-systems', 'observability'),
+    ('observability-java-distributed-systems', 'distributed-systems'),
+    ('virtual-threads-project-loom', 'java'),
+    ('virtual-threads-project-loom', 'jvm'),
+    ('cloud-native-java-microprofile', 'java'),
+    ('cloud-native-java-microprofile', 'microservices'),
+    ('apache-pulsar-vs-kafka', 'kafka'),
+    ('apache-pulsar-vs-kafka', 'distributed-systems'),
+    ('java-21-pattern-matching', 'java'),
+    ('java-21-pattern-matching', 'jvm'),
+    ('spring-boot-3-native-docker', 'spring-boot'),
+    ('spring-boot-3-native-docker', 'kubernetes'),
+    ('resilience4j-practical-guide', 'java'),
+    ('resilience4j-practical-guide', 'spring-boot'),
+    ('resilience4j-practical-guide', 'microservices'),
+    ('graalvm-polyglot-java-python', 'java'),
+    ('graalvm-polyglot-java-python', 'jvm'),
+    ('observability-micrometer-prometheus', 'java'),
+    ('observability-micrometer-prometheus', 'observability'),
+    ('observability-micrometer-prometheus', 'spring-boot'),
+    ('spring-cloud-gateway-jwt', 'java'),
+    ('spring-cloud-gateway-jwt', 'spring-boot'),
+    ('spring-cloud-gateway-jwt', 'security'),
+    ('distributed-caching-java', 'java'),
+    ('distributed-caching-java', 'microservices'),
+    ('distributed-caching-java', 'caching'),
+    ('java-memory-management-tuning', 'java'),
+    ('java-memory-management-tuning', 'jvm'),
+    ('cdc-debezium-kafka', 'kafka'),
+    ('cdc-debezium-kafka', 'cdc'),
+    ('testing-spring-boot-testcontainers', 'java'),
+    ('testing-spring-boot-testcontainers', 'spring-boot'),
+    ('testing-spring-boot-testcontainers', 'testing'),
+    ('graphql-java-spring-boot', 'java'),
+    ('graphql-java-spring-boot', 'spring-boot'),
+    ('graphql-java-spring-boot', 'graphql'),
+    ('quarkus-superfast-java', 'java'),
+    ('quarkus-superfast-java', 'quarkus'),
+    ('opentelemetry-distributed-tracing', 'java'),
+    ('opentelemetry-distributed-tracing', 'observability'),
+    ('opentelemetry-distributed-tracing', 'distributed-systems'),
+    ('java-modules-9-project-jigsaw', 'java'),
+    ('java-modules-9-project-jigsaw', 'jvm')
+) AS v(post_slug, tag_slug)
+JOIN tb_posts p ON p.slug = v.post_slug AND p.blog_id = 1
+JOIN tb_tags t ON t.slug = v.tag_slug
+ON CONFLICT (post_id, tag_id) DO NOTHING;

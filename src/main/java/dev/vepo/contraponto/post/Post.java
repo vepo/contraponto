@@ -1,6 +1,8 @@
 package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +22,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -44,6 +50,11 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
+
+    @ManyToMany
+    @JoinTable(name = "tb_post_tags", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @OrderBy("name ASC")
+    private List<Tag> tags = new ArrayList<>();
 
     @Column
     private String description;
@@ -148,6 +159,10 @@ public class Post {
         return slug;
     }
 
+    public List<Tag> getTags() {
+        return tags;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -211,6 +226,10 @@ public class Post {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     public void setTitle(String title) {

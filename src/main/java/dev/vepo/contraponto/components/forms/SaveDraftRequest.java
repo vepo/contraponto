@@ -9,4 +9,5 @@ public record SaveDraftRequest(@FormParam("postId") Long id,
                                @FormParam("blogId") Long blogId,
                                @FormParam("description") String description,
                                @FormParam("content") String content,
-                               @FormParam("format") String format) {}
+                               @FormParam("format") String format,
+                               @FormParam("tagsJson") String tagsJson) {}

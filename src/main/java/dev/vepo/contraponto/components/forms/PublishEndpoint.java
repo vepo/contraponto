@@ -12,6 +12,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -50,6 +51,7 @@ public class PublishEndpoint {
     private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
+    private final TagService tagService;
     private final LoggedUser loggedUser;
 
     @Inject
@@ -57,11 +59,13 @@ public class PublishEndpoint {
                            BlogRepository blogRepository,
                            CustomPageRepository customPageRepository,
                            ImageRepository imageRepository,
+                           TagService tagService,
                            LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
+        this.tagService = tagService;
         this.loggedUser = loggedUser;
     }
 
@@ -117,7 +121,7 @@ public class PublishEndpoint {
 
     private Post getOrCreatePost(SaveDraftRequest request) {
         if (request.id() != null) {
-            return postRepository.findById(request.id()).orElseGet(Post::new);
+            return postRepository.findByIdWithTags(request.id()).orElseGet(Post::new);
         }
         return new Post();
     }
@@ -162,6 +166,7 @@ public class PublishEndpoint {
         generateSlugIfMissing(post, request);
         markAsPublishedIfNeeded(post);
         postRepository.save(post);
+        tagService.syncPostTags(post, request.tagsJson());
 
         return buildSuccessResponse(post);
     }

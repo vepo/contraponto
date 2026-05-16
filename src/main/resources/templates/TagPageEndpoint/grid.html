@@ -1,11 +1,10 @@
 {#if posts.isFirstPage && posts.isEmpty}
 <div class="user-blog__empty">
-    No posts published yet
+    No posts with this tag yet.
 </div>
 {/if}
 
 {#for post in posts.data}
-    {#if (ignoreFirst && post_index > 0) || !ignoreFirst}
     <article class="article-card">
         {#if post.cover}
         <div class="article-card__image">
@@ -41,11 +40,10 @@
             </div>
         </div>
     </article>
-    {/if}
 {/for}
 {#if !posts.isEmpty && !posts.isLastPage}
 <div id="more-posts" class="load-more">
-    <button hx-get="/components/grid?page={posts.nextPage}"
+    <button hx-get="/tags/{tagSlug}/components/grid?page={posts.nextPage}"
             hx-target="#more-posts"
             hx-swap="outerHTML"
             class="btn">Load more</button>

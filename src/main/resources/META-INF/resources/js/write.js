@@ -304,6 +304,112 @@ class WriteEditor {
     }
 }
 
+class WriteTagsPicker {
+    constructor() {
+        this.root = document.getElementById('tagsPicker');
+        document.body.addEventListener('htmx:afterSettle', () => this.tryMount());
+        this.tryMount();
+    }
+
+    tryMount() {
+        const root = document.getElementById('tagsPicker');
+        if (!root || root.dataset.tagsPickerInit === '1') return;
+        root.dataset.tagsPickerInit = '1';
+        this.root = root;
+        this.chipsEl = document.getElementById('tagsChips');
+        this.input = document.getElementById('tagInput');
+        this.hidden = document.getElementById('tagsJson');
+        this.datalist = document.getElementById('tagSuggestionsList');
+        if (!this.chipsEl || !this.input || !this.hidden || !this.datalist) return;
+        this.labels = this.parseInitial(this.hidden.value);
+        this.renderChips();
+        this.input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.commitCurrent();
+            }
+        });
+        let suggestTimer;
+        this.input.addEventListener('input', () => {
+            clearTimeout(suggestTimer);
+            suggestTimer = setTimeout(() => this.refreshSuggestions(), 180);
+        });
+    }
+
+    parseInitial(json) {
+        try {
+            const arr = JSON.parse(json || '[]');
+            if (!Array.isArray(arr)) return [];
+            return arr.map((s) => String(s).trim()).filter(Boolean);
+        } catch {
+            return [];
+        }
+    }
+
+    serialize() {
+        this.hidden.value = JSON.stringify(this.labels);
+    }
+
+    renderChips() {
+        this.chipsEl.innerHTML = '';
+        this.labels.forEach((label, idx) => {
+            const chip = document.createElement('span');
+            chip.className = 'write-tags__chip';
+            const labelSpan = document.createElement('span');
+            labelSpan.textContent = label;
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'write-tags__chip-remove';
+            rm.setAttribute('aria-label', 'Remove tag');
+            rm.textContent = '×';
+            rm.addEventListener('click', () => {
+                this.labels.splice(idx, 1);
+                this.renderChips();
+                this.serialize();
+            });
+            chip.appendChild(labelSpan);
+            chip.appendChild(rm);
+            this.chipsEl.appendChild(chip);
+        });
+        this.serialize();
+    }
+
+    commitCurrent() {
+        const v = (this.input.value || '').trim();
+        if (!v) return;
+        const lower = v.toLowerCase();
+        if (!this.labels.some((t) => t.toLowerCase() === lower)) {
+            this.labels.push(v);
+        }
+        this.input.value = '';
+        this.renderChips();
+        this.refreshSuggestions();
+    }
+
+    async refreshSuggestions() {
+        if (!this.datalist) return;
+        this.datalist.innerHTML = '';
+        const q = (this.input.value || '').trim();
+        try {
+            const res = await fetch('/forms/write/tag-suggestions?q=' + encodeURIComponent(q), {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+            if (!res.ok) return;
+            const names = await res.json();
+            if (!Array.isArray(names)) return;
+            names.forEach((n) => {
+                const opt = document.createElement('option');
+                opt.value = n;
+                this.datalist.appendChild(opt);
+            });
+        } catch {
+            /* ignore */
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     new WriteEditor();
+    new WriteTagsPicker();
 });

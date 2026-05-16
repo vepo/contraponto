@@ -1006,6 +1006,17 @@ public class App {
         }
     }
 
+    public class TagBrowsePage extends Page<TagBrowsePage> {
+        private TagBrowsePage() {}
+
+        public TagBrowsePage assertListsPostTitle(String title) {
+            wait.until(visibilityOfElementLocated(cssSelector(".article-card__title")));
+            var main = wait.until(visibilityOfElementLocated(By.tagName("main")));
+            assertThat(main.getText()).contains(title);
+            return this;
+        }
+    }
+
     public class UserManagePage extends Page<UserManagePage> {
         private UserManagePage() {}
 
@@ -1539,6 +1550,12 @@ public class App {
         wait.until(visibilityOfElementLocated(cssSelector(".review-page")));
         waitForReady();
         return new ReviewPage();
+    }
+
+    public TagBrowsePage goToTag(String slug) {
+        _goTo("/tags/" + slug);
+        waitForReady();
+        return new TagBrowsePage();
     }
 
     public LibraryPage libraryPage() {

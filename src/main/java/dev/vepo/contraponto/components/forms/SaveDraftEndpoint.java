@@ -7,6 +7,7 @@ import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -35,16 +36,19 @@ public class SaveDraftEndpoint {
     private final PostRepository postRepository;
     private final BlogRepository blogRepository;
     private final ImageRepository imageRepository;
+    private final TagService tagService;
     private final LoggedUser loggedUser;
 
     @Inject
     public SaveDraftEndpoint(PostRepository postRepository,
                              BlogRepository blogRepository,
                              ImageRepository imageRepository,
+                             TagService tagService,
                              LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.imageRepository = imageRepository;
+        this.tagService = tagService;
         this.loggedUser = loggedUser;
     }
 
@@ -77,7 +81,7 @@ public class SaveDraftEndpoint {
 
     private Post getOrCreatePost(SaveDraftRequest request) {
         if (request.id() != null) {
-            return postRepository.findById(request.id()).orElseGet(Post::new);
+            return postRepository.findByIdWithTags(request.id()).orElseGet(Post::new);
         }
         return new Post();
     }
@@ -105,6 +109,7 @@ public class SaveDraftEndpoint {
         setFormat(post, request);
         fillPostMetadata(post, request);
         postRepository.save(post);
+        tagService.syncPostTags(post, request.tagsJson());
 
         return buildSuccessResponse(post);
     }

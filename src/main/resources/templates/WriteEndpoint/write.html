@@ -92,6 +92,19 @@
                                    autocomplete="off"/>
                         </div>
 
+                        <!-- Tags -->
+                        <div class="write-form__group" id="tagsPicker">
+                            <label for="tagInput" class="write-form__label">Tags</label>
+                            <div class="write-tags">
+                                <div class="write-tags__chips" id="tagsChips" aria-live="polite"></div>
+                                <input type="text" id="tagInput" class="write-tags__input" autocomplete="off"
+                                       placeholder="Add a tag and press Enter…" list="tagSuggestionsList"/>
+                                <datalist id="tagSuggestionsList"></datalist>
+                                <input type="hidden" name="tagsJson" id="tagsJson" value="{initialTagsJson}"/>
+                            </div>
+                            <div class="write-form__hint">Suggestions match existing tags (case-insensitive). Any new name is created when you save the draft or publish.</div>
+                        </div>
+
                         <!-- Editor area with toolbar and textarea -->
                         <div class="write-form__group write-form__group--editor">
                             <label class="write-form__label">Your story</label>

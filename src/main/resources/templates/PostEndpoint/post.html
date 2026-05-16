@@ -39,6 +39,8 @@
 
                 <h1 class="article-page__title">{post.title}</h1>
 
+                {#include components/post-tags post=post /}
+
                 <div class="article-page__byline">
                     By <a data-hx-get="/{post.author.username}"
                         hx-select="main"

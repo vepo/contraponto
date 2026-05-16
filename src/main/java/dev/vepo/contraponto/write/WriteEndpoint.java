@@ -12,6 +12,7 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
@@ -35,7 +36,8 @@ public class WriteEndpoint {
                                                     Links links,
                                                     LoggedUser user,
                                                     List<Blog> blogs,
-                                                    Long selectedBlogId);
+                                                    Long selectedBlogId,
+                                                    String initialTagsJson);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -45,16 +47,19 @@ public class WriteEndpoint {
     private final PostRepository postRepository;
     private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
+    private final TagService tagService;
     private final LoggedUser loggedUser;
 
     @Inject
     public WriteEndpoint(PostRepository postRepository,
                          CustomPageRepository customPageRepository,
                          BlogRepository blogRepository,
+                         TagService tagService,
                          LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.blogRepository = blogRepository;
+        this.tagService = tagService;
         this.loggedUser = loggedUser;
     }
 
@@ -76,7 +81,8 @@ public class WriteEndpoint {
                                customPageRepository.loadLinks(),
                                loggedUser,
                                blogs,
-                               selectedBlogId);
+                               selectedBlogId,
+                               "[]");
     }
 
     @GET
@@ -85,7 +91,7 @@ public class WriteEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance write(@PathParam("draftId") Long draftId) {
         var maybePost = Optional.ofNullable(draftId)
-                                .flatMap(postRepository::findById)
+                                .flatMap(postRepository::findByIdWithTags)
                                 .filter(post -> Objects.equals(post.getAuthor().getId(), loggedUser.getId()));
         if (maybePost.isEmpty()) {
             throw new NotFoundException("Draft not found! id=%s".formatted(draftId));
@@ -93,8 +99,10 @@ public class WriteEndpoint {
         var blogs = blogRepository.findActiveBlogs(loggedUser.getId());
         Post post = maybePost.get();
         Long selectedBlogId = post.getBlog().getId(); // editing, preserve blog
+        String initialTagsJson = tagService.tagsToJson(post);
         return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser,
                                blogs,
-                               selectedBlogId);
+                               selectedBlogId,
+                               initialTagsJson);
     }
 }

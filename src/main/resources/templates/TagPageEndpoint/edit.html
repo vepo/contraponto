@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Edit tag: {tag.name} — contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main id="main-content" class="write-main">
+            <div class="write-container">
+                <div class="tag-edit-panel">
+                    <h1 class="tag-edit-panel__title">Edit tag</h1>
+                    <form id="tagEditForm" class="write-form"
+                          hx-post="/forms/tags/update"
+                          hx-swap="none"
+                          autocomplete="off">
+                        <input type="hidden" name="tagId" value="{tag.id}"/>
+
+                        <div class="write-form__group">
+                            <label for="tagName" class="write-form__label">Display name</label>
+                            <input type="text" id="tagName" name="name" class="write-form__title" required
+                                   value="{tag.name}" autocomplete="off"/>
+                        </div>
+
+                        <div class="write-form__group">
+                            <label for="tagSlug" class="write-form__label">URL slug</label>
+                            <input type="text" id="tagSlug" name="slug" class="write-form__slug" required
+                                   value="{tag.slug}" autocomplete="off"/>
+                            <div class="write-form__hint">Lowercase letters, numbers, and hyphens only. Shown in /tags/&lt;slug&gt;</div>
+                        </div>
+
+                        <div class="write-form__group">
+                            <label for="tagDescription" class="write-form__label">Description</label>
+                            <textarea id="tagDescription" name="description" class="write-form__editor" rows="5"
+                                      placeholder="Optional description for the tag page">{#if tag.description}{tag.description}{/if}</textarea>
+                        </div>
+
+                        <div class="write-form__actions">
+                            <button type="submit" class="write-header__btn write-header__btn--primary">Save</button>
+                            <a data-hx-get="/tags/{tag.slug}"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-push-url="/tags/{tag.slug}"
+                               class="write-header__btn write-header__btn--secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

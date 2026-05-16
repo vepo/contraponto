@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {tag.name} — tags — contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main id="main-content" class="user-blog-page">
+            <header class="tag-page-header container">
+                <h1 class="tag-page__title"><span class="tag-page__hash" aria-hidden="true">#</span>{tag.name}</h1>
+                {#if tag.description}
+                <p class="tag-page__description">{tag.description}</p>
+                {/if}
+                {#if user.isEditor}
+                <p class="tag-page__actions">
+                    <a data-hx-get="/tags/{tag.slug}/edit"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-push-url="/tags/{tag.slug}/edit"
+                       class="btn btn--small btn--outline">Edit tag</a>
+                </p>
+                {/if}
+            </header>
+
+            <div class="container">
+                <div class="posts-grid">
+                    {#include TagPageEndpoint/grid tagSlug=tag.slug posts=posts /}
+                </div>
+            </div>
+        </main>
+
+        {#include components/footer /}
+    </body>
+</html>
