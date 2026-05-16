@@ -58,6 +58,22 @@ public class PostCommentRepository {
                             .getResultList();
     }
 
+    public List<PostComment> findPendingForPostAuthor(long authorUserId) {
+        return entityManager.createQuery("""
+                                         SELECT c FROM PostComment c
+                                         JOIN FETCH c.post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner
+                                         JOIN FETCH c.author
+                                         LEFT JOIN FETCH c.parent
+                                         WHERE b.owner.id = :authorUserId AND c.status = :status
+                                         ORDER BY c.createdAt ASC
+                                         """, PostComment.class)
+                            .setParameter("authorUserId", authorUserId)
+                            .setParameter("status", CommentStatus.PENDING)
+                            .getResultList();
+    }
+
     public List<PostComment> findRepliesByRootId(long rootId) {
         return entityManager.createQuery("""
                                          SELECT c FROM PostComment c

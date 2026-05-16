@@ -16,8 +16,8 @@
                         <input type="hidden" name="tagId" value="{tag.id}"/>
 
                         <div class="write-form__group">
-                            <label for="tagName" class="write-form__label">Display name</label>
-                            <input type="text" id="tagName" name="name" class="write-form__title" required
+                            <label for="tagDisplayName" class="write-form__label">Display name</label>
+                            <input type="text" id="tagDisplayName" name="name" class="write-form__title" required
                                    value="{tag.name}" autocomplete="off"/>
                         </div>
 
@@ -36,10 +36,10 @@
 
                         <div class="write-form__actions">
                             <button type="submit" class="write-header__btn write-header__btn--primary">Save</button>
-                            <a data-hx-get="/tags/{tag.slug}"
+                            <a data-hx-get="/tags/manage"
                                hx-select="main"
                                hx-target="main"
-                               hx-push-url="/tags/{tag.slug}"
+                               hx-push-url="/tags/manage"
                                class="write-header__btn write-header__btn--secondary">Cancel</a>
                         </div>
                     </form>

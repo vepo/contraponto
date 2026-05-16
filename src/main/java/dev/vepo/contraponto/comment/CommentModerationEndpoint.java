@@ -14,6 +14,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -26,16 +27,19 @@ public class CommentModerationEndpoint {
     private final PostCommentService commentService;
     private final PostRepository postRepository;
     private final CommentComponentEndpoint componentEndpoint;
+    private final CommentManageEndpoint commentManageEndpoint;
     private final LoggedUser loggedUser;
 
     @Inject
     public CommentModerationEndpoint(PostCommentService commentService,
                                      PostRepository postRepository,
                                      CommentComponentEndpoint componentEndpoint,
+                                     CommentManageEndpoint commentManageEndpoint,
                                      LoggedUser loggedUser) {
         this.commentService = commentService;
         this.postRepository = postRepository;
         this.componentEndpoint = componentEndpoint;
+        this.commentManageEndpoint = commentManageEndpoint;
         this.loggedUser = loggedUser;
     }
 
@@ -43,11 +47,13 @@ public class CommentModerationEndpoint {
     @Path("approve")
     @Transactional
     @Produces(MediaType.TEXT_HTML)
-    public Response approve(@PathParam("postId") long postId, @PathParam("commentId") long commentId) {
-        return moderate(postId, commentId, true);
+    public Response approve(@PathParam("postId") long postId,
+                            @PathParam("commentId") long commentId,
+                            @QueryParam("from") String from) {
+        return moderate(postId, commentId, true, from);
     }
 
-    private Response moderate(long postId, long commentId, boolean approve) {
+    private Response moderate(long postId, long commentId, boolean approve, String from) {
         try {
             Post post = postRepository.findById(postId).orElseThrow(NotFoundException::new);
             if (approve) {
@@ -56,12 +62,14 @@ public class CommentModerationEndpoint {
                 commentService.reject(postId, commentId, loggedUser.getId());
             }
             String message = approve ? "Comment approved." : "Comment rejected.";
-            return Toast.ok()
-                        .message(message)
-                        .type(Toast.Type.SUCCESS)
-                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .page(componentEndpoint.renderComments(post))
-                        .build();
+            var builder = Toast.ok()
+                               .message(message)
+                               .type(Toast.Type.SUCCESS)
+                               .duration(Toast.TOAST_DEFAULT_DURATION_MS);
+            if ("manage".equals(from)) {
+                return builder.page(commentManageEndpoint.renderList()).build();
+            }
+            return builder.page(componentEndpoint.renderComments(post)).build();
         } catch (ForbiddenException e) {
             return Toast.response(Status.FORBIDDEN).message(e.getMessage()).type(Toast.Type.ERROR).build();
         } catch (NotFoundException e) {
@@ -73,7 +81,9 @@ public class CommentModerationEndpoint {
     @Path("reject")
     @Transactional
     @Produces(MediaType.TEXT_HTML)
-    public Response reject(@PathParam("postId") long postId, @PathParam("commentId") long commentId) {
-        return moderate(postId, commentId, false);
+    public Response reject(@PathParam("postId") long postId,
+                           @PathParam("commentId") long commentId,
+                           @QueryParam("from") String from) {
+        return moderate(postId, commentId, false, from);
     }
 }

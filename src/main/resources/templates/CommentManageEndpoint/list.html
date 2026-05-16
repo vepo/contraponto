@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Manage Comments - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage" id="main-content">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">Manage Comments</h1>
+                        <p class="pages-manage__subtitle">
+                            Approve or reject comments awaiting moderation on your published posts.
+                        </p>
+                    </div>
+                </div>
+
+                {#if comments.isEmpty}
+                <div class="pages-manage__empty">
+                    <p>No comments waiting for approval.</p>
+                </div>
+                {#else}
+                <div class="pages-manage__list">
+                    {#for row in comments}
+                    <article class="pages-manage__row" id="comment-row-{row.commentId}">
+                        <div class="pages-manage__row-main">
+                            <h2 class="pages-manage__row-title">
+                                <a data-hx-get="{row.postUrl}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-push-url="{row.postUrl}"
+                                   data-nav>{row.postTitle}</a>
+                            </h2>
+                            <div class="pages-manage__row-meta">
+                                <span class="pages-manage__badge">@{row.authorUsername}</span>
+                                <span>{row.authorName}</span>
+                                {#if row.reply}
+                                <span class="pages-manage__badge">Reply</span>
+                                {/if}
+                                <span>{row.createdAt.format('dd/MM/yyyy HH:mm')}</span>
+                            </div>
+                            <p class="pages-manage__row-description">{row.bodyPreview}</p>
+                        </div>
+                        <div class="pages-manage__row-actions">
+                            <button type="button"
+                                    class="btn btn--secondary btn--small"
+                                    hx-post="/forms/posts/{row.postId}/comments/{row.commentId}/approve?from=manage"
+                                    hx-select="main"
+                                    hx-target="main"
+                                    hx-swap="outerHTML">
+                                Approve
+                            </button>
+                            <button type="button"
+                                    class="btn btn--small btn--danger"
+                                    hx-post="/forms/posts/{row.postId}/comments/{row.commentId}/reject?from=manage"
+                                    hx-select="main"
+                                    hx-target="main"
+                                    hx-swap="outerHTML">
+                                Reject
+                            </button>
+                        </div>
+                    </article>
+                    {/for}
+                </div>
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

@@ -59,6 +59,11 @@ public class TagRepository {
         return created;
     }
 
+    public List<Tag> listAllForManagement() {
+        return entityManager.createQuery("FROM Tag t ORDER BY t.name ASC", Tag.class)
+                            .getResultList();
+    }
+
     @Transactional
     public Tag save(Tag tag) {
         if (tag.getId() == null) {

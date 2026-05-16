@@ -91,6 +91,18 @@
                 </svg>
                 Custom Pages
             </a>
+            <a data-hx-get="/comments"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/comments"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Comments
+            </a>
         </div>
 
         {#if user.isUserAdministrator}
@@ -127,6 +139,18 @@
                           stroke="currentColor" stroke-width="1.5"/>
                 </svg>
                 Featured Posts
+            </a>
+            <a data-hx-get="/tags/manage"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/tags/manage"
+               class="user-menu__item"
+               data-nav>
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A2 2 0 0 1 3 12V7a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Tags
             </a>
         </div>
         {/if}

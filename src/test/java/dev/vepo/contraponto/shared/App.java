@@ -321,6 +321,66 @@ public class App {
         }
     }
 
+    public class CommentManagePage extends Page<CommentManagePage> {
+        private CommentManagePage() {}
+
+        public CommentManagePage assertCommentNotListed(String bodySnippet) {
+            var rows = driver.findElements(cssSelector(".pages-manage__row"));
+            assertThat(rows).noneMatch(row -> row.getText().contains(bodySnippet));
+            return this;
+        }
+
+        public CommentManagePage assertEmptyState() {
+            wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__empty")));
+            return this;
+        }
+
+        public CommentManagePage assertManagePageNotLoaded() {
+            assertThat(driver.findElements(cssSelector(".pages-manage__title"))).isEmpty();
+            return this;
+        }
+
+        public CommentManagePage assertPendingComment(String bodySnippet) {
+            var main = wait.until(visibilityOfElementLocated(By.tagName("main")));
+            assertThat(main.getText()).contains(bodySnippet);
+            return this;
+        }
+
+        public CommentManagePage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public CommentManagePage assertToastSuccess(String message) {
+            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
+            assertThat(toast.getText()).contains(message);
+            return this;
+        }
+
+        public CommentManagePage clickApprove(String bodySnippet) {
+            var row = findRowByBody(bodySnippet);
+            reliableClick(row.findElement(By.xpath(".//button[contains(text(),'Approve')]")));
+            waitForReady();
+            return this;
+        }
+
+        public CommentManagePage clickReject(String bodySnippet) {
+            var row = findRowByBody(bodySnippet);
+            reliableClick(row.findElement(By.xpath(".//button[contains(text(),'Reject')]")));
+            waitForReady();
+            return this;
+        }
+
+        private WebElement findRowByBody(String bodySnippet) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            return rows.stream()
+                       .filter(row -> row.getText().contains(bodySnippet))
+                       .findFirst()
+                       .orElseThrow();
+        }
+    }
+
     public class CustomPageManagePage extends Page<CustomPageManagePage> {
         private CustomPageManagePage() {}
 
@@ -1085,6 +1145,60 @@ public class App {
         }
     }
 
+    public class TagEditPage extends Page<TagEditPage> {
+        private TagEditPage() {}
+
+        public TagEditPage fillName(String name) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#tagDisplayName")));
+            input.clear();
+            input.sendKeys(name);
+            return this;
+        }
+
+        public TagManagePage submit() {
+            reliableClick(wait.until(elementToBeClickable(cssSelector("#tagEditForm button[type='submit']"))));
+            waitForReady();
+            return new TagManagePage();
+        }
+    }
+
+    public class TagManagePage extends Page<TagManagePage> {
+        private TagManagePage() {}
+
+        public TagManagePage assertManagePageNotLoaded() {
+            assertThat(driver.findElements(cssSelector(".pages-manage__title"))).isEmpty();
+            return this;
+        }
+
+        public TagManagePage assertTagListed(String name) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            assertThat(rows).anyMatch(row -> row.findElement(cssSelector(".pages-manage__row-title")).getText().equals(name));
+            return this;
+        }
+
+        public TagManagePage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public TagEditPage clickEdit(String name) {
+            var row = findRowByTitle(name);
+            var path = row.findElement(By.linkText("Edit")).getAttribute("data-hx-get");
+            _goTo(path);
+            wait.until(visibilityOfElementLocated(cssSelector("#tagEditForm")));
+            return new TagEditPage();
+        }
+
+        private WebElement findRowByTitle(String title) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".pages-manage__row")));
+            return rows.stream()
+                       .filter(row -> row.findElement(cssSelector(".pages-manage__row-title")).getText().equals(title))
+                       .findFirst()
+                       .orElseThrow();
+        }
+    }
+
     public class UserManagePage extends Page<UserManagePage> {
         private UserManagePage() {}
 
@@ -1575,6 +1689,11 @@ public class App {
         return new BlogPage();
     }
 
+    public CommentManagePage comments() {
+        _goTo("/comments");
+        return new CommentManagePage();
+    }
+
     public CustomPageManagePage customPages() {
         _goTo("/pages");
         return new CustomPageManagePage();
@@ -1710,6 +1829,11 @@ public class App {
     public SearchPage searchPage() {
         _goTo("/search");
         return new SearchPage();
+    }
+
+    public TagManagePage tagsManage() {
+        _goTo("/tags/manage");
+        return new TagManagePage();
     }
 
     private void useFieldValue(String selector, String value) {
