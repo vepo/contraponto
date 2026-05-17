@@ -3,6 +3,8 @@ package dev.vepo.contraponto.blog;
 import java.util.List;
 import java.util.Optional;
 
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -135,6 +137,40 @@ public class BlogRepository {
                             .setParameter("ownerId", ownerId)
                             .getResultStream()
                             .findFirst();
+    }
+
+    public Page<Blog> findPageAllForManagement(PageQuery query) {
+        long total = entityManager.createQuery("SELECT COUNT(b) FROM Blog b", Long.class)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("""
+                                             FROM Blog b
+                                             JOIN FETCH b.owner
+                                             ORDER BY b.owner.username, b.main DESC, b.name
+                                             """, Blog.class)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
+    }
+
+    public Page<Blog> findPageByOwnerIdForManagement(long ownerId, PageQuery query) {
+        long total = entityManager.createQuery("""
+                                               SELECT COUNT(b) FROM Blog b
+                                               WHERE b.owner.id = :ownerId
+                                               """, Long.class)
+                                  .setParameter("ownerId", ownerId)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("""
+                                             FROM Blog b
+                                             JOIN FETCH b.owner
+                                             WHERE b.owner.id = :ownerId
+                                             ORDER BY b.main DESC, b.name
+                                             """, Blog.class)
+                                .setParameter("ownerId", ownerId)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
     }
 
     @Transactional

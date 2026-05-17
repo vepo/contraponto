@@ -1,13 +1,13 @@
 package dev.vepo.contraponto.library;
 
-import java.util.List;
-
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,8 +18,10 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -33,7 +35,7 @@ public class LibraryEndpoint {
 
         public static native TemplateInstance library(LoggedUser user, Links links);
 
-        public static native TemplateInstance tab(List<Post> posts, String type);
+        public static native TemplateInstance tab(Page<Post> posts, String type);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -88,10 +90,10 @@ public class LibraryEndpoint {
     @GET
     @Path("components/tab/{type}")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance tab(@PathParam("type") String type) {
+    public TemplateInstance tab(@PathParam("type") String type, @QueryParam("page") @DefaultValue("1") int page) {
         return Templates.tab(switch (type) {
-            case "published" -> postRepository.findByAuthorAndPublished(loggedUser.getId(), true);
-            case "drafts" -> postRepository.findByAuthorAndPublished(loggedUser.getId(), false);
+            case "published" -> postRepository.findPageByAuthorAndPublished(loggedUser.getId(), true, PageQuery.forGrid(20, page));
+            case "drafts" -> postRepository.findPageByAuthorAndPublished(loggedUser.getId(), false, PageQuery.forGrid(20, page));
             default -> throw new BadRequestException("Type not defined! type=%s".formatted(type));
         }, type);
     }

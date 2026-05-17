@@ -1,0 +1,8 @@
+{#if !page.isEmpty && !page.isLastPage}
+<div id="more-posts" class="load-more">
+    <button hx-get="{hxGet}?page={page.nextPage}"
+            hx-target="#more-posts"
+            hx-swap="outerHTML"
+            class="btn">Load more</button>
+</div>
+{/if}

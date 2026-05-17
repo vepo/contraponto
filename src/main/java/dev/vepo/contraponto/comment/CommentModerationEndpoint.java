@@ -67,7 +67,7 @@ public class CommentModerationEndpoint {
                                .type(Toast.Type.SUCCESS)
                                .duration(Toast.TOAST_DEFAULT_DURATION_MS);
             if ("manage".equals(from)) {
-                return builder.page(commentManageEndpoint.renderList()).build();
+                return builder.page(commentManageEndpoint.renderList(1)).build();
             }
             return builder.page(componentEndpoint.renderComments(post)).build();
         } catch (ForbiddenException e) {

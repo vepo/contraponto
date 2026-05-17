@@ -19,7 +19,7 @@
                 <p class="subscriptions-page__empty">You are not following or subscribed to any blogs yet.</p>
                 {#else}
                 <ul class="subscription-list">
-                    {#for row in rows}
+                    {#for row in rows.data}
                     <li class="subscription-list__item">
                         <a data-hx-get="{row.blog.url}"
                            hx-select="main"
@@ -32,6 +32,7 @@
                     </li>
                     {/for}
                 </ul>
+                {#include components/manage-pagination page=rows basePath='/subscriptions' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>

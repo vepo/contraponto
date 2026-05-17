@@ -1,0 +1,36 @@
+---
+description: List pagination — Load more (reading) vs numbered pages (managing)
+globs: src/main/resources/templates/**/*.html,src/main/java/**/*Endpoint.java,src/main/java/**/shared/pagination/**
+alwaysApply: false
+---
+
+# List pagination
+
+Classify the UI before choosing a control.
+
+## Reading UIs (public browse)
+
+- **When:** home, user blog, tag pages, search results, any public list meant for reading.
+- **Control:** HTMX **Load more** via `{#include components/load-more-posts page=... hxGet='...' /}`.
+- **Data:** `PageQuery.forFeaturedGrid(12, page)` (hero grids) or `PageQuery.forGrid(limit, page)` (flat lists).
+- **Never:** numbered manage pagination on public surfaces.
+
+## Managing UIs (logged-in operations)
+
+- **When:** library, CRUD indexes (`/users`, `/blogs`, `/pages`, `/tags/manage`, `/comments`), review, notifications, subscriptions.
+- **Control:** `{#include components/manage-pagination page=... basePath='...' extraQuery='' /}` (add `fragmentTarget='#libraryContent'` for HTMX tab fragments).
+- **Data:** `PageQuery.forGrid(20, page)`; repository returns `Page<T>` with count query.
+- **Footer must show:** total items, range (Showing X–Y), Page N of M, Previous/Next.
+- **Never:** Load more on manage screens.
+
+## Exceptions
+
+- `/dashboard` — fixed “recent N” previews only; full lists use paginated routes.
+
+## New list endpoints
+
+1. Add paginated repository method returning `Page<T>`.
+2. Endpoint: `@QueryParam("page") @DefaultValue("1") int page`.
+3. Template: iterate `page.data`; include the correct partial.
+4. Update [docs/UI-Guidelines.md](../../docs/UI-Guidelines.md) when adding a user-facing list.
+5. Tests: reading → `loadMore()`; managing → `assertManagePaginationSummary(...)`.

@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -132,6 +134,48 @@ public class CustomPageRepository {
                                       slug = :slug AND
                                       blog IS NULL
                                 """, slug);
+    }
+
+    public Page<CustomPageRow> findPageAllForManagement(PageQuery query) {
+        long total = entityManager.createQuery("SELECT COUNT(cp) FROM CustomPage cp", Long.class)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("""
+                                             SELECT cp FROM CustomPage cp
+                                             LEFT JOIN FETCH cp.blog b
+                                             LEFT JOIN FETCH b.owner
+                                             ORDER BY cp.blog.id NULLS FIRST, cp.title
+                                             """, CustomPage.class)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultStream()
+                                .map(CustomPageRow::from)
+                                .toList();
+        return new Page<>(data, query.page(), query.limit(), total);
+    }
+
+    public Page<CustomPageRow> findPageByOwnerId(long ownerId, PageQuery query) {
+        long total = entityManager.createQuery("""
+                                               SELECT COUNT(cp) FROM CustomPage cp
+                                               JOIN cp.blog b
+                                               JOIN b.owner o
+                                               WHERE o.id = :ownerId
+                                               """, Long.class)
+                                  .setParameter("ownerId", ownerId)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("""
+                                             SELECT cp FROM CustomPage cp
+                                             JOIN FETCH cp.blog b
+                                             JOIN FETCH b.owner o
+                                             WHERE o.id = :ownerId
+                                             ORDER BY cp.title
+                                             """, CustomPage.class)
+                                .setParameter("ownerId", ownerId)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultStream()
+                                .map(CustomPageRow::from)
+                                .toList();
+        return new Page<>(data, query.page(), query.limit(), total);
     }
 
     public List<CustomPageRow> listAllForManagement() {

@@ -44,7 +44,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 ### Low priority / nice to have
 
 - [ ] **Error response shapes** — standard HTMX error swap HTML vs JSON for `/api/*`.
-- [ ] **Pagination** — shared pattern (`shared/pagination`) usage in new list endpoints.
+- [x] **Pagination** — reading = Load more; managing = numbered footer (`shared/pagination`, `components/load-more-posts.html`, `components/manage-pagination.html`). See `.cursor/rules/contraponto-pagination.mdc`.
 - [ ] **Slug rules** — central list: post, blog, tag (`TagSlug`), custom page (`CustomPagePaths`), reserved segments.
 - [ ] **i18n** — not implemented; note if planned.
 - [ ] **Security headers / CSRF** — document current approach (session cookie, HTMX same-origin).

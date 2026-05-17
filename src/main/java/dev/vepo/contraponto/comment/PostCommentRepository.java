@@ -3,6 +3,8 @@ package dev.vepo.contraponto.comment;
 import java.util.List;
 import java.util.Optional;
 
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -72,6 +74,34 @@ public class PostCommentRepository {
                             .setParameter("authorUserId", authorUserId)
                             .setParameter("status", CommentStatus.PENDING)
                             .getResultList();
+    }
+
+    public Page<PostComment> findPendingPageForPostAuthor(long authorUserId, PageQuery query) {
+        long total = entityManager.createQuery("""
+                                               SELECT COUNT(c) FROM PostComment c
+                                               JOIN c.post p
+                                               JOIN p.blog b
+                                               WHERE b.owner.id = :authorUserId AND c.status = :status
+                                               """, Long.class)
+                                  .setParameter("authorUserId", authorUserId)
+                                  .setParameter("status", CommentStatus.PENDING)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("""
+                                             SELECT c FROM PostComment c
+                                             JOIN FETCH c.post p
+                                             JOIN FETCH p.blog b
+                                             JOIN FETCH b.owner
+                                             JOIN FETCH c.author
+                                             LEFT JOIN FETCH c.parent
+                                             WHERE b.owner.id = :authorUserId AND c.status = :status
+                                             ORDER BY c.createdAt ASC
+                                             """, PostComment.class)
+                                .setParameter("authorUserId", authorUserId)
+                                .setParameter("status", CommentStatus.PENDING)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
     }
 
     public List<PostComment> findRepliesByRootId(long rootId) {

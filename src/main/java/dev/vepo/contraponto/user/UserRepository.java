@@ -3,6 +3,8 @@ package dev.vepo.contraponto.user;
 import java.util.List;
 import java.util.Optional;
 
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -81,6 +83,19 @@ public class UserRepository {
                             .setParameter("login", usernameOrEmail)
                             .getResultStream()
                             .findFirst();
+    }
+
+    public Page<User> findPageForManagement(PageQuery query) {
+        long total = entityManager.createQuery("SELECT COUNT(u) FROM User u", Long.class)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("""
+                                             SELECT u FROM User u
+                                             ORDER BY u.name, u.username
+                                             """, User.class)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
     }
 
     public List<User> listAllForManagement() {

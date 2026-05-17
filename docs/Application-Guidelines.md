@@ -24,7 +24,7 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 - **Layout:**  
   - The newest featured post gets a **hero** section (large cover + excerpt).  
   - Remaining featured posts appear in a three‑column grid below.  
-- **Pagination:** An HTMX‑driven “Load more” button loads further pages via `GET /components/home/grid?page=X`.  
+- **Pagination:** An HTMX “Load more” button loads further pages via `GET /components/grid?page=X`.  
 - **Empty state:** If no featured posts exist, a friendly message is shown (no special restrictions – visibility of featured flag is controlled by editors).
 
 ### 2.2 Blog Pages
@@ -207,7 +207,7 @@ These partials are triggered by events (`loggedIn`, `loggedOut`) to keep the hea
 
 - **Feature toggle** is immediate; no confirmation dialog.  
 - **The default blog** is the single entry point for writing; secondary blogs must be created via an admin interface later.  
-- **Pagination** uses page numbers (1‑based).  
+- **Pagination:** public reading lists use HTMX “Load more” (1‑based `?page=`); managing lists use numbered pagination with item totals (`components/manage-pagination.html`, page size 20).  
 - **HTMX** is used for all dynamic updates (search, modal loading, infinite scroll, feature toggle).  
 - **Static resources** (favicon, CSS, JS) are served from `META-INF/resources` and intercepted by a filter to avoid clashes with catch‑all paths.  
 - **The `/{username}` path** now checks if the user has multiple blogs: if yes, it shows a blog list; otherwise it redirects internally to the default blog’s page.

@@ -25,13 +25,13 @@
                     </a>
                 </div>
 
-                {#if users.isEmpty}
+                {#if users.isEmpty()}
                 <div class="pages-manage__empty">
                     <p>No users found.</p>
                 </div>
                 {#else}
                 <div class="pages-manage__list">
-                    {#for row in users}
+                    {#for row in users.data}
                     <article class="pages-manage__row" id="user-row-{row.id}">
                         <div class="pages-manage__row-main">
                             <h2 class="pages-manage__row-title">{row.name}</h2>
@@ -60,6 +60,7 @@
                     </article>
                     {/for}
                 </div>
+                {#include components/manage-pagination page=users basePath='/users' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>

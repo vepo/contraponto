@@ -1,0 +1,90 @@
+---
+description: Domain Model Conventions - Ensure domain model usage in code and tests, with continuous alignment to the domain specification.
+globs:
+  - 'src/main/java/**/*.java'
+  - 'src/main/resources/**/*.js'
+  - 'src/main/resources/**/*.html'
+  - 'src/test/**/*.java'
+alwaysApply: true
+---
+
+# Ensure Domain Model Usage on Code
+
+## Domain Specification Location
+
+The domain specification MUST reside in `docs/domain-specification.md` (or a similarly named file inside the `docs/` folder).  
+This specification MUST contain a dedicated section titled **"Ubiquitous Language"** that defines all domain terms, their meanings, and their relationships.
+
+## Pre-Change Checklist (Before Any Code Change)
+
+Before implementing any change, you MUST:
+
+1. **Read the domain specification** completely, especially the Ubiquitous Language section.
+2. **Question the change against the domain**:
+   - Does this change affect the domain (new entities, value objects, aggregates, events, or business rules)?
+   - Does the domain allow the intended implementation? (i.e., are we respecting invariants and existing language?)
+   - Do we need to extend the domain specification?
+   - Is there a new domain concept introduced by the change?
+   - Are any UI elements (buttons, labels, messages) implied by the change? If yes, these MUST be defined in the domain specification as part of the ubiquitous language (e.g., "Cancel Order button", "Order Total field").
+
+**Do NOT write any code or test until these questions are answered.** If the answer changes the domain, update the specification first.
+
+## Coding Rules
+
+### Code Must Use Domain Language
+
+Every identifier in the code (class names, method names, variable names, parameter names, return types) MUST reflect the domain's ubiquitous language. A developer reading the code should think exclusively in domain terms, not technical or implementation terms.
+
+**Example (Good):**
+```java
+class Order {
+    private OrderStatus status;
+    public void cancel(CancellationReason reason) { ... }
+}
+```
+
+**Example (Bad):**
+```java
+class OrderData {
+    private int stateFlag;
+    public void doCancel(int reasonCode) { ... }
+}
+```
+
+### UI Elements Must Be Defined in Domain Terms
+
+HTML elements, JavaScript functions, and UI component labels MUST be named after the domain specification. The exact text shown to the user (e.g., button captions, error messages) MUST be traceable back to the Ubiquitous Language section.
+
+## Testing Rules
+
+Test code MUST also use the domain language. A developer reading a test should understand the domain scenario and the UI interactions in domain terms.
+
+**Test Example:**
+```java
+@Test
+void shouldCancelOrderWhenPaymentFails() {
+    // Given
+    Order order = new Order(OrderStatus.PENDING);
+    // When
+    order.cancel(CancellationReason.PAYMENT_FAILED);
+    // Then
+    assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+}
+```
+
+Avoid technical test jargon (e.g., "setFlag1", "callMethodX"). Use the same ubiquitous language as the domain specification.
+
+## Post-Change Update Rule
+
+After ANY change (code, test, or configuration), you MUST re-evaluate the domain specification:
+
+- **Did the change introduce new domain concepts?** → Add them to the Ubiquitous Language section.
+- **Did the change modify existing domain rules?** → Update the specification accordingly.
+- **Did the change rely on UI elements that were not previously documented?** → Document those UI elements in the specification.
+- **Did the change keep the domain intact?** → Still review the specification to ensure it remains accurate and complete.
+
+**If the domain specification is out of sync, fix it before committing the change.**
+
+## Violation Handling
+
+If you identify code or tests that violate this rule (e.g., using technical names or omitting domain terms), you MUST refactor them to align with the domain specification. Do not accept pull requests that break this rule.

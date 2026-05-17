@@ -270,6 +270,24 @@ public class PostRepository {
                                  });
     }
 
+    public Page<Post> findPageByAuthorAndPublished(long authorId, boolean published, PageQuery query) {
+        long total = countByAuthorAndPublished(authorId, published);
+        var data = entityManager.createQuery("""
+                                             SELECT DISTINCT p FROM Post p
+                                             LEFT JOIN FETCH p.tags
+                                             WHERE p.blog.owner.id = :authorId AND
+                                                   p.published = :published
+                                             ORDER BY p.updatedAt DESC
+                                             """,
+                                             Post.class)
+                                .setParameter("authorId", authorId)
+                                .setParameter("published", published)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
+    }
+
     public Page<Post> findPublished(PageQuery query) {
         return new Page<>(attachLatestPublications(entityManager.createQuery("""
                                                                              SELECT DISTINCT p FROM Post p

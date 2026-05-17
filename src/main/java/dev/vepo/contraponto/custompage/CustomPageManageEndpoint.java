@@ -8,16 +8,20 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.shared.toast.Toast;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -37,7 +41,7 @@ public class CustomPageManageEndpoint {
                                             Links links,
                                             LoggedUser user);
 
-        static native TemplateInstance list(List<CustomPageRow> pages, boolean editorView, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<CustomPageRow> pages, boolean editorView, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -110,16 +114,23 @@ public class CustomPageManageEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response list() {
+    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
         if (!loggedUser.isAuthenticated()) {
             return forbidden();
         }
 
         var editorView = customPageAccess.canListAll(loggedUser);
-        var pages = editorView ? customPageRepository.listAllForManagement()
-                               : customPageRepository.listByOwnerId(loggedUser.getId());
+        return Response.ok(Templates.list(listPage(page, editorView),
+                                          editorView,
+                                          customPageRepository.loadLinks(),
+                                          loggedUser))
+                       .build();
+    }
 
-        return Response.ok(Templates.list(pages, editorView, customPageRepository.loadLinks(), loggedUser)).build();
+    public Page<CustomPageRow> listPage(int page, boolean editorView) {
+        var query = PageQuery.forGrid(20, page);
+        return editorView ? customPageRepository.findPageAllForManagement(query)
+                          : customPageRepository.findPageByOwnerId(loggedUser.getId(), query);
     }
 
     @GET

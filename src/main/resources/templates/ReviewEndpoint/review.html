@@ -15,6 +15,7 @@
                 <div class="review-list">
                     {#include ReviewEndpoint/grid posts=posts /}
                 </div>
+                {#include components/manage-pagination page=posts basePath='/review' extraQuery='' fragmentTarget='' /}
             </div>
         </main>
         {#include components/footer /}

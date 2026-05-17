@@ -41,11 +41,4 @@
         </div>
     </article>
 {/for}
-{#if !posts.isEmpty && !posts.isLastPage}
-<div id="more-posts" class="load-more">
-    <button hx-get="/tags/{tagSlug}/components/grid?page={posts.nextPage}"
-            hx-target="#more-posts"
-            hx-swap="outerHTML"
-            class="btn">Load more</button>
-</div>
-{/if}
+{#include components/load-more-posts page=posts hxGet='/tags/{tagSlug}/components/grid' /}

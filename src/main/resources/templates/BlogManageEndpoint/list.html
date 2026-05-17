@@ -29,13 +29,13 @@
                     </a>
                 </div>
 
-                {#if blogs.isEmpty}
+                {#if blogs.isEmpty()}
                 <div class="pages-manage__empty">
                     <p>No blogs found.</p>
                 </div>
                 {#else}
                 <div class="pages-manage__list">
-                    {#for row in blogs}
+                    {#for row in blogs.data}
                     <article class="pages-manage__row" id="blog-row-{row.id}">
                         <div class="pages-manage__row-main">
                             <h2 class="pages-manage__row-title">{row.name}</h2>
@@ -84,6 +84,7 @@
                     </article>
                     {/for}
                 </div>
+                {#include components/manage-pagination page=blogs basePath='/blogs' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>

@@ -2078,6 +2078,47 @@ hr:after {
     text-decoration: underline;
 }
 
+.manage-pagination {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.manage-pagination__summary {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0 0 0.75rem;
+}
+
+.manage-pagination__controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.manage-pagination__link {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.manage-pagination__link:hover {
+    text-decoration: underline;
+}
+
+.manage-pagination__link--disabled {
+    color: var(--color-text-muted);
+    cursor: default;
+    pointer-events: none;
+}
+
+.manage-pagination__link--disabled:hover {
+    text-decoration: none;
+}
+
 .author-link {
     color: var(--color-primary);
     text-decoration: none;

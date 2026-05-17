@@ -1,5 +1,19 @@
+{#if posts.isEmpty()}
+<div class="drafts-page__empty">
+    <p>No {type} posts yet.</p>
+    {#if type == 'drafts'}
+    <a data-hx-get="/write"
+       hx-select="main"
+       hx-target="main"
+       hx-push-url="/write"
+       class="btn btn--primary">
+        Write a new story
+    </a>
+    {/if}
+</div>
+{#else}
 <div class="drafts-list">
-    {#for post in posts}
+    {#for post in posts.data}
     <article class="draft-card">
         <div class="draft-card__content">
             <h2 class="draft-card__title">
@@ -47,15 +61,5 @@
     </article>
     {/for}
 </div>
-<div class="drafts-page__empty">
-    <p>No {type} posts yet.</p>
-    {#if type == 'drafts'}
-    <a data-hx-get="/write"
-       hx-select="main"
-       hx-target="main"
-       hx-push-url="/write"
-       class="btn btn--primary">
-        Write a new story
-    </a>
-    {/if}
-</div>
+{#include components/manage-pagination page=posts basePath='/library/components/tab/{type}' extraQuery='' fragmentTarget='#libraryContent' /}
+{/if}

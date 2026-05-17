@@ -1,7 +1,5 @@
 package dev.vepo.contraponto.blog;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +45,7 @@ public class BlogSaveEndpoint {
     private final CustomPageRepository customPageRepository;
 
     private final BlogGitIntegrationService blogGitIntegrationService;
-
+    private final BlogManageEndpoint blogManageEndpoint;
     private final LoggedUser loggedUser;
 
     @Inject
@@ -56,12 +54,14 @@ public class BlogSaveEndpoint {
                             UserRepository userRepository,
                             CustomPageRepository customPageRepository,
                             BlogGitIntegrationService blogGitIntegrationService,
+                            BlogManageEndpoint blogManageEndpoint,
                             LoggedUser loggedUser) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
         this.customPageRepository = customPageRepository;
         this.blogGitIntegrationService = blogGitIntegrationService;
+        this.blogManageEndpoint = blogManageEndpoint;
         this.loggedUser = loggedUser;
     }
 
@@ -118,13 +118,6 @@ public class BlogSaveEndpoint {
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
-    }
-
-    private List<BlogRow> listRows() {
-        var editorView = blogAccess.canListAll(loggedUser);
-        var blogs = editorView ? blogRepository.findAllForManagement()
-                               : blogRepository.findByOwnerIdForManagement(loggedUser.getId());
-        return blogs.stream().map(BlogRow::from).toList();
     }
 
     private Response notFound() {
@@ -199,7 +192,10 @@ public class BlogSaveEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/blogs")
-                    .page(BlogManageEndpoint.Templates.list(listRows(), editorView, customPageRepository.loadLinks(), loggedUser))
+                    .page(BlogManageEndpoint.Templates.list(blogManageEndpoint.listPage(1, editorView),
+                                                            editorView,
+                                                            customPageRepository.loadLinks(),
+                                                            loggedUser))
                     .build();
     }
 

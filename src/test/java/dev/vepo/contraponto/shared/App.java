@@ -733,6 +733,30 @@ public class App {
             return (T) this;
         }
 
+        public T assertLoadMoreIsNotVisible() {
+            _assertLoadMoreVisibility(false);
+            return (T) this;
+        }
+
+        public T assertLoadMoreIsVisible() {
+            _assertLoadMoreVisibility(true);
+            return (T) this;
+        }
+
+        public T assertManagePaginationSummary(long total, int page, int totalPages) {
+            var summary = wait.until(visibilityOfElementLocated(cssSelector(".manage-pagination__summary")))
+                              .getText();
+            var itemLabel = total == 1 ? "1 item" : "%d items".formatted(total);
+            assertThat(summary).contains(itemLabel);
+            assertThat(summary).contains("Page %d of %d".formatted(page, totalPages));
+            return (T) this;
+        }
+
+        public T assertManagePaginationVisible() {
+            assertThat(driver.findElements(cssSelector(".manage-pagination"))).isNotEmpty();
+            return (T) this;
+        }
+
         public T assertPageTitleContains(String... titles) {
             assertThat(driver.getTitle()).contains(titles);
             return (T) this;
@@ -758,11 +782,25 @@ public class App {
             return App.this;
         }
 
+        public T goToManageNextPage() {
+            var next = wait.until(elementToBeClickable(
+                                                       cssSelector(".manage-pagination__controls a.manage-pagination__link:last-child")));
+            assertThat(next.getText()).isEqualTo("Next");
+            reliableClick(next);
+            waitForReady();
+            return (T) this;
+        }
+
         public App home() {
             var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
             reliableClick(homeBtn);
             waitForReady();
             return App.this;
+        }
+
+        public T loadMore() {
+            _loadMore();
+            return (T) this;
         }
 
         public App logout() {

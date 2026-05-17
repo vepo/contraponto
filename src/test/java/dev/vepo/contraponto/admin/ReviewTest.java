@@ -61,6 +61,29 @@ class ReviewTest {
            .assertFeaturedButtonIsPresent();
     }
 
+    @Test
+    void reviewPageUsesManagePagination(App app) {
+        for (int i = 5; i <= 25; i++) {
+            Given.post()
+                 .withAuthor(regularUser)
+                 .withTitle("Published Post " + i)
+                 .withSlug("published-post-" + i)
+                 .withContent("Content " + i)
+                 .withPublished(true)
+                 .persist();
+        }
+
+        app.access()
+           .login(editorUser)
+           .goToReview()
+           .assertNumberOfPosts(20)
+           .assertManagePaginationSummary(25, 1, 2)
+           .goToManageNextPage()
+           .assertNumberOfPosts(5)
+           .assertManagePaginationSummary(25, 2, 2)
+           .assertLoadMoreIsNotVisible();
+    }
+
     @BeforeEach
     void setup() {
         Given.cleanup();
@@ -140,6 +163,7 @@ class ReviewTest {
            .assertNumberOfPosts(0)
            .goToReview()
            .assertNumberOfPosts(4)
+           .assertManagePaginationVisible()
            .toggleFeatured(mainPost1)
            .home()
            .assertNumberOfPosts(1);

@@ -29,7 +29,7 @@
                     </a>
                 </div>
 
-                {#if pages.isEmpty}
+                {#if pages.isEmpty()}
                 <div class="pages-manage__empty">
                     <p>No custom pages yet.</p>
                     <a data-hx-get="/pages/new"
@@ -44,7 +44,7 @@
                 </div>
                 {#else}
                 <div class="pages-manage__list">
-                    {#for row in pages}
+                    {#for row in pages.data}
                     <article class="pages-manage__row" id="page-row-{row.id}">
                         <div class="pages-manage__row-main">
                             <h2 class="pages-manage__row-title">{row.title}</h2>
@@ -85,6 +85,7 @@
                     </article>
                     {/for}
                 </div>
+                {#include components/manage-pagination page=pages basePath='/pages' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>

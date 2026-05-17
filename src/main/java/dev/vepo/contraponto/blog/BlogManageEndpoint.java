@@ -9,16 +9,20 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.shared.toast.Toast;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -37,7 +41,7 @@ public class BlogManageEndpoint {
                                             Links links,
                                             LoggedUser user);
 
-        static native TemplateInstance list(List<BlogRow> blogs, boolean editorView, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<BlogRow> blogs, boolean editorView, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -94,20 +98,24 @@ public class BlogManageEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response list() {
+    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
         if (!loggedUser.isAuthenticated()) {
             return forbidden();
         }
 
         var editorView = blogAccess.canListAll(loggedUser);
-        var blogs = listRows(editorView);
-        return Response.ok(Templates.list(blogs, editorView, customPageRepository.loadLinks(), loggedUser)).build();
+        return Response.ok(Templates.list(listPage(page, editorView),
+                                          editorView,
+                                          customPageRepository.loadLinks(),
+                                          loggedUser))
+                       .build();
     }
 
-    private List<BlogRow> listRows(boolean editorView) {
-        var blogs = editorView ? blogRepository.findAllForManagement()
-                               : blogRepository.findByOwnerIdForManagement(loggedUser.getId());
-        return blogs.stream().map(BlogRow::from).toList();
+    public Page<BlogRow> listPage(int page, boolean editorView) {
+        var query = PageQuery.forGrid(20, page);
+        var blogs = editorView ? blogRepository.findPageAllForManagement(query)
+                               : blogRepository.findPageByOwnerIdForManagement(loggedUser.getId(), query);
+        return blogs.map(BlogRow::from);
     }
 
     @GET

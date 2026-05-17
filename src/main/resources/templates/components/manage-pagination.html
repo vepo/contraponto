@@ -1,0 +1,47 @@
+{#if page.total > 0}
+<nav class="manage-pagination" aria-label="Pagination">
+    <p class="manage-pagination__summary">
+        {page.total} item{#if page.total != 1}s{/if}
+        · Showing {page.rangeStart}–{page.rangeEnd}
+        · Page {page.page} of {page.totalPages}
+    </p>
+    <div class="manage-pagination__controls">
+        {#if page.hasPrevious}
+        {#if fragmentTarget}
+        <a hx-get="{basePath}?page={page.previousPage}{extraQuery}"
+           hx-target="{fragmentTarget}"
+           hx-swap="innerHTML"
+           class="manage-pagination__link">Previous</a>
+        {#else}
+        <a data-hx-get="{basePath}?page={page.previousPage}{extraQuery}"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="{basePath}?page={page.previousPage}{extraQuery}"
+           hx-swap="outerHTML"
+           class="manage-pagination__link"
+           data-nav>Previous</a>
+        {/if}
+        {#else}
+        <span class="manage-pagination__link manage-pagination__link--disabled" aria-disabled="true">Previous</span>
+        {/if}
+        {#if page.hasNext}
+        {#if fragmentTarget}
+        <a hx-get="{basePath}?page={page.nextPage}{extraQuery}"
+           hx-target="{fragmentTarget}"
+           hx-swap="innerHTML"
+           class="manage-pagination__link">Next</a>
+        {#else}
+        <a data-hx-get="{basePath}?page={page.nextPage}{extraQuery}"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="{basePath}?page={page.nextPage}{extraQuery}"
+           hx-swap="outerHTML"
+           class="manage-pagination__link"
+           data-nav>Next</a>
+        {/if}
+        {#else}
+        <span class="manage-pagination__link manage-pagination__link--disabled" aria-disabled="true">Next</span>
+        {/if}
+    </div>
+</nav>
+{/if}

@@ -1,21 +1,23 @@
 package dev.vepo.contraponto.tag;
 
-import java.util.List;
-
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.shared.toast.Toast;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -26,7 +28,7 @@ public class TagManageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance list(List<TagRow> tags, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<TagRow> tags, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -57,17 +59,19 @@ public class TagManageEndpoint {
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public Response list() {
+    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
         if (!loggedUser.isEditor()) {
             return forbidden();
         }
 
-        var tags = tagRepository.listAllForManagement().stream().map(TagRow::from).toList();
-        return Response.ok(Templates.list(tags, customPageRepository.loadLinks(), loggedUser)).build();
+        return Response.ok(Templates.list(listPage(page), customPageRepository.loadLinks(), loggedUser)).build();
+    }
+
+    public Page<TagRow> listPage(int page) {
+        return tagRepository.findPageForManagement(PageQuery.forGrid(20, page)).map(TagRow::from);
     }
 
     TemplateInstance renderList() {
-        var tags = tagRepository.listAllForManagement().stream().map(TagRow::from).toList();
-        return Templates.list(tags, customPageRepository.loadLinks(), loggedUser);
+        return Templates.list(listPage(1), customPageRepository.loadLinks(), loggedUser);
     }
 }

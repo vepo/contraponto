@@ -16,13 +16,13 @@
                     </div>
                 </div>
 
-                {#if comments.isEmpty}
+                {#if comments.isEmpty()}
                 <div class="pages-manage__empty">
                     <p>No comments waiting for approval.</p>
                 </div>
                 {#else}
                 <div class="pages-manage__list">
-                    {#for row in comments}
+                    {#for row in comments.data}
                     <article class="pages-manage__row" id="comment-row-{row.commentId}">
                         <div class="pages-manage__row-main">
                             <h2 class="pages-manage__row-title">
@@ -63,6 +63,7 @@
                     </article>
                     {/for}
                 </div>
+                {#include components/manage-pagination page=comments basePath='/comments' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>

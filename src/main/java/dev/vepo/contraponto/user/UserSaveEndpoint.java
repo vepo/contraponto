@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.user;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +32,7 @@ public class UserSaveEndpoint {
     private final UserService userService;
     private final PasswordService passwordService;
     private final CustomPageRepository customPageRepository;
+    private final UserManageEndpoint userManageEndpoint;
     private final LoggedUser loggedUser;
     private final LoggedUserProvider loggedUserProvider;
 
@@ -42,6 +42,7 @@ public class UserSaveEndpoint {
                             UserService userService,
                             PasswordService passwordService,
                             CustomPageRepository customPageRepository,
+                            UserManageEndpoint userManageEndpoint,
                             LoggedUser loggedUser,
                             LoggedUserProvider loggedUserProvider) {
         this.userRepository = userRepository;
@@ -49,6 +50,7 @@ public class UserSaveEndpoint {
         this.userService = userService;
         this.passwordService = passwordService;
         this.customPageRepository = customPageRepository;
+        this.userManageEndpoint = userManageEndpoint;
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
     }
@@ -80,7 +82,9 @@ public class UserSaveEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/users")
-                    .page(UserManageEndpoint.Templates.list(listRows(), customPageRepository.loadLinks(), loggedUser))
+                    .page(UserManageEndpoint.Templates.list(userManageEndpoint.listPage(1),
+                                                            customPageRepository.loadLinks(),
+                                                            loggedUser))
                     .build();
     }
 
@@ -90,13 +94,6 @@ public class UserSaveEndpoint {
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
-    }
-
-    private List<UserRow> listRows() {
-        return userRepository.listAllForManagement()
-                             .stream()
-                             .map(UserRow::from)
-                             .toList();
     }
 
     private Response notFound() {
@@ -189,7 +186,9 @@ public class UserSaveEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/users")
-                    .page(UserManageEndpoint.Templates.list(listRows(), customPageRepository.loadLinks(), loggedUser))
+                    .page(UserManageEndpoint.Templates.list(userManageEndpoint.listPage(1),
+                                                            customPageRepository.loadLinks(),
+                                                            loggedUser))
                     .build();
     }
 }

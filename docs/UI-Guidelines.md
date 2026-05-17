@@ -221,6 +221,21 @@ Both modals are accessible via the header buttons.
 
 ---
 
-## 16. Summary
+## 16. List pagination
+
+| Context | Who | Control | Page size | Shared partial |
+|---------|-----|---------|-----------|----------------|
+| Home, blog, tags | Visitors | **Load more** (HTMX append) | 12 | `components/load-more-posts.html` |
+| Search | Visitors | **Load more** | 20 | Search-specific HTMX swap |
+| Library, CRUD lists, review, notifications, subscriptions | Logged-in users | **Previous / Next** with totals | 20 | `components/manage-pagination.html` |
+| Dashboard | Author | Recent previews only | 5 | — (links to full paginated lists) |
+
+**Reading lists** use `#more-posts`, `hx-swap="outerHTML"`, and 1-based `?page=` on fragment endpoints.
+
+**Managing lists** show `N items · Showing X–Y · Page P of T` and navigate with full-page `?page=` (or HTMX fragment target for library tabs).
+
+---
+
+## 17. Summary
 
 Contraponto’s UI marries classic editorial design with modern interactivity. Every component – from the sticky header to the inline featured toggle – is built to feel responsive, intentional, and calm. The platform treats content as the star, while providing writers and editors with just enough functional power to shape the reading experience without ever overwhelming them.

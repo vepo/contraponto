@@ -10,7 +10,7 @@ Read these before changing code or tests:
 | [docs/Application-Guidelines.md](docs/Application-Guidelines.md) | Route-level UX flows (update when routes change) |
 | [docs/UI-Guidelines.md](docs/UI-Guidelines.md) | Visual design system |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git ↔ Jekyll sync layout |
-| [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped) |
+| [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped); list UIs → `contraponto-pagination.mdc` |
 
 **Workflow:** entity/repository → service (if non-trivial) → endpoint → Qute template → `@WebTest` with `App` + `Given` → navigation/links if user-facing.
 

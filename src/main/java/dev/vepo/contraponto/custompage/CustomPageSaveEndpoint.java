@@ -30,16 +30,19 @@ public class CustomPageSaveEndpoint {
     private final CustomPageRepository customPageRepository;
     private final CustomPageAccess customPageAccess;
     private final BlogRepository blogRepository;
+    private final CustomPageManageEndpoint customPageManageEndpoint;
     private final LoggedUser loggedUser;
 
     @Inject
     public CustomPageSaveEndpoint(CustomPageRepository customPageRepository,
                                   CustomPageAccess customPageAccess,
                                   BlogRepository blogRepository,
+                                  CustomPageManageEndpoint customPageManageEndpoint,
                                   LoggedUser loggedUser) {
         this.customPageRepository = customPageRepository;
         this.customPageAccess = customPageAccess;
         this.blogRepository = blogRepository;
+        this.customPageManageEndpoint = customPageManageEndpoint;
         this.loggedUser = loggedUser;
     }
 
@@ -88,7 +91,10 @@ public class CustomPageSaveEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/pages")
-                    .page(CustomPageManageEndpoint.Templates.list(listPages(), customPageAccess.canListAll(loggedUser),
+                    .page(CustomPageManageEndpoint.Templates.list(customPageManageEndpoint.listPage(1,
+                                                                                                    customPageAccess.canListAll(
+                                                                                                                                loggedUser)),
+                                                                  customPageAccess.canListAll(loggedUser),
                                                                   customPageRepository.loadLinks(),
                                                                   loggedUser))
                     .build();
@@ -100,11 +106,6 @@ public class CustomPageSaveEndpoint {
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
-    }
-
-    private java.util.List<CustomPageRow> listPages() {
-        return customPageAccess.canListAll(loggedUser) ? customPageRepository.listAllForManagement()
-                                                       : customPageRepository.listByOwnerId(loggedUser.getId());
     }
 
     private Response notFound() {
@@ -207,7 +208,10 @@ public class CustomPageSaveEndpoint {
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/pages")
-                    .page(CustomPageManageEndpoint.Templates.list(listPages(), customPageAccess.canListAll(loggedUser),
+                    .page(CustomPageManageEndpoint.Templates.list(customPageManageEndpoint.listPage(1,
+                                                                                                    customPageAccess.canListAll(
+                                                                                                                                loggedUser)),
+                                                                  customPageAccess.canListAll(loggedUser),
                                                                   customPageRepository.loadLinks(),
                                                                   loggedUser))
                     .build();

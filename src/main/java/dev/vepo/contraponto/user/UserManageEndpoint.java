@@ -8,16 +8,20 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.shared.toast.Toast;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -34,7 +38,7 @@ public class UserManageEndpoint {
                                             Links links,
                                             LoggedUser user);
 
-        static native TemplateInstance list(List<UserRow> users, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<UserRow> users, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -85,16 +89,17 @@ public class UserManageEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response list() {
+    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
         if (!userAccess.canManageUsers(loggedUser)) {
             return forbidden();
         }
 
-        var users = userRepository.listAllForManagement()
-                                  .stream()
-                                  .map(UserRow::from)
-                                  .toList();
-        return Response.ok(Templates.list(users, customPageRepository.loadLinks(), loggedUser)).build(); // loggedUser mapped as `user` in template
+        return Response.ok(Templates.list(listPage(page), customPageRepository.loadLinks(), loggedUser)).build();
+    }
+
+    Page<UserRow> listPage(int page) {
+        return userRepository.findPageForManagement(PageQuery.forGrid(20, page))
+                             .map(UserRow::from);
     }
 
     @GET

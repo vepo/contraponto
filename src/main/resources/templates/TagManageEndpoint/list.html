@@ -16,13 +16,13 @@
                     </div>
                 </div>
 
-                {#if tags.isEmpty}
+                {#if tags.isEmpty()}
                 <div class="pages-manage__empty">
                     <p>No tags yet. Tags are created when posts are published with labels.</p>
                 </div>
                 {#else}
                 <div class="pages-manage__list">
-                    {#for row in tags}
+                    {#for row in tags.data}
                     <article class="pages-manage__row" id="tag-row-{row.id}">
                         <div class="pages-manage__row-main">
                             <h2 class="pages-manage__row-title">{row.name}</h2>
@@ -48,6 +48,7 @@
                     </article>
                     {/for}
                 </div>
+                {#include components/manage-pagination page=tags basePath='/tags/manage' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>

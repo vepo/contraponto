@@ -3,6 +3,8 @@ package dev.vepo.contraponto.tag;
 import java.util.List;
 import java.util.Optional;
 
+import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -57,6 +59,16 @@ public class TagRepository {
         Tag created = new Tag(slug, trimmed, null);
         entityManager.persist(created);
         return created;
+    }
+
+    public Page<Tag> findPageForManagement(PageQuery query) {
+        long total = entityManager.createQuery("SELECT COUNT(t) FROM Tag t", Long.class)
+                                  .getSingleResult();
+        var data = entityManager.createQuery("FROM Tag t ORDER BY t.name ASC", Tag.class)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
     }
 
     public List<Tag> listAllForManagement() {
