@@ -221,7 +221,13 @@ Both modals are accessible via the header buttons.
 
 ---
 
-## 16. List pagination
+## 16. CSS and class names
+
+Implementation details (BEM blocks, `main.css` / `manage.css` / `write.css` bundles, button modifiers) live in **[UI-Elements.md](UI-Elements.md)**. This document describes UX only.
+
+---
+
+## 17. List pagination
 
 | Context | Who | Control | Page size | Shared partial |
 |---------|-----|---------|-----------|----------------|
@@ -236,6 +242,54 @@ Both modals are accessible via the header buttons.
 
 ---
 
-## 17. Summary
+## 18. Notifications
+
+- **Bell** in the header shows unread count; loads via HTMX (`NotificationBadgeEndpoint`).
+- **Inbox** at `/notifications`: list of in-app notifications with read/unread styling; “Mark all read” when unread exist.
+- **Empty state** copy per domain spec: invite users to follow blogs.
+- Pagination: manage style (Previous / Next, 20 per page).
+
+---
+
+## 19. Blog audience (follow & email)
+
+On public blog pages, controls below the blog header:
+
+- **Follow** / **Following** — toggles in-app notifications on new posts.
+- **Subscribe by email** / **Subscribed** — email on publish (deduplicated).
+- Guests see Sign in when action requires auth; owners do not see controls on their own blog.
+
+Compact outline buttons; active state uses primary border colour.
+
+---
+
+## 20. Tags and series
+
+- **Tag page** (`/tags/{slug}`): `#` prefix on title, optional description, editor “Edit tag” when permitted; post grid matches blog styling.
+- **Serie page** (`/serie/{slug}`): “Serie” label, title, post grid.
+- **Manage tags** (`/tags/manage`): same `pages-manage` list shell as other CRUD indexes.
+
+---
+
+## 21. Comments
+
+- **On post**: threaded list, reply forms, Sign in gate for guests; owner moderation actions (approve/reject) for pending comments.
+- **Manage** (`/comments`): post owner reviews pending/rejected comments with approve/reject actions.
+
+---
+
+## 22. Subscriptions
+
+**URL:** `/subscriptions` — lists blogs the user follows or receives by email, with links to each blog. Empty state when none. Manage pagination.
+
+---
+
+## 23. Post change history
+
+On the post page (author): collapsible **Change history** section listing publication versions, “current” badge, and diffs from previous version when expanded.
+
+---
+
+## 24. Summary
 
 Contraponto’s UI marries classic editorial design with modern interactivity. Every component – from the sticky header to the inline featured toggle – is built to feel responsive, intentional, and calm. The platform treats content as the star, while providing writers and editors with just enough functional power to shape the reading experience without ever overwhelming them.

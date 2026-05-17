@@ -1,0 +1,40 @@
+---
+description: UI class names, CSS bundles (main/manage/write), and element catalog
+globs: src/main/resources/templates/**/*.html,src/main/resources/META-INF/resources/style/**/*.css
+alwaysApply: false
+---
+
+# UI elements and CSS
+
+Before changing templates or stylesheets, read [docs/UI-Elements.md](../../docs/UI-Elements.md).
+
+## Stylesheet bundles
+
+| File | Put styles here when |
+|------|----------------------|
+| `style/main.css` | Global shell, public reading, shared primitives (`.btn`, `.form-group`, `.container`) |
+| `style/manage.css` | Profile, dashboard, library, review, CRUD lists, notifications, subscriptions |
+| `style/write.css` | Write editor only |
+| `style/fonts.css` | `@font-face` only |
+
+Load order in `components/head.html`: fonts → main → manage → write → third-party.
+
+## Class names
+
+- BEM: `block`, `block__element`, `block--modifier`; utilities `u-*`.
+- **Do not** add new CSS classes without registering the block in UI-Elements.md.
+- User-visible strings: [domain-specification.md](../../docs/domain-specification.md) UI labels table.
+
+## Buttons
+
+Always `class="btn btn--…"`. Use documented modifiers only (`--primary`, `--secondary`, `--outline`, `--small`, etc.). Never `btn--sm` — use `btn--small`.
+
+## Lists
+
+Reading → Load more (`contraponto-pagination.mdc`). Managing → `manage-pagination` partial.
+
+## New surfaces
+
+1. Register block in UI-Elements.md.
+2. Add CSS to the correct bundle.
+3. Update UI-Guidelines.md for UX narrative if it is a new page type.

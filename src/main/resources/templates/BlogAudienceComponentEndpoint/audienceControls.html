@@ -6,14 +6,14 @@
      {#if oob.or(false)} hx-swap-oob="outerHTML"{/if}>
     {#if audience.authenticated}
     <button type="button"
-            class="btn btn--outline btn--sm {#if audience.following}btn--active{/if}"
+            class="btn btn--outline btn--small {#if audience.following}btn--active{/if}"
             hx-post="/forms/blogs/{audience.blogId}/follow"
             hx-target="#blog-audience-{audience.blogId}"
             hx-swap="outerHTML">
         {#if audience.following}Following{#else}Follow{/if}
     </button>
     <button type="button"
-            class="btn btn--outline btn--sm {#if audience.emailSubscribed}btn--active{/if}"
+            class="btn btn--outline btn--small {#if audience.emailSubscribed}btn--active{/if}"
             hx-post="/forms/blogs/{audience.blogId}/subscribe"
             hx-target="#blog-audience-{audience.blogId}"
             hx-swap="outerHTML">
@@ -21,12 +21,12 @@
     </button>
     {#else}
     <button type="button"
-            class="btn btn--outline btn--sm"
+            class="btn btn--outline btn--small"
             hx-get="/auth/modal?mode=login"
             hx-target="#modal-container"
             hx-swap="innerHTML">Follow</button>
     <button type="button"
-            class="btn btn--outline btn--sm"
+            class="btn btn--outline btn--small"
             hx-get="/auth/modal?mode=login"
             hx-target="#modal-container"
             hx-swap="innerHTML">Subscribe by email</button>

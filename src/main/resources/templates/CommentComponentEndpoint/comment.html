@@ -11,12 +11,12 @@
     {#if comment.canModerate}
     <div class="comment__actions">
         <button type="button"
-                class="btn btn--outline btn--sm"
+                class="btn btn--outline btn--small"
                 hx-post="/forms/posts/{post.id}/comments/{comment.id}/approve"
                 hx-target="#comments"
                 hx-swap="innerHTML">Approve</button>
         <button type="button"
-                class="btn btn--outline btn--sm"
+                class="btn btn--outline btn--small"
                 hx-post="/forms/posts/{post.id}/comments/{comment.id}/reject"
                 hx-target="#comments"
                 hx-swap="innerHTML">Reject</button>

@@ -11,7 +11,8 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Multi-blog URLs | ✅ | ⚠️ | — | ✅ |
 | Post publications / versions | ✅ | ❌ | — | ✅ |
 | Tags & series | ✅ | ❌ | ⚠️ | ⚠️ |
-| Notifications & audience | ✅ | ❌ | ❌ | ✅ |
+| Notifications & audience | ✅ | ❌ | ⚠️ | ✅ |
+| UI element catalog (BEM, CSS bundles) | — | — | — | ✅ `UI-Elements.md` + `contraponto-ui.mdc` |
 | Git/Jekyll sync | ✅ (link) | ❌ | — | ✅ |
 | RSS feeds | ✅ | ❌ | — | — |
 | Custom page URL shapes | ✅ | ⚠️ (old `/page/{username}/...`) | — | ✅ |
@@ -24,7 +25,8 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 ### High priority (code exists, docs lag)
 
 - [ ] **Update [Application-Guidelines.md](Application-Guidelines.md)** — notifications, tags, series, publications, `/users`, `/blogs`, `/pages`, RSS, git, corrected custom-page URLs (`CustomPagePaths`).
-- [ ] **Update [UI-Guidelines.md](UI-Guidelines.md)** — notification bell/inbox, follow/subscribe controls on posts, tag/serie surfaces, version history UI.
+- [x] **Update [UI-Guidelines.md](UI-Guidelines.md)** — notification bell/inbox, follow/subscribe, tag/serie, comments, subscriptions, version history (see §18–23).
+- [x] **UI element catalog** — [UI-Elements.md](UI-Elements.md); Cursor rule `contraponto-ui.mdc`; CSS split main / manage / write.
 - [ ] **Service layer guideline** — when logic belongs in `XxxService` vs endpoint vs repository (ARCHITECTURE §5 is a start; add examples per package).
 - [ ] **CDI events catalog** — table of events, producers, observers, and transactional boundaries (`PostPublishedEvent`, `CustomPageChangedEvent`, `PostGitSyncRequestedEvent`, …).
 - [ ] **Component vs form routes** — naming rule `/forms/*` (mutations) vs `/components/*` (fragments); document in Application-Guidelines §11.
