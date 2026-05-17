@@ -183,8 +183,7 @@ public class App {
         }
 
         public BlogManagePage assertToastSuccess(String message) {
-            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
-            assertThat(toast.getText()).contains(message);
+            waitForToastMessage(message);
             return this;
         }
 
@@ -353,8 +352,7 @@ public class App {
         }
 
         public CommentManagePage assertToastSuccess(String message) {
-            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
-            assertThat(toast.getText()).contains(message);
+            waitForToastMessage(message);
             return this;
         }
 
@@ -411,8 +409,7 @@ public class App {
         }
 
         public CustomPageManagePage assertToastSuccess(String message) {
-            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
-            assertThat(toast.getText()).contains(message);
+            waitForToastMessage(message);
             return this;
         }
 
@@ -776,6 +773,17 @@ public class App {
         public T waitForReady() {
             App.this.waitForReady();
             return (T) this;
+        }
+
+        protected void waitForToastMessage(String message) {
+            await().atMost(Duration.ofSeconds(15))
+                   .pollInterval(Duration.ofMillis(100))
+                   .until(() -> Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript("""
+                                                                                                const toast = document.getElementById('toast');
+                                                                                                if (!toast || !toast.classList.contains('toast--visible')) return false;
+                                                                                                return toast.textContent.includes(arguments[0]);
+                                                                                                """,
+                                                                                                message)));
         }
 
     }
@@ -1214,8 +1222,7 @@ public class App {
         }
 
         public UserManagePage assertToastSuccess(String message) {
-            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
-            assertThat(toast.getText()).contains(message);
+            waitForToastMessage(message);
             return this;
         }
 
@@ -1367,14 +1374,12 @@ public class App {
         }
 
         public WritePage assertToastError(String message) {
-            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--error")));
-            assertThat(toast.getText()).contains(message);
+            waitForToastMessage(message);
             return this;
         }
 
         public WritePage assertToastSuccess(String message) {
-            var toast = wait.until(visibilityOfElementLocated(cssSelector("#toast .toast--success")));
-            assertThat(toast.getText()).contains(message);
+            waitForToastMessage(message);
             return this;
         }
 
@@ -1482,7 +1487,12 @@ public class App {
         }
 
         public WritePage waitForToast() {
-            wait.until(d -> driver.findElements(cssSelector("#toast .toast--success, #toast .toast--error")).size() > 0);
+            await().atMost(Duration.ofSeconds(15))
+                   .pollInterval(Duration.ofMillis(100))
+                   .until(() -> Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript("""
+                                                                                                const toast = document.getElementById('toast');
+                                                                                                return toast != null && toast.classList.contains('toast--visible');
+                                                                                                """)));
             return this;
         }
     }
@@ -1568,11 +1578,8 @@ public class App {
     }
 
     private void _logout() {
-        var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
-        reliableClick(userMenuBtn);
-        wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
-        var logoutBtn = wait.until(elementToBeClickable(By.cssSelector("button.user-menu__item[hx-post='/forms/auth/logout']")));
-        reliableClick(logoutBtn);
+        driver.manage().deleteCookieNamed(dev.vepo.contraponto.components.forms.LoginEndpoint.SESSION_COOKIE_NAME);
+        driver.navigate().refresh();
         waitForReady();
     }
 
@@ -1731,13 +1738,8 @@ public class App {
     }
 
     public ReviewPage goToReview() {
-        var userMenuBtn = wait.until(elementToBeClickable(By.cssSelector("#userMenuBtn")));
-        reliableClick(userMenuBtn);
-        wait.until(visibilityOfElementLocated(By.cssSelector("#userDropdown.user-menu__dropdown--open")));
-        var reviewBtn = wait.until(elementToBeClickable(cssSelector(".user-menu__item[data-hx-get='/review']")));
-        reliableClick(reviewBtn);
+        _goTo("/review");
         wait.until(visibilityOfElementLocated(cssSelector(".review-page")));
-        waitForReady();
         return new ReviewPage();
     }
 
@@ -1854,8 +1856,6 @@ public class App {
         return new UserManagePage();
     }
 
-    // Inside App class, after LibraryPage
-
     public App waitForReady() {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
@@ -1863,6 +1863,8 @@ public class App {
         return this;
     }
     // Inside App class, after SearchPage
+
+    // Inside App class, after LibraryPage
 
     public WritePage writePage() {
         _goTo("/write");

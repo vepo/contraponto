@@ -188,12 +188,12 @@ public class PublishEndpoint {
         serieService.applySerieTitleToPost(post, request.serieTitle());
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
-        publicationService.publish(post);
+        PostPublication published = publicationService.publish(post);
 
         postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
 
         Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
-        return buildSuccessResponse(new PublishedPostView(rendered, rendered.getLivePublication()));
+        return buildSuccessResponse(new PublishedPostView(rendered, published));
     }
 
     private void setFormatIfProvided(Post post, SaveDraftRequest request) {

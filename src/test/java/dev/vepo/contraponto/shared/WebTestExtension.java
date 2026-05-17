@@ -29,10 +29,17 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     private App app;
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
-        logger.info("Closing Chrome driver...");
-        driver.close();
-        logger.info("Chrome driver closed!");
+    public void afterAll(ExtensionContext context) {
+        if (driver != null) {
+            logger.info("Closing Chrome driver...");
+            try {
+                driver.quit();
+            } catch (Exception e) {
+                logger.warn("Chrome driver shutdown failed", e);
+            }
+            driver = null;
+            logger.info("Chrome driver closed!");
+        }
     }
 
     @Override
@@ -52,7 +59,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     }
 
     @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
+    public void beforeAll(ExtensionContext context) {
         var options = new ChromeOptions();
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");

@@ -24,11 +24,8 @@ public class SignUpEndpoint {
     private static final String SESSION_COOKIE_PATH = "/";
     private static final String HX_TRIGGER_HEADER = "HX-Trigger-After-Settle";
     private static final String MENU_CONTAINER_ID = "menu-container";
-    private static final String MODAL_CLOSE_SCRIPT = """
-                                                     <script>
-                                                         document.getElementById('authModal').classList.remove('modal--open');
-                                                     </script>
-                                                     """;
+    private static final String MODAL_CLEAR_OOB =
+            "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
 
     private final LoggedUserProvider loggedUserProvider;
     private final UserService userService;
@@ -59,13 +56,13 @@ public class SignUpEndpoint {
 
     /**
      * Builds the HTML response for a successful signup. Uses OOB swap to replace
-     * the menu and a script to close the modal.
+     * the menu and clear the auth modal.
      */
     private String buildSuccessResponseBody(String menuHtml) {
         return String.format("""
                              <div hx-swap-oob="true" id="%s">%s</div>
                              %s
-                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLOSE_SCRIPT);
+                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
     }
 
     /**
