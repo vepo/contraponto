@@ -19,6 +19,7 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
+import dev.vepo.contraponto.tag.TagSlug;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -52,7 +53,6 @@ public class PublishEndpoint {
     private static final int TOAST_DURATION_SHORT = 10_000;
     private static final int TOAST_DURATION_LONG = 10_000;
 
-    private static final Pattern INVALID_SLUG_CHARS = Pattern.compile("[^a-z0-9\\-]");
     private static final Pattern SLUG_GENERATION_PATTERN = Pattern.compile("[^a-zA-Z0-9\\-]");
 
     private final PostRepository postRepository;
@@ -154,10 +154,6 @@ public class PublishEndpoint {
         return new Post();
     }
 
-    private boolean hasInvalidSlugCharacters(String slug) {
-        return slug != null && INVALID_SLUG_CHARS.matcher(slug).find();
-    }
-
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
@@ -229,7 +225,7 @@ public class PublishEndpoint {
         if (isBlank(request.title())) {
             return Optional.of(buildErrorResponse(ERROR_MSG_TITLE_REQUIRED));
         }
-        if (hasInvalidSlugCharacters(request.slug())) {
+        if (TagSlug.hasInvalidSlugCharacters(request.slug())) {
             return Optional.of(buildErrorResponse(ERROR_MSG_INVALID_SLUG));
         }
         if (slugAlreadyExistsForDifferentPost(request, request.blogId())) {

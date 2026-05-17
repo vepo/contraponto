@@ -867,18 +867,9 @@ public class App {
             return this;
         }
 
-        public PostPage assertFollowButtonShowsFollowing() {
-            await().atMost(Duration.ofSeconds(15)).until(() -> {
-                var buttons = driver.findElements(cssSelector(FOLLOW_BUTTON_SELECTOR));
-                return buttons.size() == 1
-                        && buttons.get(0).isDisplayed()
-                        && "Following".equals(buttons.get(0).getText().trim());
-            });
-            return this;
-        }
-
-        public PostPage assertPostTitle(String string) {
-            // TODO
+        public PostPage assertPostTitle(String title) {
+            var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
+            assertThat(postTitle.getText()).isNotBlank().isEqualTo(title);
             return this;
         }
 
@@ -1046,14 +1037,6 @@ public class App {
             reliableClick(closeBtn);
             wait.until(invisibilityOfElementLocated(By.id("searchModal")));
             return this;
-        }
-
-        public SearchPage goToAdvanced() {
-            var modal = driver.findElement(By.id("searchModal"));
-            var link = modal.findElement(cssSelector(".search-modal__advanced"));
-            reliableClick(link);
-            waitForReady();
-            return new SearchPage();
         }
 
         public SearchModal type(String query) {
@@ -1345,19 +1328,6 @@ public class App {
     public class WritePage extends Page<WritePage> {
         private WritePage() {}
 
-        public WritePage acceptAlertWithText(String text) {
-            wait.until(d -> driver.switchTo().alert() != null);
-            driver.switchTo().alert().sendKeys(text);
-            driver.switchTo().alert().accept();
-            return this;
-        }
-
-        public WritePage appendContent(String text) {
-            var textarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
-            textarea.sendKeys(text);
-            return this;
-        }
-
         public WritePage assertContent(String content) {
             var textarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
             assertThat(textarea.getAttribute("value")).isEqualTo(content);
@@ -1371,37 +1341,6 @@ public class App {
 
         public WritePage assertCoverPreviewVisible() {
             assertThat(driver.findElement(By.id("coverPreview")).isDisplayed()).isTrue();
-            return this;
-        }
-
-        public WritePage assertEditorMode(String expectedMode) {
-            var modeButton = driver.findElement(cssSelector("#editorModeButton"));
-            var label = modeButton.findElement(cssSelector(".editor-mode-label")).getText();
-            assertThat(label).isEqualTo(expectedMode.equals("MARKDOWN") ? "Markdown" : "AsciiDoc");
-            return this;
-        }
-
-        public WritePage assertHintContains(String text) {
-            var hint = wait.until(visibilityOfElementLocated(cssSelector("#editorHint")));
-            assertThat(hint.getText()).contains(text);
-            return this;
-        }
-
-        public WritePage assertPreviewContains(String text) {
-            var preview = driver.findElement(cssSelector("#previewContainer"));
-            assertThat(preview.getText()).contains(text);
-            return this;
-        }
-
-        public WritePage assertPreviewNotVisible() {
-            var preview = wait.until(visibilityOfElementLocated(cssSelector("#previewContainer")));
-            assertThat(preview.isDisplayed()).isFalse();
-            return this;
-        }
-
-        public WritePage assertPreviewVisible() {
-            var preview = wait.until(visibilityOfElementLocated(cssSelector("#previewContainer")));
-            assertThat(preview.isDisplayed()).isTrue();
             return this;
         }
 
@@ -1421,36 +1360,10 @@ public class App {
             return this;
         }
 
-        public WritePage clearContent() {
-            var textarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
-            textarea.clear();
-            return this;
-        }
-
-        public WritePage clickToolbarButton(String command) {
-            var button = wait.until(visibilityOfElementLocated(cssSelector("button[data-command='" + command + "']")));
-            reliableClick(button);
-            return this;
-        }
-
         public WritePage fillContent(String content) {
             var textarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
             textarea.clear();
             textarea.sendKeys(content);
-            return this;
-        }
-
-        public WritePage fillDescription(String description) {
-            var input = wait.until(visibilityOfElementLocated(cssSelector("#description")));
-            input.clear();
-            input.sendKeys(description);
-            return this;
-        }
-
-        public WritePage fillSlug(String slug) {
-            var input = wait.until(visibilityOfElementLocated(cssSelector("#slug")));
-            input.clear();
-            input.sendKeys(slug);
             return this;
         }
 
@@ -1466,12 +1379,6 @@ public class App {
             var matcher = Pattern.compile("/write/draft/(\\d+)").matcher(url);
             assertThat(matcher.find()).isTrue();
             return Long.parseLong(matcher.group(1));
-        }
-
-        public WritePage injectMarkdownImage(String url) {
-            ((JavascriptExecutor) driver).executeScript(
-                                                        "document.getElementById('content').value += '![Image](" + url + ")';");
-            return this;
         }
 
         public WritePage publish() {
@@ -1492,28 +1399,6 @@ public class App {
             var saveBtn = wait.until(visibilityOfElementLocated(By.id("saveDraft")));
             reliableClick(saveBtn);
             waitForToast(); // wait for success/error toast
-            return this;
-        }
-
-        public WritePage selectTextInContent(int start, int end) {
-            var textarea = driver.findElement(By.id("content"));
-            ((JavascriptExecutor) driver).executeScript(
-                                                        "arguments[0].setSelectionRange(arguments[1], arguments[2]);", textarea, start, end);
-            return this;
-        }
-
-        public WritePage switchModeTo(String mode) { // "MARKDOWN" or "ASCIIDOC"
-            var modeButton = wait.until(visibilityOfElementLocated(cssSelector("#editorModeButton")));
-            reliableClick(modeButton);
-            var option = wait.until(visibilityOfElementLocated(cssSelector("[data-mode='" + mode + "']")));
-            reliableClick(option);
-            wait.until(d -> modeButton.findElement(cssSelector(".editor-mode-label")).getText().equals(mode.equals("MARKDOWN") ? "Markdown" : "AsciiDoc"));
-            return this;
-        }
-
-        public WritePage togglePreview() {
-            var previewBtn = wait.until(visibilityOfElementLocated(cssSelector("#previewToggleBtn")));
-            reliableClick(previewBtn);
             return this;
         }
 
@@ -1793,11 +1678,6 @@ public class App {
         return new TagBrowsePage();
     }
 
-    public LibraryPage libraryPage() {
-        _goTo("/library");
-        return new LibraryPage();
-    }
-
     public App loadMore() {
         _loadMore();
         return this;
@@ -1828,11 +1708,6 @@ public class App {
     public BlogManagePage newBlog() {
         _goTo("/blogs/new");
         return new BlogManagePage();
-    }
-
-    public CustomPageManagePage newCustomPage() {
-        _goTo("/pages/new");
-        return new CustomPageManagePage();
     }
 
     public UserManagePage newUser() {

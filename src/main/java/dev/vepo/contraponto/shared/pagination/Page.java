@@ -7,10 +7,6 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record Page<T>(List<T> data, int page, int limit, long total) {
-    public boolean requiresPagination() {
-        return total > limit;
-    }
-
     public boolean isFirstPage() {
         return page == 1;
     }
