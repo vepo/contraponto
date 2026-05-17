@@ -26,6 +26,15 @@
                             {/if}
                         </p>
                     </div>
+                    {#if blog.isPresent}
+                    <a data-hx-get="/blogs/{blog.get().id}/images"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/blogs/{blog.get().id}/images"
+                       class="btn btn--secondary"
+                       data-nav>Images</a>
+                    {/if}
                     <a data-hx-get="/blogs"
                        hx-select="main"
                        hx-target="main"

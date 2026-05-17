@@ -17,10 +17,12 @@ class JekyllLayoutConventionTest {
         JekyllLayoutConvention d = JekyllLayoutConvention.defaults();
         assertThat(d.postsRelative()).isEqualTo("_posts");
         assertThat(d.draftsRelative()).isEqualTo("_drafts");
+        assertThat(d.assetsRelative()).isEqualTo("assets/images");
         assertThat(JekyllLayoutConvention.locale()).isSameAs(Locale.ROOT);
         Path repoRoot = Path.of("fixture-blog-root").toAbsolutePath();
         assertThat(d.resolvePosts(repoRoot)).isEqualTo(repoRoot.resolve("_posts"));
         assertThat(d.resolveDrafts(repoRoot)).isEqualTo(repoRoot.resolve("_drafts"));
+        assertThat(d.resolveAssets(repoRoot)).isEqualTo(repoRoot.resolve("assets/images"));
     }
 
     @Test

@@ -5,6 +5,7 @@ import java.util.Optional;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.image.ImageRepository;
+import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
@@ -39,6 +40,7 @@ public class SaveDraftEndpoint {
     private final PostRepository postRepository;
     private final BlogRepository blogRepository;
     private final ImageRepository imageRepository;
+    private final PostImageDependencyService postImageDependencyService;
     private final TagService tagService;
     private final SerieService serieService;
     private final LoggedUser loggedUser;
@@ -48,6 +50,7 @@ public class SaveDraftEndpoint {
     public SaveDraftEndpoint(PostRepository postRepository,
                              BlogRepository blogRepository,
                              ImageRepository imageRepository,
+                             PostImageDependencyService postImageDependencyService,
                              TagService tagService,
                              SerieService serieService,
                              Event<PostGitSyncRequestedEvent> postGitSyncEvents,
@@ -55,6 +58,7 @@ public class SaveDraftEndpoint {
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.imageRepository = imageRepository;
+        this.postImageDependencyService = postImageDependencyService;
         this.tagService = tagService;
         this.serieService = serieService;
         this.postGitSyncEvents = postGitSyncEvents;
@@ -83,7 +87,7 @@ public class SaveDraftEndpoint {
     private void fillPostMetadata(Post post, SaveDraftRequest request) {
         post.setSlug(request.slug());
         post.setTitle(request.title());
-        post.setContent(request.content());
+        postImageDependencyService.normalizeAndStoreContent(post, request.content());
         post.setDescription(request.description());
         // Note: This endpoint does NOT set published or publishedAt – it's a draft.
     }
@@ -120,6 +124,7 @@ public class SaveDraftEndpoint {
         serieService.applySerieTitleToPost(post, request.serieTitle());
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
+        postImageDependencyService.syncPostDependencies(post);
 
         postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
 

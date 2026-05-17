@@ -54,6 +54,14 @@
                             {#if blogs.size() > 1}
                                 <div class="write-form__hint">Choose which blog to publish in.</div>
                             {/if}
+                            <div class="write-form__hint">
+                                <a data-hx-get="/blogs/{selectedBlogId}/images"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-swap="outerHTML"
+                                   hx-push-url="/blogs/{selectedBlogId}/images"
+                                   data-nav>Images</a>
+                            </div>
                         </div>
 
                         <!-- Cover Image upload -->
@@ -167,7 +175,7 @@
                                 <button type="button" data-command="togglePreview" id="previewToggleBtn" title="Preview">👁️ Preview</button>
                             </div>
                             <textarea id="content" name="content" class="write-form__editor"
-                                      placeholder="Write your story here... Use the toolbar above for formatting.">{#if post.isPresent}{post.get().content}{/if}</textarea>
+                                      placeholder="Write your story here... Use the toolbar above for formatting.">{editorContent}</textarea>
                             <!-- Preview container (hidden by default) -->
                             <div id="previewContainer" class="write-preview u-hidden"></div>
                             <div class="write-form__hint" id="editorHint">Markdown formatting supported • Use the toolbar for shortcuts</div>

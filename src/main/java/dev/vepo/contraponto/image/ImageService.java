@@ -12,6 +12,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.user.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -25,12 +27,15 @@ public class ImageService {
 
     private final Path storagePath;
     private final ImageRepository imageRepository;
+    private final ImageDependencyRepository dependencyRepository;
 
     @Inject
     public ImageService(@ConfigProperty(name = "image.storage.path", defaultValue = "/tmp/contraponto-images") String storagePath,
-                        ImageRepository imageRepository) {
+                        ImageRepository imageRepository,
+                        ImageDependencyRepository dependencyRepository) {
         this.storagePath = Paths.get(storagePath);
         this.imageRepository = imageRepository;
+        this.dependencyRepository = dependencyRepository;
     }
 
     @Transactional
@@ -39,15 +44,18 @@ public class ImageService {
                                      .orElseThrow(() -> new WebApplicationException("Image not found",
                                                                                     Response.Status.NOT_FOUND));
 
-        // Delete file from disk
+        if (dependencyRepository.isReferenced(image.getId())) {
+            throw new WebApplicationException("Image is in use and cannot be deleted",
+                                              Response.Status.CONFLICT);
+        }
+
         try {
-            Path filePath = Paths.get(image.getFilePath());
+            Path filePath = storagePath.resolve(image.getFilePath()).normalize();
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
             logger.warn("Failed to delete image file: {}", image.getFilePath(), e);
         }
 
-        // Soft delete from database
         imageRepository.softDelete(uuid);
         logger.info("Image deleted successfully! id={}", image.getId());
     }
@@ -66,7 +74,6 @@ public class ImageService {
             throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
         }
 
-        // Find image metadata in database
         String uuid = filename.substring(0, filename.lastIndexOf('.'));
         Image image = imageRepository.findByUuid(uuid)
                                      .orElseThrow(() -> new WebApplicationException("Image metadata not found",
@@ -88,45 +95,59 @@ public class ImageService {
                 contentType.equals("image/webp"));
     }
 
+    public Path storagePath() {
+        return storagePath;
+    }
+
     @Transactional
-    public ImageResponse uploadImage(String filename, String contentType, InputStream data, long size) {
+    public ImageResponse uploadImage(String filename,
+                                     String contentType,
+                                     InputStream data,
+                                     long size,
+                                     Blog blog,
+                                     User uploadedBy) {
         try {
-            // Validate file type
             if (!isValidImageType(contentType)) {
                 throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP are allowed.",
                                                   Response.Status.BAD_REQUEST);
             }
 
-            // Validate file size (max 10MB)
             if (size > 10 * 1024 * 1024) {
                 throw new WebApplicationException("File too large. Maximum size is 10MB.",
                                                   Response.Status.BAD_REQUEST);
             }
 
-            // Create storage directory if not exists
             if (!Files.exists(storagePath)) {
                 Files.createDirectories(storagePath);
             }
 
-            // Generate unique filename
             var extension = getFileExtension(filename);
             var imageIdentifier = UUID.randomUUID().toString();
             var uniqueFilename = imageIdentifier + extension;
             var filePath = storagePath.resolve(uniqueFilename);
 
-            // Save file
             Files.copy(data, filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Generate URL
             var url = "/api/images/%s".formatted(uniqueFilename);
 
-            // Create image entity
-            var image = new Image(imageIdentifier, uniqueFilename, contentType, size, filePath.relativize(storagePath).toString(), url);
+            var image = new Image(imageIdentifier,
+                                  uniqueFilename,
+                                  contentType,
+                                  size,
+                                  filePath.relativize(storagePath).toString(),
+                                  url,
+                                  blog);
+            image.setUploadedBy(uploadedBy);
             imageRepository.save(image);
 
             logger.info("Image uploaded successfully: {} -> {}", filename, url);
 
-            return new ImageResponse(image.getUuid(), url, image.getFilename(), image.getContentType(), image.getSize());
+            return new ImageResponse(image.getUuid(),
+                                     url,
+                                     image.getFilename(),
+                                     image.getContentType(),
+                                     image.getSize(),
+                                     image.getAltText());
         } catch (IOException e) {
             logger.error("Failed to upload image: {}", filename, e);
             throw new WebApplicationException("Failed to upload image", Response.Status.INTERNAL_SERVER_ERROR);

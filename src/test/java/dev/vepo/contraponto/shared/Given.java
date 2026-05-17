@@ -378,11 +378,15 @@ public interface Given {
         return new PostBuilder();
     }
 
-    public static Image randomCover() {
+    public static Image randomCover(Blog blog) {
         var image = randomImage();
         try {
             var imageResp = inject(ImageService.class).uploadImage(image.getFileName().toString(),
-                                                                   "image/png", new FileInputStream(image.toFile()), Files.size(image));
+                                                                   "image/png",
+                                                                   new FileInputStream(image.toFile()),
+                                                                   Files.size(image),
+                                                                   blog,
+                                                                   blog.getOwner());
             var imageDb = inject(ImageRepository.class).findByUuid(imageResp.id());
             assertTrue(imageDb.isPresent());
             return imageDb.get();

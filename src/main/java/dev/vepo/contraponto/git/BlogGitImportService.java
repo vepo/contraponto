@@ -1,7 +1,9 @@
 package dev.vepo.contraponto.git;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Matcher;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -19,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.image.ImageRepository;
+import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
@@ -50,6 +54,12 @@ public class BlogGitImportService {
     private final ObjectMapper objectMapper;
     private final PostGitMarkdownCodec markdownCodec;
 
+    private final GitImageSyncService gitImageSyncService;
+
+    private final ImageRepository imageRepository;
+
+    private final PostImageDependencyService postImageDependencyService;
+
     @Inject
     public BlogGitImportService(PostRepository postRepository,
                                 PostPublicationService publicationService,
@@ -57,7 +67,10 @@ public class BlogGitImportService {
                                 SerieService serieService,
                                 EntityManager entityManager,
                                 ObjectMapper objectMapper,
-                                PostGitMarkdownCodec markdownCodec) {
+                                PostGitMarkdownCodec markdownCodec,
+                                GitImageSyncService gitImageSyncService,
+                                ImageRepository imageRepository,
+                                PostImageDependencyService postImageDependencyService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.tagService = tagService;
@@ -65,10 +78,18 @@ public class BlogGitImportService {
         this.entityManager = entityManager;
         this.objectMapper = objectMapper;
         this.markdownCodec = markdownCodec;
+        this.gitImageSyncService = gitImageSyncService;
+        this.imageRepository = imageRepository;
+        this.postImageDependencyService = postImageDependencyService;
     }
 
     @Transactional(value = TxType.REQUIRES_NEW)
-    public void ingest(long blogId, Path markdownPath, SourceKind sourceKind) throws Exception {
+    public void ingest(long blogId,
+                       Path workspace,
+                       JekyllLayoutConvention convention,
+                       Path markdownPath,
+                       SourceKind sourceKind)
+            throws Exception {
         Blog blog = entityManager.find(Blog.class, blogId);
         if (blog == null) {
             return;
@@ -108,13 +129,15 @@ public class BlogGitImportService {
 
         String description = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");
         String body = Objects.requireNonNullElse(doc.body(), "");
+        body = gitImageSyncService.prepareBodyForImport(body.stripTrailing(), blog, workspace, convention);
 
         serieService.applySerieTitleToPost(post, trimToNull(doc.frontMatter().get("serie")));
 
         post.setSlug(slug);
         post.setTitle(title);
         post.setDescription(description);
-        post.setContent(body.stripTrailing());
+        post.setContent(body);
+        applyCoverFromFrontMatter(post, trimToNull(doc.frontMatter().get("cover")), convention, workspace, blog);
         post.setFormat(parseFormat(trimToNull(doc.frontMatter().get("format"))));
 
         Boolean featuredFlag = parseBoolean(doc.frontMatter().get("featured"));
@@ -147,10 +170,33 @@ public class BlogGitImportService {
             postRepository.saveFromGit(post);
         }
         attachTags(doc.frontMatter().get("tags"), post);
+        postImageDependencyService.syncPostDependencies(post);
         if (published) {
             publicationService.publish(post);
         }
         entityManager.flush();
+    }
+
+    private void applyCoverFromFrontMatter(Post post,
+                                           String coverPath,
+                                           JekyllLayoutConvention convention,
+                                           Path workspace,
+                                           Blog blog) {
+        if (coverPath == null || coverPath.isBlank()) {
+            return;
+        }
+        Matcher m = GitImageSyncService.relativeAssetPattern(convention).matcher(coverPath);
+        if (!m.find()) {
+            return;
+        }
+        String uuid = m.group(1);
+        String ext = m.group(2);
+        try {
+            gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
+        } catch (IOException e) {
+            LOG.warn("Could not import assets for cover: {}", coverPath, e);
+        }
+        imageRepository.findByUuid(uuid).ifPresent(post::setCover);
     }
 
     private Post wireNewDraftPostStub(Blog blog) {

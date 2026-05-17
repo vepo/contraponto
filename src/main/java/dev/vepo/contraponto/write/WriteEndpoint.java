@@ -10,6 +10,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.image.ContentImageMarkerService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
@@ -34,6 +35,7 @@ public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance write(Optional<Post> post,
+                                                    String editorContent,
                                                     Links links,
                                                     LoggedUser user,
                                                     List<Blog> blogs,
@@ -52,6 +54,7 @@ public class WriteEndpoint {
     private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final TagService tagService;
+    private final ContentImageMarkerService contentImageMarkerService;
     private final LoggedUser loggedUser;
 
     @Inject
@@ -60,12 +63,14 @@ public class WriteEndpoint {
                          CustomPageRepository customPageRepository,
                          BlogRepository blogRepository,
                          TagService tagService,
+                         ContentImageMarkerService contentImageMarkerService,
                          LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.customPageRepository = customPageRepository;
         this.blogRepository = blogRepository;
         this.tagService = tagService;
+        this.contentImageMarkerService = contentImageMarkerService;
         this.loggedUser = loggedUser;
     }
 
@@ -84,6 +89,7 @@ public class WriteEndpoint {
         var blogs = blogRepository.findActiveBlogs(loggedUser.getId());
         Long selectedBlogId = findDefaultBlogId(blogs);
         return Templates.write(Optional.empty(),
+                               "",
                                customPageRepository.loadLinks(),
                                loggedUser,
                                blogs,
@@ -110,7 +116,8 @@ public class WriteEndpoint {
         String initialTagsJson = tagService.tagsToJson(post);
         String initialSerieTitle = post.getSerie() != null ? post.getSerie().getTitle() : "";
         boolean hasUnpublishedChanges = publicationService.hasUnpublishedChanges(post);
-        return Templates.write(maybePost, customPageRepository.loadLinks(), loggedUser,
+        String editorContent = contentImageMarkerService.toEditorContent(post.getContent());
+        return Templates.write(maybePost, editorContent, customPageRepository.loadLinks(), loggedUser,
                                blogs,
                                selectedBlogId,
                                initialTagsJson,

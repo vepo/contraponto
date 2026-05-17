@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.image.CustomPageImageDependencyService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -31,6 +32,7 @@ public class CustomPageSaveEndpoint {
     private final CustomPageAccess customPageAccess;
     private final BlogRepository blogRepository;
     private final CustomPageManageEndpoint customPageManageEndpoint;
+    private final CustomPageImageDependencyService customPageImageDependencyService;
     private final LoggedUser loggedUser;
 
     @Inject
@@ -38,11 +40,13 @@ public class CustomPageSaveEndpoint {
                                   CustomPageAccess customPageAccess,
                                   BlogRepository blogRepository,
                                   CustomPageManageEndpoint customPageManageEndpoint,
+                                  CustomPageImageDependencyService customPageImageDependencyService,
                                   LoggedUser loggedUser) {
         this.customPageRepository = customPageRepository;
         this.customPageAccess = customPageAccess;
         this.blogRepository = blogRepository;
         this.customPageManageEndpoint = customPageManageEndpoint;
+        this.customPageImageDependencyService = customPageImageDependencyService;
         this.loggedUser = loggedUser;
     }
 
@@ -196,11 +200,12 @@ public class CustomPageSaveEndpoint {
         page.setTitle(form.getTitle().trim());
         page.setSlug(CustomPagePaths.storedSlug(form.getSlug().trim()));
         page.setSection(form.getSection().trim());
-        page.setContent(form.getContent());
+        customPageImageDependencyService.normalizeAndStoreContent(page, form.getContent());
         page.setPlacement(form.getPlacement());
         page.setPublished(form.isPublished());
 
         customPageRepository.save(page);
+        customPageImageDependencyService.syncDependencies(page);
         logger.info("Saved custom page id={} slug={}", page.getId(), page.getSlug());
 
         return Toast.ok()

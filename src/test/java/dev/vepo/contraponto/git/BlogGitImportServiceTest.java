@@ -34,6 +34,15 @@ class BlogGitImportServiceTest {
                     .persist();
     }
 
+    private static void ingest(BlogGitImportService service,
+                               long blogId,
+                               Path markdownPath,
+                               SourceKind kind)
+            throws Exception {
+        Path workspace = markdownPath.getParent();
+        service.ingest(blogId, workspace, JekyllLayoutConvention.defaults(), markdownPath, kind);
+    }
+
     private static Path ingestDir() throws Exception {
         return Files.createTempDirectory("git-import");
     }
@@ -71,7 +80,7 @@ class BlogGitImportServiceTest {
                              """,
                           StandardCharsets.UTF_8);
 
-        blogGitImportService.ingest(blog.getId(), dated, SourceKind.POSTS_FOLDER);
+        ingest(blogGitImportService, blog.getId(), dated, SourceKind.POSTS_FOLDER);
 
         Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "imported-slug");
         assertThat(found).isPresent();
@@ -98,7 +107,7 @@ class BlogGitImportServiceTest {
                           StandardCharsets.UTF_8);
 
         long before = postRepository.count();
-        blogGitImportService.ingest(Long.MAX_VALUE, md, SourceKind.POSTS_FOLDER);
+        ingest(blogGitImportService, Long.MAX_VALUE, md, SourceKind.POSTS_FOLDER);
         assertThat(postRepository.count()).isEqualTo(before);
         assertThat(Files.readString(md)).contains("title: X");
     }
@@ -118,7 +127,7 @@ class BlogGitImportServiceTest {
                           StandardCharsets.UTF_8);
 
         long beforePosts = authoredPostCount(user.getId());
-        blogGitImportService.ingest(blog.getId(), md, SourceKind.POSTS_FOLDER);
+        ingest(blogGitImportService, blog.getId(), md, SourceKind.POSTS_FOLDER);
         assertThat(authoredPostCount(user.getId())).isEqualTo(beforePosts);
         assertThat(Files.readString(md)).contains("Trap");
     }
@@ -139,7 +148,7 @@ class BlogGitImportServiceTest {
                           d""",
                           StandardCharsets.UTF_8);
 
-        blogGitImportService.ingest(blog.getId(), md, SourceKind.DRAFTS_FOLDER);
+        ingest(blogGitImportService, blog.getId(), md, SourceKind.DRAFTS_FOLDER);
 
         Optional<Post> fetched = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "short-draft-note");
         assertThat(fetched).isPresent();
@@ -177,7 +186,7 @@ class BlogGitImportServiceTest {
                           Renewal body""".formatted(id),
                           StandardCharsets.UTF_8);
 
-        blogGitImportService.ingest(blog.getId(), dated, SourceKind.POSTS_FOLDER);
+        ingest(blogGitImportService, blog.getId(), dated, SourceKind.POSTS_FOLDER);
 
         Optional<Post> fetched = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "stable-slug");
         assertThat(fetched).isPresent();

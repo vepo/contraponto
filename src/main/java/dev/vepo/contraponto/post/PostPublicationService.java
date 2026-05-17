@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.notification.PostPublishedEvent;
 import dev.vepo.contraponto.tag.Tag;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -30,14 +31,17 @@ public class PostPublicationService {
     }
 
     private final PostPublicationRepository publicationRepository;
+    private final PostImageDependencyService postImageDependencyService;
     private final EntityManager entityManager;
     private final Event<PostPublishedEvent> postPublishedEvents;
 
     @Inject
     public PostPublicationService(PostPublicationRepository publicationRepository,
+                                  PostImageDependencyService postImageDependencyService,
                                   EntityManager entityManager,
                                   Event<PostPublishedEvent> postPublishedEvents) {
         this.publicationRepository = publicationRepository;
+        this.postImageDependencyService = postImageDependencyService;
         this.entityManager = entityManager;
         this.postPublishedEvents = postPublishedEvents;
     }
@@ -86,6 +90,7 @@ public class PostPublicationService {
         candidate.setPublishedAt(LocalDateTime.now());
         publicationRepository.save(candidate);
         entityManager.flush();
+        postImageDependencyService.snapshotPublicationDependencies(candidate, post);
         post.setPublished(true);
         if (post.getPublishedAt() == null) {
             post.setPublishedAt(candidate.getPublishedAt());

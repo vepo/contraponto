@@ -60,7 +60,8 @@ class ImageUploader {
         formData.append('file', file);
 
         try {
-            const response = await fetch('/api/images', {
+            const blogId = document.querySelector('[name="blogId"]')?.value;
+            const response = await fetch(`/api/images?blogId=${encodeURIComponent(blogId)}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content

@@ -17,7 +17,9 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
+import dev.vepo.contraponto.image.ImageAltEnricher;
 import dev.vepo.contraponto.renderer.Renderer;
+import io.quarkus.arc.Arc;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.tag.Tag;
@@ -167,7 +169,7 @@ public class TemplateExtensions {
         if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
             return "";
         }
-        return Renderer.get(post.getFormat()).render(post.getContent());
+        return enrichRendered(Renderer.get(post.getFormat()).render(post.getContent()));
     }
 
     @TemplateExtension
@@ -175,7 +177,14 @@ public class TemplateExtensions {
         if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
             return "";
         }
-        return Renderer.get(publication.getFormat()).render(publication.getContent());
+        return enrichRendered(Renderer.get(publication.getFormat()).render(publication.getContent()));
+    }
+
+    private static String enrichRendered(String html) {
+        if (html == null || html.isBlank()) {
+            return html == null ? "" : html;
+        }
+        return Arc.container().instance(ImageAltEnricher.class).get().enrichHtml(html);
     }
 
     @TemplateExtension

@@ -11,6 +11,7 @@ import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.image.ImageRepository;
+import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
@@ -60,6 +61,7 @@ public class PublishEndpoint {
     private final BlogRepository blogRepository;
     private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
+    private final PostImageDependencyService postImageDependencyService;
     private final TagService tagService;
     private final SerieService serieService;
     private final LoggedUser loggedUser;
@@ -72,6 +74,7 @@ public class PublishEndpoint {
                            BlogRepository blogRepository,
                            CustomPageRepository customPageRepository,
                            ImageRepository imageRepository,
+                           PostImageDependencyService postImageDependencyService,
                            TagService tagService,
                            SerieService serieService,
                            Event<PostGitSyncRequestedEvent> postGitSyncEvents,
@@ -82,6 +85,7 @@ public class PublishEndpoint {
         this.blogRepository = blogRepository;
         this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
+        this.postImageDependencyService = postImageDependencyService;
         this.tagService = tagService;
         this.serieService = serieService;
         this.postGitSyncEvents = postGitSyncEvents;
@@ -130,7 +134,7 @@ public class PublishEndpoint {
 
     private void fillPostMetadata(Post post, SaveDraftRequest request) {
         post.setTitle(request.title());
-        post.setContent(request.content());
+        postImageDependencyService.normalizeAndStoreContent(post, request.content());
         post.setDescription(request.description());
     }
 
@@ -184,6 +188,7 @@ public class PublishEndpoint {
         serieService.applySerieTitleToPost(post, request.serieTitle());
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
+        postImageDependencyService.syncPostDependencies(post);
         PostPublication published = publicationService.publish(post);
 
         postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));

@@ -58,17 +58,21 @@ public class BlogGitIntegrationService {
 
     private final PostGitMarkdownCodec markdownCodec;
 
+    private final GitImageSyncService gitImageSyncService;
+
     @Inject
     public BlogGitIntegrationService(ContrapontoGitConfig config,
                                      BlogRepository blogRepository,
                                      PostRepository postRepository,
                                      BlogGitImportService blogGitImportService,
-                                     PostGitMarkdownCodec markdownCodec) {
+                                     PostGitMarkdownCodec markdownCodec,
+                                     GitImageSyncService gitImageSyncService) {
         this.config = config;
         this.blogRepository = blogRepository;
         this.postRepository = postRepository;
         this.blogGitImportService = blogGitImportService;
         this.markdownCodec = markdownCodec;
+        this.gitImageSyncService = gitImageSyncService;
     }
 
     private CredentialsProvider credentialsOrNull() {
@@ -118,10 +122,14 @@ public class BlogGitIntegrationService {
             PostPublication live = post.getLivePublication();
             LinkedHashMap<String, Object> fm =
                     BlogGitMarkdownMapper.buildFrontMatter(post, convention);
-            String body = live != null && live.getContent() != null ? live.getContent()
-                                                                    : (post.getContent() == null ? "" : post.getContent());
+            gitImageSyncService.addCoverFrontMatter(fm, post, convention);
+            String rawBody = live != null && live.getContent() != null ? live.getContent()
+                                                                       : (post.getContent() == null ? "" : post.getContent());
+            String body = gitImageSyncService.prepareBodyForExport(rawBody, convention);
             String markdown = markdownCodec.writeMarkdownDocument(fm, body);
             Files.writeString(markdownPath, markdown, StandardCharsets.UTF_8);
+
+            gitImageSyncService.exportImagesForPost(git, workspace, convention, post, body);
 
             Path repoRoot = workspace.toAbsolutePath().normalize();
             Path targetAbs = markdownPath.toAbsolutePath().normalize();
@@ -297,22 +305,24 @@ public class BlogGitIntegrationService {
             return;
         }
         JekyllLayoutConvention convention = loadConvention(workspace);
-        walkImport(blogId, convention.resolvePosts(workspace), BlogGitImportService.SourceKind.POSTS_FOLDER);
-        walkImport(blogId, convention.resolveDrafts(workspace), BlogGitImportService.SourceKind.DRAFTS_FOLDER);
+        gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
+        walkImport(blogId, workspace, convention.resolvePosts(workspace), BlogGitImportService.SourceKind.POSTS_FOLDER);
+        walkImport(blogId, workspace, convention.resolveDrafts(workspace), BlogGitImportService.SourceKind.DRAFTS_FOLDER);
 
         String head = resolveHead(workspace);
         blog.setGitLastKnownCommit(head);
         blogRepository.save(blog);
     }
 
-    private void walkImport(long blogId, Path root, BlogGitImportService.SourceKind kind) throws IOException {
+    private void walkImport(long blogId, Path workspace, Path root, BlogGitImportService.SourceKind kind) throws IOException {
         if (!Files.isDirectory(root)) {
             return;
         }
+        JekyllLayoutConvention convention = loadConvention(workspace);
         try (Stream<Path> walk = Files.walk(root)) {
             walk.filter(p -> Files.isRegularFile(p) && isMarkdown(p)).forEach(markdown -> {
                 try {
-                    blogGitImportService.ingest(blogId, markdown, kind);
+                    blogGitImportService.ingest(blogId, workspace, convention, markdown, kind);
                 } catch (Exception ex) {
                     LOG.warn("Import failed markdown={}: {}", markdown, ex.toString());
                 }

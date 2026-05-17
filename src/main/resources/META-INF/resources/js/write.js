@@ -204,7 +204,8 @@ class WriteEditor {
             const formData = new FormData();
             formData.append('file', file);
             try {
-                const res = await fetch('/api/images', {
+                const blogId = document.querySelector('[name="blogId"]')?.value;
+                const res = await fetch(`/api/images?blogId=${encodeURIComponent(blogId)}`, {
                     method: 'POST',
                     headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
                     body: formData
@@ -233,7 +234,8 @@ class WriteEditor {
             const formData = new FormData();
             formData.append('file', file);
             try {
-                const res = await fetch('/api/images', {
+                const blogId = document.querySelector('[name="blogId"]')?.value;
+                const res = await fetch(`/api/images?blogId=${encodeURIComponent(blogId)}`, {
                     method: 'POST',
                     headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
                     body: formData

@@ -80,6 +80,10 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Version history** | Diff of publication snapshots on the post page (author view). | `PostChangeDiffService` |
 | **Serie** | Ordered collection of posts within one blog. | `Serie` |
 | **Tag** | Global taxonomy label; posts link via join table; snapshots copy tags at publish. | `Tag` |
+| **Uploaded image** | Blog-scoped image file stored in `tb_images` with optional **alt text**. | `Image` |
+| **Image marker** | HTML comment in stored body: `<!-- contraponto:image uuid="…" -->` immediately before an image reference; hidden in the Write editor. | `ContentImageMarkerService` |
+| **Image dependency** | Record that a post, publication snapshot, or custom page uses an uploaded image (`INLINE` or `COVER`). | `PostImageDependency`, `CustomPageImageDependency` |
+| **Image control** | Manage screen listing a blog's uploaded images, where each is used, and alt text editing. | `ImageControlEndpoint` |
 
 ### Custom pages
 
@@ -139,6 +143,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Write** | Editor for creating or editing a post (`/write`, `/write/draft/{id}`). | `WriteEndpoint` |
+| **Image control** | Per-blog list of uploaded images, usages, and alt text (`/blogs/{id}/images`). | `ImageControlEndpoint` |
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
 | **Dashboard** | Author overview: counts and recent drafts/published. | `DashboardEndpoint` |
 | **Profile settings** | Update name, email, password. | `ProfileEndpoint` |
@@ -170,6 +175,10 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Dashboard stat | Published posts | Dashboard card |
 | Comment moderation | Approve / Reject | Post owner (implicit in moderation UI) |
 | Custom page — published badge | Published | Manage list |
+| Image control — page title | Images | `/blogs/{id}/images` |
+| Image control — empty | No images uploaded for this blog yet. | Image list |
+| Image control — alt field | Alt text | Image row form |
+| Image control — updated toast | Image updated. | Alt save |
 
 Toast messages and validation errors should describe the domain action (e.g. "Cannot follow or subscribe to your own blog") in plain language consistent with the terms above.
 

@@ -661,6 +661,29 @@ public class App {
         }
     }
 
+    public class ImageControlPage extends Page<ImageControlPage> {
+
+        private ImageControlPage() {}
+
+        public ImageControlPage assertImageControlTitle() {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo("Images");
+            return this;
+        }
+
+        public ImageControlPage assertImageListed(String filename) {
+            var rows = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".image-control__row")));
+            assertThat(rows).anyMatch(row -> row.getText().contains(filename));
+            return this;
+        }
+
+        public ImageControlPage assertImageUsage(String postTitle) {
+            var usage = wait.until(visibilityOfElementLocated(cssSelector(".image-control__usage-list")));
+            assertThat(usage.getText()).contains(postTitle);
+            return this;
+        }
+    }
+
     public class LibraryPage extends Page<LibraryPage> {
         private LibraryPage() {}
 
@@ -1654,6 +1677,11 @@ public class App {
         return new PostPage();
     }
 
+    public ImageControlPage goToBlogImages(long blogId) {
+        _goTo("/blogs/" + blogId + "/images");
+        return new ImageControlPage();
+    }
+
     public PostPage goToPost(User user, String slug) {
         driver.navigate().to(this.rootUri + "/" + user.getUsername() + "/post/" + slug);
         waitForReady();
@@ -1764,6 +1792,8 @@ public class App {
                });
     }
 
+    // Inside App class, after LibraryPage
+
     public UserManagePage users() {
         _goTo("/users");
         return new UserManagePage();
@@ -1776,8 +1806,6 @@ public class App {
         return this;
     }
     // Inside App class, after SearchPage
-
-    // Inside App class, after LibraryPage
 
     public WritePage writePage() {
         _goTo("/write");

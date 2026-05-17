@@ -138,7 +138,7 @@ class HomeTest {
                           .withContent(baseContent)
                           .withAuthor(author)
                           .withFeatured(true)
-                          .withCover(Given.randomCover())
+                          .withCover(Given.randomCover(author.getDefaultBlog()))
                           .persist();
                  });
     }

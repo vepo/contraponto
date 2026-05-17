@@ -829,3 +829,43 @@
   }
 }
 
+.image-control__thumb {
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.image-control__row-main {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.image-control__alt-form {
+  margin-top: 0.75rem;
+}
+
+.image-control__alt-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.image-control__alt-row input {
+  flex: 1;
+}
+
+.image-control__usages {
+  margin-top: 0.75rem;
+}
+
+.image-control__usage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0;
+}
+
+.image-control__usage-list li {
+  margin-bottom: 0.35rem;
+}
+

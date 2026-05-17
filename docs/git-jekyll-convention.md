@@ -44,7 +44,13 @@ layout_fm_key: "layout"
 
 default_layout: "post"
 
+# Image assets synced with posts (relative to repo root)
+
+assets_directory: "assets/images"
+
 ```
+
+Exported post bodies reference images under `assets_directory` (e.g. `assets/images/{uuid}.png`). Alt text is stored in Contraponto and written into Markdown `![alt](path)` on export. Optional front matter `cover` uses the same path style.
 
 Changes apply immediately on the next import or export after a `git pull` / scheduler run.
 

@@ -18,7 +18,7 @@ public final class JekyllLayoutConvention {
     public static final String FM_POST_ID = "contraponto_post_id";
 
     public static JekyllLayoutConvention defaults() {
-        return new JekyllLayoutConvention("_posts", "_drafts", "layout", "post");
+        return new JekyllLayoutConvention("_posts", "_drafts", "assets/images", "layout", "post");
     }
 
     /**
@@ -27,7 +27,7 @@ public final class JekyllLayoutConvention {
      *
      * <p>
      * Supported keys: {@code posts_directory}, {@code drafts_directory},
-     * {@code layout_fm_key}, {@code default_layout}.
+     * {@code assets_directory}, {@code layout_fm_key}, {@code default_layout}.
      */
     public static JekyllLayoutConvention fromYaml(Map<String, Object> map) {
         if (map == null || map.isEmpty()) {
@@ -36,6 +36,7 @@ public final class JekyllLayoutConvention {
         JekyllLayoutConvention d = defaults();
         return new JekyllLayoutConvention(txt(map.get("posts_directory"), d.postsDir),
                                           txt(map.get("drafts_directory"), d.draftsDir),
+                                          txt(map.get("assets_directory"), d.assetsDir),
                                           txt(map.get("layout_fm_key"), d.layoutFmKey),
                                           txt(map.get("default_layout"), d.defaultLayoutValue));
     }
@@ -70,15 +71,26 @@ public final class JekyllLayoutConvention {
 
     private final String draftsDir;
 
+    private final String assetsDir;
+
     private final String layoutFmKey;
 
     private final String defaultLayoutValue;
 
-    private JekyllLayoutConvention(String postsDir, String draftsDir, String layoutFmKey, String defaultLayoutValue) {
+    private JekyllLayoutConvention(String postsDir,
+                                   String draftsDir,
+                                   String assetsDir,
+                                   String layoutFmKey,
+                                   String defaultLayoutValue) {
         this.postsDir = sanitizeDir(postsDir);
         this.draftsDir = sanitizeDir(draftsDir);
+        this.assetsDir = sanitizeDir(assetsDir);
         this.layoutFmKey = layoutFmKey;
         this.defaultLayoutValue = defaultLayoutValue;
+    }
+
+    public String assetsRelative() {
+        return assetsDir;
     }
 
     public String defaultLayoutValue() {
@@ -95,6 +107,10 @@ public final class JekyllLayoutConvention {
 
     public String postsRelative() {
         return postsDir;
+    }
+
+    public Path resolveAssets(Path repoRoot) {
+        return repoRoot.resolve(assetsDir).normalize();
     }
 
     public Path resolveDrafts(Path repoRoot) {
