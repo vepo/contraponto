@@ -1110,8 +1110,8 @@ public class App {
         }
 
         public SearchPage loadMore() {
-            var nextBtn = wait.until(elementToBeClickable(By.xpath("//button[contains(text(), 'Next')]")));
-            reliableClick(nextBtn);
+            var loadMoreBtn = wait.until(elementToBeClickable(cssSelector("#search-more-results button")));
+            reliableClick(loadMoreBtn);
             waitForReady();
             return this;
         }

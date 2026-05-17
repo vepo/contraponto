@@ -223,6 +223,16 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String blogGridLoadMorePath(String username) {
+        return "/%s/components/grid".formatted(username);
+    }
+
+    @TemplateExtension
+    public static String tagGridLoadMorePath(String tagSlug) {
+        return "/tags/%s/components/grid".formatted(tagSlug);
+    }
+
+    @TemplateExtension
     public static String url(Blog blog) {
         return BlogEndpoint.extractUrl(blog);
     }

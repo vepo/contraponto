@@ -41,4 +41,4 @@
         </div>
     </article>
 {/for}
-{#include components/load-more-posts page=posts hxGet='/tags/{tagSlug}/components/grid' /}
+{#include components/load-more-posts page=posts hxGet=tagSlug.tagGridLoadMorePath /}
