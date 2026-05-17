@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
+import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.UserRepository;
 import dev.vepo.contraponto.view.SessionIdProvider;
@@ -31,15 +32,7 @@ public class LoginEndpoint {
     // Constants for better maintainability
     public static final String SESSION_COOKIE_NAME = "__session";
     private static final String SESSION_COOKIE_PATH = "/";
-    private static final String HX_TRIGGER_HEADER = "HX-Trigger-After-Settle";
-    /**
-     * HTMX trigger so listeners using {@code loggedIn from:body} refresh (e.g.
-     * follow buttons).
-     */
-    public static final String HX_TRIGGER_LOGGED_IN = "{\"loggedIn\":{\"target\":\"body\"}}";
-    public static final String HX_TRIGGER_LOGGED_OUT = "{\"loggedOut\":{\"target\":\"body\"}}";
     private static final String ERROR_MESSAGE_HTML = "<div class='error-message'>%s</div>";
-    private static final String MENU_CONTAINER_ID = "menu-container";
     private static final String MODAL_CLEAR_OOB =
             "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
 
@@ -84,7 +77,7 @@ public class LoginEndpoint {
         return String.format("""
                              <div hx-swap-oob="true" id="%s">%s</div>
                              %s
-                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
+                             """, HtmxTriggers.MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
     }
 
     /**
@@ -136,7 +129,7 @@ public class LoginEndpoint {
 
                                  return Response.ok(responseBody)
                                                 .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
-                                                .header(HX_TRIGGER_HEADER, HX_TRIGGER_LOGGED_IN)
+                                                .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_IN_ON_BODY)
                                                 .build();
                              })
                              .orElseGet(() -> buildErrorResponse("Invalid username/email or password."));

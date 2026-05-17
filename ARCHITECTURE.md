@@ -18,6 +18,8 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 4. Qute `TemplateInstance` or `Response` (with optional `X-Toast-Message`).
 5. HTMX swaps `#main` or a partial target.
 
+**Scoped refresh:** Form mutations return the smallest HTML (target fragment + optional `hx-swap-oob`), not a full page. Auth login/signup/logout OOB-update `#menu-container` and broadcast `loggedIn` / `loggedOut` on `body` so only declared chrome subscribers refetch themselves; `#main` stays unchanged. See [docs/HTMX-Events.md](docs/HTMX-Events.md).
+
 ## 3. Multi-blog model
 
 - Each **user** has one **main** blog (auto-created) and optional secondary blogs (`tb_blogs`, unique `(owner_id, slug)`).

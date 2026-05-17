@@ -17,6 +17,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Custom page URL shapes | ✅ | ⚠️ (old `/page/{username}/...`) | — | ✅ |
 | Roles (`USER_ADMINISTRATOR`) | ✅ | ❌ | — | ✅ |
 | User/blog admin UI | ✅ | ❌ | — | — |
+| HTMX events / scoped refresh | ✅ | — | — | — |
 
 ## Conventions to adopt or document
 
@@ -34,7 +35,8 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 - [ ] **`Given` builders** — add `Given.tag()`, `Given.serie()`, `Given.blogAudience()` (or document that tests must use `Given.transaction` + repositories).
 - [ ] **Test isolation policy** — when to call `Given.cleanup()` vs `@Transactional` rollback vs dedicated test users (currently ad hoc).
 - [ ] **OpenAPI** — convention for `@Operation(hidden = true)` on internal/HTMX endpoints vs public API docs.
-- [ ] **Toast helper** — document `dev.vepo.contraponto.shared.toast` vs raw `X-Toast-Message` header.
+- [x] **Toast helper** — documented in [HTMX-Events.md](HTMX-Events.md) §3–4 (`Toast` vs raw headers).
+- [x] **HTMX scoped events** — [HTMX-Events.md](HTMX-Events.md): auth allowlist, lifecycle hooks, anti-patterns.
 - [ ] **Deferred actions after login** — pattern for session-stored intents (follow-after-login); generalize or document as one-off.
 - [ ] **Email** — document `quarkus.mailer.*`, mock in dev/test, `tb_email_notification_log` dedup rules.
 - [ ] **Admin path naming** — `/review`, `/users`, `/blogs`, `/pages` are not under `/admin`; decide if rename or document as intentional.

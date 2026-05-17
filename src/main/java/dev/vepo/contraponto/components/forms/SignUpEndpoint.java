@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.components.forms;
 
 import dev.vepo.contraponto.components.MenuEndpoint;
+import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.UserService;
@@ -22,8 +23,6 @@ public class SignUpEndpoint {
     // Constants (align with LoginEndpoint)
     public static final String SESSION_COOKIE_NAME = LoginEndpoint.SESSION_COOKIE_NAME;
     private static final String SESSION_COOKIE_PATH = "/";
-    private static final String HX_TRIGGER_HEADER = "HX-Trigger-After-Settle";
-    private static final String MENU_CONTAINER_ID = "menu-container";
     private static final String MODAL_CLEAR_OOB =
             "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
 
@@ -62,7 +61,7 @@ public class SignUpEndpoint {
         return String.format("""
                              <div hx-swap-oob="true" id="%s">%s</div>
                              %s
-                             """, MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
+                             """, HtmxTriggers.MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
     }
 
     /**
@@ -98,7 +97,7 @@ public class SignUpEndpoint {
 
         return Response.ok(responseBody)
                        .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
-                       .header(HX_TRIGGER_HEADER, LoginEndpoint.HX_TRIGGER_LOGGED_IN)
+                       .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_IN_ON_BODY)
                        .build();
     }
 }

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.components.MenuEndpoint;
+import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
@@ -40,14 +41,15 @@ public class LogoutEndpoint {
         // On success, return the refreshed menu component and a script to close the
         // modal
         return Response.ok("""
-                           <div hx-swap-oob="true" id="menu-container">%s</div>
+                           <div hx-swap-oob="true" id="%s">%s</div>
                            <script>
                              document.cookie = "%s=; max-age=0; path=/;";
                              document.getElementById('authModal').classList.remove('modal--open');
                            </script>
-                           """.formatted(MenuEndpoint.Templates.menu(new LoggedUser()).render(),
+                           """.formatted(HtmxTriggers.MENU_CONTAINER_ID,
+                                         MenuEndpoint.Templates.menu(new LoggedUser()).render(),
                                          SignUpEndpoint.SESSION_COOKIE_NAME))
-                       .header("HX-Trigger-After-Settle", LoginEndpoint.HX_TRIGGER_LOGGED_OUT)
+                       .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_OUT_ON_BODY)
                        .build();
     }
 }

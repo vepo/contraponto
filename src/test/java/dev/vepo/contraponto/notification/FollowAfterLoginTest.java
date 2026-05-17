@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.components.forms.SignUpEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.App;
@@ -24,7 +25,7 @@ import jakarta.inject.Inject;
 @QuarkusTest
 class FollowAfterLoginRestTest {
 
-    private static final String LOGGED_IN_BODY_TRIGGER = LoginEndpoint.HX_TRIGGER_LOGGED_IN;
+    private static final String LOGGED_IN_BODY_TRIGGER = HtmxTriggers.LOGGED_IN_ON_BODY;
 
     @TestHTTPResource("/")
     URL baseUrl;

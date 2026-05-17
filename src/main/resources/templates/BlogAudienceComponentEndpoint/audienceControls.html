@@ -1,7 +1,7 @@
 {#if audience.showControls}
 <div id="blog-audience-{audience.blogId}" class="blog-audience"
      hx-get="/components/blogs/{audience.blogId}/audience"
-     hx-trigger="loggedIn from:body, loggedOut from:body"
+     hx-trigger="{authRefreshTrigger}"
      hx-swap="outerHTML"
      {#if oob.or(false)} hx-swap-oob="outerHTML"{/if}>
     {#if audience.authenticated}

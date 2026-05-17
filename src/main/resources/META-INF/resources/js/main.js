@@ -78,7 +78,28 @@ class MainManager {
                     elm.classList.remove('disabled');
                 }
             });
-        hljs.highlightAll();
+        if (this.shouldHighlightCode(evt)) {
+            const main = document.querySelector('main');
+            if (main) {
+                main.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+            } else {
+                hljs.highlightAll();
+            }
+        }
+    }
+
+    /**
+     * Run syntax highlighting only when main content was swapped or on initial load.
+     */
+    shouldHighlightCode(evt) {
+        if (!evt || !evt.detail?.target) {
+            return true;
+        }
+        const target = evt.detail.target;
+        if (target.id === 'main' || target.tagName === 'MAIN') {
+            return true;
+        }
+        return target.closest?.('main') != null;
     }
 
     /**
