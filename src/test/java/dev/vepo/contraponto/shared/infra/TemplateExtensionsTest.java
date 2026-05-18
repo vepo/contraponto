@@ -170,6 +170,22 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void notificationMessageAndLinkForGitSyncFailed() {
+        var owner = new User();
+        owner.setUsername("alice");
+        var blog = new Blog();
+        blog.setId(42L);
+        blog.setName("Alice on Systems");
+        blog.setOwner(owner);
+        blog.setMain(true);
+        var notification = new Notification();
+        notification.setType(NotificationType.GIT_SYNC_FAILED);
+        notification.setBlog(blog);
+
+        assertThat(TemplateExtensions.message(notification)).isEqualTo("Git sync failed for Alice on Systems");
+    }
+
+    @Test
     void notificationMessageAndLinkForNewComment() {
         var owner = new User();
         owner.setUsername("bob");

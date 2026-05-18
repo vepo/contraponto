@@ -2,6 +2,7 @@ package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.comment.PostComment;
+import dev.vepo.contraponto.git.GitSyncRun;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
@@ -26,6 +27,17 @@ public class NotificationService {
                         PostPublication publication,
                         PostComment comment,
                         User actor) {
+        create(recipient, type, blog, post, publication, comment, actor, null);
+    }
+
+    private void create(User recipient,
+                        NotificationType type,
+                        Blog blog,
+                        Post post,
+                        PostPublication publication,
+                        PostComment comment,
+                        User actor,
+                        GitSyncRun gitSyncRun) {
         Notification notification = new Notification();
         notification.setRecipient(recipient);
         notification.setType(type);
@@ -34,8 +46,19 @@ public class NotificationService {
         notification.setPublication(publication);
         notification.setComment(comment);
         notification.setActor(actor);
+        notification.setGitSyncRun(gitSyncRun);
         notification.setRead(false);
         notificationRepository.create(notification);
+    }
+
+    @Transactional
+    public void notifyGitSyncFailed(User recipient, Blog blog, GitSyncRun run) {
+        create(recipient, NotificationType.GIT_SYNC_FAILED, blog, run.getPost(), null, null, null, run);
+    }
+
+    @Transactional
+    public void notifyGitSyncSucceeded(User recipient, Blog blog, GitSyncRun run) {
+        create(recipient, NotificationType.GIT_SYNC_SUCCEEDED, blog, run.getPost(), null, null, null, run);
     }
 
     @Transactional

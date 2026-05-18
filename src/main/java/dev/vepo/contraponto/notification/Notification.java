@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.comment.PostComment;
+import dev.vepo.contraponto.git.GitSyncRun;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
@@ -57,6 +58,10 @@ public class Notification {
     @JoinColumn(name = "comment_id")
     private PostComment comment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "git_sync_run_id")
+    private GitSyncRun gitSyncRun;
+
     @Column(nullable = false)
     private boolean read;
 
@@ -95,6 +100,10 @@ public class Notification {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public GitSyncRun getGitSyncRun() {
+        return gitSyncRun;
     }
 
     public Long getId() {
@@ -143,6 +152,10 @@ public class Notification {
 
     public void setComment(PostComment comment) {
         this.comment = comment;
+    }
+
+    public void setGitSyncRun(GitSyncRun gitSyncRun) {
+        this.gitSyncRun = gitSyncRun;
     }
 
     public void setPost(Post post) {

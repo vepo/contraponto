@@ -3,6 +3,7 @@ package dev.vepo.contraponto.components.forms;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.post.PostWriteService;
@@ -117,7 +118,7 @@ public class SaveDraftEndpoint {
         tagService.syncPostTags(post, request.tagsJson());
         postImageDependencyService.syncPostDependencies(post);
 
-        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
+        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.DRAFT_SAVE));
 
         return buildSuccessResponse(post);
     }

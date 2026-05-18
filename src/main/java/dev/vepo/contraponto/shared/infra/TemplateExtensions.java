@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.git.GitSyncRun;
 import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.blog.BlogEndpoint;
 import dev.vepo.contraponto.user.User;
@@ -288,11 +289,19 @@ public class TemplateExtensions {
                 }
                 yield actor + " commented on " + title;
             }
+            case GIT_SYNC_SUCCEEDED -> "Git sync succeeded for " + blogName;
+            case GIT_SYNC_FAILED -> "Git sync failed for " + blogName;
         };
     }
 
     @TemplateExtension
     public static String linkUrl(Notification notification) {
+        if ((notification.getType() == NotificationType.GIT_SYNC_SUCCEEDED
+                || notification.getType() == NotificationType.GIT_SYNC_FAILED)
+                && notification.getGitSyncRun() != null) {
+            GitSyncRun run = notification.getGitSyncRun();
+            return "/blogs/" + run.getBlog().getId() + "/git-sync/" + run.getId();
+        }
         if ((notification.getType() == NotificationType.NEW_POST
                 || notification.getType() == NotificationType.NEW_COMMENT)
                 && notification.getPost() != null) {

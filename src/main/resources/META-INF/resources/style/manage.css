@@ -1060,6 +1060,125 @@
     }
 }
 
+.git-sync__history-link {
+    margin-top: var(--space-md, 1rem);
+    font-size: 0.9375rem;
+}
+
+.git-sync__history-link a {
+    color: var(--color-link, #2563eb);
+    text-decoration: underline;
+}
+
+.git-sync-history__row-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+}
+
+.git-sync-history__badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.git-sync-history__badge--success {
+    background: #ecfdf3;
+    color: #027a48;
+}
+
+.git-sync-history__badge--failed {
+    background: #fef3f2;
+    color: #b42318;
+}
+
+.git-sync-history__badge--partial {
+    background: #fffaeb;
+    color: #b54708;
+}
+
+.git-sync-history__badge--skipped {
+    background: #f2f4f7;
+    color: #475467;
+}
+
+.git-sync-history__summary {
+    margin-top: 0.35rem;
+    color: var(--color-text-muted, #475467);
+}
+
+.git-sync-history__summary-panel,
+.git-sync-history__snapshot,
+.git-sync-history__entries {
+    margin-top: var(--space-lg, 1.5rem);
+}
+
+.git-sync-history__section-title {
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+}
+
+.git-sync-history__facts {
+    display: grid;
+    grid-template-columns: minmax(8rem, auto) 1fr;
+    gap: 0.35rem 1rem;
+    margin: 0;
+}
+
+.git-sync-history__facts dt {
+    font-weight: 600;
+    color: var(--color-text-muted, #475467);
+}
+
+.git-sync-history__facts dd {
+    margin: 0;
+}
+
+.git-sync-history__json,
+.git-sync-history__error-detail {
+    background: #f9fafb;
+    border: 1px solid #eaecf0;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.git-sync-history__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.git-sync-history__table th,
+.git-sync-history__table td {
+    border: 1px solid #eaecf0;
+    padding: 0.5rem 0.65rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.git-sync-history__table th {
+    background: #f9fafb;
+    font-weight: 600;
+}
+
+.git-sync-history__entry--error td {
+    background: #fffafa;
+}
+
+.git-sync-history__entry--warn td {
+    background: #fffef5;
+}
+
 .btn--danger {
     background: transparent;
     color: #b42318;

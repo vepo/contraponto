@@ -13,6 +13,8 @@ DELETE FROM tb_custom_pages WHERE slug NOT IN ('/sobre', '/contato', '/privacida
 TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
 TRUNCATE TABLE tb_notifications CASCADE;
+TRUNCATE TABLE tb_git_sync_run_entries CASCADE;
+TRUNCATE TABLE tb_git_sync_runs CASCADE;
 TRUNCATE TABLE tb_blog_audience CASCADE;
 TRUNCATE TABLE tb_post_publication_tags CASCADE;
 TRUNCATE TABLE tb_post_publications CASCADE;
@@ -923,5 +925,66 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     FROM tb_users e, tb_post_publications pub
     WHERE e.username = 'eve' AND pub.post_id = v_post_graphql AND pub.version = 1
     ON CONFLICT (publication_id, user_id) DO NOTHING;
+
+    -- ============================================
+    -- 15. Git sync sample runs (alice main blog)
+    -- ============================================
+    INSERT INTO tb_git_sync_runs (
+        blog_id, post_id, operation, trigger_kind, started_at, finished_at,
+        outcome, git_error_kind, repository_readable, data_loadable,
+        remote_url, branch, commit_before, commit_after,
+        convention_snapshot, settings_snapshot, summary_message, error_detail
+    )
+    VALUES (
+        v_alice_blog, v_post_intro, 'EXPORT', 'PUBLISH',
+        '2024-05-12 10:00:00', '2024-05-12 10:00:05',
+        'SUCCESS', 'NONE', TRUE, TRUE,
+        'https://github.com/contraponto-dev/alice-on-systems.git', 'main',
+        '7f3a9c2e1b0d4f8a6e5d4c3b2a19087', '8a4b0d3f2c1e5g9h7i6j5k4l3m2n1o0p',
+        '{"posts_directory":"_posts","drafts_directory":"_drafts","assets_directory":"assets/images","config_source":"defaults"}',
+        '{"poll_enabled":true,"poll_interval":"2m"}',
+        'Git export succeeded for post "introduction-to-distributed-systems-java".',
+        NULL
+    );
+
+    INSERT INTO tb_git_sync_run_entries (run_id, sequence, phase, level, post_id, markdown_path, outcome, message, remediation, technical_detail)
+    SELECT r.id, 1, 'WORKSPACE', 'INFO', NULL, NULL, 'SUCCESS', 'Git workspace prepared.', NULL, NULL
+    FROM tb_git_sync_runs r
+    WHERE r.blog_id = v_alice_blog AND r.operation = 'EXPORT' AND r.trigger_kind = 'PUBLISH'
+    ORDER BY r.started_at DESC LIMIT 1;
+
+    INSERT INTO tb_git_sync_run_entries (run_id, sequence, phase, level, post_id, markdown_path, outcome, message, remediation, technical_detail)
+    SELECT r.id, 2, 'PUSH', 'INFO', v_post_intro, '_posts/2024-04-01-introduction-to-distributed-systems-java.md', 'SUCCESS',
+           'Exported post "introduction-to-distributed-systems-java".', NULL, NULL
+    FROM tb_git_sync_runs r
+    WHERE r.blog_id = v_alice_blog AND r.operation = 'EXPORT' AND r.trigger_kind = 'PUBLISH'
+    ORDER BY r.started_at DESC LIMIT 1;
+
+    INSERT INTO tb_git_sync_runs (
+        blog_id, operation, trigger_kind, started_at, finished_at,
+        outcome, git_error_kind, repository_readable, data_loadable,
+        remote_url, branch, commit_before, commit_after,
+        convention_snapshot, settings_snapshot, summary_message, error_detail
+    )
+    VALUES (
+        v_alice_blog, NULL, 'IMPORT', 'REMOTE_POLL',
+        '2024-05-12 11:00:00', '2024-05-12 11:00:08',
+        'FAILED', 'AUTHENTICATION', FALSE, FALSE,
+        'https://github.com/contraponto-dev/alice-on-systems.git', 'main',
+        '8a4b0d3f2c1e5g9h7i6j5k4l3m2n1o0p', NULL,
+        NULL,
+        '{"poll_enabled":true,"poll_interval":"2m"}',
+        'Git import failed.',
+        'org.eclipse.jgit.api.errors.TransportException: Authentication failed: 401 Unauthorized'
+    );
+
+    INSERT INTO tb_git_sync_run_entries (run_id, sequence, phase, level, post_id, markdown_path, outcome, message, remediation, technical_detail)
+    SELECT r.id, 1, 'WORKSPACE', 'ERROR', NULL, NULL, 'FAILED',
+           'Git authentication failed.',
+           'Configure contraponto.git.username and contraponto.git.password on the server, or embed a personal access token in the HTTPS remote URL.',
+           'Authentication failed: 401 Unauthorized'
+    FROM tb_git_sync_runs r
+    WHERE r.blog_id = v_alice_blog AND r.operation = 'IMPORT' AND r.outcome = 'FAILED'
+    ORDER BY r.started_at DESC LIMIT 1;
 
 END $$;

@@ -88,6 +88,7 @@ public class NotificationRepository {
                                                             LEFT JOIN FETCH b.owner
                                                             LEFT JOIN FETCH n.post p
                                                             LEFT JOIN FETCH n.actor
+                                                            LEFT JOIN FETCH n.gitSyncRun
                                                             WHERE n.recipient.id = :userId
                                                             ORDER BY n.createdAt DESC
                                                             """, Notification.class)

@@ -191,6 +191,14 @@
                                     </p>
                                 </div>
                             </div>
+                            <p class="git-sync__history-link">
+                                <a data-hx-get="/blogs/{blog.get().id}/git-sync"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-swap="outerHTML"
+                                   hx-push-url="/blogs/{blog.get().id}/git-sync"
+                                   data-nav>View sync history</a>
+                            </p>
                         </div>
                     </fieldset>
                     {/if}

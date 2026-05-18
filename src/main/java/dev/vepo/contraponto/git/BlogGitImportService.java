@@ -84,31 +84,45 @@ public class BlogGitImportService {
     }
 
     @Transactional(value = TxType.REQUIRES_NEW)
-    public void ingest(long blogId,
-                       Path workspace,
-                       JekyllLayoutConvention convention,
-                       Path markdownPath,
-                       SourceKind sourceKind)
-            throws IOException {
-        Blog blog = entityManager.find(Blog.class, blogId);
-        if (blog == null) {
-            return;
-        }
-        Path fileNamePath = markdownPath.getFileName();
-        if (fileNamePath == null) {
-            return;
-        }
+    public GitSyncPostResult ingest(long blogId,
+                                    Path workspace,
+                                    JekyllLayoutConvention convention,
+                                    Path markdownPath,
+                                    SourceKind sourceKind) {
+        String pathLabel = markdownPath.toString();
+        try {
+            Blog blog = entityManager.find(Blog.class, blogId);
+            if (blog == null) {
+                return GitSyncPostResult.skipped(pathLabel, "Blog was not found.", null);
+            }
+            Path fileNamePath = markdownPath.getFileName();
+            if (fileNamePath == null) {
+                return GitSyncPostResult.skipped(pathLabel, "Markdown file has no name.", null);
+            }
 
-        ParsedPathStem stem = ParsedPathStem.from(fileNamePath.toString(), sourceKind);
-        if (stem.slug().isBlank()) {
-            LOG.warn("Skip markdown without usable slug (filename invalid): {}", markdownPath);
-            return;
-        }
+            ParsedPathStem stem = ParsedPathStem.from(fileNamePath.toString(), sourceKind);
+            if (stem.slug().isBlank()) {
+                String remediation = sourceKind == SourceKind.POSTS_FOLDER
+                                                                           ? "Rename published files to yyyy-MM-dd-slug.md under _posts/."
+                                                                           : "Rename draft files to slug.md under _drafts/.";
+                return GitSyncPostResult.skipped(pathLabel,
+                                                 "Could not read a slug from the file name.",
+                                                 remediation);
+            }
 
-        PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
-        IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog);
-        applyPostFields(draft, doc, blog, workspace, convention);
-        finalizeIngestion(draft, doc);
+            PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
+            IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog);
+            applyPostFields(draft, doc, blog, workspace, convention);
+            finalizeIngestion(draft, doc);
+            return GitSyncPostResult.success(draft.post().getId(), pathLabel,
+                                             "Imported post \"" + draft.slug() + "\".");
+        } catch (Exception ex) {
+            LOG.warn("Import failed markdown={}: {}", markdownPath, ex.toString());
+            return GitSyncPostResult.failed(pathLabel,
+                                            "Could not import this post from Git.",
+                                            "Check YAML front matter, slug, and contraponto_post_id. See the layout convention.",
+                                            ex.toString());
+        }
     }
 
     private PostGitMarkdownCodec.ParsedFrontMatterMarkdown readMarkdown(Path markdownPath) throws IOException {

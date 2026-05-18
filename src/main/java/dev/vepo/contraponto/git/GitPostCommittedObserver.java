@@ -16,6 +16,6 @@ public class GitPostCommittedObserver {
     }
 
     void afterCommit(@Observes(during = TransactionPhase.AFTER_SUCCESS) PostGitSyncRequestedEvent event) {
-        blogGitIntegrationService.scheduleExportPost(event.postId());
+        blogGitIntegrationService.scheduleExportPost(event.postId(), event.trigger());
     }
 }

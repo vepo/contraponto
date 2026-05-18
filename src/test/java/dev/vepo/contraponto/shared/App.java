@@ -730,6 +730,29 @@ public class App {
         }
     }
 
+    public class GitSyncHistoryPage extends Page<GitSyncHistoryPage> {
+
+        private GitSyncHistoryPage() {}
+
+        public GitSyncHistoryPage assertDetailShows(String label) {
+            var panel = wait.until(visibilityOfElementLocated(cssSelector(".git-sync-history__summary-panel")));
+            assertThat(panel.getText()).contains(label);
+            return this;
+        }
+
+        public GitSyncHistoryPage assertGitSyncHistoryTitle() {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            assertThat(title.getText()).isEqualTo("Git sync history");
+            return this;
+        }
+
+        public GitSyncHistoryPage assertRunListed(String summaryFragment) {
+            wait.until(visibilityOfElementLocated(cssSelector(".git-sync-history")));
+            assertThat(driver.getPageSource()).contains(summaryFragment);
+            return this;
+        }
+    }
+
     public class ImageControlPage extends Page<ImageControlPage> {
 
         private ImageControlPage() {}
@@ -1878,6 +1901,16 @@ public class App {
     public ImageControlPage goToBlogImages(long blogId) {
         _goTo("/blogs/" + blogId + "/images");
         return new ImageControlPage();
+    }
+
+    public GitSyncHistoryPage goToGitSyncHistory(long blogId) {
+        _goTo("/blogs/" + blogId + "/git-sync");
+        return new GitSyncHistoryPage();
+    }
+
+    public GitSyncHistoryPage goToGitSyncRun(long blogId, long runId) {
+        _goTo("/blogs/" + blogId + "/git-sync/" + runId);
+        return new GitSyncHistoryPage();
     }
 
     public PostPage goToPost(User user, String slug) {

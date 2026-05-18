@@ -132,8 +132,16 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Git integration** | Per-blog export/import to a remote Git repo over HTTPS (any host; Jekyll layout). | `Blog.gitEnabled`, etc. |
-| **Git sync request** | Event after publish to export post to Git when enabled. | `PostGitSyncRequestedEvent` |
+| **Git sync request** | Event after draft save or publish to export post to Git when enabled. | `PostGitSyncRequestedEvent` |
 | **Remote poll** | Scheduled pull of remote changes when poll enabled. | `GitRemotePollScheduler` |
+| **Git sync run** | One execution of Git export (push) or import (pull) for a blog. | `GitSyncRun` |
+| **Git sync trigger** | What started the run: draft save, publish, remote poll, or blog save warmup. | `GitSyncTrigger` |
+| **Git sync operation** | `EXPORT` (Contraponto → remote) or `IMPORT` (remote → Contraponto). | `GitSyncOperation` |
+| **Git sync outcome** | `SUCCESS`, `PARTIAL`, `FAILED`, or `SKIPPED`. | `GitSyncOutcome` |
+| **Git error kind** | Classification of failure: `NONE`, `AUTHENTICATION`, `NETWORK`, `REPOSITORY`, `WORKSPACE`, `CONVENTION`, `POST`, `UNKNOWN`. | `GitErrorKind` |
+| **Repository readable** | Contraponto prepared the workspace and resolved layout (`_contraponto.yml` or defaults). | Flag on `GitSyncRun` |
+| **Data loadable** | Remote was reachable and clone/fetch/pull succeeded. | Flag on `GitSyncRun` |
+| **Git sync log entry** | One step or per-post result within a run (phase, message, remediation). | `GitSyncRunEntry` |
 
 ### Discovery & feeds
 
@@ -207,6 +215,17 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Blog manage — banner field | Blog banner | Blog edit form |
 | Profile/blog — remove image | Remove | Image upload areas |
 | Profile — saved toast | Profile updated. | After profile save |
+| Git sync — history page title | Git sync history | `/blogs/{id}/git-sync` |
+| Git sync — view history link | View sync history | Blog manage Git section |
+| Git sync — succeeded | Sync succeeded | Run list/detail badge |
+| Git sync — failed | Sync failed | Run list/detail badge |
+| Git sync — partial | Sync partially completed | Run list/detail badge |
+| Git sync — skipped | Sync skipped | Run list/detail badge |
+| Git sync — how to fix | How to fix | Detail entry column |
+| Git sync — data loadable | Data loadable | Detail summary |
+| Git sync — repository readable | Repository readable | Detail summary |
+| Git sync — notification success | Git sync succeeded for {blog} | In-app notification |
+| Git sync — notification failure | Git sync failed for {blog} | In-app notification |
 
 Toast messages and validation errors should describe the domain action (e.g. "Cannot follow or subscribe to your own blog") in plain language consistent with the terms above.
 
@@ -217,7 +236,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | Event | When fired | Typical reaction |
 |-------|------------|------------------|
 | `PostPublishedEvent` | After a new or changed publication snapshot is committed | Notify followers; email subscribers |
-| `PostGitSyncRequestedEvent` | After publish when blog has Git enabled | Export post to remote |
+| `PostGitSyncRequestedEvent` | After draft save or publish when blog has Git enabled | Export post to remote; record **Git sync run** |
 | `CustomPageChangedEvent` | After custom page create/update/delete | Refresh `CustomPageCache` |
 
 ---

@@ -9,6 +9,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.PostWriteService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.image.ImageRepository;
@@ -178,7 +179,7 @@ public class PublishEndpoint {
         postImageDependencyService.syncPostDependencies(post);
         PostPublication published = publicationService.publish(post);
 
-        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId()));
+        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.PUBLISH));
 
         Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
         return buildSuccessResponse(new PublishedPostView(rendered, published));

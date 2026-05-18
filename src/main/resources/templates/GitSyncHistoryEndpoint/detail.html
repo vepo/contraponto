@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Git sync run #{run.id} - {blog.name} - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage git-sync-history" id="main-content">
+            <div class="container-narrow">
+                <div class="pages-manage__header">
+                    <div>
+                        <h1 class="pages-manage__title">Git sync run #{run.id}</h1>
+                        <p class="pages-manage__subtitle">{blog.name}</p>
+                    </div>
+                    <a data-hx-get="/blogs/{blog.id}/git-sync"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="/blogs/{blog.id}/git-sync"
+                       class="btn btn--secondary"
+                       data-nav>Back to history</a>
+                </div>
+
+                <section class="git-sync-history__summary-panel">
+                    <h2 class="git-sync-history__section-title">Run summary</h2>
+                    <dl class="git-sync-history__facts">
+                        <dt>Operation</dt><dd>{run.operation}</dd>
+                        <dt>Trigger</dt><dd>{run.trigger}</dd>
+                        <dt>Started</dt><dd>{run.startedAt}</dd>
+                        <dt>Finished</dt><dd>{run.finishedAt ?: '—'}</dd>
+                        <dt>Outcome</dt>
+                        <dd>
+                            <span class="git-sync-history__badge git-sync-history__badge--{run.outcome.name().toLowerCase()}">
+                                {#if run.outcome.name() == 'SUCCESS'}Sync succeeded
+                                {#else if run.outcome.name() == 'FAILED'}Sync failed
+                                {#else if run.outcome.name() == 'PARTIAL'}Sync partially completed
+                                {#else}Sync skipped{/if}
+                            </span>
+                        </dd>
+                        <dt>Git error kind</dt><dd>{run.gitErrorKind}</dd>
+                        <dt>Data loadable</dt><dd>{run.dataLoadable ? 'Yes' : 'No'}</dd>
+                        <dt>Repository readable</dt><dd>{run.repositoryReadable ? 'Yes' : 'No'}</dd>
+                        <dt>Remote URL</dt><dd><code>{run.remoteUrl ?: '—'}</code></dd>
+                        <dt>Branch</dt><dd>{run.branch ?: '—'}</dd>
+                        <dt>Commit before</dt><dd><code>{run.commitBefore ?: '—'}</code></dd>
+                        <dt>Commit after</dt><dd><code>{run.commitAfter ?: '—'}</code></dd>
+                    </dl>
+                    {#if run.summaryMessage}
+                    <p class="git-sync-history__summary">{run.summaryMessage}</p>
+                    {/if}
+                    {#if run.errorDetail}
+                    <pre class="git-sync-history__error-detail">{run.errorDetail}</pre>
+                    {/if}
+                </section>
+
+                {#if run.conventionSnapshot}
+                <section class="git-sync-history__snapshot">
+                    <h2 class="git-sync-history__section-title">Layout convention</h2>
+                    <pre class="git-sync-history__json">{run.conventionSnapshot}</pre>
+                </section>
+                {/if}
+
+                {#if run.settingsSnapshot}
+                <section class="git-sync-history__snapshot">
+                    <h2 class="git-sync-history__section-title">Server settings</h2>
+                    <pre class="git-sync-history__json">{run.settingsSnapshot}</pre>
+                </section>
+                {/if}
+
+                <section class="git-sync-history__entries">
+                    <h2 class="git-sync-history__section-title">Log entries</h2>
+                    {#if entries.isEmpty()}
+                    <p class="pages-manage__empty">No log entries recorded.</p>
+                    {#else}
+                    <table class="git-sync-history__table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Phase</th>
+                                <th>Level</th>
+                                <th>Outcome</th>
+                                <th>Message</th>
+                                <th>How to fix</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#for entry in entries}
+                            <tr class="git-sync-history__entry git-sync-history__entry--{entry.level.name().toLowerCase()}">
+                                <td>{entry.sequence}</td>
+                                <td>{entry.phase}</td>
+                                <td>{entry.level}</td>
+                                <td>{entry.outcome}</td>
+                                <td>
+                                    {entry.message}
+                                    {#if entry.markdownPath}<br/><code>{entry.markdownPath}</code>{/if}
+                                    {#if entry.post}<br/>Post: {entry.post.slug}{/if}
+                                </td>
+                                <td>{entry.remediation ?: '—'}</td>
+                            </tr>
+                            {/for}
+                        </tbody>
+                    </table>
+                    {/if}
+                </section>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

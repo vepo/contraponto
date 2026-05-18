@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.git.BlogGitIntegrationService;
+import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.GitRemoteUrlValidator;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -225,7 +226,7 @@ public class BlogSaveEndpoint {
 
     private void triggerGitWarmupIfConfigured(Blog blog) {
         if (blog.isGitEnabled() && blog.getGitRemoteUrl() != null && !blog.getGitRemoteUrl().isBlank()) {
-            blogGitIntegrationService.scheduleBlogRemoteSync(blog.getId());
+            blogGitIntegrationService.scheduleBlogRemoteSync(blog.getId(), GitSyncTrigger.BLOG_SAVE_WARMUP);
         }
     }
 
