@@ -1,7 +1,5 @@
 package dev.vepo.contraponto.shared.infra;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -52,33 +50,12 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String avatarUrl(LoggedUser user) {
-        if (user == null) {
-            return "";
-        }
-        var entityUser = user.getUser();
-        if (entityUser != null && entityUser.getProfilePicture() != null) {
-            return entityUser.getProfilePicture().getUrl();
-        }
-        return generatedAvatarUrl(user.getName());
+        return AvatarUrls.avatarUrl(user);
     }
 
     @TemplateExtension
     public static String avatarUrl(User user) {
-        if (user == null) {
-            return "";
-        }
-        if (user.getProfilePicture() != null) {
-            return user.getProfilePicture().getUrl();
-        }
-        return generatedAvatarUrl(user.getName());
-    }
-
-    private static String generatedAvatarUrl(String name) {
-        if (name == null || name.isBlank()) {
-            return "";
-        }
-        return "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,
-                                                                                                                                StandardCharsets.UTF_8));
+        return AvatarUrls.avatarUrl(user);
     }
 
     @TemplateExtension

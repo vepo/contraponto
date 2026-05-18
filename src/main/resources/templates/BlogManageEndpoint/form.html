@@ -168,7 +168,11 @@
                     <div class="form-group">
                         <label>Blog banner</label>
                         {#if blog.isPresent}
-                        {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl=blog.get().banner != null ? blog.get().banner.url : '' initialId=blog.get().banner != null ? blog.get().banner.uuid : '' /}
+                        {#if blog.get().banner}
+                        {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl=blog.get().banner.url initialId=blog.get().banner.uuid /}
+                        {#else}
+                        {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl='' initialId='' /}
+                        {/if}
                         {#else}
                         {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl='' initialId='' /}
                         {/if}

@@ -1,7 +1,5 @@
 package dev.vepo.contraponto.shared.infra;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -25,14 +23,7 @@ public class LoggedUser {
     }
 
     public String getAvatarUrl() {
-        if (user != null && user.getProfilePicture() != null) {
-            return user.getProfilePicture().getUrl();
-        }
-        return Optional.ofNullable(user)
-                       .map(User::getName)
-                       .map(name -> "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,
-                                                                                                                                                     StandardCharsets.UTF_8)))
-                       .orElse("");
+        return AvatarUrls.avatarUrl(this);
     }
 
     public String getEmail() {
@@ -51,16 +42,7 @@ public class LoggedUser {
     }
 
     public String getInitials() {
-        return Optional.ofNullable(user)
-                       .map(User::getName)
-                       .map(name -> {
-                           var parts = name.trim().split("\\s+");
-                           if (parts.length == 1) {
-                               return parts[0].substring(0, 1).toUpperCase();
-                           }
-                           return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
-                       })
-                       .orElse("");
+        return DisplayNameInitials.from(getName());
     }
 
     public String getName() {

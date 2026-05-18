@@ -20,11 +20,11 @@ import dev.vepo.contraponto.user.User;
 class TemplateExtensionsTest {
 
     @Test
-    void avatarUrlEncodesUserName() {
+    void avatarUrlUsesLocalGeneratedAvatar() {
         var user = new User();
         user.setName("José Silva");
         var logged = new LoggedUser(user, "session");
-        assertThat(TemplateExtensions.avatarUrl(logged)).contains("name=");
+        assertThat(TemplateExtensions.avatarUrl(logged)).startsWith("/components/avatar?name=");
         assertThat(TemplateExtensions.avatarUrl((LoggedUser) null)).isEmpty();
     }
 

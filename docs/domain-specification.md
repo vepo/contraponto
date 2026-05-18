@@ -60,7 +60,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Main blog** | The blog auto-created for a user (`main = true`); slug typically matches username. | `Blog.main` |
 | **Secondary blog** | Additional blog owned by the same user (`main = false`). | `Blog` |
 | **Blog owner** | User who owns the blog; sole writer for that blog's posts and the only role that may edit blog settings. | `Blog.owner` |
-| **Profile picture** | Optional image on the user; shown in the menu and wherever the author is displayed. | `User.profilePicture` |
+| **Profile picture** | Optional image on the user; shown in the menu and wherever the author is displayed. When absent, a **generated avatar** shows the user's initials on a brand-colored SVG (`GET /components/avatar`). | `User.profilePicture`, `AvatarEndpoint` |
 | **Default blog banner** | Optional image on the user used when a blog has no own **blog banner**. | `User.defaultBlogBanner` |
 | **Blog banner** | Optional hero image on a blog; overrides the owner's default for that blog's public home. | `Blog.banner` |
 | **Effective blog banner** | `blog.banner` if set, else `user.defaultBlogBanner`. | `BlogBannerService.resolveEffectiveBanner` |

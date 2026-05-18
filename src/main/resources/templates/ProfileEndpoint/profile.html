@@ -23,12 +23,20 @@
 
                     <div class="form-group">
                         <label>Profile picture</label>
-                        {#include components/image-upload-area label='Profile picture' areaId='profilePictureUpload' hiddenFieldId='profilePictureId' blogId=mainBlogId initialUrl=user.profilePicture != null ? user.profilePicture.url : '' initialId=user.profilePicture != null ? user.profilePicture.uuid : '' /}
+                        {#if user.profilePicture}
+                        {#include components/image-upload-area label='Profile picture' areaId='profilePictureUpload' hiddenFieldId='profilePictureId' blogId=mainBlogId initialUrl=user.profilePicture.url initialId=user.profilePicture.uuid /}
+                        {#else}
+                        {#include components/image-upload-area label='Profile picture' areaId='profilePictureUpload' hiddenFieldId='profilePictureId' blogId=mainBlogId initialUrl='' initialId='' /}
+                        {/if}
                     </div>
 
                     <div class="form-group">
                         <label>Default blog banner</label>
-                        {#include components/image-upload-area label='Default blog banner' areaId='defaultBannerUpload' hiddenFieldId='defaultBannerId' blogId=mainBlogId initialUrl=user.defaultBlogBanner != null ? user.defaultBlogBanner.url : '' initialId=user.defaultBlogBanner != null ? user.defaultBlogBanner.uuid : '' /}
+                        {#if user.defaultBlogBanner}
+                        {#include components/image-upload-area label='Default blog banner' areaId='defaultBannerUpload' hiddenFieldId='defaultBannerId' blogId=mainBlogId initialUrl=user.defaultBlogBanner.url initialId=user.defaultBlogBanner.uuid /}
+                        {#else}
+                        {#include components/image-upload-area label='Default blog banner' areaId='defaultBannerUpload' hiddenFieldId='defaultBannerId' blogId=mainBlogId initialUrl='' initialId='' /}
+                        {/if}
                     </div>
 
 					<h2>Account</h2>

@@ -1,7 +1,7 @@
 {#if user.isAuthenticated}
 <div class="user-menu">
     <button class="user-menu__button" id="userMenuBtn" aria-label="User menu">
-        <img src="{user.avatarUrl}" alt="{user.name}" class="user-menu__avatar" onerror="this.src='https://ui-avatars.com/api/?name={user.name.toUpperCase().charAt(0)}&background=1a8917&color=fff'"/>
+        <img src="{user.avatarUrl}" alt="{user.name}" class="user-menu__avatar"/>
         <span>{user.firstName}</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>

@@ -14,7 +14,7 @@ public class SecurityHeadersFilter implements ContainerResponseFilter {
                                       default-src 'self'; \
                                       script-src 'self' 'unsafe-inline'; \
                                       style-src 'self' 'unsafe-inline'; \
-                                      img-src 'self' data: https://ui-avatars.com; \
+                                      img-src 'self' data:; \
                                       font-src 'self'; \
                                       connect-src 'self'; \
                                       form-action 'self'; \
