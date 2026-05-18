@@ -89,7 +89,7 @@ public class BlogGitImportService {
                        JekyllLayoutConvention convention,
                        Path markdownPath,
                        SourceKind sourceKind)
-            throws Exception {
+            throws IOException {
         Blog blog = entityManager.find(Blog.class, blogId);
         if (blog == null) {
             return;
@@ -116,12 +116,12 @@ public class BlogGitImportService {
             title = stem.slug().replace('-', ' ');
         }
 
-        Boolean yamlPublishedFlag = parseBoolean(doc.frontMatter().get("published"));
+        Optional<Boolean> yamlPublishedFlag = parseBoolean(doc.frontMatter().get("published"));
         boolean folderDefaultPublished = switch (sourceKind) {
             case POSTS_FOLDER -> true;
             case DRAFTS_FOLDER -> false;
         };
-        boolean published = yamlPublishedFlag != null ? yamlPublishedFlag : folderDefaultPublished;
+        boolean published = yamlPublishedFlag.orElse(folderDefaultPublished);
 
         Optional<Post> existing = locateExisting(doc, slug, blog);
         Post post = existing.orElseGet(() -> wireNewDraftPostStub(blog));
@@ -140,9 +140,9 @@ public class BlogGitImportService {
         applyCoverFromFrontMatter(post, trimToNull(doc.frontMatter().get("cover")), convention, workspace, blog);
         post.setFormat(parseFormat(trimToNull(doc.frontMatter().get("format"))));
 
-        Boolean featuredFlag = parseBoolean(doc.frontMatter().get("featured"));
-        if (featuredFlag != null) {
-            post.setFeatured(featuredFlag);
+        Optional<Boolean> featuredFlag = parseBoolean(doc.frontMatter().get("featured"));
+        if (featuredFlag.isPresent()) {
+            post.setFeatured(featuredFlag.get());
         } else if (!existedBefore) {
             post.setFeatured(false);
         }
@@ -215,7 +215,7 @@ public class BlogGitImportService {
         return postRepository.findByBlogIdAndSlugWithTags(blog.getId(), slug);
     }
 
-    private void attachTags(Object rawYamlTags, Post post) throws Exception {
+    private void attachTags(Object rawYamlTags, Post post) throws IOException {
         List<String> tags = readYamlTags(rawYamlTags);
         String json = tags.isEmpty() ? "[]" : objectMapper.writeValueAsString(tags);
         tagService.syncPostTags(post, json);
@@ -232,18 +232,18 @@ public class BlogGitImportService {
         }
     }
 
-    private static Boolean parseBoolean(Object raw) {
+    private static Optional<Boolean> parseBoolean(Object raw) {
         if (raw == null) {
-            return null;
+            return Optional.empty();
         }
         if (raw instanceof Boolean b) {
-            return b;
+            return Optional.of(b);
         }
         String s = raw.toString().strip().toLowerCase(Locale.ROOT);
         return switch (s) {
-            case "true", "yes", "on" -> true;
-            case "false", "no", "off" -> false;
-            default -> null;
+            case "true", "yes", "on" -> Optional.of(true);
+            case "false", "no", "off" -> Optional.of(false);
+            default -> Optional.empty();
         };
     }
 

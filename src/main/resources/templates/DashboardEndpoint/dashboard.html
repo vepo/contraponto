@@ -12,14 +12,14 @@
 
                 <div id="dashboardAnalytics"
                      hx-trigger="load"
-                     hx-get="/dashboard/components/analytics?blogId={selectedBlogId}"
+                     hx-get="/dashboard/components/analytics?blogId={page.selectedBlogId}"
                      hx-swap="outerHTML">
                 </div>
 
                 <!-- Stats cards -->
                 <div class="dashboard-stats">
                     <div class="stat-card">
-                        <div class="stat-card__value">{draftsCount}</div>
+                        <div class="stat-card__value">{page.draftsCount}</div>
                         <div class="stat-card__label">Drafts</div>
                         <a data-hx-get="/library?tab=drafts"
                            hx-select="main"
@@ -28,7 +28,7 @@
                            class="stat-card__link">View all →</a>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card__value">{publishedCount}</div>
+                        <div class="stat-card__value">{page.publishedCount}</div>
                         <div class="stat-card__label">Published posts</div>
                         <a data-hx-get="/library?tab=published"
                            hx-select="main"
@@ -42,11 +42,11 @@
                 <div class="dashboard-recent">
                     <div class="recent-section drafts">
                         <h2>Recent drafts</h2>
-                        {#if recentDrafts.isEmpty()}
+                        {#if page.recentDrafts.isEmpty()}
                         <p class="recent-section__empty">No drafts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first story</a>.</p>
                         {#else}
                         <ul class="recent-list">
-                            {#for draft in recentDrafts}
+                            {#for draft in page.recentDrafts}
                             <li class="recent-list__item">
                                 <a data-hx-get="/write/draft/{draft.id}"
                                    hx-select="main"
@@ -64,11 +64,11 @@
 
                     <div class="recent-section published">
                         <h2>Recent published</h2>
-                        {#if recentPublished.isEmpty()}
+                        {#if page.recentPublished.isEmpty()}
                         <p class="recent-section__empty">No published posts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first post</a>.</p>
                         {#else}
                         <ul class="recent-list">
-                            {#for post in recentPublished}
+                            {#for post in page.recentPublished}
                             <li class="recent-list__item">
                                 <a data-hx-get="{post.url}"
                                    hx-select="main"
@@ -79,7 +79,7 @@
                                 </a>
                                 <div class="recent-list__meta">
                                     <span>Published {post.publishedAt.formatDate}</span>
-                                    <span>• 👁️ {viewCounts.getOrDefault(post.id, 0)} views</span>
+                                    <span>• 👁️ {page.viewCounts.getOrDefault(post.id, 0)} views</span>
                                 </div>
                             </li>
                             {/for}

@@ -38,14 +38,29 @@ public class BlogSaveEndpoint {
         return value == null ? "" : value.trim();
     }
 
+    private static String validateSlug(String rawSlug) {
+        if (rawSlug == null || rawSlug.isBlank()) {
+            return "Slug is required.";
+        }
+        var slug = normalizeSlug(rawSlug);
+        if (!slug.matches("[a-zA-Z0-9][a-zA-Z0-9_-]*")) {
+            return "Slug must contain only letters, numbers, hyphens and underscores.";
+        }
+        if (CustomPagePaths.isReservedSegment(slug)) {
+            return "This slug is reserved.";
+        }
+        return null;
+    }
+
     private final BlogRepository blogRepository;
     private final BlogAccess blogAccess;
+
     private final UserRepository userRepository;
 
     private final CustomPageRepository customPageRepository;
-
     private final BlogGitIntegrationService blogGitIntegrationService;
     private final BlogManageEndpoint blogManageEndpoint;
+
     private final LoggedUser loggedUser;
 
     @Inject
@@ -77,6 +92,30 @@ public class BlogSaveEndpoint {
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
+    }
+
+    private Response createBlog(BlogForm form) {
+        if (!blogAccess.canCreate(loggedUser)) {
+            return forbidden();
+        }
+        var owner = userRepository.findById(loggedUser.getId()).orElse(null);
+        if (owner == null) {
+            return notFound();
+        }
+        var slug = normalizeSlug(form.getSlug());
+        if (blogRepository.existsSlug(owner.getId(), slug, null)) {
+            return badRequest("A blog with this slug already exists.");
+        }
+        if (slug.equals(owner.getUsername())) {
+            return badRequest("Secondary blog slug cannot match your username.");
+        }
+        var blog = new Blog(owner, slug, form.getName().trim(), nullToEmpty(form.getDescription()));
+        blog.setActive(form.isActive());
+        applyGitIntegrationFields(blog, form);
+        blogRepository.save(blog);
+        logger.info("Created blog id={} slug={}", blog.getId(), blog.getSlug());
+        triggerGitWarmupIfConfigured(blog);
+        return successList();
     }
 
     @DELETE
@@ -142,47 +181,10 @@ public class BlogSaveEndpoint {
             return badRequest(validationError);
         }
 
-        Blog blog;
         if (form.getId() != null) {
-            blog = blogRepository.findById(form.getId()).orElse(null);
-            if (blog == null) {
-                return notFound();
-            }
-            if (!blogAccess.canEdit(blog, loggedUser)) {
-                return forbidden();
-            }
-            var updateError = updateExisting(blog, form);
-            if (updateError != null) {
-                return badRequest(updateError);
-            }
-            applyGitIntegrationFields(blog, form);
-            blogRepository.save(blog);
-            logger.info("Updated blog id={} slug={}", blog.getId(), blog.getSlug());
-            triggerGitWarmupIfConfigured(blog);
-            return successList();
-        } else {
-            if (!blogAccess.canCreate(loggedUser)) {
-                return forbidden();
-            }
-            var owner = userRepository.findById(loggedUser.getId()).orElse(null);
-            if (owner == null) {
-                return notFound();
-            }
-            var slug = normalizeSlug(form.getSlug());
-            if (blogRepository.existsSlug(owner.getId(), slug, null)) {
-                return badRequest("A blog with this slug already exists.");
-            }
-            if (slug.equals(owner.getUsername())) {
-                return badRequest("Secondary blog slug cannot match your username.");
-            }
-            blog = new Blog(owner, slug, form.getName().trim(), nullToEmpty(form.getDescription()));
-            blog.setActive(form.isActive());
-            applyGitIntegrationFields(blog, form);
-            blogRepository.save(blog);
-            logger.info("Created blog id={} slug={}", blog.getId(), blog.getSlug());
-            triggerGitWarmupIfConfigured(blog);
-            return successList();
+            return updateBlog(form);
         }
+        return createBlog(form);
     }
 
     private Response successList() {
@@ -203,6 +205,25 @@ public class BlogSaveEndpoint {
         if (blog.isGitEnabled() && blog.getGitRemoteUrl() != null && !blog.getGitRemoteUrl().isBlank()) {
             blogGitIntegrationService.scheduleBlogRemoteSync(blog.getId());
         }
+    }
+
+    private Response updateBlog(BlogForm form) {
+        var blog = blogRepository.findById(form.getId()).orElse(null);
+        if (blog == null) {
+            return notFound();
+        }
+        if (!blogAccess.canEdit(blog, loggedUser)) {
+            return forbidden();
+        }
+        var updateError = updateExisting(blog, form);
+        if (updateError != null) {
+            return badRequest(updateError);
+        }
+        applyGitIntegrationFields(blog, form);
+        blogRepository.save(blog);
+        logger.info("Updated blog id={} slug={}", blog.getId(), blog.getSlug());
+        triggerGitWarmupIfConfigured(blog);
+        return successList();
     }
 
     private String updateExisting(Blog blog, BlogForm form) {
@@ -238,28 +259,16 @@ public class BlogSaveEndpoint {
             return "Name is required.";
         }
         if (form.getId() == null) {
-            if (form.getSlug() == null || form.getSlug().isBlank()) {
-                return "Slug is required.";
-            }
-            var slug = normalizeSlug(form.getSlug());
-            if (!slug.matches("[a-zA-Z0-9][a-zA-Z0-9_-]*")) {
-                return "Slug must contain only letters, numbers, hyphens and underscores.";
-            }
-            if (CustomPagePaths.isReservedSegment(slug)) {
-                return "This slug is reserved.";
+            var slugIssue = validateSlug(form.getSlug());
+            if (slugIssue != null) {
+                return slugIssue;
             }
         } else {
             var blog = blogRepository.findById(form.getId()).orElse(null);
             if (blog != null && !blog.isMain()) {
-                if (form.getSlug() == null || form.getSlug().isBlank()) {
-                    return "Slug is required.";
-                }
-                var slug = normalizeSlug(form.getSlug());
-                if (!slug.matches("[a-zA-Z0-9][a-zA-Z0-9_-]*")) {
-                    return "Slug must contain only letters, numbers, hyphens and underscores.";
-                }
-                if (CustomPagePaths.isReservedSegment(slug)) {
-                    return "This slug is reserved.";
+                var slugIssue = validateSlug(form.getSlug());
+                if (slugIssue != null) {
+                    return slugIssue;
                 }
             }
         }

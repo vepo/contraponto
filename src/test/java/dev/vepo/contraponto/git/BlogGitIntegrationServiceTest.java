@@ -206,8 +206,8 @@ class BlogGitIntegrationServiceTest {
         Path publishedMd = workspace.resolve("custom/posts/" + exportDay + "-pub-post.md");
         assertThat(publishedMd).exists();
         String written = Files.readString(publishedMd, StandardCharsets.UTF_8);
-        assertThat(written).contains("Pub Title");
-        assertThat(written).contains("contraponto_post_id:");
+        assertThat(written).contains("Pub Title")
+                           .contains("contraponto_post_id:");
 
         Blog managed = reloadBlog(blogId(user));
         assertThat(managed.getGitLastKnownCommit()).isNotNull();

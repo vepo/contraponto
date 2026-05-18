@@ -33,7 +33,7 @@ public final class PostGitMarkdownCodec {
 
     public record ParsedFrontMatterMarkdown(Map<String, Object> frontMatter, String body) {}
 
-    public ParsedFrontMatterMarkdown parseMarkdownDocument(String markdown) throws Exception {
+    public ParsedFrontMatterMarkdown parseMarkdownDocument(String markdown) throws IOException {
         if (markdown == null) {
             return new ParsedFrontMatterMarkdown(Map.of(), "");
         }
@@ -60,11 +60,11 @@ public final class PostGitMarkdownCodec {
         return new ParsedFrontMatterMarkdown(map, bodyStart);
     }
 
-    public LinkedHashMap<String, Object> readYamlObjectMap(Path yamlFile) throws IOException {
+    public Map<String, Object> readYamlObjectMap(Path yamlFile) throws IOException {
         return YAML_MAP.readValue(yamlFile.toFile(), new TypeReference<>() {});
     }
 
-    public String writeMarkdownDocument(LinkedHashMap<String, Object> frontMatter, String body) throws Exception {
+    public String writeMarkdownDocument(Map<String, Object> frontMatter, String body) throws IOException {
         String fmYaml = YAML_MAP.writeValueAsString(frontMatter);
         String separator = fmYaml.endsWith("\n") ? "" : "\n";
         return "---\n" + fmYaml + separator + "---\n\n" + body;

@@ -32,14 +32,7 @@ public class CustomPageManageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance form(CustomPage page,
-                                            String slugPath,
-                                            String publicUrl,
-                                            List<Blog> blogs,
-                                            boolean editorView,
-                                            boolean applicationScope,
-                                            Links links,
-                                            LoggedUser user);
+        static native TemplateInstance form(CustomPageFormView formView);
 
         static native TemplateInstance list(Page<CustomPageRow> pages, boolean editorView, Links links, LoggedUser user);
 
@@ -86,14 +79,12 @@ public class CustomPageManageEndpoint {
         }
 
         var editorView = customPageAccess.canListAll(loggedUser);
-        return Response.ok(Templates.form(page,
-                                          CustomPagePaths.pathSlug(page.getSlug()),
-                                          CustomPagePaths.publicUrl(page),
-                                          availableBlogs(editorView),
-                                          editorView,
-                                          page.getBlog() == null,
-                                          linksFor(page),
-                                          loggedUser))
+        return Response.ok(Templates.form(new CustomPageFormView(page,
+                                                                 CustomPagePaths.pathSlug(page.getSlug()),
+                                                                 CustomPagePaths.publicUrl(page),
+                                                                 availableBlogs(editorView),
+                                                                 editorView,
+                                                                 page.getBlog() == null)))
                        .build();
     }
 
@@ -146,14 +137,12 @@ public class CustomPageManageEndpoint {
                               : blogRepository.findMainByOwnerId(loggedUser.getId()).orElseThrow(NotFoundException::new);
         var page = customPageRepository.newPage(blog);
 
-        return Response.ok(Templates.form(page,
-                                          CustomPagePaths.pathSlug(page.getSlug()),
-                                          editorView ? "" : CustomPagePaths.publicUrl(page),
-                                          availableBlogs(editorView),
-                                          editorView,
-                                          editorView,
-                                          customPageRepository.loadLinks(),
-                                          loggedUser))
+        return Response.ok(Templates.form(new CustomPageFormView(page,
+                                                                 CustomPagePaths.pathSlug(page.getSlug()),
+                                                                 editorView ? "" : CustomPagePaths.publicUrl(page),
+                                                                 availableBlogs(editorView),
+                                                                 editorView,
+                                                                 editorView)))
                        .build();
     }
 }

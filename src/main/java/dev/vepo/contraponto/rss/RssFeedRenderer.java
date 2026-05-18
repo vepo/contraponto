@@ -53,13 +53,22 @@ public final class RssFeedRenderer {
         LocalDateTime max = null;
         for (Post p : posts) {
             PostPublication live = p.getLivePublication();
-            LocalDateTime candidate = live != null ? live.getPublishedAt()
-                                                   : (p.getPublishedAt() != null ? p.getPublishedAt() : p.getUpdatedAt());
+            LocalDateTime candidate = publicationTimestamp(p, live);
             if (candidate != null && (max == null || candidate.isAfter(max))) {
                 max = candidate;
             }
         }
         return max;
+    }
+
+    private static LocalDateTime publicationTimestamp(Post post, PostPublication live) {
+        if (live != null) {
+            return live.getPublishedAt();
+        }
+        if (post.getPublishedAt() != null) {
+            return post.getPublishedAt();
+        }
+        return post.getUpdatedAt();
     }
 
     public static String render(Channel channel, List<Post> posts, URI baseUri) {
@@ -80,8 +89,7 @@ public final class RssFeedRenderer {
         for (Post post : posts) {
             URI itemLink = itemUri(baseUri, post);
             PostPublication live = post.getLivePublication();
-            LocalDateTime pub = live != null ? live.getPublishedAt()
-                                             : (post.getPublishedAt() != null ? post.getPublishedAt() : post.getUpdatedAt());
+            LocalDateTime pub = publicationTimestamp(post, live);
             String title = liveTitle(post, live);
             sb.append("<item>");
             appendElement(sb, "title", escapeXml(title));

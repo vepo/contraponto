@@ -61,7 +61,8 @@ class CustomPagePathsTest {
         assertThat(CustomPagePaths.internalUrl(PageType.GLOBAL, "glob")).isEqualTo("/_custom_page/global/glob");
         assertThat(CustomPagePaths.internalUrl(PageType.USER, "alice", "p1")).isEqualTo("/_custom_page/user/alice/p1");
         assertThat(CustomPagePaths.internalUrl(PageType.BLOG, "3", "b", "slug")).isEqualTo("/_custom_page/blog/3/b/slug");
-        assertThatThrownBy(() -> CustomPagePaths.slug(List.of(seg("page")), PageType.NONE)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> CustomPagePaths.slug(List.of(seg("page")), PageType.NONE))
+                                                                                           .isInstanceOf(IllegalArgumentException.class)
                                                                                            .hasMessageContaining("NONE");
     }
 
@@ -100,13 +101,13 @@ class CustomPagePathsTest {
     @Test
     void pathSlugNormalizesStoredSlugsSafelyForNullBlankOrPrefixes() {
         assertThat(CustomPagePaths.pathSlug(null)).isNull();
-        assertThat(CustomPagePaths.pathSlug("")).isEqualTo("");
+        assertThat(CustomPagePaths.pathSlug("")).isEmpty();
         assertThat(CustomPagePaths.pathSlug(" \t")).isEqualTo(" \t"); // isBlank ⇒ returned verbatim
         assertThat(CustomPagePaths.pathSlug("/docs")).isEqualTo("docs");
         assertThat(CustomPagePaths.pathSlug("docs")).isEqualTo("docs");
 
         assertThat(CustomPagePaths.storedSlug(null)).isNull();
-        assertThat(CustomPagePaths.storedSlug("")).isEqualTo("");
+        assertThat(CustomPagePaths.storedSlug("")).isEmpty();
         assertThat(CustomPagePaths.storedSlug("docs")).isEqualTo("/docs");
         assertThat(CustomPagePaths.storedSlug("/docs")).isEqualTo("/docs");
     }

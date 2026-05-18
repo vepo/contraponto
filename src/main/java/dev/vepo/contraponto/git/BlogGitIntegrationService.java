@@ -126,8 +126,12 @@ public class BlogGitIntegrationService {
             LinkedHashMap<String, Object> fm =
                     BlogGitMarkdownMapper.buildFrontMatter(post, convention);
             gitImageSyncService.addCoverFrontMatter(fm, post, convention);
-            String rawBody = live != null && live.getContent() != null ? live.getContent()
-                                                                       : (post.getContent() == null ? "" : post.getContent());
+            String rawBody;
+            if (live != null && live.getContent() != null) {
+                rawBody = live.getContent();
+            } else {
+                rawBody = post.getContent() == null ? "" : post.getContent();
+            }
             String body = gitImageSyncService.prepareBodyForExport(rawBody, convention);
             String markdown = markdownCodec.writeMarkdownDocument(fm, body);
             Files.writeString(markdownPath, markdown, StandardCharsets.UTF_8);
@@ -282,7 +286,7 @@ public class BlogGitIntegrationService {
         }
     }
 
-    void syncBlogFromGitTransactional(long blogId) throws Exception {
+    void syncBlogFromGitTransactional(long blogId) throws IOException {
         Optional<Blog> blogOpt = blogRepository.findById(blogId);
         if (blogOpt.isEmpty()) {
             return;

@@ -62,8 +62,8 @@ class TagSlugTest {
         String raw = "a".repeat(254) + "-tail";
         String slug = TagSlug.slugify(raw);
 
-        assertThat(slug).hasSize(254);
-        assertThat(slug).isEqualTo("a".repeat(254));
-        assertThat(slug).doesNotEndWith("-");
+        assertThat(slug).hasSize(254)
+                        .isEqualTo("a".repeat(254))
+                        .doesNotEndWith("-");
     }
 }

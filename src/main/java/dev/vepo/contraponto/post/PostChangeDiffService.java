@@ -1,7 +1,6 @@
 package dev.vepo.contraponto.post;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,8 +19,7 @@ public class PostChangeDiffService {
         if (newestFirst == null || newestFirst.isEmpty()) {
             return List.of();
         }
-        List<PostPublication> ordered = new ArrayList<>(newestFirst);
-        Collections.reverse(ordered);
+        List<PostPublication> ordered = newestFirst.reversed();
 
         List<VersionDiff> result = new ArrayList<>();
         PostPublication previous = null;
@@ -30,8 +28,7 @@ public class PostChangeDiffService {
             result.add(new VersionDiff(current, diff));
             previous = current;
         }
-        Collections.reverse(result);
-        return result;
+        return result.reversed();
     }
 
     public PublicationDiff diff(PostPublication previous, PostPublication current) {
@@ -45,7 +42,7 @@ public class PostChangeDiffService {
                                    contentChanged,
                                    contentDiffHtml,
                                    previousTitleLine(previous, current, titleChanged),
-                                   descriptionLine(previous, current, descriptionChanged));
+                                   descriptionLine(descriptionChanged));
     }
 
     private static String previousTitleLine(PostPublication previous, PostPublication current, boolean changed) {
@@ -55,7 +52,7 @@ public class PostChangeDiffService {
         return "Title: \"%s\" → \"%s\"".formatted(escape(previous.getTitle()), escape(current.getTitle()));
     }
 
-    private static String descriptionLine(PostPublication previous, PostPublication current, boolean changed) {
+    private static String descriptionLine(boolean changed) {
         if (!changed) {
             return "";
         }

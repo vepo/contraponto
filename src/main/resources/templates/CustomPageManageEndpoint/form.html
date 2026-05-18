@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     {#include components/head}
-    {#if page.id}
+    {#if formView.page.id}
     Edit Page - contraponto
     {#else}
     New Page - contraponto
@@ -14,7 +14,7 @@
                 <div class="pages-manage__header">
                     <div>
                         <h1 class="pages-manage__title">
-                            {#if page.id}Edit Page{#else}New Page{/if}
+                            {#if formView.page.id}Edit Page{#else}New Page{/if}
                         </h1>
                         <p class="pages-manage__subtitle">
                             Write page content as HTML. Markdown and AsciiDoc are not used here.
@@ -31,10 +31,10 @@
                     </a>
                 </div>
 
-                {#if publicUrl}
+                {#if formView.publicUrl}
                 <p class="pages-manage__preview">
                     Public URL:
-                    <a href="{publicUrl}" target="_blank" rel="noopener">{publicUrl}</a>
+                    <a href="{formView.publicUrl}" target="_blank" rel="noopener">{formView.publicUrl}</a>
                 </p>
                 {/if}
 
@@ -45,26 +45,26 @@
                       hx-swap="outerHTML"
                       hx-indicator="#pages-form-htmx-indicator"
                       autocomplete="off">
-                    {#if page.id}
-                    <input type="hidden" name="id" value="{page.id}">
+                    {#if formView.page.id}
+                    <input type="hidden" name="id" value="{formView.page.id}">
                     {/if}
 
-                    {#if editorView}
+                    {#if formView.editorView}
                     <div class="form-group">
                         <label>Scope</label>
                         <select name="scope" id="pageScope">
-                            <option value="application" {#if applicationScope}selected{/if}>Application (home)</option>
-                            <option value="blog" {#if !applicationScope}selected{/if}>User blog</option>
+                            <option value="application" {#if formView.applicationScope}selected{/if}>Application (home)</option>
+                            <option value="blog" {#if !formView.applicationScope}selected{/if}>User blog</option>
                         </select>
                     </div>
                     {/if}
 
-                    <div class="form-group{#if editorView && applicationScope} u-hidden{/if}" id="blogSelectGroup">
+                    <div class="form-group{#if formView.editorView && formView.applicationScope} u-hidden{/if}" id="blogSelectGroup">
                         <label>Blog</label>
-                        <select name="blogId" {#if !editorView}required{/if}>
-                            {#for blog in blogs}
+                        <select name="blogId" {#if !formView.editorView}required{/if}>
+                            {#for blog in formView.blogs}
                             <option value="{blog.id}"
-                                    {#if page.blog != null && page.blog.id == blog.id}selected{/if}>
+                                    {#if formView.page.blog != null && formView.page.blog.id == blog.id}selected{/if}>
                                 {#if blog.main}
                                 {blog.owner.username} (default)
                                 {#else}
@@ -77,61 +77,61 @@
 
                     <div class="form-group">
                         <label>Title</label>
-                        <input type="text" name="title" value="{page.title}" required>
+                        <input type="text" name="title" value="{formView.page.title}" required>
                     </div>
 
                     <div class="form-group">
                         <label>Slug</label>
                         <div class="pages-form__slug-hint">
-                            {#if applicationScope}
+                            {#if formView.applicationScope}
                             Appears at <code>/page/<em>slug</em></code>
-                            {#else if page.blog != null && page.blog.main}
-                            Appears at <code>/{page.blog.owner.username}/page/<em>slug</em></code>
-                            {#else if page.blog != null}
-                            Appears at <code>/{page.blog.owner.username}/{page.blog.slug}/page/<em>slug</em></code>
+                            {#else if formView.page.blog != null && formView.page.blog.main}
+                            Appears at <code>/{formView.page.blog.owner.username}/page/<em>slug</em></code>
+                            {#else if formView.page.blog != null}
+                            Appears at <code>/{formView.page.blog.owner.username}/{formView.page.blog.slug}/page/<em>slug</em></code>
                             {#else}
                             Appears at <code>/page/<em>slug</em></code> or under your blog URL
                             {/if}
                         </div>
                         <input type="text" name="slug"
-                               value="{slugPath}"
+                               value="{formView.slugPath}"
                                pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*"
                                required>
                     </div>
 
                     <div class="form-group">
                         <label>Footer section</label>
-                        <input type="text" name="section" value="{page.section}" required>
+                        <input type="text" name="section" value="{formView.page.section}" required>
                     </div>
 
                     <div class="form-group">
                         <label>Placement</label>
                         <select name="placement">
-                            <option value="FOOTER" {#if page.placement == 'FOOTER'}selected{/if}>Footer</option>
-                            <option value="SIDEBAR" {#if page.placement == 'SIDEBAR'}selected{/if}>Sidebar</option>
-                            <option value="NONE" {#if page.placement == 'NONE'}selected{/if}>None (direct URL only)</option>
+                            <option value="FOOTER" {#if formView.page.placement == 'FOOTER'}selected{/if}>Footer</option>
+                            <option value="SIDEBAR" {#if formView.page.placement == 'SIDEBAR'}selected{/if}>Sidebar</option>
+                            <option value="NONE" {#if formView.page.placement == 'NONE'}selected{/if}>None (direct URL only)</option>
                         </select>
                     </div>
 
                     <div class="form-group form-group--checkbox">
                         <label>
-                            <input type="checkbox" name="published" {#if page.published}checked{/if}>
+                            <input type="checkbox" name="published" {#if formView.page.published}checked{/if}>
                             Published
                         </label>
                     </div>
 
                     <div class="form-group">
                         <label>Content (HTML)</label>
-                        <textarea name="content" class="pages-form__content" rows="18" required>{page.content}</textarea>
+                        <textarea name="content" class="pages-form__content" rows="18" required>{formView.page.content}</textarea>
                     </div>
 
                     <div class="pages-form__actions">
                         {#include components/htmx-spinner id='pages-form-htmx-indicator' /}
                         <button type="submit" class="btn btn--primary">Save Page</button>
-                        {#if page.id}
+                        {#if formView.page.id}
                         <button type="button"
                                 class="btn btn--danger"
-                                hx-delete="/forms/pages/{page.id}"
+                                hx-delete="/forms/pages/{formView.page.id}"
                                 hx-select="main"
                                 hx-target="main"
                                 hx-swap="outerHTML"
@@ -144,7 +144,7 @@
             </div>
         </main>
         {#include components/footer /}
-        {#if editorView}
+        {#if formView.editorView}
         <script>
             document.getElementById('pageScope')?.addEventListener('change', function () {
                 const blogGroup = document.getElementById('blogSelectGroup');

@@ -170,12 +170,12 @@ class DashboardAnalyticsTest {
                         .withName("Analytics User")
                         .withPassword("Password123!")
                         .persist();
-        follower = Given.user()
-                        .withUsername("followeruser")
-                        .withEmail("follower@test.com")
-                        .withName("Follower User")
-                        .withPassword("Password123!")
-                        .persist();
+        Given.user()
+             .withUsername("followeruser")
+             .withEmail("follower@test.com")
+             .withName("Follower User")
+             .withPassword("Password123!")
+             .persist();
     }
 
     @Test

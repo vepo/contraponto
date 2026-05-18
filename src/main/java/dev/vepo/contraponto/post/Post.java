@@ -33,6 +33,88 @@ import jakarta.persistence.UniqueConstraint;
 @Entity
 @Table(name = "tb_posts", uniqueConstraints = { @UniqueConstraint(columnNames = { "author", "slug" }) })
 public class Post {
+    public static final class Builder {
+        private String title;
+        private Image cover;
+        private String slug;
+        private String description;
+        private String content;
+        private Format format = Format.MARKDOWN;
+        private Blog blog;
+        private boolean published;
+        private boolean featured;
+        private LocalDateTime publishedAt;
+
+        public Builder blog(Blog blog) {
+            this.blog = blog;
+            return this;
+        }
+
+        public Post build() {
+            var post = new Post();
+            post.setTitle(title);
+            post.setCover(cover);
+            post.setSlug(slug);
+            post.setDescription(description);
+            post.setContent(content);
+            post.setFormat(format);
+            post.setBlog(blog);
+            post.setPublished(published);
+            post.setFeatured(featured);
+            post.setPublishedAt(publishedAt);
+            return post;
+        }
+
+        public Builder content(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public Builder cover(Image cover) {
+            this.cover = cover;
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder featured(boolean featured) {
+            this.featured = featured;
+            return this;
+        }
+
+        public Builder format(Format format) {
+            this.format = format;
+            return this;
+        }
+
+        public Builder published(boolean published) {
+            this.published = published;
+            return this;
+        }
+
+        public Builder publishedAt(LocalDateTime publishedAt) {
+            this.publishedAt = publishedAt;
+            return this;
+        }
+
+        public Builder slug(String slug) {
+            this.slug = slug;
+            return this;
+        }
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -93,28 +175,6 @@ public class Post {
     private PostPublication livePublication;
 
     public Post() {}
-
-    public Post(String title,
-                Image cover,
-                String slug,
-                String description,
-                String content,
-                Format format,
-                Blog blog,
-                boolean published,
-                boolean featured,
-                LocalDateTime publishedAt) {
-        this.title = title;
-        this.cover = cover;
-        this.slug = slug;
-        this.description = description;
-        this.content = content;
-        this.format = format;
-        this.blog = blog;
-        this.published = published;
-        this.featured = featured;
-        this.publishedAt = publishedAt;
-    }
 
     @Override
     public boolean equals(Object obj) {

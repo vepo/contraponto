@@ -37,10 +37,9 @@ public class CustomPageImageDependencyService {
         dependencyRepository.deleteCustomPageDependencies(page.getId());
         Set<String> uuids = markerService.extractImageUuids(page.getContent());
         for (String uuid : uuids) {
-            imageRepository.findByUuid(uuid).ifPresent(image ->
-                    dependencyRepository.persistCustomPageDependency(new CustomPageImageDependency(page,
-                                                                                                   image,
-                                                                                                   ImageRole.INLINE)));
+            imageRepository.findByUuid(uuid).ifPresent(image -> dependencyRepository.persistCustomPageDependency(new CustomPageImageDependency(page,
+                                                                                                                                               image,
+                                                                                                                                               ImageRole.INLINE)));
         }
     }
 }

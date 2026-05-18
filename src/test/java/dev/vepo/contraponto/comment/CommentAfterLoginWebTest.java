@@ -43,12 +43,12 @@ class CommentAfterLoginWebTest {
                       .withName("Comment Web Author")
                       .withPassword("password123")
                       .persist();
-        reader = Given.user()
-                      .withUsername("commentreader")
-                      .withEmail("commentreader@test.com")
-                      .withName("Comment Web Reader")
-                      .withPassword("password123")
-                      .persist();
+        Given.user()
+             .withUsername("commentreader")
+             .withEmail("commentreader@test.com")
+             .withName("Comment Web Reader")
+             .withPassword("password123")
+             .persist();
         post = Given.post()
                     .withAuthor(author)
                     .withTitle("Comment web test")

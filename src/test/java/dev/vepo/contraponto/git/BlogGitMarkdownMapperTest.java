@@ -45,16 +45,16 @@ class BlogGitMarkdownMapperTest {
         JekyllLayoutConvention c = JekyllLayoutConvention.defaults();
         LinkedHashMap<String, Object> fm = BlogGitMarkdownMapper.buildFrontMatter(post, c);
 
-        assertThat(fm.get(JekyllLayoutConvention.FM_POST_ID)).isEqualTo(42L);
-        assertThat(fm.get("slug")).isEqualTo("hello-world");
-        assertThat(fm.get(c.layoutFrontMatterKey())).isEqualTo(c.defaultLayoutValue());
-        assertThat(fm.get("title")).isEqualTo("Hello");
-        assertThat(fm.get("description")).isEqualTo("Short");
-        assertThat(fm.get("tags")).isEqualTo(List.of("a", "B"));
-        assertThat(fm.get("serie")).isEqualTo("My Series");
-        assertThat(fm.get("featured")).isEqualTo(true);
-        assertThat(fm.get("published")).isEqualTo(true);
-        assertThat(fm.get("format")).isEqualTo(Format.ASCIIDOC.name());
+        assertThat(fm).containsEntry(JekyllLayoutConvention.FM_POST_ID, 42L)
+                      .containsEntry("slug", "hello-world")
+                      .containsEntry(c.layoutFrontMatterKey(), c.defaultLayoutValue())
+                      .containsEntry("title", "Hello")
+                      .containsEntry("description", "Short")
+                      .containsEntry("tags", List.of("a", "B"))
+                      .containsEntry("serie", "My Series")
+                      .containsEntry("featured", true)
+                      .containsEntry("published", true)
+                      .containsEntry("format", Format.ASCIIDOC.name());
         assertThat(fm.get("published_at")).isInstanceOf(String.class);
         assertThat((String) fm.get("published_at")).startsWith("2024-03-01");
         PostGitMarkdownCodec codec = new PostGitMarkdownCodec();
@@ -77,7 +77,7 @@ class BlogGitMarkdownMapperTest {
         LinkedHashMap<String, Object> fm = BlogGitMarkdownMapper.buildFrontMatter(post, JekyllLayoutConvention.defaults());
 
         assertThat(fm.containsKey(JekyllLayoutConvention.FM_POST_ID)).isFalse();
-        assertThat(fm.get("description")).isEqualTo("");
+        assertThat(fm).containsEntry("description", "");
         assertThat(fm).doesNotContainKey("serie");
     }
 }

@@ -172,16 +172,18 @@ public interface Given {
 
         public Post persist() {
             return transaction(() -> {
-                var post = new Post(title,
-                                    cover,
-                                    slug,
-                                    description,
-                                    content,
-                                    format,
-                                    Optional.ofNullable(blog).orElseGet(() -> author.getDefaultBlog()),
-                                    published,
-                                    featured,
-                                    LocalDateTime.now());
+                var post = Post.builder()
+                               .title(title)
+                               .cover(cover)
+                               .slug(slug)
+                               .description(description)
+                               .content(content)
+                               .format(format)
+                               .blog(Optional.ofNullable(blog).orElseGet(() -> author.getDefaultBlog()))
+                               .published(published)
+                               .featured(featured)
+                               .publishedAt(LocalDateTime.now())
+                               .build();
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
                 }

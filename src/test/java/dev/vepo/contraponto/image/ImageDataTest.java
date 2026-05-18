@@ -11,8 +11,8 @@ class ImageDataTest {
         byte[] png = new byte[] { -119, 80 };
         ImageData a = new ImageData(png, "image/png", 2);
         ImageData clone = new ImageData(new byte[] { -119, 80 }, "image/png", 2);
-        assertThat(a).isEqualTo(clone);
-        assertThat(a).isEqualTo(a);
+        assertThat(a).isEqualTo(clone)
+                     .isEqualTo(a);
         assertThat(a.equals(null)).isFalse();
         assertThat(a.contentType()).isEqualTo("image/png");
         assertThat(a.size()).isEqualTo(2);

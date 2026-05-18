@@ -15,7 +15,7 @@ class AsciiDoctorTest {
                                    = Fixture
 
                                    Paragraph text.""");
-        assertThat(html).isNotBlank();
-        assertThat(html).containsIgnoringCase("paragraph");
+        assertThat(html).isNotBlank()
+                        .containsIgnoringCase("paragraph");
     }
 }

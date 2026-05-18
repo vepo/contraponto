@@ -203,7 +203,7 @@ public class App {
                 try {
                     driver.switchTo().alert().accept();
                     return true;
-                } catch (Exception e) {
+                } catch (Exception _) {
                     return false;
                 }
             });
@@ -424,7 +424,7 @@ public class App {
                 try {
                     driver.switchTo().alert().accept();
                     return true;
-                } catch (Exception e) {
+                } catch (Exception _) {
                     return false;
                 }
             });
@@ -1494,6 +1494,10 @@ public class App {
             return this;
         }
 
+        private void assertToast(String message) {
+            waitForToastMessage(message);
+        }
+
         public WritePage assertToastError(String message) {
             assertToast(message);
             return this;
@@ -1502,10 +1506,6 @@ public class App {
         public WritePage assertToastSuccess(String message) {
             assertToast(message);
             return this;
-        }
-
-        private void assertToast(String message) {
-            waitForToastMessage(message);
         }
 
         public WritePage fillContent(String content) {
@@ -1893,7 +1893,7 @@ public class App {
         wait.until(elementToBeClickable(element));
         try {
             element.click();
-        } catch (ElementClickInterceptedException e) {
+        } catch (ElementClickInterceptedException _) {
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
         }
     }

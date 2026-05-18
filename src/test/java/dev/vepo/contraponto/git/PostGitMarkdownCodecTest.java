@@ -34,18 +34,18 @@ class PostGitMarkdownCodecTest {
                                                                                           ---
 
                                                                                           ok""");
-        assertThat(sane.frontMatter().get("x")).isEqualTo(1);
+        assertThat(sane.frontMatter()).containsEntry("x", 1);
         assertThat(sane.body().strip()).isEqualTo("ok");
     }
 
     @Test
     void parseExtractsYamlAndUnixOrWindowsBodyPrefix() throws Exception {
         PostGitMarkdownCodec.ParsedFrontMatterMarkdown unix = codec.parseMarkdownDocument("---\ntitle: T\n---\n\nLine1");
-        assertThat(unix.frontMatter().get("title")).isEqualTo("T");
+        assertThat(unix.frontMatter()).containsEntry("title", "T");
         assertThat(unix.body().strip()).isEqualTo("Line1");
 
         PostGitMarkdownCodec.ParsedFrontMatterMarkdown crlf = codec.parseMarkdownDocument("---\r\ntitle: X\r\n---\r\n\r\nHey");
-        assertThat(crlf.frontMatter().get("title")).isEqualTo("X");
+        assertThat(crlf.frontMatter()).containsEntry("title", "X");
         assertThat(crlf.body().strip()).isEqualTo("Hey");
     }
 
@@ -81,9 +81,9 @@ class PostGitMarkdownCodecTest {
     void readYamlObjectMapReadsFile(@TempDir Path dir) throws Exception {
         Path yml = dir.resolve("sample.yml");
         Files.writeString(yml, "a: 1\nb: two\n", StandardCharsets.UTF_8);
-        LinkedHashMap<String, Object> map = codec.readYamlObjectMap(yml);
-        assertThat(map.get("a")).isEqualTo(1);
-        assertThat(map.get("b")).isEqualTo("two");
+        Map<String, Object> map = codec.readYamlObjectMap(yml);
+        assertThat(map).containsEntry("a", 1)
+                       .containsEntry("b", "two");
     }
 
     @Test

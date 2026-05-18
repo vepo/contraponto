@@ -121,7 +121,6 @@ class FollowAfterLoginRestTest {
 class FollowAfterLoginWebTest {
 
     private User author;
-    private User reader;
     private Post post;
 
     @Test
@@ -152,12 +151,12 @@ class FollowAfterLoginWebTest {
                       .withName("Follow Web Author")
                       .withPassword("password123")
                       .persist();
-        reader = Given.user()
-                      .withUsername("followwebreader")
-                      .withEmail("followwebreader@test.com")
-                      .withName("Follow Web Reader")
-                      .withPassword("password123")
-                      .persist();
+        Given.user()
+             .withUsername("followwebreader")
+             .withEmail("followwebreader@test.com")
+             .withName("Follow Web Reader")
+             .withPassword("password123")
+             .persist();
         post = Given.post()
                     .withAuthor(author)
                     .withTitle("Follow web test")

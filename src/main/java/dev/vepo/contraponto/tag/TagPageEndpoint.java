@@ -31,8 +31,6 @@ import jakarta.ws.rs.core.UriInfo;
 @ApplicationScoped
 public class TagPageEndpoint {
 
-    private static final String TAG_NOT_FOUND_PREFIX = "Tag not found: ";
-
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance edit(Tag tag, Links links, LoggedUser user);
@@ -45,6 +43,8 @@ public class TagPageEndpoint {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
         }
     }
+
+    private static final String TAG_NOT_FOUND_PREFIX = "Tag not found: ";
 
     private static final int FEED_LIMIT = 50;
 

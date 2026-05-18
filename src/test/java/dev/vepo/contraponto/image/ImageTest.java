@@ -21,7 +21,7 @@ class ImageTest {
         var right = new Image();
         right.setId(1L);
         assertThat(left).isEqualTo(right);
-        assertThat(left.hashCode()).isEqualTo(right.hashCode());
+        assertThat(left).hasSameHashCodeAs(right);
     }
 
     @Test

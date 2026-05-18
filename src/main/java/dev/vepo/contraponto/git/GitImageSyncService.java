@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -82,7 +83,7 @@ public class GitImageSyncService {
         this.markerService = markerService;
     }
 
-    public void addCoverFrontMatter(LinkedHashMap<String, Object> fm, Post post, JekyllLayoutConvention convention) {
+    public void addCoverFrontMatter(Map<String, Object> fm, Post post, JekyllLayoutConvention convention) {
         Image cover = post.getCover();
         if (cover == null && post.getLivePublication() != null) {
             cover = post.getLivePublication().getCover();
@@ -93,7 +94,7 @@ public class GitImageSyncService {
     }
 
     private void copyImagesToRepo(Git git, Path workspace, JekyllLayoutConvention convention, Set<String> uuids)
-            throws IOException, GitAPIException {
+            throws IOException {
         Path assetsDir = convention.resolveAssets(workspace);
         Files.createDirectories(assetsDir);
         Path repoRoot = workspace.toAbsolutePath().normalize();
