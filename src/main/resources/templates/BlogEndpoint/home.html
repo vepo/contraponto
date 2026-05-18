@@ -7,7 +7,13 @@
         {#include components/header /}
         <main id="main-content">
             <header class="user-blog-header container">
+                {#if mainBlog.bannerUrl}
+                <img src="{mainBlog.bannerUrl}" alt="" class="user-blog-header__banner"/>
+                {/if}
                 <h1 class="user-blog__name">{author.name}</h1>
+                {#if mainBlog.description}
+                <p class="user-blog__bio">{mainBlog.description}</p>
+                {/if}
                 {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
             </header>
             {#if !posts.isEmpty}

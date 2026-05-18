@@ -131,7 +131,9 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 
 | Block | Templates | Notes |
 |-------|-----------|-------|
-| `profile-page`, `profile-form` | `ProfileEndpoint/profile.html` | |
+| `profile-page`, `profile-form` | `ProfileEndpoint/profile.html` | Profile picture + default banner uploads |
+| `image-upload-area` | `components/image-upload-area.html` | Reusable banner/profile image picker |
+| `user-blog-header__banner` | `BlogEndpoint/home.html` | Blog home hero banner |
 | `dashboard-page`, `stat-card`, `recent-*` | `DashboardEndpoint/dashboard.html` | |
 | `dashboard-analytics`, `dashboard-chart` | `DashboardEndpoint/analytics.html` | Per-blog charts; HTMX month nav |
 | `library-page`, `library-tab`, `library-tabs` | `LibraryEndpoint/library.html` | |

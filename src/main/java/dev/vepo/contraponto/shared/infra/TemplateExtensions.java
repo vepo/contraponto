@@ -10,7 +10,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.notification.Notification;
 import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.post.Post;
@@ -50,12 +52,45 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String avatarUrl(LoggedUser user) {
-        if (Objects.nonNull(user)) {
-            return "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(user.getName(),
-                                                                                                                                    StandardCharsets.UTF_8));
-        } else {
+        if (user == null) {
             return "";
         }
+        var entityUser = user.getUser();
+        if (entityUser != null && entityUser.getProfilePicture() != null) {
+            return entityUser.getProfilePicture().getUrl();
+        }
+        return generatedAvatarUrl(user.getName());
+    }
+
+    @TemplateExtension
+    public static String avatarUrl(User user) {
+        if (user == null) {
+            return "";
+        }
+        if (user.getProfilePicture() != null) {
+            return user.getProfilePicture().getUrl();
+        }
+        return generatedAvatarUrl(user.getName());
+    }
+
+    private static String generatedAvatarUrl(String name) {
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+        return "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,
+                                                                                                                                StandardCharsets.UTF_8));
+    }
+
+    @TemplateExtension
+    public static String bannerUrl(Blog blog) {
+        if (blog == null) {
+            return null;
+        }
+        var service = CDI.current().select(BlogBannerService.class);
+        if (!service.isResolvable()) {
+            return null;
+        }
+        return service.get().effectiveBannerUrl(blog);
     }
 
     @TemplateExtension

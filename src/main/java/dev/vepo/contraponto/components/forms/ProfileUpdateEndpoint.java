@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.auth.PasswordService;
+import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
@@ -32,16 +33,19 @@ public class ProfileUpdateEndpoint {
     private final UserRepository userRepository;
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
+    private final BlogBannerService blogBannerService;
 
     @Inject
     public ProfileUpdateEndpoint(LoggedUser loggedUser,
                                  LoggedUserProvider loggedUserProvider,
                                  UserRepository userRepository,
-                                 PasswordService passwordService) {
+                                 PasswordService passwordService,
+                                 BlogBannerService blogBannerService) {
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
         this.userRepository = userRepository;
         this.passwordService = passwordService;
+        this.blogBannerService = blogBannerService;
     }
 
     private String buildErrorResponseBody(String message) {
@@ -61,7 +65,7 @@ public class ProfileUpdateEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response login(@BeanParam ProfileUpdateRequest request) {
-        logger.info("Updating profile: request={}", request);
+        logger.info("Updating profile for user id={}", loggedUser.getId());
         if (!loggedUser.isAuthenticated()) {
             return Response.status(Status.FORBIDDEN)
                            .build();
@@ -74,7 +78,6 @@ public class ProfileUpdateEndpoint {
         }
 
         var user = mabyeUser.get();
-        // validate password
         if (!passwordService.verifyPassword(request.currentPassword(), user.getPasswordHash())) {
             return Response.ok(buildErrorResponseBody("Current password is incorrect!"))
                            .build();
@@ -83,7 +86,7 @@ public class ProfileUpdateEndpoint {
         boolean updated = false;
         if (!request.email().equals(user.getEmail())) {
             var maybeOtherUser = userRepository.findByEmail(request.email());
-            if (maybeOtherUser.isPresent()) {
+            if (maybeOtherUser.isPresent() && !maybeOtherUser.get().getId().equals(user.getId())) {
                 return Response.ok(buildErrorResponseBody("Email already registered!"))
                                .build();
             }
@@ -97,11 +100,6 @@ public class ProfileUpdateEndpoint {
         }
 
         if (Objects.nonNull(request.newPassword()) && !request.newPassword().isBlank()) {
-            if (Objects.isNull(request.currentPassword())) {
-                return Response.status(Status.BAD_REQUEST)
-                               .build();
-            }
-
             if (!request.newPassword().equals(request.confirmPassword())) {
                 return Response.ok(buildErrorResponseBody("Passwords do not match!"))
                                .build();
@@ -111,11 +109,21 @@ public class ProfileUpdateEndpoint {
             updated = true;
         }
 
+        if (request.profilePictureId() != null) {
+            blogBannerService.applyProfilePicture(user, request.profilePictureId());
+            updated = true;
+        }
+
+        if (request.defaultBannerId() != null) {
+            blogBannerService.applyDefaultBlogBanner(user, request.defaultBannerId());
+            updated = true;
+        }
+
         if (updated) {
             this.userRepository.update(user);
             loggedUserProvider.update(loggedUser.getSessionId(), user);
         }
 
-        return Response.ok(buildSuccessResponseBody("Profile updated successfully!")).build();
+        return Response.ok(buildSuccessResponseBody("Profile updated.")).build();
     }
 }

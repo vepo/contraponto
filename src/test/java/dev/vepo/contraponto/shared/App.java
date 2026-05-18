@@ -139,6 +139,12 @@ public class App {
             return this;
         }
 
+        public BlogManagePage assertEditNotAvailableOnList(String title) {
+            var row = findRowByTitle(title);
+            assertThat(row.findElements(By.linkText("Edit"))).isEmpty();
+            return this;
+        }
+
         public BlogManagePage assertFieldError(String... errorMessages) {
             var errors = driver.findElements(cssSelector(".form-group .error-message.visible"));
             assertThat(errors).hasSize(errorMessages.length)

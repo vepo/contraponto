@@ -25,7 +25,7 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 - Each **user** has one **main** blog (auto-created) and optional secondary blogs (`tb_blogs`, unique `(owner_id, slug)`).
 - **Posts** belong to a blog (`Post.blog`), not directly to a user.
 - **Write** associates new posts with a selected blog (main or secondary).
-- **Editors** can manage any blog (`BlogAccess.canEdit`); owners manage their own.
+- Only **blog owners** edit blog settings; **editors** and **administrators** may deactivate others' secondary blogs (`BlogAccess`).
 
 ### Public URL patterns
 

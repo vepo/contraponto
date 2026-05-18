@@ -1,0 +1,21 @@
+<div class="image-upload-area write-form__cover"
+     id="{areaId}"
+     data-image-upload
+     data-hidden-field="{hiddenFieldId}"
+     data-blog-id="{blogId}">
+    <div class="write-form__cover-placeholder{#if initialUrl} u-hidden{/if}" data-upload-placeholder>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="2.5" />
+            <path d="M21 15L16 10L5 21" />
+        </svg>
+        <span>Click or drag to upload</span>
+        <small>JPG, PNG, GIF, WebP up to 10MB</small>
+    </div>
+    <div class="write-form__cover-preview{#if !initialUrl} u-hidden{/if}" data-upload-preview>
+        <img data-upload-preview-img src="{initialUrl}" alt="{label} preview"/>
+        <button type="button" class="write-form__cover-remove" data-upload-remove>Remove</button>
+    </div>
+    <input type="file" class="u-hidden" data-upload-input accept="image/jpeg,image/png,image/gif,image/webp">
+    <input type="hidden" name="{hiddenFieldId}" id="{hiddenFieldId}" value="{initialId}">
+</div>

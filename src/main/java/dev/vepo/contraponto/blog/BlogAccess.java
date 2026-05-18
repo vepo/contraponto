@@ -10,19 +10,23 @@ public class BlogAccess {
         return user.isAuthenticated();
     }
 
-    public boolean canDelete(Blog blog, LoggedUser user) {
-        if (!canEdit(blog, user)) {
+    public boolean canDeactivate(Blog blog, LoggedUser user) {
+        if (!user.isAuthenticated() || blog.isMain()) {
             return false;
         }
-        return !blog.isMain();
+        if (blog.getOwner().getId().equals(user.getId())) {
+            return true;
+        }
+        return user.isEditor();
+    }
+
+    public boolean canDelete(Blog blog, LoggedUser user) {
+        return canDeactivate(blog, user);
     }
 
     public boolean canEdit(Blog blog, LoggedUser user) {
         if (!user.isAuthenticated()) {
             return false;
-        }
-        if (user.isEditor()) {
-            return true;
         }
         return blog.getOwner().getId().equals(user.getId());
     }

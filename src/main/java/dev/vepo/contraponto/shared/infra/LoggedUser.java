@@ -25,6 +25,9 @@ public class LoggedUser {
     }
 
     public String getAvatarUrl() {
+        if (user != null && user.getProfilePicture() != null) {
+            return user.getProfilePicture().getUrl();
+        }
         return Optional.ofNullable(user)
                        .map(User::getName)
                        .map(name -> "https://ui-avatars.com/api/?name=%s&background=1a8917&color=fff&bold=true&length=2".formatted(URLEncoder.encode(name,

@@ -60,6 +60,7 @@
                             <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
                         </div>
                         <div class="pages-manage__row-actions">
+                            {#if row.canEdit}
                             <a data-hx-get="/blogs/{row.id}/edit"
                                hx-select="main"
                                hx-target="main"
@@ -69,7 +70,8 @@
                                data-nav>
                                 Edit
                             </a>
-                            {#if !row.main && row.active}
+                            {/if}
+                            {#if row.canDeactivate && !row.main && row.active}
                             <button type="button"
                                     class="btn btn--small btn--danger"
                                     hx-delete="/forms/blogs/{row.id}"

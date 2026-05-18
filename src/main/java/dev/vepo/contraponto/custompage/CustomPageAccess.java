@@ -24,9 +24,6 @@ public class CustomPageAccess {
         if (!user.isAuthenticated()) {
             return false;
         }
-        if (user.isEditor()) {
-            return true;
-        }
         return blog.getOwner().getId().equals(user.getId());
     }
 

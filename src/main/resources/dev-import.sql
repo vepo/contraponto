@@ -158,6 +158,28 @@ INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, activ
 SELECT 'img-draft-008', 'draft.jpg', 'image/jpeg', 120000, '/tmp/contraponto-images/draft.jpg', 'https://picsum.photos/id/8/800/600', TRUE, '2024-08-01 08:00:00', b.id, u.id
 FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
 
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-alice-profile', 'alice-profile.jpg', 'image/jpeg', 90000, '/tmp/contraponto-images/alice-profile.jpg', 'https://picsum.photos/id/64/400/400', TRUE, NOW(), b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-alice-default-banner', 'alice-default-banner.jpg', 'image/jpeg', 150000, '/tmp/contraponto-images/alice-default-banner.jpg', 'https://picsum.photos/id/65/1200/400', TRUE, NOW(), b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-alice-blog-banner', 'alice-blog-banner.jpg', 'image/jpeg', 160000, '/tmp/contraponto-images/alice-blog-banner.jpg', 'https://picsum.photos/id/66/1200/400', TRUE, NOW(), b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+UPDATE tb_users u
+SET profile_picture_id = (SELECT id FROM tb_images WHERE uuid = 'img-alice-profile'),
+    default_banner_id = (SELECT id FROM tb_images WHERE uuid = 'img-alice-default-banner')
+WHERE u.username = 'alice';
+
+UPDATE tb_blogs b
+SET banner_id = (SELECT id FROM tb_images WHERE uuid = 'img-alice-blog-banner')
+FROM tb_users u
+WHERE b.owner_id = u.id AND u.username = 'alice' AND b.main;
+
 -- ============================================
 -- 5. Series
 -- ============================================

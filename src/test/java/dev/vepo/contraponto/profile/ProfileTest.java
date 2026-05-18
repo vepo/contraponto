@@ -35,7 +35,7 @@ class ProfileTest {
            .fillNewPassword("newPassword456")
            .fillConfirmPassword("newPassword456")
            .submit()
-           .assertSuccessMessage("Profile updated successfully")
+           .assertSuccessMessage("Profile updated.")
 
            // Logout
            .logout()
@@ -102,7 +102,7 @@ class ProfileTest {
            .fillEmail(newEmail)
            .fillCurrentPassword(TEST_USER_PASSWORD)
            .submit()
-           .assertSuccessMessage("Profile updated successfully")
+           .assertSuccessMessage("Profile updated.")
            .refresh()
            .assertNameIs(newName)
            .assertEmailIs(newEmail);

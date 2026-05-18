@@ -37,6 +37,7 @@ public class BlogManageEndpoint {
                                             String publicUrl,
                                             boolean editorView,
                                             boolean canDelete,
+                                            long uploadBlogId,
                                             Links links,
                                             LoggedUser user);
 
@@ -82,6 +83,7 @@ public class BlogManageEndpoint {
                                           BlogEndpoint.extractUrl(blog),
                                           blogAccess.canListAll(loggedUser),
                                           blogAccess.canDelete(blog, loggedUser),
+                                          blog.getId(),
                                           customPageRepository.loadLinks(blog.getId()),
                                           loggedUser))
                        .build();
@@ -114,7 +116,7 @@ public class BlogManageEndpoint {
         var query = PageQuery.forGrid(20, page);
         var blogs = editorView ? blogRepository.findPageAllForManagement(query)
                                : blogRepository.findPageByOwnerIdForManagement(loggedUser.getId(), query);
-        return blogs.map(BlogRow::from);
+        return blogs.map(blog -> BlogRow.from(blog, blogAccess, loggedUser));
     }
 
     @GET
@@ -125,11 +127,15 @@ public class BlogManageEndpoint {
             return forbidden();
         }
 
+        var mainBlogId = blogRepository.findMainByOwnerId(loggedUser.getId())
+                                       .map(Blog::getId)
+                                       .orElse(0L);
         return Response.ok(Templates.form(Optional.empty(),
                                           loggedUser.getUsername(),
                                           "",
                                           blogAccess.canListAll(loggedUser),
                                           false,
+                                          mainBlogId,
                                           customPageRepository.loadLinks(),
                                           loggedUser))
                        .build();

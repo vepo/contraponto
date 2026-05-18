@@ -25,7 +25,17 @@ class TemplateExtensionsTest {
         user.setName("José Silva");
         var logged = new LoggedUser(user, "session");
         assertThat(TemplateExtensions.avatarUrl(logged)).contains("name=");
-        assertThat(TemplateExtensions.avatarUrl(null)).isEmpty();
+        assertThat(TemplateExtensions.avatarUrl((LoggedUser) null)).isEmpty();
+    }
+
+    @Test
+    void avatarUrlUsesStoredProfilePicture() {
+        var picture = new Image();
+        picture.setUrl("/api/images/profile.png");
+        var user = new User();
+        user.setName("Ada Lovelace");
+        user.setProfilePicture(picture);
+        assertThat(TemplateExtensions.avatarUrl(user)).isEqualTo("/api/images/profile.png");
     }
 
     @Test

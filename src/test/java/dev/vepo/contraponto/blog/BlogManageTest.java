@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 
 @WebTest
@@ -100,6 +101,37 @@ class BlogManageTest {
            .assertUrl("/blogs")
            .assertToastSuccess("Blog saved successfully")
            .assertBlogListed("Tech and Code", "/" + USER_USERNAME + "/tech");
+    }
+
+    @Test
+    void editorCannotEditOthersBlogButCanDeactivateSecondary(App app) {
+        var owner = Given.user()
+                         .withUsername("blogowner")
+                         .withEmail("owner@example.com")
+                         .withPassword("ownerPass123")
+                         .withName("Blog Owner")
+                         .persist();
+        Given.blog()
+             .withUser(owner)
+             .withSlug("travel")
+             .withName("Travel Blog")
+             .withDescription("Trips")
+             .persist();
+
+        var editor = Given.user()
+                          .withUsername("siteditor")
+                          .withEmail("editor@example.com")
+                          .withPassword("editorPass123")
+                          .withName("Site Editor")
+                          .withRole(Role.EDITOR)
+                          .persist();
+
+        app.login(editor)
+           .blogs()
+           .assertEditNotAvailableOnList("Travel Blog")
+           .clickDeactivate("Travel Blog")
+           .assertUrl("/blogs")
+           .assertToastSuccess("Blog saved successfully");
     }
 
     @Test

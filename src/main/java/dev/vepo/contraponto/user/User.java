@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.image.Image;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -21,6 +22,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -55,6 +57,14 @@ public class User {
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
     private Set<Blog> blogs;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_picture_id")
+    private Image profilePicture;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "default_banner_id")
+    private Image defaultBlogBanner;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -112,6 +122,10 @@ public class User {
                     .orElse(null);
     }
 
+    public Image getDefaultBlogBanner() {
+        return defaultBlogBanner;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -126,6 +140,10 @@ public class User {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public Image getProfilePicture() {
+        return profilePicture;
     }
 
     public Set<Role> getRoles() {
@@ -165,6 +183,10 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    public void setDefaultBlogBanner(Image defaultBlogBanner) {
+        this.defaultBlogBanner = defaultBlogBanner;
+    }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -179,6 +201,10 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public void setProfilePicture(Image profilePicture) {
+        this.profilePicture = profilePicture;
     }
 
     public void setRoles(Collection<Role> roles) {

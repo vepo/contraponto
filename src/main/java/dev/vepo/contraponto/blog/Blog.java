@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -60,6 +61,10 @@ public class Blog {
     @Column(name = "git_last_known_commit", length = 64)
     private String gitLastKnownCommit;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "banner_id")
+    private Image banner;
+
     public Blog() {}
 
     public Blog(User user) {
@@ -91,6 +96,10 @@ public class Blog {
         }
         Blog other = (Blog) obj;
         return Objects.equals(id, other.id);
+    }
+
+    public Image getBanner() {
+        return banner;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -148,6 +157,10 @@ public class Blog {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public void setBanner(Image banner) {
+        this.banner = banner;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

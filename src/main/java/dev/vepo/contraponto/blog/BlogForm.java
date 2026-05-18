@@ -28,6 +28,13 @@ public class BlogForm {
     @FormParam("git_branch")
     private String gitBranch;
 
+    @FormParam("bannerId")
+    private String bannerId;
+
+    public String getBannerId() {
+        return bannerId;
+    }
+
     public String getDescription() {
         return description;
     }

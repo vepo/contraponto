@@ -1,8 +1,13 @@
 class ImageUploader {
     constructor() {
         this.setupCoverUpload = this.setupCoverUpload.bind(this);
+        this.setupImageUploadAreas = this.setupImageUploadAreas.bind(this);
         this.setupCoverUpload();
-        document.body.addEventListener('htmx:afterSwap', this.setupCoverUpload);
+        this.setupImageUploadAreas();
+        document.body.addEventListener('htmx:afterSwap', () => {
+            this.setupCoverUpload();
+            this.setupImageUploadAreas();
+        });
     }
 
     setupCoverUpload() {
@@ -16,13 +21,11 @@ class ImageUploader {
 
         if (!coverArea) return;
 
-        // Click to open file picker
         coverArea.addEventListener('click', (e) => {
-            if (e.target === removeBtn || removeBtn.contains(e.target)) return;
+            if (e.target === removeBtn || removeBtn?.contains(e.target)) return;
             coverInput.click();
         });
 
-        // Drag & drop
         coverArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             coverArea.classList.add('drag-over');
@@ -35,18 +38,22 @@ class ImageUploader {
             coverArea.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
-                this.uploadImage(file);
+                this.uploadImage(file, document.querySelector('[name="blogId"]')?.value, (id, url) => {
+                    this.setCover(id, url);
+                });
             }
         });
 
-        // File input change
         coverInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) this.uploadImage(file);
+            if (file) {
+                this.uploadImage(file, document.querySelector('[name="blogId"]')?.value, (id, url) => {
+                    this.setCover(id, url);
+                });
+            }
         });
 
-        // Remove cover
-        removeBtn.addEventListener('click', (e) => {
+        removeBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
             coverIdField.value = '';
             coverPreview.classList.add('u-hidden');
@@ -55,12 +62,73 @@ class ImageUploader {
         });
     }
 
-    async uploadImage(file) {
+    setupImageUploadAreas() {
+        document.querySelectorAll('[data-image-upload]:not([data-upload-bound])').forEach((area) => {
+            area.setAttribute('data-upload-bound', 'true');
+            const hiddenFieldId = area.dataset.hiddenField;
+            const blogId = area.dataset.blogId;
+            const hiddenField = document.getElementById(hiddenFieldId);
+            const fileInput = area.querySelector('[data-upload-input]');
+            const placeholder = area.querySelector('[data-upload-placeholder]');
+            const preview = area.querySelector('[data-upload-preview]');
+            const previewImg = area.querySelector('[data-upload-preview-img]');
+            const removeBtn = area.querySelector('[data-upload-remove]');
+
+            if (!hiddenField || !fileInput) return;
+
+            area.addEventListener('click', (e) => {
+                if (e.target === removeBtn || removeBtn?.contains(e.target)) return;
+                fileInput.click();
+            });
+
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('drag-over');
+            });
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('drag-over');
+            });
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    this.uploadImage(file, blogId, (id, url) => {
+                        hiddenField.value = id;
+                        previewImg.src = url;
+                        placeholder.classList.add('u-hidden');
+                        preview.classList.remove('u-hidden');
+                    });
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.uploadImage(file, blogId, (id, url) => {
+                        hiddenField.value = id;
+                        previewImg.src = url;
+                        placeholder.classList.add('u-hidden');
+                        preview.classList.remove('u-hidden');
+                    });
+                }
+            });
+
+            removeBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                hiddenField.value = '';
+                preview.classList.add('u-hidden');
+                placeholder.classList.remove('u-hidden');
+                fileInput.value = '';
+            });
+        });
+    }
+
+    async uploadImage(file, blogId, onSuccess) {
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            const blogId = document.querySelector('[name="blogId"]')?.value;
             const response = await fetch(`/api/images?blogId=${encodeURIComponent(blogId)}`, {
                 method: 'POST',
                 headers: {
@@ -70,7 +138,7 @@ class ImageUploader {
             });
             if (!response.ok) throw new Error('Upload failed');
             const image = await response.json();
-            this.setCover(image.id, image.url);
+            onSuccess(image.id, image.url);
         } catch (err) {
             console.error(err);
             alert('Failed to upload image. Please try again.');
@@ -90,7 +158,6 @@ class ImageUploader {
     }
 }
 
-// Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     new ImageUploader();
 });

@@ -25,6 +25,9 @@ erDiagram
     Blog ||--o{ BlogAudience : has_audience
     User ||--o{ Notification : receives
     Blog ||--o{ CustomPage : may_have
+    User }o--o| Image : profile_picture
+    User }o--o| Image : default_blog_banner
+    Blog }o--o| Image : banner
 ```
 
 ---
@@ -39,7 +42,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 |------|---------|--------------|
 | **Contraponto** | The publishing platform (product). | — |
 | **Guest** | Unauthenticated visitor; may read public content. | No session |
-| **User** | Registered account (`tb_users`): username, email, display name, password, roles, active flag. | `User` |
+| **User** | Registered account (`tb_users`): username, email, display name, password, roles, active flag; optional **profile picture** and **default blog banner**. | `User` |
 | **Author** | User who owns at least one blog and writes posts. Implied by blog ownership, not a separate role. | `Post.getAuthor()` → blog owner |
 | **Reader** | Any user or guest consuming published content. | — |
 | **Session** | Authenticated browser state (`__session` cookie). | `LoggedUser` |
@@ -53,10 +56,14 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
-| **Blog** | A publication channel owned by exactly one user. Has name, slug (unique per owner), description, active flag. | `Blog` |
+| **Blog** | A publication channel owned by exactly one user. Has name, slug (unique per owner), description, optional **blog banner**, active flag. | `Blog` |
 | **Main blog** | The blog auto-created for a user (`main = true`); slug typically matches username. | `Blog.main` |
 | **Secondary blog** | Additional blog owned by the same user (`main = false`). | `Blog` |
-| **Blog owner** | User who owns the blog; sole writer for that blog's posts (editors may manage any blog). | `Blog.owner` |
+| **Blog owner** | User who owns the blog; sole writer for that blog's posts and the only role that may edit blog settings. | `Blog.owner` |
+| **Profile picture** | Optional image on the user; shown in the menu and wherever the author is displayed. | `User.profilePicture` |
+| **Default blog banner** | Optional image on the user used when a blog has no own **blog banner**. | `User.defaultBlogBanner` |
+| **Blog banner** | Optional hero image on a blog; overrides the owner's default for that blog's public home. | `Blog.banner` |
+| **Effective blog banner** | `blog.banner` if set, else `user.defaultBlogBanner`. | `BlogBannerService.resolveEffectiveBanner` |
 | **Active blog** | Blog with `active = true`; inactive blogs return 404 on public routes. | `Blog.active` |
 | **Blog home** | Public listing of published posts for one blog. | `BlogEndpoint` |
 | **User profile** | Public page at `/{username}` when the user has multiple blogs: lists their blogs. | `BlogEndpoint` |
@@ -147,7 +154,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
 | **Dashboard** | Author overview per selected blog: analytics (daily views, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
-| **Profile settings** | Update name, email, password. | `ProfileEndpoint` |
+| **Profile settings** | Update name, email, password, profile picture, default blog banner. | `components.ProfileEndpoint`, `ProfileUpdateEndpoint` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
 
 ### UI labels (user-visible copy)
@@ -195,6 +202,11 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Post — change details | Changes from version {n} | Expandable diff summary in modal |
 | Post — serie nav aria | Series navigation | On-post serie parts list |
 | Post — serie part count | Series of {n} parts | Subtitle under serie title on post page |
+| Profile — picture field | Profile picture | Profile settings |
+| Profile — default banner field | Default blog banner | Profile settings |
+| Blog manage — banner field | Blog banner | Blog edit form |
+| Profile/blog — remove image | Remove | Image upload areas |
+| Profile — saved toast | Profile updated. | After profile save |
 
 Toast messages and validation errors should describe the domain action (e.g. "Cannot follow or subscribe to your own blog") in plain language consistent with the terms above.
 
@@ -228,9 +240,10 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 14. **Replies** require an **Approved** parent comment.
 15. **Rejected** comments are hidden from everyone except moderation flows.
 16. **Featured** posts appear on the **home page**; toggling is immediate (no confirmation).
-17. **Editors** may manage any blog (`BlogAccess.canEdit`); **owners** manage their own.
-18. **Custom pages** served publicly must be **published** and present in cache after changes.
-19. Public URLs for posts and custom pages must use `PostEndpoint.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building.
+17. Only the **blog owner** may change blog settings (name, slug, description, Git, **blog banner**, active flag on the edit form). **Editors** and **administrators** may **deactivate** another user's **secondary** blog but cannot edit blog fields.
+18. **Effective blog banner** is resolved at display time; new secondary blogs copy the owner's **default blog banner** FK at creation when set (same `Image` row, not a duplicate file).
+19. **Custom pages** served publicly must be **published** and present in cache after changes.
+20. Public URLs for posts and custom pages must use `PostEndpoint.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building.
 
 ---
 
@@ -261,7 +274,8 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | Notifications & audience | `dev.vepo.contraponto.notification` |
 | Comments | `dev.vepo.contraponto.comment` |
 | Git sync | `dev.vepo.contraponto.git` |
-| Auth forms | `dev.vepo.contraponto.components.forms` |
+| Auth & profile forms | `dev.vepo.contraponto.components.forms` |
+| Profile page | `dev.vepo.contraponto.components` |
 | Editor review | `dev.vepo.contraponto.admin` |
 
 Access helpers (not aggregates): `BlogAccess`, `UserAccess`, `CustomPageAccess`.

@@ -64,6 +64,7 @@ public class BlogSaveEndpoint {
     private final BlogGitIntegrationService blogGitIntegrationService;
     private final GitRemoteUrlValidator gitRemoteUrlValidator;
     private final BlogManageEndpoint blogManageEndpoint;
+    private final BlogBannerService blogBannerService;
 
     private final LoggedUser loggedUser;
 
@@ -75,6 +76,7 @@ public class BlogSaveEndpoint {
                             BlogGitIntegrationService blogGitIntegrationService,
                             GitRemoteUrlValidator gitRemoteUrlValidator,
                             BlogManageEndpoint blogManageEndpoint,
+                            BlogBannerService blogBannerService,
                             LoggedUser loggedUser) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
@@ -83,6 +85,7 @@ public class BlogSaveEndpoint {
         this.blogGitIntegrationService = blogGitIntegrationService;
         this.gitRemoteUrlValidator = gitRemoteUrlValidator;
         this.blogManageEndpoint = blogManageEndpoint;
+        this.blogBannerService = blogBannerService;
         this.loggedUser = loggedUser;
     }
 
@@ -129,6 +132,9 @@ public class BlogSaveEndpoint {
             return badRequest(gitError.get());
         }
         blogRepository.save(blog);
+        blogBannerService.applyDefaultBannerOnCreate(blog);
+        blogBannerService.applyBannerFromForm(blog, form.getBannerId());
+        blogRepository.save(blog);
         logger.info("Created blog id={} slug={}", blog.getId(), blog.getSlug());
         triggerGitWarmupIfConfigured(blog);
         return successList();
@@ -147,7 +153,7 @@ public class BlogSaveEndpoint {
         if (blog == null) {
             return notFound();
         }
-        if (!blogAccess.canDelete(blog, loggedUser)) {
+        if (!blogAccess.canDeactivate(blog, loggedUser)) {
             return badRequest(blog.isMain() ? "The default blog cannot be removed."
                                             : "You cannot remove this blog.");
         }
@@ -239,6 +245,7 @@ public class BlogSaveEndpoint {
         if (gitError.isPresent()) {
             return badRequest(gitError.get());
         }
+        blogBannerService.applyBannerFromForm(blog, form.getBannerId());
         blogRepository.save(blog);
         logger.info("Updated blog id={} slug={}", blog.getId(), blog.getSlug());
         triggerGitWarmupIfConfigured(blog);

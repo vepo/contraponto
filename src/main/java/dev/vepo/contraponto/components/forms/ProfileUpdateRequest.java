@@ -6,4 +6,6 @@ public record ProfileUpdateRequest(@FormParam("name") String name,
                                    @FormParam("email") String email,
                                    @FormParam("currentPassword") String currentPassword,
                                    @FormParam("newPassword") String newPassword,
-                                   @FormParam("confirmPassword") String confirmPassword) {}
+                                   @FormParam("confirmPassword") String confirmPassword,
+                                   @FormParam("profilePictureId") String profilePictureId,
+                                   @FormParam("defaultBannerId") String defaultBannerId) {}
