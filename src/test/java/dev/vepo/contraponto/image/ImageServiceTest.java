@@ -29,6 +29,9 @@ class ImageServiceTest {
     @Inject
     ImageDependencyRepository dependencyRepository;
 
+    @Inject
+    ImageContentRepository imageContentRepository;
+
     private User author;
     private Blog blog;
 
@@ -61,7 +64,7 @@ class ImageServiceTest {
     }
 
     @Test
-    void getImageReturnsBytesForStoredFile() throws IOException {
+    void getImageReturnsBytesFromDatabase() {
         var image = Given.randomCover(blog);
         var data = imageService.getImage(image.getFilename());
         assertThat(data.contentType()).isEqualTo(image.getContentType());
@@ -82,7 +85,7 @@ class ImageServiceTest {
     }
 
     @Test
-    void uploadImagePersistsMetadataAndFile() throws IOException {
+    void uploadImagePersistsMetadataAndContent() throws IOException {
         var file = Given.randomImage();
         try (var stream = new FileInputStream(file.toFile())) {
             var response = imageService.uploadImage(file.getFileName().toString(),
@@ -93,8 +96,9 @@ class ImageServiceTest {
                                                     author);
             assertThat(response.id()).isNotBlank();
             assertThat(response.url()).startsWith("/api/images/");
-            assertThat(imageRepository.findByUuid(response.id())).isPresent();
-            assertThat(Files.exists(imageService.storagePath().resolve(response.filename()))).isTrue();
+            var image = imageRepository.findByUuid(response.id()).orElseThrow();
+            assertThat(imageContentRepository.findContentByImageId(image.getId())).isPresent();
+            assertThat(imageService.getImage(response.filename()).data()).isNotEmpty();
         }
     }
 

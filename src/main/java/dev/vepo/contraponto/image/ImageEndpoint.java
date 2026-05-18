@@ -99,7 +99,9 @@ public class ImageEndpoint {
                            .header("Content-Length", imageData.size())
                            .cacheControl(cacheControl)
                            .build();
-        } catch (IOException e) {
+        } catch (WebApplicationException e) {
+            return Response.status(e.getResponse().getStatus()).build();
+        } catch (Exception e) {
             logger.error("Failed to get image: {}", filename, e);
             return Response.status(Response.Status.NOT_FOUND).build();
         }

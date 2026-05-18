@@ -228,7 +228,6 @@ class ExampleTest {
 quarkus.datasource.db-kind=postgresql
 quarkus.flyway.migrate-at-start=true
 %dev.quarkus.flyway.clean-at-start=true
-image.storage.path=/tmp/contraponto-images
 contraponto.git.poll-enabled=true
 contraponto.git.poll-interval=2m
 %dev.quarkus.mailer.mock=true

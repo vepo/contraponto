@@ -3,8 +3,6 @@ package dev.vepo.contraponto.git;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Locale;
@@ -101,14 +99,12 @@ public class GitImageSyncService {
         for (String uuid : uuids) {
             imageRepository.findByUuid(uuid).ifPresent(image -> {
                 try {
-                    Path source = imageService.storagePath().resolve(image.getFilePath());
                     String ext = extensionFromUrl(image.getUrl());
                     Path dest = assetsDir.resolve(uuid + ext);
-                    if (Files.exists(source)) {
-                        Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
-                        String rel = repoRoot.relativize(dest.toAbsolutePath().normalize()).toString().replace('\\', '/');
-                        git.add().addFilepattern(rel).call();
-                    }
+                    var imageData = imageService.getImage(image.getFilename());
+                    Files.write(dest, imageData.data());
+                    String rel = repoRoot.relativize(dest.toAbsolutePath().normalize()).toString().replace('\\', '/');
+                    git.add().addFilepattern(rel).call();
                 } catch (IOException | GitAPIException e) {
                     LOG.warn("Failed to export image uuid={}", uuid, e);
                 }
@@ -116,32 +112,16 @@ public class GitImageSyncService {
         }
     }
 
-    private void copyToStorage(String uuid, String ext, Path source) throws IOException {
+    private void ensureImageInDb(Blog blog, String uuid, String ext, Path source) {
         if (!Files.exists(source)) {
             return;
         }
-        Files.createDirectories(imageService.storagePath());
-        Path target = imageService.storagePath().resolve(uuid + ext);
-        if (!Files.exists(target)) {
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        if (imageRepository.findByUuid(uuid).isPresent()) {
+            return;
         }
-    }
-
-    private void ensureImageInDb(Blog blog, String uuid, String ext, Path source) {
         try {
-            copyToStorage(uuid, ext, source);
-            if (imageRepository.findByUuid(uuid).isEmpty()) {
-                Path target = imageService.storagePath().resolve(uuid + ext);
-                long size = Files.size(target);
-                var image = new Image(uuid,
-                                      uuid + ext,
-                                      contentTypeForExt(ext),
-                                      size,
-                                      uuid + ext,
-                                      "/api/images/" + uuid + ext,
-                                      blog);
-                imageRepository.save(image);
-            }
+            byte[] content = Files.readAllBytes(source);
+            imageService.storeImportedImage(blog, uuid, ext, content, contentTypeForExt(ext));
         } catch (IOException e) {
             LOG.warn("Failed to import image uuid={}", uuid, e);
         }

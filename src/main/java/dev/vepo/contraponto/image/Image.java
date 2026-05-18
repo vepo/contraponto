@@ -37,9 +37,6 @@ public class Image {
     @Column(nullable = false)
     private Long size;
 
-    @Column(name = "file_path", nullable = false)
-    private String filePath;
-
     @Column(nullable = false)
     private String url;
 
@@ -63,12 +60,11 @@ public class Image {
 
     public Image() {}
 
-    public Image(String uuid, String filename, String contentType, Long size, String filePath, String url, Blog blog) {
+    public Image(String uuid, String filename, String contentType, Long size, String url, Blog blog) {
         this.uuid = uuid;
         this.filename = filename;
         this.contentType = contentType;
         this.size = size;
-        this.filePath = filePath;
         this.url = url;
         this.blog = blog;
     }
@@ -99,15 +95,10 @@ public class Image {
         return createdAt;
     }
 
-    public String getFilePath() {
-        return filePath;
-    }
-
     public String getFilename() {
         return filename;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -155,10 +146,6 @@ public class Image {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     public void setFilename(String filename) {

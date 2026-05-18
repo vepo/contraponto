@@ -2,13 +2,8 @@ package dev.vepo.contraponto.image;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,17 +19,18 @@ import jakarta.ws.rs.core.Response;
 public class ImageService {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
+    private static final long MAX_SIZE_BYTES = 10L * 1024 * 1024;
 
-    private final Path storagePath;
     private final ImageRepository imageRepository;
+    private final ImageContentRepository imageContentRepository;
     private final ImageDependencyRepository dependencyRepository;
 
     @Inject
-    public ImageService(@ConfigProperty(name = "image.storage.path", defaultValue = "/tmp/contraponto-images") String storagePath,
-                        ImageRepository imageRepository,
+    public ImageService(ImageRepository imageRepository,
+                        ImageContentRepository imageContentRepository,
                         ImageDependencyRepository dependencyRepository) {
-        this.storagePath = Paths.get(storagePath);
         this.imageRepository = imageRepository;
+        this.imageContentRepository = imageContentRepository;
         this.dependencyRepository = dependencyRepository;
     }
 
@@ -49,13 +45,7 @@ public class ImageService {
                                               Response.Status.CONFLICT);
         }
 
-        try {
-            Path filePath = storagePath.resolve(image.getFilePath()).normalize();
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            logger.warn("Failed to delete image file: {}", image.getFilePath(), e);
-        }
-
+        imageContentRepository.deleteByImageId(image.getId());
         imageRepository.softDelete(uuid);
         logger.info("Image deleted successfully! id={}", image.getId());
     }
@@ -68,22 +58,20 @@ public class ImageService {
         return "";
     }
 
-    public ImageData getImage(String filename) throws IOException {
-        var filePath = storagePath.resolve(filename).normalize();
-        if (!filePath.startsWith(storagePath) || !Files.exists(filePath)) {
+    public ImageData getImage(String filename) {
+        int lastDot = filename.lastIndexOf('.');
+        if (lastDot <= 0) {
             throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
         }
 
-        String uuid = filename.substring(0, filename.lastIndexOf('.'));
+        String uuid = filename.substring(0, lastDot);
         Image image = imageRepository.findByUuid(uuid)
-                                     .orElseThrow(() -> new WebApplicationException("Image metadata not found",
+                                     .orElseThrow(() -> new WebApplicationException("Image not found",
                                                                                     Response.Status.NOT_FOUND));
 
-        if (!filePath.normalize().startsWith(storagePath)) {
-            throw new IOException("Entry is outside of the target directory");
-        }
-
-        byte[] data = Files.readAllBytes(filePath);
+        byte[] data = imageContentRepository.findContentByImageId(image.getId())
+                                            .orElseThrow(() -> new WebApplicationException("Image content not found",
+                                                                                           Response.Status.NOT_FOUND));
         return new ImageData(data, image.getContentType(), image.getSize());
     }
 
@@ -95,8 +83,19 @@ public class ImageService {
                 contentType.equals("image/webp"));
     }
 
-    public Path storagePath() {
-        return storagePath;
+    @Transactional
+    public Image storeImportedImage(Blog blog, String uuid, String ext, byte[] content, String contentType) {
+        validateImage(contentType, content.length);
+        String filename = uuid + ext;
+        var image = new Image(uuid,
+                              filename,
+                              contentType,
+                              (long) content.length,
+                              "/api/images/" + filename,
+                              blog);
+        imageRepository.save(image);
+        imageContentRepository.save(image, content);
+        return image;
     }
 
     @Transactional
@@ -107,38 +106,28 @@ public class ImageService {
                                      Blog blog,
                                      User uploadedBy) {
         try {
-            if (!isValidImageType(contentType)) {
-                throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP are allowed.",
-                                                  Response.Status.BAD_REQUEST);
-            }
+            validateImage(contentType, size);
 
-            if (size > 10 * 1024 * 1024) {
-                throw new WebApplicationException("File too large. Maximum size is 10MB.",
-                                                  Response.Status.BAD_REQUEST);
+            byte[] content = data.readAllBytes();
+            if (content.length != size) {
+                size = content.length;
             }
-
-            if (!Files.exists(storagePath)) {
-                Files.createDirectories(storagePath);
-            }
+            validateImage(contentType, size);
 
             var extension = getFileExtension(filename);
             var imageIdentifier = UUID.randomUUID().toString();
             var uniqueFilename = imageIdentifier + extension;
-            var filePath = storagePath.resolve(uniqueFilename);
-
-            Files.copy(data, filePath, StandardCopyOption.REPLACE_EXISTING);
-
             var url = "/api/images/%s".formatted(uniqueFilename);
 
             var image = new Image(imageIdentifier,
                                   uniqueFilename,
                                   contentType,
                                   size,
-                                  filePath.relativize(storagePath).toString(),
                                   url,
                                   blog);
             image.setUploadedBy(uploadedBy);
             imageRepository.save(image);
+            imageContentRepository.save(image, content);
 
             logger.info("Image uploaded successfully: {} -> {}", filename, url);
 
@@ -151,6 +140,17 @@ public class ImageService {
         } catch (IOException e) {
             logger.error("Failed to upload image: {}", filename, e);
             throw new WebApplicationException("Failed to upload image", Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void validateImage(String contentType, long size) {
+        if (!isValidImageType(contentType)) {
+            throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP are allowed.",
+                                              Response.Status.BAD_REQUEST);
+        }
+        if (size > MAX_SIZE_BYTES) {
+            throw new WebApplicationException("File too large. Maximum size is 10MB.",
+                                              Response.Status.BAD_REQUEST);
         }
     }
 }

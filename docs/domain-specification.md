@@ -87,7 +87,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Version history** | Diff of publication snapshots; metadata shows live version; full list in a modal on the post page (all readers). | `PostChangeDiffService` |
 | **Serie** | Ordered collection of posts within one blog. | `Serie` |
 | **Tag** | Global taxonomy label; posts link via join table; snapshots copy tags at publish. | `Tag` |
-| **Uploaded image** | Blog-scoped image file stored in `tb_images` with optional **alt text**. | `Image` |
+| **Uploaded image** | Blog-scoped image: metadata in `tb_images`, bytes in `tb_image_content` (PostgreSQL `BYTEA`), optional **alt text**. Served at `/api/images/{filename}`. | `Image`, `ImageContent` |
 | **Image marker** | HTML comment in stored body: `<!-- contraponto:image uuid="…" -->` immediately before an image reference; hidden in the Write editor. | `ContentImageMarkerService` |
 | **Image dependency** | Record that a post, publication snapshot, or custom page uses an uploaded image (`INLINE` or `COVER`). | `PostImageDependency`, `CustomPageImageDependency` |
 | **Image control** | Manage screen listing a blog's uploaded images, where each is used, and alt text editing. | `ImageControlEndpoint` |
