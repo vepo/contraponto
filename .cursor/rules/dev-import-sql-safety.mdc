@@ -1,0 +1,73 @@
+---
+description: Keep dev-import.sql valid across Flyway schema changes — safe resets, protected baseline, seed updates
+globs: src/main/resources/dev-import.sql,src/main/resources/db/migration/*.sql
+alwaysApply: false
+---
+
+# dev-import.sql — schema change safety
+
+[`dev-import.sql`](../../src/main/resources/dev-import.sql) runs on **every** `%dev` startup ([`DatabaseDevSetup`](../../src/main/java/dev/vepo/contraponto/shared/infra/DatabaseDevSetup.java)), after Flyway applies migrations. **Any schema change must not break that script** — treat migration + `dev-import.sql` as one deliverable.
+
+## Protected baseline (never wipe)
+
+Flyway migration seed keeps rows the reset section must **preserve**:
+
+| Asset | Why |
+|-------|-----|
+| `admin` user | Platform admin, welcome post anchor |
+| Admin **main** blog (`tb_blogs` where owner is `admin` and `main = TRUE`) | `DO $$` blocks look up `v_admin_blog` |
+| Footer custom pages (`/sobre`, `/contato`, `/privacidade`, `/termos`) | Global footer from migration |
+
+Do not `TRUNCATE`/`DELETE` these. Prefer scoped `DELETE` / `TRUNCATE` of **dev-only** content (see existing reset section).
+
+## When you change the schema (Flyway)
+
+Work through this list **in the same PR** as the migration:
+
+1. **Reset section** — If the migration adds tables dev seed will repopulate, extend section 1 (`TRUNCATE` / `DELETE` in FK-safe order). If it adds nullable FKs **into** a table you clear, null those columns **before** deleting parent rows.
+2. **Seed section** — New `NOT NULL` columns, FKs, or check constraints require matching `INSERT`/`UPDATE` values in the seed block. Reuse subqueries (`JOIN tb_users u ON u.username = 'alice'`), not hard-coded IDs.
+3. **`DO $$` lookups** — After resolving blog/user IDs, keep `b.main = TRUE` explicit; `RAISE EXCEPTION` if a required baseline row is missing (signals a broken reset, not silent nulls).
+4. **Verify** — Restart `./mvnw quarkus:dev` (or full reload) and confirm `DatabaseDevSetup` runs the script without SQL errors.
+
+If the feature needs dev examples beyond migration seed, add seed rows per [development-experience.mdc](development-experience.mdc); if migration seed is enough, only fix reset/compat in `dev-import.sql`.
+
+## `TRUNCATE … CASCADE` trap
+
+PostgreSQL `TRUNCATE parent CASCADE` truncates **every** table with an FK **to** `parent`, including ancestors you meant to keep. Before truncating a parent, ask: *who references this table outside the content subtree?*
+
+**Canonical example — `tb_images`:**
+
+| Table | Columns |
+|-------|---------|
+| `tb_users` | `profile_picture_id`, `default_banner_id` |
+| `tb_blogs` | `banner_id` |
+| `tb_posts` | `cover_id` |
+| `tb_post_publications` | `cover_id` |
+| `tb_*_image_dependencies` | `image_id` |
+
+`TRUNCATE tb_images CASCADE` wipes `tb_users` and `tb_blogs` → `admin` gone → startup failure.
+
+**Required pattern for images** (extend when migrations add new nullable FKs **to** `tb_images`):
+
+```sql
+UPDATE tb_users SET profile_picture_id = NULL, default_banner_id = NULL;
+UPDATE tb_blogs SET banner_id = NULL;
+UPDATE tb_posts SET cover_id = NULL;
+UPDATE tb_post_publications SET cover_id = NULL;
+DELETE FROM tb_images;
+```
+
+Same idea applies elsewhere: clear inbound FKs first, then delete/truncate children; never assume `CASCADE` stops at “content” tables.
+
+## Reset conventions
+
+- **Prefer** `DELETE FROM tb_blogs WHERE owner_id IN (SELECT id FROM tb_users WHERE username <> 'admin')` over truncating `tb_blogs`.
+- **Truncate** leaf/content tables before parents; order must follow FK direction.
+- **Never** `TRUNCATE tb_images` or `TRUNCATE … CASCADE` on tables referenced by the protected baseline unless you have explicitly nulled every inbound FK (see image pattern above).
+
+## Quick checklist (migrations)
+
+- [ ] Reset section covers new dev-populated tables (and FK nulling if needed)
+- [ ] Inserts/updates satisfy new `NOT NULL`, FK, and enum/check constraints
+- [ ] No truncate/delete touches `admin`, admin main blog, or migration footer pages
+- [ ] `%dev` startup completes with `dev-import.sql` executing successfully

@@ -21,7 +21,12 @@ TRUNCATE TABLE tb_views CASCADE;
 TRUNCATE TABLE tb_posts CASCADE;
 TRUNCATE TABLE tb_series CASCADE;
 TRUNCATE TABLE tb_tags CASCADE;
-TRUNCATE TABLE tb_images CASCADE;
+-- Clear image FKs before delete (V0.0.4 profile/banner columns reference tb_images; TRUNCATE CASCADE would wipe tb_users/tb_blogs)
+UPDATE tb_users SET profile_picture_id = NULL, default_banner_id = NULL;
+UPDATE tb_blogs SET banner_id = NULL;
+UPDATE tb_posts SET cover_id = NULL;
+UPDATE tb_post_publications SET cover_id = NULL;
+DELETE FROM tb_images;
 
 DELETE FROM tb_user_roles WHERE user_id IN (SELECT id FROM tb_users WHERE username <> 'admin');
 DELETE FROM tb_blogs WHERE owner_id IN (SELECT id FROM tb_users WHERE username <> 'admin');
@@ -251,11 +256,15 @@ DECLARE
     v_comment_intro_root BIGINT;
     v_comment_eve_pending BIGINT;
 BEGIN
-    SELECT b.id INTO v_admin_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'admin' AND b.main;
-    SELECT b.id INTO v_alice_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
-    SELECT b.id INTO v_bob_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.main;
+    SELECT b.id INTO v_admin_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'admin' AND b.main = TRUE;
+    SELECT b.id INTO v_alice_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main = TRUE;
+    SELECT b.id INTO v_bob_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.main = TRUE;
     SELECT b.id INTO v_bob_arch FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.slug = 'architecture-notes';
-    SELECT b.id INTO v_carol_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'carol' AND b.main;
+    SELECT b.id INTO v_carol_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'carol' AND b.main = TRUE;
+
+    IF v_admin_blog IS NULL THEN
+        RAISE EXCEPTION 'Admin main blog not found; migration seed may be missing';
+    END IF;
 
     SELECT id INTO v_serie_dist FROM tb_series WHERE blog_id = v_alice_blog AND slug = 'distributed-foundations';
     SELECT id INTO v_serie_events FROM tb_series WHERE blog_id = v_alice_blog AND slug = 'event-streaming';

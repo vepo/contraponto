@@ -31,7 +31,7 @@ If migration seed already covers it (e.g. global footer **custom pages** in `V0.
 
 ## Script structure (follow existing sections)
 
-1. **Reset** — `TRUNCATE` / `DELETE` dev content; keep `admin` user, admin blog, and migration-seeded globals.
+1. **Reset** — `TRUNCATE` / `DELETE` dev content; keep `admin` user, admin blog, and migration-seeded globals. **Never** `TRUNCATE tb_images CASCADE` — inbound FKs from `tb_users` / `tb_blogs` (profile/banner) will wipe admin. See [dev-import-sql-safety.mdc](dev-import-sql-safety.mdc).
 2. **Users & roles** — fixed personas (do not rename casually; tests/docs may refer to them).
 3. **Blogs → images → series → tags → posts → publications** — large block uses `DO $$ … END $$` with variables for FK wiring.
 4. **Audience, notifications, views** — social/engagement samples.
@@ -68,3 +68,4 @@ Add a numbered section comment (`-- ============================================
 - Ship a user-facing feature with **only** empty states in dev (no seed rows).
 - Put secrets or production credentials in `dev-import.sql`.
 - Break the admin/migration baseline (truncating `tb_users` for `admin`, or deleting migration custom pages).
+- Use `TRUNCATE tb_images CASCADE` or any truncate that cascades into `tb_users` / `tb_blogs`.

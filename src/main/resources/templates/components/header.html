@@ -30,15 +30,15 @@
                 <img src="/images/search.svg" />
             </button>
             <div hx-get="/components/write-btn" hx-trigger="{authRefreshTrigger}">
-                {#include WriteButtonEndpoint/writeBtn /}
+                {#include WriteButtonEndpoint/writeBtn user=session /}
             </div>
             <div id="notification-badge-container"
                  hx-get="/components/notifications/badge"
                  hx-trigger="{authRefreshTrigger}">
-                {#include NotificationBadgeEndpoint/badge unreadCount=0 authenticated=false /}
+                {#include NotificationBadgeEndpoint/badge unreadCount=0 authenticated=session.isAuthenticated /}
             </div>
             <div id="menu-container">
-                {#include MenuEndpoint/menu /}
+                {#include MenuEndpoint/menu user=session /}
             </div>
         </div>
     </div>

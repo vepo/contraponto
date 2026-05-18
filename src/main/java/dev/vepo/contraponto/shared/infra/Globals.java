@@ -29,6 +29,15 @@ public class Globals {
         return LocalDateTime.now().getYear();
     }
 
+    @TemplateGlobal(name = "session")
+    public static LoggedUser session() {
+        var loggedUser = CDI.current().select(LoggedUser.class);
+        if (!loggedUser.isResolvable()) {
+            return new LoggedUser();
+        }
+        return loggedUser.get();
+    }
+
     private Globals() {
         /* This utility class should not be instantiated */
     }
