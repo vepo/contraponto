@@ -67,7 +67,12 @@ class FollowAfterLoginRestTest {
                                .extract()
                                .cookie(LoginEndpoint.SESSION_COOKIE_NAME);
 
+        var bootstrap = given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId).get("/");
+        String csrf = bootstrap.getCookie(dev.vepo.contraponto.shared.security.CsrfTokenService.COOKIE_NAME);
+
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+               .cookie(dev.vepo.contraponto.shared.security.CsrfTokenService.COOKIE_NAME, csrf)
+               .header(dev.vepo.contraponto.shared.security.CsrfTokenService.HEADER_NAME, csrf)
                .post("/forms/blogs/" + blogId + "/follow")
                .then()
                .statusCode(200)

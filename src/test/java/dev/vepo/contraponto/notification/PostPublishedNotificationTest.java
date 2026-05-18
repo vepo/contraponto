@@ -9,12 +9,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.BlogRepository;
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -160,12 +159,10 @@ class PostPublishedNotificationTest {
                           .persist();
         blogId = blogRepository.findMainByOwnerId(author.getId()).orElseThrow().getId();
 
-        var followSession = Given.inject(LoggedUserProvider.class).login(follower).getSessionId();
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, followSession)
-               .post("/forms/blogs/" + blogId + "/follow");
+        TestHttp.authenticated(follower)
+                .post("/forms/blogs/" + blogId + "/follow");
 
-        var subSession = Given.inject(LoggedUserProvider.class).login(subscriber).getSessionId();
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, subSession)
-               .post("/forms/blogs/" + blogId + "/subscribe");
+        TestHttp.authenticated(subscriber)
+                .post("/forms/blogs/" + blogId + "/subscribe");
     }
 }

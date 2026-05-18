@@ -10,9 +10,8 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -33,17 +32,15 @@ class ImageAltSaveEndpointTest {
 
     @Test
     void ownerCanSaveAltText() {
-        var sessionId = Given.inject(LoggedUserProvider.class).login(owner).getSessionId();
-
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .contentType("application/x-www-form-urlencoded")
-               .formParam("altText", "Accessible caption")
-               .formParam("page", "1")
-               .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), image.getUuid()))
-               .then()
-               .statusCode(200)
-               .header("X-Toast-Message", equalTo("Image updated."))
-               .body(containsString("image-control"));
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("altText", "Accessible caption")
+                .formParam("page", "1")
+                .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), image.getUuid()))
+                .then()
+                .statusCode(200)
+                .header("X-Toast-Message", equalTo("Image updated."))
+                .body(containsString("image-control"));
 
         Given.transaction(() -> {
             var updated = imageRepository.findByUuid(image.getUuid());
@@ -77,25 +74,21 @@ class ImageAltSaveEndpointTest {
                             .withName("Stranger")
                             .withPassword("Password123!")
                             .persist();
-        var sessionId = Given.inject(LoggedUserProvider.class).login(stranger).getSessionId();
-
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .contentType("application/x-www-form-urlencoded")
-               .formParam("altText", "Hijack")
-               .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), image.getUuid()))
-               .then()
-               .statusCode(403);
+        TestHttp.authenticated(stranger)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("altText", "Hijack")
+                .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), image.getUuid()))
+                .then()
+                .statusCode(403);
     }
 
     @Test
     void unknownImageReturnsNotFound() {
-        var sessionId = Given.inject(LoggedUserProvider.class).login(owner).getSessionId();
-
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .contentType("application/x-www-form-urlencoded")
-               .formParam("altText", "Missing")
-               .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), "00000000-0000-0000-0000-000000000099"))
-               .then()
-               .statusCode(404);
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("altText", "Missing")
+                .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), "00000000-0000-0000-0000-000000000099"))
+                .then()
+                .statusCode(404);
     }
 }

@@ -32,6 +32,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.custompage.PagePlacement;
+import dev.vepo.contraponto.shared.security.CsrfTokenService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
@@ -69,6 +70,7 @@ public class App {
         public App assertModalWasClosed() {
             wait.until(invisibilityOfElementLocated(By.className("modal__container")));
             App.this.waitForReady();
+            App.this.syncCsrfCookieFromPage();
             return App.this;
         }
 
@@ -266,7 +268,9 @@ public class App {
         }
 
         public BlogManagePage submit() {
-            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
+            var submitBtn = wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']")));
+            await().until(submitBtn::isEnabled);
+            reliableClick(submitBtn);
             waitForReady();
             return this;
         }
@@ -1162,6 +1166,7 @@ public class App {
 
         public ProfilePage submit() {
             reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
+            waitForReady();
             return this;
         }
     }
@@ -1508,7 +1513,8 @@ public class App {
         }
 
         public UserManagePage submit() {
-            var submitBtn = wait.until(elementToBeClickable(cssSelector("main form.profile-form button[type='submit']")));
+            var submitBtn = wait.until(visibilityOfElementLocated(cssSelector("main form.profile-form button[type='submit']")));
+            await().until(submitBtn::isEnabled);
             reliableClick(submitBtn);
             waitForReady();
             return this;
@@ -1910,6 +1916,7 @@ public class App {
               .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
         driver.navigate().refresh();
         waitForReady();
+        syncCsrfCookieFromPage();
         return this;
     }
 
@@ -1971,6 +1978,16 @@ public class App {
     public SearchPage searchPage() {
         _goTo("/search");
         return new SearchPage();
+    }
+
+    private void syncCsrfCookieFromPage() {
+        var meta = driver.findElement(By.cssSelector("meta[name='csrf-token']"));
+        var token = meta.getAttribute("content");
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        driver.manage()
+              .addCookie(new Cookie(CsrfTokenService.COOKIE_NAME, token));
     }
 
     public TagManagePage tagsManage() {

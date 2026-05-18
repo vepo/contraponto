@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.post.PostPublicationRepository;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -33,8 +33,7 @@ class PublishEndpointTest {
     private User author;
 
     private io.restassured.specification.RequestSpecification authorized() {
-        var sessionId = Given.inject(LoggedUserProvider.class).login(author).getSessionId();
-        return given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId);
+        return TestHttp.authenticated(author);
     }
 
     @Test

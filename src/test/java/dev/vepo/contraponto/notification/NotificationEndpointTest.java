@@ -10,9 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.BlogRepository;
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -64,8 +63,7 @@ class NotificationEndpointTest {
     }
 
     private io.restassured.specification.RequestSpecification session(User user) {
-        var sessionId = Given.inject(LoggedUserProvider.class).login(user).getSessionId();
-        return given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId);
+        return TestHttp.authenticated(user);
     }
 
     @BeforeEach
