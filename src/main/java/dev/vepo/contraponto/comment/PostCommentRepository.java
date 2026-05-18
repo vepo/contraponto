@@ -13,6 +13,9 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class PostCommentRepository {
 
+    private static final String PARAM_STATUS = "status";
+    private static final String PARAM_AUTHOR_USER_ID = "authorUserId";
+
     private final EntityManager entityManager;
 
     @Inject
@@ -27,7 +30,7 @@ public class PostCommentRepository {
                                          WHERE c.root.id = :rootId AND c.status = :status
                                          """, Long.class)
                             .setParameter("rootId", rootId)
-                            .setParameter("status", CommentStatus.APPROVED)
+                            .setParameter(PARAM_STATUS, CommentStatus.APPROVED)
                             .getSingleResult();
     }
 
@@ -56,7 +59,7 @@ public class PostCommentRepository {
                                          ORDER BY c.createdAt ASC
                                          """, PostComment.class)
                             .setParameter("postId", postId)
-                            .setParameter("status", CommentStatus.PENDING)
+                            .setParameter(PARAM_STATUS, CommentStatus.PENDING)
                             .getResultList();
     }
 
@@ -71,8 +74,8 @@ public class PostCommentRepository {
                                          WHERE b.owner.id = :authorUserId AND c.status = :status
                                          ORDER BY c.createdAt ASC
                                          """, PostComment.class)
-                            .setParameter("authorUserId", authorUserId)
-                            .setParameter("status", CommentStatus.PENDING)
+                            .setParameter(PARAM_AUTHOR_USER_ID, authorUserId)
+                            .setParameter(PARAM_STATUS, CommentStatus.PENDING)
                             .getResultList();
     }
 
@@ -83,8 +86,8 @@ public class PostCommentRepository {
                                                JOIN p.blog b
                                                WHERE b.owner.id = :authorUserId AND c.status = :status
                                                """, Long.class)
-                                  .setParameter("authorUserId", authorUserId)
-                                  .setParameter("status", CommentStatus.PENDING)
+                                  .setParameter(PARAM_AUTHOR_USER_ID, authorUserId)
+                                  .setParameter(PARAM_STATUS, CommentStatus.PENDING)
                                   .getSingleResult();
         var data = entityManager.createQuery("""
                                              SELECT c FROM PostComment c
@@ -96,8 +99,8 @@ public class PostCommentRepository {
                                              WHERE b.owner.id = :authorUserId AND c.status = :status
                                              ORDER BY c.createdAt ASC
                                              """, PostComment.class)
-                                .setParameter("authorUserId", authorUserId)
-                                .setParameter("status", CommentStatus.PENDING)
+                                .setParameter(PARAM_AUTHOR_USER_ID, authorUserId)
+                                .setParameter(PARAM_STATUS, CommentStatus.PENDING)
                                 .setFirstResult(query.skip())
                                 .setMaxResults(query.maxResults())
                                 .getResultList();

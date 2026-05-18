@@ -190,7 +190,6 @@ public class BlogGitImportService {
             return;
         }
         String uuid = m.group(1);
-        String ext = m.group(2);
         try {
             gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
         } catch (IOException e) {
@@ -228,7 +227,7 @@ public class BlogGitImportService {
         }
         try {
             return Format.valueOf(fm.strip().replace(' ', '_').toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return Format.MARKDOWN;
         }
     }
@@ -261,7 +260,7 @@ public class BlogGitImportService {
                 return null;
             }
             return Long.parseLong(s);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException _) {
             return null;
         }
     }
@@ -272,14 +271,14 @@ public class BlogGitImportService {
         }
         try {
             return OffsetDateTime.parse(raw).toLocalDateTime();
-        } catch (DateTimeParseException e1) {
+        } catch (DateTimeParseException _) {
             try {
                 return LocalDateTime.parse(raw);
-            } catch (DateTimeParseException e2) {
+            } catch (DateTimeParseException _) {
                 try {
                     LocalDate dateOnly = LocalDate.parse(raw, DateTimeFormatter.ISO_LOCAL_DATE);
                     return dateOnly.atStartOfDay();
-                } catch (DateTimeParseException e3) {
+                } catch (DateTimeParseException _) {
                     return null;
                 }
             }
@@ -338,7 +337,7 @@ public class BlogGitImportService {
             try {
                 LocalDate d = LocalDate.parse(dateStem, DateTimeFormatter.ISO_LOCAL_DATE);
                 return new ParsedPathStem(slugStem, Optional.of(d));
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException _) {
                 return new ParsedPathStem(slugStem, Optional.empty());
             }
         }

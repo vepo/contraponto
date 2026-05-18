@@ -90,7 +90,7 @@ public class CommentCreateEndpoint {
                         .build();
         } catch (BadRequestException e) {
             return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
-        } catch (NotFoundException e) {
+        } catch (NotFoundException _) {
             return Toast.response(Status.NOT_FOUND).message("Post not found.").type(Toast.Type.ERROR).build();
         }
     }

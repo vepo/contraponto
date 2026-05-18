@@ -14,7 +14,6 @@ import dev.vepo.contraponto.user.User;
 class CommentAfterLoginWebTest {
 
     private User author;
-    private User reader;
     private Post post;
 
     @Test

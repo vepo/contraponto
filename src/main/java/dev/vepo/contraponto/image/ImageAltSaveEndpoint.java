@@ -60,7 +60,7 @@ public class ImageAltSaveEndpoint {
         }
         try {
             imageControlService.updateAltText(blog, uuid, altText);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         var links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());

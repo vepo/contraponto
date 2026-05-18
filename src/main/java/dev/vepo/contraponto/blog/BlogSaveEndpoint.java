@@ -271,10 +271,9 @@ public class BlogSaveEndpoint {
     }
 
     private String validateGitIntegration(BlogForm form) {
-        if (form.isGitEnabled()) {
-            if (form.getGitRemoteUrl() == null || form.getGitRemoteUrl().isBlank()) {
-                return "Git remote URL is required when Git integration is enabled.";
-            }
+        if (form.isGitEnabled()
+                && (form.getGitRemoteUrl() == null || form.getGitRemoteUrl().isBlank())) {
+            return "Git remote URL is required when Git integration is enabled.";
         }
         if (form.getGitBranch() != null && form.getGitBranch().strip().length() > 255) {
             return "Git branch name must be no more than 255 characters.";

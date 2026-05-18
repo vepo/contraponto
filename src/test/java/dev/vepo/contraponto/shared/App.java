@@ -275,11 +275,13 @@ public class App {
             return this;
         }
 
+        @Override
         public BlogPage assertLoadMoreIsNotVisible() {
             _assertLoadMoreVisibility(false);
             return this;
         }
 
+        @Override
         public BlogPage assertLoadMoreIsVisible() {
             _assertLoadMoreVisibility(true);
             return this;
@@ -315,6 +317,7 @@ public class App {
             return App.this.featuredCard();
         }
 
+        @Override
         public BlogPage loadMore() {
             _loadMore();
             return this;
@@ -746,7 +749,7 @@ public class App {
         public LibraryPage assertDraftNotPresent(String title) {
             var drafts = driver.findElements(By.cssSelector(".drafts-list .draft-card__title"));
             assertThat(drafts).extracting(WebElement::getText)
-                              .doesNotContain(title);
+                              .noneMatch(text -> text.equals(title));
             return this;
         }
 
@@ -1232,6 +1235,7 @@ public class App {
             return new PostPage();
         }
 
+        @Override
         public SearchPage loadMore() {
             var loadMoreBtn = wait.until(elementToBeClickable(cssSelector("#search-more-results button")));
             reliableClick(loadMoreBtn);
@@ -1491,13 +1495,17 @@ public class App {
         }
 
         public WritePage assertToastError(String message) {
-            waitForToastMessage(message);
+            assertToast(message);
             return this;
         }
 
         public WritePage assertToastSuccess(String message) {
-            waitForToastMessage(message);
+            assertToast(message);
             return this;
+        }
+
+        private void assertToast(String message) {
+            waitForToastMessage(message);
         }
 
         public WritePage fillContent(String content) {

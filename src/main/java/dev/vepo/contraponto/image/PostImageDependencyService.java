@@ -38,11 +38,10 @@ public class PostImageDependencyService {
         dependencyRepository.deletePublicationDependencies(publication.getId());
         Set<String> uuids = markerService.extractImageUuids(publication.getContent());
         for (String uuid : uuids) {
-            imageRepository.findByUuid(uuid).ifPresent(image -> {
-                dependencyRepository.persistPublicationDependency(new PostPublicationImageDependency(publication,
-                                                                                                     image,
-                                                                                                     ImageRole.INLINE));
-            });
+            imageRepository.findByUuid(uuid).ifPresent(image ->
+                    dependencyRepository.persistPublicationDependency(new PostPublicationImageDependency(publication,
+                                                                                                         image,
+                                                                                                         ImageRole.INLINE)));
         }
         if (publication.getCover() != null) {
             dependencyRepository.persistPublicationDependency(new PostPublicationImageDependency(publication,
@@ -59,9 +58,8 @@ public class PostImageDependencyService {
         dependencyRepository.deletePostDependencies(post.getId());
         Set<String> uuids = markerService.extractImageUuids(post.getContent());
         for (String uuid : uuids) {
-            imageRepository.findByUuid(uuid).ifPresent(image -> {
-                dependencyRepository.persistPostDependency(new PostImageDependency(post, image, ImageRole.INLINE));
-            });
+            imageRepository.findByUuid(uuid).ifPresent(image ->
+                    dependencyRepository.persistPostDependency(new PostImageDependency(post, image, ImageRole.INLINE)));
         }
         if (post.getCover() != null) {
             dependencyRepository.persistPostDependency(new PostImageDependency(post, post.getCover(), ImageRole.COVER));

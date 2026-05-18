@@ -41,7 +41,7 @@ public class TagService {
                 }
             }
             return out;
-        } catch (Exception e) {
+        } catch (Exception _) {
             return List.of();
         }
     }
@@ -68,7 +68,7 @@ public class TagService {
         try {
             List<String> names = post.getTags().stream().map(Tag::getName).sorted(String.CASE_INSENSITIVE_ORDER).toList();
             return objectMapper.writeValueAsString(names);
-        } catch (Exception e) {
+        } catch (Exception _) {
             return "[]";
         }
     }

@@ -6,8 +6,6 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogRepository;

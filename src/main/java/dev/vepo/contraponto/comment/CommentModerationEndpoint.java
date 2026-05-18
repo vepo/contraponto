@@ -72,7 +72,7 @@ public class CommentModerationEndpoint {
             return builder.page(componentEndpoint.renderComments(post)).build();
         } catch (ForbiddenException e) {
             return Toast.response(Status.FORBIDDEN).message(e.getMessage()).type(Toast.Type.ERROR).build();
-        } catch (NotFoundException e) {
+        } catch (NotFoundException _) {
             return Toast.response(Status.NOT_FOUND).message("Comment not found.").type(Toast.Type.ERROR).build();
         }
     }

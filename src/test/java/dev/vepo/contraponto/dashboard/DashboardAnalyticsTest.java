@@ -2,10 +2,7 @@ package dev.vepo.contraponto.dashboard;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-
 import java.net.URL;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -33,7 +30,6 @@ class DashboardAnalyticsTest {
     URL baseUrl;
 
     private User testUser;
-    private User follower;
 
     @Test
     void compareAnalyticsFragmentIncludesLegend() {

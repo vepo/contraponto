@@ -61,7 +61,7 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
                 sb.append(String.format("%02x", b));
             }
             return '"' + sb.toString() + '"';
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException _) {
             // Fallback: use length as weak etag
             return '"' + String.valueOf(content.length) + '"';
         }

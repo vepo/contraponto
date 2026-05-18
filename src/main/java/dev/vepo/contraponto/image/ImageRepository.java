@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ImageRepository {
 
+    private static final String PARAM_BLOG_ID = "blogId";
+
     private final EntityManager entityManager;
 
     @Inject
@@ -34,21 +36,21 @@ public class ImageRepository {
     public Optional<Image> findByUuidAndBlogId(String uuid, long blogId) {
         return entityManager.createQuery("FROM Image WHERE uuid = :uuid AND active = true AND blog.id = :blogId", Image.class)
                             .setParameter("uuid", uuid)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getResultStream()
                             .findFirst();
     }
 
     public Page<Image> findPageByBlogId(long blogId, PageQuery query) {
         long total = entityManager.createQuery("SELECT COUNT(i) FROM Image i WHERE i.blog.id = :blogId AND i.active = true", Long.class)
-                                  .setParameter("blogId", blogId)
+                                  .setParameter(PARAM_BLOG_ID, blogId)
                                   .getSingleResult();
         List<Image> data = entityManager.createQuery("""
                                                      SELECT i FROM Image i
                                                      WHERE i.blog.id = :blogId AND i.active = true
                                                      ORDER BY i.createdAt DESC
                                                      """, Image.class)
-                                        .setParameter("blogId", blogId)
+                                        .setParameter(PARAM_BLOG_ID, blogId)
                                         .setFirstResult(query.skip())
                                         .setMaxResults(query.limit())
                                         .getResultList();

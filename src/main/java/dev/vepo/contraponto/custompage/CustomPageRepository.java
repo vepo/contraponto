@@ -19,6 +19,8 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class CustomPageRepository {
 
+    private static final String PARAM_OWNER_ID = "ownerId";
+
     private static final Logger logger = LoggerFactory.getLogger(CustomPageRepository.class);
     private final EntityManager entityManager;
 
@@ -160,7 +162,7 @@ public class CustomPageRepository {
                                                JOIN b.owner o
                                                WHERE o.id = :ownerId
                                                """, Long.class)
-                                  .setParameter("ownerId", ownerId)
+                                  .setParameter(PARAM_OWNER_ID, ownerId)
                                   .getSingleResult();
         var data = entityManager.createQuery("""
                                              SELECT cp FROM CustomPage cp
@@ -169,7 +171,7 @@ public class CustomPageRepository {
                                              WHERE o.id = :ownerId
                                              ORDER BY cp.title
                                              """, CustomPage.class)
-                                .setParameter("ownerId", ownerId)
+                                .setParameter(PARAM_OWNER_ID, ownerId)
                                 .setFirstResult(query.skip())
                                 .setMaxResults(query.maxResults())
                                 .getResultStream()
@@ -209,7 +211,7 @@ public class CustomPageRepository {
                                          WHERE o.id = :ownerId
                                          ORDER BY cp.title
                                          """, CustomPage.class)
-                            .setParameter("ownerId", ownerId)
+                            .setParameter(PARAM_OWNER_ID, ownerId)
                             .getResultStream()
                             .map(CustomPageRow::from)
                             .toList();

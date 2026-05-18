@@ -2,7 +2,6 @@ package dev.vepo.contraponto.image;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,7 +59,7 @@ public class ContentImageMarkerService {
             if (MARKER_LINE.matcher(lines[i]).matches()) {
                 continue;
             }
-            if (out.length() > 0) {
+            if (!out.isEmpty()) {
                 out.append('\n');
             }
             out.append(lines[i]);

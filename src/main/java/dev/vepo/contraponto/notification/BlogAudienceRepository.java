@@ -13,6 +13,9 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class BlogAudienceRepository {
 
+    private static final String PARAM_BLOG_ID = "blogId";
+    private static final String PARAM_USER_ID = "userId";
+
     private final EntityManager entityManager;
 
     @Inject
@@ -25,7 +28,7 @@ public class BlogAudienceRepository {
                                          SELECT COUNT(a) FROM BlogAudience a
                                          WHERE a.blog.id = :blogId AND a.emailSubscribed = TRUE
                                          """, Long.class)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getSingleResult();
     }
 
@@ -34,7 +37,7 @@ public class BlogAudienceRepository {
                                          SELECT COUNT(a) FROM BlogAudience a
                                          WHERE a.blog.id = :blogId AND a.followed = TRUE
                                          """, Long.class)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getSingleResult();
     }
 
@@ -48,8 +51,8 @@ public class BlogAudienceRepository {
                                          FROM BlogAudience a
                                          WHERE a.user.id = :userId AND a.blog.id = :blogId
                                          """, BlogAudience.class)
-                            .setParameter("userId", userId)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_USER_ID, userId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getResultStream()
                             .findFirst();
     }
@@ -62,7 +65,7 @@ public class BlogAudienceRepository {
                                          WHERE a.user.id = :userId
                                          ORDER BY b.name ASC
                                          """, BlogAudience.class)
-                            .setParameter("userId", userId)
+                            .setParameter(PARAM_USER_ID, userId)
                             .getResultList();
     }
 
@@ -71,7 +74,7 @@ public class BlogAudienceRepository {
                                          FROM BlogAudience a
                                          WHERE a.blog.id = :blogId AND a.emailSubscribed = TRUE
                                          """, BlogAudience.class)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getResultList();
     }
 
@@ -80,7 +83,7 @@ public class BlogAudienceRepository {
                                          FROM BlogAudience a
                                          WHERE a.blog.id = :blogId AND a.followed = TRUE
                                          """, BlogAudience.class)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getResultList();
     }
 
@@ -89,7 +92,7 @@ public class BlogAudienceRepository {
                                                SELECT COUNT(a) FROM BlogAudience a
                                                WHERE a.user.id = :userId
                                                """, Long.class)
-                                  .setParameter("userId", userId)
+                                  .setParameter(PARAM_USER_ID, userId)
                                   .getSingleResult();
         var data = entityManager.createQuery("""
                                              FROM BlogAudience a
@@ -98,7 +101,7 @@ public class BlogAudienceRepository {
                                              WHERE a.user.id = :userId
                                              ORDER BY b.name ASC
                                              """, BlogAudience.class)
-                                .setParameter("userId", userId)
+                                .setParameter(PARAM_USER_ID, userId)
                                 .setFirstResult(query.skip())
                                 .setMaxResults(query.maxResults())
                                 .getResultList();

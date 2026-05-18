@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.components.forms;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 

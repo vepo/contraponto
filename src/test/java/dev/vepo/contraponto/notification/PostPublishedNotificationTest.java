@@ -79,7 +79,7 @@ class PostPublishedNotificationTest {
                                                            new dev.vepo.contraponto.shared.pagination.PageQuery(20, 0, 20, 1))
                                                  .total();
         assertThat(afterSecond).isEqualTo(2);
-        assertThat(mailbox.getMessagesSentTo("pubsubscriber@test.com")).hasSize(1);
+        assertThat(mailbox.getMailsSentTo("pubsubscriber@test.com")).hasSize(1);
     }
 
     @Test
@@ -105,7 +105,7 @@ class PostPublishedNotificationTest {
                                            .total();
 
         assertThat(after).isEqualTo(before);
-        assertThat(mailbox.getMessagesSentTo("pubsubscriber@test.com")).isEmpty();
+        assertThat(mailbox.getMailsSentTo("pubsubscriber@test.com")).isEmpty();
     }
 
     @Test
@@ -125,7 +125,7 @@ class PostPublishedNotificationTest {
                                          .data())
                                                  .anyMatch(n -> n.getType() == NotificationType.NEW_POST);
 
-        assertThat(mailbox.getMessagesSentTo("pubsubscriber@test.com")).hasSize(1);
+        assertThat(mailbox.getMailsSentTo("pubsubscriber@test.com")).hasSize(1);
 
         var publicationId = postRepository.findByIdWithTags(post.getId()).orElseThrow().getLivePublication().getId();
         assertThat(emailLogRepository.exists(publicationId, subscriber.getId())).isTrue();

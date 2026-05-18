@@ -1,7 +1,5 @@
 package dev.vepo.contraponto.tag;
 
-import java.net.URI;
-
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;

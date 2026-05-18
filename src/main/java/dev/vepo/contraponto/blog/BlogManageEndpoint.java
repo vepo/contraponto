@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.blog;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;

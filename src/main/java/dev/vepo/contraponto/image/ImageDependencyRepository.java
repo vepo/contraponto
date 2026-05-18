@@ -10,6 +10,9 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ImageDependencyRepository {
 
+    private static final String PARAM_IMAGE_ID = "imageId";
+    private static final String PARAM_BLOG_ID = "blogId";
+
     private final EntityManager entityManager;
 
     @Inject
@@ -46,8 +49,8 @@ public class ImageDependencyRepository {
                                                          JOIN tb_posts p ON p.id = d.post_id
                                                          WHERE d.image_id = :imageId AND p.blog_id = :blogId
                                                          """)
-                                      .setParameter("imageId", imageId)
-                                      .setParameter("blogId", blogId)
+                                      .setParameter(PARAM_IMAGE_ID, imageId)
+                                      .setParameter(PARAM_BLOG_ID, blogId)
                                       .getResultList();
         var pageUsages = entityManager.createNativeQuery("""
                                                          SELECT cp.id, cp.title, d.role, 'CUSTOM_PAGE' AS kind
@@ -55,8 +58,8 @@ public class ImageDependencyRepository {
                                                          JOIN tb_custom_pages cp ON cp.id = d.custom_page_id
                                                          WHERE d.image_id = :imageId AND cp.blog_id = :blogId
                                                          """)
-                                      .setParameter("imageId", imageId)
-                                      .setParameter("blogId", blogId)
+                                      .setParameter(PARAM_IMAGE_ID, imageId)
+                                      .setParameter(PARAM_BLOG_ID, blogId)
                                       .getResultList();
         var rows = new java.util.ArrayList<ImageUsageRow>();
         for (Object row : postUsages) {
@@ -78,31 +81,31 @@ public class ImageDependencyRepository {
 
     public boolean isReferenced(long imageId) {
         long postDeps = entityManager.createQuery("SELECT COUNT(d) FROM PostImageDependency d WHERE d.image.id = :imageId", Long.class)
-                                     .setParameter("imageId", imageId)
+                                     .setParameter(PARAM_IMAGE_ID, imageId)
                                      .getSingleResult();
         if (postDeps > 0) {
             return true;
         }
         long pubDeps = entityManager.createQuery("SELECT COUNT(d) FROM PostPublicationImageDependency d WHERE d.image.id = :imageId", Long.class)
-                                    .setParameter("imageId", imageId)
+                                    .setParameter(PARAM_IMAGE_ID, imageId)
                                     .getSingleResult();
         if (pubDeps > 0) {
             return true;
         }
         long pageDeps = entityManager.createQuery("SELECT COUNT(d) FROM CustomPageImageDependency d WHERE d.image.id = :imageId", Long.class)
-                                     .setParameter("imageId", imageId)
+                                     .setParameter(PARAM_IMAGE_ID, imageId)
                                      .getSingleResult();
         if (pageDeps > 0) {
             return true;
         }
         long coverPosts = entityManager.createQuery("SELECT COUNT(p) FROM Post p WHERE p.cover.id = :imageId", Long.class)
-                                       .setParameter("imageId", imageId)
+                                       .setParameter(PARAM_IMAGE_ID, imageId)
                                        .getSingleResult();
         if (coverPosts > 0) {
             return true;
         }
         return entityManager.createQuery("SELECT COUNT(p) FROM PostPublication p WHERE p.cover.id = :imageId", Long.class)
-                            .setParameter("imageId", imageId)
+                            .setParameter(PARAM_IMAGE_ID, imageId)
                             .getSingleResult() > 0;
     }
 

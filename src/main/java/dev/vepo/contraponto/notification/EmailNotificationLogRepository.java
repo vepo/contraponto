@@ -27,7 +27,7 @@ public class EmailNotificationLogRepository {
     }
 
     @Transactional
-    public void record(EmailNotificationLog log) {
+    public void persist(EmailNotificationLog log) {
         entityManager.persist(log);
     }
 }

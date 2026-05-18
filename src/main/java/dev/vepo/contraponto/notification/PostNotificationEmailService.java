@@ -61,6 +61,6 @@ public class PostNotificationEmailService {
 
         mailer.send(Mail.withHtml(subscriber.getEmail(), subject, html).setFrom(mailFrom));
 
-        logRepository.record(new EmailNotificationLog(publication, subscriber));
+        logRepository.persist(new EmailNotificationLog(publication, subscriber));
     }
 }

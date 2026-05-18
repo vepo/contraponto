@@ -31,6 +31,8 @@ import jakarta.ws.rs.core.UriInfo;
 @ApplicationScoped
 public class TagPageEndpoint {
 
+    private static final String TAG_NOT_FOUND_PREFIX = "Tag not found: ";
+
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance edit(Tag tag, Links links, LoggedUser user);
@@ -74,7 +76,7 @@ public class TagPageEndpoint {
         if (!loggedUser.isEditor()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException("Tag not found: " + slug));
+        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
         return Response.ok(Templates.edit(tag, customPageRepository.loadLinks(), loggedUser)).build();
     }
 
@@ -85,7 +87,7 @@ public class TagPageEndpoint {
     public TemplateInstance grid(@PathParam("slug") String slug,
                                  @QueryParam("limit") @DefaultValue("12") int limit,
                                  @QueryParam("page") int page) {
-        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException("Tag not found: " + slug));
+        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
         return Templates.grid(tag.getSlug(),
                               postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, page)));
     }
@@ -95,7 +97,7 @@ public class TagPageEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance tag(@PathParam("slug") String slug, @QueryParam("limit") @DefaultValue("12") int limit) {
-        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException("Tag not found: " + slug));
+        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
         return Templates.tag(tag,
                              postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, 1)),
                              customPageRepository.loadLinks(),
@@ -107,7 +109,7 @@ public class TagPageEndpoint {
     @Operation(hidden = true)
     @Produces("application/rss+xml;charset=UTF-8")
     public Response tagFeed(@PathParam("slug") String slug, @Context UriInfo uriInfo) {
-        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException("Tag not found: " + slug));
+        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
         var posts = postRepository.findPublishedFeedByTagSlug(tag.getSlug(), FEED_LIMIT);
         String desc = tag.getDescription();
         if (desc == null || desc.isBlank()) {

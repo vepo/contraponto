@@ -13,7 +13,7 @@ import jakarta.inject.Inject;
 public class ImageAltEnricher {
 
     private static final Pattern IMG_TAG = Pattern.compile(
-                                                           "(<img\\s[^>]*?\\bsrc\\s*=\\s*[\"'])(/api/images/([0-9a-fA-F\\-]{36})\\.[a-zA-Z0-9]+)([\"'][^>]*>)",
+                                                           "(<img\\s[^>]*?\\bsrc\\s*=\\s*[\"'])(/api/images/([0-9a-fA-F-]{36})\\.[a-zA-Z0-9]+)([\"'][^>]*>)",
                                                            Pattern.CASE_INSENSITIVE);
 
     private static String escapeAttr(String value) {

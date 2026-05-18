@@ -67,6 +67,7 @@ public class PostPublication {
     @OrderBy("name ASC")
     private List<Tag> tags = new ArrayList<>();
 
+    // Required by JPA
     public PostPublication() {}
 
     @Override

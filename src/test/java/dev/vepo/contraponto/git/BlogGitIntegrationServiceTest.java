@@ -85,7 +85,9 @@ class BlogGitIntegrationServiceTest {
             stream.sorted(Comparator.reverseOrder()).forEach(p -> {
                 try {
                     Files.deleteIfExists(p);
-                } catch (Exception ignored) {}
+                } catch (Exception _) {
+                    // Best-effort cleanup during test teardown
+                }
             });
         }
     }

@@ -16,6 +16,8 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class NotificationRepository {
 
+    private static final String PARAM_USER_ID = "userId";
+
     private final EntityManager entityManager;
 
     @Inject
@@ -61,7 +63,7 @@ public class NotificationRepository {
                                          FROM Notification n
                                          WHERE n.recipient.id = :userId AND n.read = FALSE
                                          """, Long.class)
-                            .setParameter("userId", recipientUserId)
+                            .setParameter(PARAM_USER_ID, recipientUserId)
                             .getSingleResult();
     }
 
@@ -77,7 +79,7 @@ public class NotificationRepository {
                                                FROM Notification n
                                                WHERE n.recipient.id = :userId
                                                """, Long.class)
-                                  .setParameter("userId", recipientUserId)
+                                  .setParameter(PARAM_USER_ID, recipientUserId)
                                   .getSingleResult();
 
         List<Notification> data = entityManager.createQuery("""
@@ -89,7 +91,7 @@ public class NotificationRepository {
                                                             WHERE n.recipient.id = :userId
                                                             ORDER BY n.createdAt DESC
                                                             """, Notification.class)
-                                               .setParameter("userId", recipientUserId)
+                                               .setParameter(PARAM_USER_ID, recipientUserId)
                                                .setFirstResult(query.skip())
                                                .setMaxResults(query.limit())
                                                .getResultList();
@@ -104,7 +106,7 @@ public class NotificationRepository {
                                          SET n.read = TRUE
                                          WHERE n.recipient.id = :userId AND n.read = FALSE
                                          """)
-                            .setParameter("userId", recipientUserId)
+                            .setParameter(PARAM_USER_ID, recipientUserId)
                             .executeUpdate();
     }
 }

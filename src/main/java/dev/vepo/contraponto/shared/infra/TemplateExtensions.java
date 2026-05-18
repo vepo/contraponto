@@ -31,6 +31,9 @@ import jakarta.enterprise.inject.spi.CDI;
 @TemplateExtension
 public class TemplateExtensions {
 
+    private static final String DEFAULT_POST_TITLE = "a post";
+    private static final String DEFAULT_ACTOR_NAME = "Someone";
+
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private static final Map<String, String> HTML_ENTITIES = Map.of("&", "&amp;",
@@ -246,25 +249,25 @@ public class TemplateExtensions {
         String blogName = notification.getBlog().getName();
         return switch (notification.getType()) {
             case NEW_POST -> {
-                String title = notification.getPost() != null ? notification.getPost().getTitle() : "a post";
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
                 if (title == null || title.isBlank()) {
-                    title = notification.getPost() != null ? notification.getPost().getSlug() : "a post";
+                    title = notification.getPost() != null ? notification.getPost().getSlug() : DEFAULT_POST_TITLE;
                 }
                 yield blogName + " published " + title;
             }
             case NEW_FOLLOW -> {
-                String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
+                String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
                 yield actor + " started following " + blogName;
             }
             case NEW_SUBSCRIBE -> {
-                String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
+                String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
                 yield actor + " subscribed by email to " + blogName;
             }
             case NEW_COMMENT -> {
-                String actor = notification.getActor() != null ? notification.getActor().getName() : "Someone";
-                String title = notification.getPost() != null ? notification.getPost().getTitle() : "a post";
+                String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
                 if (title == null || title.isBlank()) {
-                    title = notification.getPost() != null ? notification.getPost().getSlug() : "a post";
+                    title = notification.getPost() != null ? notification.getPost().getSlug() : DEFAULT_POST_TITLE;
                 }
                 yield actor + " commented on " + title;
             }

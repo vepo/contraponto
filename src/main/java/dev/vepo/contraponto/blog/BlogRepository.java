@@ -13,6 +13,12 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class BlogRepository {
 
+    private static final String PARAM_OWNER_ID = "ownerId";
+    private static final String PARAM_BLOG_ID = "blogId";
+    private static final String PARAM_SLUG = "slug";
+    private static final String PARAM_USERNAME = "username";
+    private static final String PARAM_EXCLUDE_BLOG_ID = "excludeBlogId";
+
     private final EntityManager entityManager;
 
     @Inject
@@ -26,7 +32,7 @@ public class BlogRepository {
                                          WHERE b.active AND
                                                b.owner.id = :ownerId
                                          """, Long.class)
-                            .setParameter("ownerId", ownerId)
+                            .setParameter(PARAM_OWNER_ID, ownerId)
                             .getSingleResult();
     }
 
@@ -40,10 +46,10 @@ public class BlogRepository {
             query.append(" AND b.id <> :excludeBlogId");
         }
         var typedQuery = entityManager.createQuery(query.toString(), Long.class)
-                                      .setParameter("ownerId", ownerId)
-                                      .setParameter("slug", slug);
+                                      .setParameter(PARAM_OWNER_ID, ownerId)
+                                      .setParameter(PARAM_SLUG, slug);
         if (excludeBlogId != null) {
-            typedQuery.setParameter("excludeBlogId", excludeBlogId);
+            typedQuery.setParameter(PARAM_EXCLUDE_BLOG_ID, excludeBlogId);
         }
         return typedQuery.getSingleResult() > 0;
     }
@@ -67,7 +73,7 @@ public class BlogRepository {
                                          WHERE active AND
                                                owner.id = :ownerId
                                          """, Blog.class)
-                            .setParameter("ownerId", ownerId)
+                            .setParameter(PARAM_OWNER_ID, ownerId)
                             .getResultList();
     }
 
@@ -79,8 +85,8 @@ public class BlogRepository {
                                                o.username = :username AND
                                                b.slug = :slug
                                          """, Blog.class)
-                            .setParameter("username", username)
-                            .setParameter("slug", slug)
+                            .setParameter(PARAM_USERNAME, username)
+                            .setParameter(PARAM_SLUG, slug)
                             .getResultStream()
                             .findFirst();
     }
@@ -110,7 +116,7 @@ public class BlogRepository {
                                          JOIN FETCH b.owner
                                          WHERE b.id = :blogId
                                          """, Blog.class)
-                            .setParameter("blogId", blogId)
+                            .setParameter(PARAM_BLOG_ID, blogId)
                             .getResultStream()
                             .findFirst();
     }
@@ -122,7 +128,7 @@ public class BlogRepository {
                                          WHERE b.owner.id = :ownerId
                                          ORDER BY b.main DESC, b.name
                                          """, Blog.class)
-                            .setParameter("ownerId", ownerId)
+                            .setParameter(PARAM_OWNER_ID, ownerId)
                             .getResultList();
     }
 
@@ -134,7 +140,7 @@ public class BlogRepository {
                                                b.main AND
                                                b.owner.id = :ownerId
                                          """, Blog.class)
-                            .setParameter("ownerId", ownerId)
+                            .setParameter(PARAM_OWNER_ID, ownerId)
                             .getResultStream()
                             .findFirst();
     }
@@ -158,7 +164,7 @@ public class BlogRepository {
                                                SELECT COUNT(b) FROM Blog b
                                                WHERE b.owner.id = :ownerId
                                                """, Long.class)
-                                  .setParameter("ownerId", ownerId)
+                                  .setParameter(PARAM_OWNER_ID, ownerId)
                                   .getSingleResult();
         var data = entityManager.createQuery("""
                                              FROM Blog b
@@ -166,7 +172,7 @@ public class BlogRepository {
                                              WHERE b.owner.id = :ownerId
                                              ORDER BY b.main DESC, b.name
                                              """, Blog.class)
-                                .setParameter("ownerId", ownerId)
+                                .setParameter(PARAM_OWNER_ID, ownerId)
                                 .setFirstResult(query.skip())
                                 .setMaxResults(query.maxResults())
                                 .getResultList();

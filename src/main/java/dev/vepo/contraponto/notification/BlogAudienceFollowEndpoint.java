@@ -55,7 +55,7 @@ public class BlogAudienceFollowEndpoint {
                         .build();
         } catch (BadRequestException e) {
             return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
-        } catch (NotFoundException e) {
+        } catch (NotFoundException _) {
             return Toast.response(Status.NOT_FOUND).message("Blog not found.").type(Toast.Type.ERROR).build();
         }
     }

@@ -63,6 +63,7 @@ public class Notification {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    // Required by JPA
     public Notification() {}
 
     @Override

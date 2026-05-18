@@ -55,6 +55,7 @@ public class PostComment {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
+    // Required by JPA
     public PostComment() {}
 
     @Override
