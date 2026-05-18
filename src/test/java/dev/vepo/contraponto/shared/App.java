@@ -1851,6 +1851,22 @@ public class App {
         return new WritePage();
     }
 
+    private void ensureCsrfCookieMatchesMeta() {
+        syncCsrfCookieFromPage();
+        var meta = (String) ((JavascriptExecutor) driver).executeScript("""
+                                                                        var m = document.querySelector('meta[name="csrf-token"]');
+                                                                        return m ? m.content : '';
+                                                                        """);
+        var cookie = driver.manage().getCookieNamed(CsrfTokenService.COOKIE_NAME);
+        if (meta == null || meta.isBlank()) {
+            throw new IllegalStateException("CSRF meta tag missing after login bootstrap");
+        }
+        if (cookie == null || !meta.equals(cookie.getValue())) {
+            throw new IllegalStateException("CSRF cookie does not match meta after sync: meta="
+                    + meta + " cookie=" + (cookie != null ? cookie.getValue() : "null"));
+        }
+    }
+
     public Featured featuredCard() {
         return new Featured(wait.until(visibilityOfElementLocated(cssSelector(".featured"))));
     }
@@ -1919,6 +1935,7 @@ public class App {
                                                                                                          .path("/")
                                                                                                          .build());
         _goTo("/");
+        ensureCsrfCookieMatchesMeta();
         return this;
     }
 
