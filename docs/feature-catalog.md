@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-18 · menu hub redesign
+**Last verified:** 2026-05-18 · account security / author appearance / writing blogs split
 
 ---
 
@@ -81,14 +81,13 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
-| Writing hub | `USER` | `GET /writing` | 2 | Open user menu → **Writing**. |
-| New post | `USER` | `GET /write` | 3 | Open user menu → **Writing** → **Write** card. |
-| New post (header) | `USER` | `GET /write` | 1 | Header **Escrever** (Write) button. |
-| Edit draft/post | `USER` | `GET /write/draft/{id}` | 4 | Open user menu → **Writing** → **Library** → **Edit** on row. |
+| Writing hub (library) | `USER` | `GET /writing` | 2 | Open user menu → **Writing** (library panel default). |
+| New post (from hub) | `USER` | `GET /write` | 3 | Open user menu → **Writing** → **Write** in left nav. |
+| New post | `USER` | `GET /write` | 1 | Header **Escrever** (Write) button. |
+| Edit draft/post | `USER` | `GET /write/draft/{id}` | 3 | Open user menu → **Writing** → **Edit** on library row. |
 | Edit own published post | `USER` | `GET /write/draft/{id}` | 4 | Home → blog → post → **Edit** (author only). |
-| Library (drafts tab) | `USER` | `GET /library` | 3 | Open user menu → **Writing** → **Library** (Drafts tab default). |
-| Library (published tab) | `USER` | `GET /library` + tab | 3 | **Library** → **Published** tab (+0). |
-| Delete draft | `USER` | HTMX delete on library | 3 | **Library** → **Delete** on draft row. |
+| Library (published tab) | `USER` | `GET /writing/library` + tab | 2 | **Writing** hub → **Published** tab (+0). |
+| Delete draft | `USER` | HTMX delete on library | 2 | **Writing** hub → **Delete** on draft row. |
 | Save draft | `USER` | `POST /forms/write/draft` | — | On `/write` → header **Salvar Rascunho** (no extra navigation). |
 | Publish post | `USER` | `POST /forms/write/publish` | — | On `/write` → header **Publicar**. |
 
@@ -98,25 +97,27 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
-| Manage hub | `USER` | `GET /manage` | 2 | Open user menu → **Manage**. |
-| Dashboard | `USER` | `GET /dashboard` | 3 | Open user menu → **Manage** → **Dashboard** card. |
-| Dashboard analytics | `USER` | `GET /dashboard/components/analytics` | 3 | **Dashboard** (month controls on same page). |
+| Manage hub (dashboard) | `USER` | `GET /manage` | 2 | Open user menu → **Manage** (dashboard panel default). |
+| Dashboard analytics | `USER` | `GET /dashboard/components/analytics` | 2 | **Manage** hub (month controls on same panel). |
 | My Blog shortcut | `USER` | `GET /{username}` | 2 | Open user menu → **My Blog**. |
-| Blog list | `USER` | `GET /blogs` | 3 | Open user menu → **Manage** → **Blogs** card. |
-| New blog | `USER` | `GET /blogs/new` | 4 | **Blogs** → **New Blog**. |
-| Edit blog | `USER` | `GET /blogs/{id}/edit` | 4 | **Blogs** → **Edit** on row. |
+| Blog list (author) | `USER` | `GET /writing/blogs` | 2 | Open user menu → **Writing** → **Blogs** in left nav. |
+| Blog list (platform) | `EDITOR` | `GET /manage/blogs` | 2 | Open user menu → **Manage** → **Blogs** in left nav. |
+| New blog | `USER` | `GET /blogs/new` | 3 | **Writing** → **Blogs** → **New Blog**. |
+| Edit blog (core) | `USER` | `GET /blogs/{id}/edit?hub=writing` | 4 | **Writing** → **Blogs** → **Edit** on row. |
+| Blog settings (extended) | `USER` | `GET /blogs/{id}/settings` | 4 | **Writing** → **Blogs** → **Settings** on row. |
 | Blog image library | `USER` | `GET /blogs/{blogId}/images` | 5 | **Blogs** → **Edit** → **Images**. |
 | Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 5 | **Blogs** → **Edit** → **View sync history**. |
 | Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 6 | Sync history → run link. |
-| Custom pages list | `USER` | `GET /pages` | 3 | Open user menu → **Manage** → **Custom Pages** card. |
+| Custom pages list | `USER` | `GET /manage/pages` | 2 | Open user menu → **Manage** → **Custom Pages** in left nav. |
 | New custom page | `USER` | `GET /pages/new` | 4 | **Custom Pages** → **New Page**. |
 | Edit custom page | `USER` | `GET /pages/{id}/edit` | 4 | **Custom Pages** → **Edit** on row. |
-| Comment moderation inbox | `USER` | `GET /comments` | 3 | Open user menu → **Manage** → **Comments** card. |
-| Account hub | `USER` | `GET /account` | 2 | Open user menu → **Account**. |
-| Profile settings | `USER` | `GET /profile` | 3 | Open user menu → **Account** → **Settings** card. |
-| Notifications inbox | `USER` | `GET /notifications` | 2 | Header bell **or** **Account** → **Notifications** card. |
-| Notifications (menu path) | `USER` | `GET /notifications` | 3 | Open user menu → **Account** → **Notifications** card. |
-| Subscriptions | `USER` | `GET /subscriptions` | 3 | Open user menu → **Account** → **Subscriptions** card. |
+| Comment moderation inbox | `USER` | `GET /manage/comments` | 2 | Open user menu → **Manage** → **Comments** in left nav. |
+| Account hub (notifications) | `USER` | `GET /account` | 2 | Open user menu → **Account** (notifications panel default). |
+| Account security | `USER` | `GET /account/security` | 2 | Open user menu → **Account** → **Security** in left nav. |
+| Author appearance | `USER` | `GET /writing/appearance` | 2 | Open user menu → **Writing** → **Appearance** in left nav. |
+| Notifications inbox | `USER` | `GET /account/notifications` | 1 | Header bell. |
+| Notifications (menu path) | `USER` | `GET /account` | 2 | Open user menu → **Account**. |
+| Subscriptions | `USER` | `GET /account/subscriptions` | 2 | Open user menu → **Account** → **Subscriptions** in left nav. |
 
 ---
 
@@ -140,14 +141,14 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`, signed in) |
 |---------|----------|-----|------:|-------------------------------|
-| Review hub | `EDITOR` | `GET /editor` | 2 | Open user menu → **Review**. |
-| Featured review list | `EDITOR` | `GET /review` | 3 | Open user menu → **Review** → **Featured Posts** card. |
+| Review hub (featured posts) | `EDITOR` | `GET /editor` | 2 | Open user menu → **Review** (featured posts panel default). |
+| Featured review list | `EDITOR` | `GET /editor/review` | 2 | Same as Review hub (bookmarkable section URL). |
 | Toggle featured (review) | `EDITOR` | `PUT /review/components/{postId}/featured/toggle` | 4 | **Featured Posts** → star on row. |
 | Toggle featured (on post) | `EDITOR` | `PUT …/component/featured/toggle` | 3–4 | Open post → star control in action bar. |
-| Tag admin list | `EDITOR` | `GET /tags/manage` | 3 | Open user menu → **Review** → **Tags** card. |
+| Tag admin list | `EDITOR` | `GET /editor/tags` | 2 | Open user menu → **Review** → **Tags** in left nav. |
 | Edit tag metadata | `EDITOR` | `GET /tags/{slug}/edit` | 4 | **Tags** → **Edit** on row. |
 | Edit tag (from public tag page) | `EDITOR` | `GET /tags/{slug}/edit` | 4 | Home → post → tag → **Edit** (editor-only link on tag page). |
-| Platform-wide blog list | `EDITOR` | `GET /blogs` | 2 | Open user menu → **Blogs** (lists all blogs). |
+| Platform-wide blog list (legacy) | `EDITOR` | `GET /blogs` | 2 | Redirects to `/writing/blogs` (authors) or use **Manage** → **Blogs**. |
 
 ---
 
@@ -155,8 +156,8 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`, signed in) |
 |---------|----------|-----|------:|-------------------------------|
-| Administration hub | admin | `GET /administration` | 2 | Open user menu → **Administration**. |
-| User list | admin | `GET /users` | 3 | Open user menu → **Administration** → **Users** card. |
+| Administration hub (users) | admin | `GET /administration` | 2 | Open user menu → **Administration** (users panel default). |
+| User list | admin | `GET /administration/users` | 2 | Same as Administration hub (bookmarkable section URL). |
 | New user | admin | `GET /users/new` | 4 | **Users** → **New User**. |
 | Edit user | admin | `GET /users/{id}/edit` | 4 | **Users** → **Edit** on row. |
 
@@ -197,16 +198,18 @@ flowchart TD
   Menu --> EditorHub["/editor"]
   Menu --> AdminHub["/administration"]
   WritingHub --> Write["/write"]
-  WritingHub --> Library["/library"]
-  ManageHub --> Dashboard["/dashboard"]
-  ManageHub --> Blogs["/blogs"]
-  ManageHub --> Pages["/pages"]
-  ManageHub --> Comments["/comments"]
-  AccountHub --> Notifications["/notifications"]
-  AccountHub --> Profile["/profile"]
-  EditorHub --> Review["/review"]
-  EditorHub --> TagsManage["/tags/manage"]
-  AdminHub --> Users["/users"]
+  WritingHub --> Library["/writing/library"]
+  ManageHub --> Dashboard["/manage/dashboard"]
+  ManageHub --> Blogs["/manage/blogs"]
+  ManageHub --> Pages["/manage/pages"]
+  ManageHub --> Comments["/manage/comments"]
+  AccountHub --> Notifications["/account/notifications"]
+  AccountHub --> Security["/account/security"]
+  WritingHub --> Appearance["/writing/appearance"]
+  WritingHub --> AuthorBlogs["/writing/blogs"]
+  EditorHub --> Review["/editor/review"]
+  EditorHub --> TagsManage["/editor/tags"]
+  AdminHub --> Users["/administration/users"]
   Blogs --> BlogEdit["/blogs/id/edit"]
   BlogEdit --> Images["/blogs/id/images"]
   BlogEdit --> GitSync["/blogs/id/git-sync"]

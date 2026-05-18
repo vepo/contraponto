@@ -31,6 +31,9 @@ public class BlogForm {
     @FormParam("bannerId")
     private String bannerId;
 
+    @FormParam("hub")
+    private String hub;
+
     public String getBannerId() {
         return bannerId;
     }
@@ -45,6 +48,10 @@ public class BlogForm {
 
     public String getGitRemoteUrl() {
         return gitRemoteUrl;
+    }
+
+    public String getHub() {
+        return hub;
     }
 
     public Long getId() {

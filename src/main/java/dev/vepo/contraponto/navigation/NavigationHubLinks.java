@@ -15,10 +15,10 @@ public class NavigationHubLinks {
                                               new HubLink("Subscriptions",
                                                           "Blogs you follow or subscribe to by email.",
                                                           "/subscriptions"))),
-                       new HubSection("Profile",
-                                      List.of(new HubLink("Settings",
-                                                          "Profile, email, and password.",
-                                                          "/profile"))));
+                       new HubSection("Account",
+                                      List.of(new HubLink("Security",
+                                                          "Email and password.",
+                                                          "/account/security"))));
     }
 
     public List<HubSection> administrationSections() {
@@ -45,8 +45,8 @@ public class NavigationHubLinks {
                                                           "/dashboard"))),
                        new HubSection("Content",
                                       List.of(new HubLink("Blogs",
-                                                          "Manage your blogs and settings.",
-                                                          "/blogs"),
+                                                          "Platform-wide blog management (editors).",
+                                                          "/manage/blogs"),
                                               new HubLink("Custom Pages",
                                                           "Static pages for your site.",
                                                           "/pages"))),
@@ -58,11 +58,15 @@ public class NavigationHubLinks {
 
     public List<HubSection> writingSections() {
         return List.of(new HubSection("Writing",
-                                      List.of(new HubLink("Write",
-                                                          "Create or edit a post.",
-                                                          "/write"),
-                                              new HubLink("Library",
+                                      List.of(new HubLink("Library",
                                                           "Drafts and published posts.",
-                                                          "/library"))));
+                                                          "/library"),
+                                              new HubLink("Blogs",
+                                                          "Your blogs — create and edit name, slug, and banner.",
+                                                          "/writing/blogs"))),
+                       new HubSection("Author",
+                                      List.of(new HubLink("Appearance",
+                                                          "Display name, profile picture, and default blog banner.",
+                                                          "/writing/appearance"))));
     }
 }

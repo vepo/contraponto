@@ -27,9 +27,26 @@ class BreadcrumbServiceTest {
 
         assertThat(trail.items()).hasSize(3);
         assertThat(trail.items().get(0).label()).isEqualTo("Manage");
-        assertThat(trail.items().get(0).href()).isEqualTo("/manage");
+        assertThat(trail.items().get(0).href()).isEqualTo("/manage/dashboard");
+        assertThat(trail.items().get(1).href()).isEqualTo("/manage/blogs");
         assertThat(trail.items().get(2).label()).isEqualTo("Notes");
         assertThat(trail.items().get(2).isCurrent()).isTrue();
+    }
+
+    @Test
+    void writingBlogEditTrail() {
+        var owner = new User();
+        owner.setUsername("alice");
+        owner.setName("Alice");
+        var blog = new Blog(owner, "notes", "Notes", "desc");
+        blog.setId(42L);
+
+        var trail = breadcrumbService.writingBlogEdit(blog);
+
+        assertThat(trail.items()).hasSize(3);
+        assertThat(trail.items().get(0).label()).isEqualTo("Writing");
+        assertThat(trail.items().get(1).href()).isEqualTo("/writing/blogs");
+        assertThat(trail.items().get(2).label()).isEqualTo("Notes");
     }
 
     @Test

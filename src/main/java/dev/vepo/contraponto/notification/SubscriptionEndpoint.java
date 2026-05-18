@@ -18,6 +18,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @ApplicationScoped
@@ -26,6 +28,8 @@ public class SubscriptionEndpoint {
 
     @CheckedTemplate
     public static class Templates {
+        public static native TemplateInstance panel(Page<SubscriptionRow> rows, String basePath);
+
         public static native TemplateInstance subscriptions(LoggedUser user,
                                                             Links links,
                                                             Page<SubscriptionRow> rows,
@@ -57,10 +61,14 @@ public class SubscriptionEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance list(@QueryParam("page") @DefaultValue("1") int page) {
+    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
+        return Response.seeOther(UriBuilder.fromPath("/account/subscriptions").queryParam("page", page).build()).build();
+    }
+
+    public TemplateInstance renderHubPanel(int page, String basePath) {
         var rows = audienceRepository.findPageByUserId(loggedUser.getId(), PageQuery.forGrid(20, page))
                                      .map(a -> new SubscriptionRow(a.getBlog(),
                                                                    audienceComponentEndpoint.buildView(a.getBlog())));
-        return Templates.subscriptions(loggedUser, customPageRepository.loadLinks(), rows, breadcrumbService.accountSubscriptions());
+        return Templates.panel(rows, basePath);
     }
 }

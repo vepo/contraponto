@@ -19,28 +19,31 @@ class ProfileTest {
     private User testUser;
 
     @Test
-    void authenticatedUserCanViewProfile(App app) {
+    void authenticatedUserCanViewAccountSecurity(App app) {
         app.login(testUser)
-           .profile()
-           .assertNameIs(TEST_USER_NAME)
+           .accountSecurity()
            .assertEmailIs(TEST_USER_EMAIL);
     }
 
     @Test
-    void changePasswordSuccessfully(App app) {
-        // Login and go to profile
+    void authenticatedUserCanViewAuthorAppearance(App app) {
         app.login(testUser)
-           .profile()
+           .writingAppearance()
+           .assertNameIs(TEST_USER_NAME);
+    }
+
+    @Test
+    void changePasswordSuccessfully(App app) {
+        app.login(testUser)
+           .accountSecurity()
            .fillCurrentPassword(TEST_USER_PASSWORD)
            .fillNewPassword("newPassword456")
            .fillConfirmPassword("newPassword456")
            .submit()
-           .assertSuccessMessage("Profile updated.")
+           .assertSuccessMessage("Account updated.")
 
-           // Logout
            .logout()
 
-           // Try to login with new password (using UI modal to verify)
            .access()
            .loginModal()
            .useLogin(TEST_USER_EMAIL)
@@ -48,24 +51,22 @@ class ProfileTest {
            .submit()
            .assertModalWasClosed()
 
-           // Verify user menu appears (logged in)
            .assertMenuIsDisplayed();
     }
 
     @Test
-    void logoutFromProfileRedirectsToHome(App app) {
+    void logoutFromSecurityRedirectsToHome(App app) {
         app.login(testUser)
-           .profile()
+           .accountSecurity()
            .waitForReady()
            .logout()
-           // Wait for login button to appear
            .assertAccessButtonIsDisplayed();
     }
 
     @Test
     void passwordMismatchShowsError(App app) {
         app.login(testUser)
-           .profile()
+           .accountSecurity()
            .fillCurrentPassword(TEST_USER_PASSWORD)
            .fillNewPassword("newPassword456")
            .fillConfirmPassword("differentPassword")
@@ -85,30 +86,28 @@ class ProfileTest {
     }
 
     @Test
-    void unauthenticatedUserCannotAccessProfile(App app) {
+    void unauthenticatedUserCannotAccessAccountSecurity(App app) {
         app.access()
-           .profile()
+           .accountSecurity()
            .assertNotPresent();
     }
 
     @Test
-    void updateProfileSuccessfully(App app) {
+    void updateDisplayNameSuccessfully(App app) {
         String newName = "Updated Name";
 
         app.login(testUser)
-           .profile()
+           .writingAppearance()
            .fillName(newName)
            .fillCurrentPassword(TEST_USER_PASSWORD)
            .submit()
-           .assertSuccessMessage("Profile updated.")
+           .assertSuccessMessage("Appearance updated.")
            .refresh()
-           .assertNameIs(newName)
-           .assertEmailIs(TEST_USER_EMAIL);
+           .assertNameIs(newName);
     }
 
     @Test
     void updateProfileWithDuplicateEmailShowsError(App app) {
-        // Create another user with a different email
         Given.user()
              .withUsername("otheruser")
              .withEmail("other@example.com")
@@ -117,7 +116,7 @@ class ProfileTest {
              .persist();
 
         app.login(testUser)
-           .profile()
+           .accountSecurity()
            .fillEmail("other@example.com")
            .fillCurrentPassword(TEST_USER_PASSWORD)
            .submit()
@@ -127,8 +126,8 @@ class ProfileTest {
     @Test
     void updateProfileWithWrongCurrentPasswordShowsError(App app) {
         app.login(testUser)
-           .profile()
-           .fillName("Any Name")
+           .accountSecurity()
+           .fillEmail(TEST_USER_EMAIL)
            .fillCurrentPassword("wrongPassword")
            .submit()
            .assertErrorMessage("Current password is incorrect");

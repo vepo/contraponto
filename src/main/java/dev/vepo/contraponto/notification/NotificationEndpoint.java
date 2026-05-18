@@ -18,6 +18,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @ApplicationScoped
@@ -31,6 +33,10 @@ public class NotificationEndpoint {
                                                             Page<Notification> notifications,
                                                             long unreadCount,
                                                             BreadcrumbTrail breadcrumb);
+
+        public static native TemplateInstance panel(Page<Notification> notifications,
+                                                    long unreadCount,
+                                                    String basePath);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -55,14 +61,14 @@ public class NotificationEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance list(@QueryParam("page") @DefaultValue("1") int page) {
+    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
+        return Response.seeOther(UriBuilder.fromPath("/account/notifications").queryParam("page", page).build()).build();
+    }
+
+    public TemplateInstance renderHubPanel(int page, String basePath) {
         long userId = loggedUser.getId();
-        Page<Notification> notifications = notificationRepository.findPage(userId, PageQuery.forGrid(20, page));
+        var notifications = notificationRepository.findPage(userId, PageQuery.forGrid(20, page));
         long unreadCount = notificationRepository.countUnread(userId);
-        return Templates.notifications(loggedUser,
-                                       customPageRepository.loadLinks(),
-                                       notifications,
-                                       unreadCount,
-                                       breadcrumbService.accountNotifications());
+        return Templates.panel(notifications, unreadCount, basePath);
     }
 }

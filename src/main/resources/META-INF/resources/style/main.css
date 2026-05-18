@@ -2088,18 +2088,43 @@ hr:after {
 
 
 
-.article-page__actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+.page-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: var(--spacing-md);
 }
 
-.article-page__actions .blog-audience {
-    margin-top: 0;
-    gap: 0.5rem;
+.page-top__breadcrumb {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.page-top__breadcrumb .breadcrumb {
+  margin-bottom: 0;
+}
+
+.page-top__actions {
+  flex: 0 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem 0.75rem;
+}
+
+.page-top__actions .blog-audience {
+  margin-top: 0;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .page-top__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .btn--icon {
@@ -2544,29 +2569,36 @@ a:focus:not(:focus-visible) {
 .breadcrumb {
   margin-bottom: var(--spacing-md);
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
 .breadcrumb__list {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0;
+  gap: 0.35rem 0.125rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .breadcrumb__item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  max-width: 100%;
   color: var(--color-text-muted);
 }
 
 .breadcrumb__item:not(:last-child)::after {
   content: "›";
-  margin-left: 0.35rem;
+  margin-inline: 0.625rem;
   color: var(--color-text-light);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1;
+  opacity: 0.85;
+  user-select: none;
 }
 
 .breadcrumb__link {
@@ -2584,6 +2616,6 @@ a:focus:not(:focus-visible) {
 
 .breadcrumb__current {
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
 }
 

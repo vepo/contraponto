@@ -7,29 +7,26 @@
         {#include components/header /}
         <main class="article-page" id="main-content">
             <div class="container-narrow">
-                {#include components/breadcrumb trail=breadcrumb /}
-            {#if user.isAuthenticated}
-                <div class="article-page__actions">
-                    {#if user.id == view.post.author.id}
-                    <a data-hx-get="/write/draft/{view.post.id}"
-                    hx-select="main"
-                    hx-target="main"
-                    hx-push-url="/write/draft/{view.post.id}"
-                    class="btn btn--icon btn--outline">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z"/>
-                        </svg>
-                        Edit
-                    </a>
+                {#include components/page-top trail=breadcrumb}
+                {#actions}
+                    {#if user.isAuthenticated}
+                        {#if user.id == view.post.author.id}
+                        <a data-hx-get="/write/draft/{view.post.id}"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-push-url="/write/draft/{view.post.id}"
+                           class="btn btn--icon btn--outline">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z"/>
+                            </svg>
+                            Edit
+                        </a>
+                        {/if}
+                        {#include PostEndpoint/toggle post=view.post user=user /}
                     {/if}
-                    {#include PostEndpoint/toggle post=view.post user=user /}
                     {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
-                </div>
-                {#else}
-                <div class="article-page__actions">
-                    {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
-                </div>
-                {/if}
+                {/actions}
+                {/include}
 
                 {#if view.post.coverUrl}
                 <div class="article-page__cover">
@@ -87,7 +84,6 @@
                      hx-target="#comments"
                      hx-swap="innerHTML">
                 </div>
-
             </div>
         </main>
 

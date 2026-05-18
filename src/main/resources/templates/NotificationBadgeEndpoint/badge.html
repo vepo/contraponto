@@ -1,9 +1,9 @@
 {#if authenticated}
-<a data-hx-get="/notifications"
+<a data-hx-get="/account/notifications"
    hx-select="main"
    hx-target="main"
    hx-swap="outerHTML"
-   hx-push-url="/notifications"
+   hx-push-url="/account/notifications"
    class="notification-bell"
    aria-label="Notifications"
    id="notification-bell">

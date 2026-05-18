@@ -1,0 +1,22 @@
+<h2 class="hub-panel__title">Subscriptions</h2>
+<p class="hub-panel__subtitle subscriptions-page__subtitle">Blogs you follow or receive by email.</p>
+
+{#if rows.isEmpty()}
+<p class="subscriptions-page__empty">You are not following or subscribed to any blogs yet.</p>
+{#else}
+<ul class="subscription-list">
+    {#for row in rows.data}
+    <li class="subscription-list__item">
+        <a data-hx-get="{row.blog.url}"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="{row.blog.url}"
+           class="subscription-list__blog">{row.blog.name}</a>
+        <div class="subscription-list__actions">
+            {#include BlogAudienceComponentEndpoint/audienceControls audience=row.audience /}
+        </div>
+    </li>
+    {/for}
+</ul>
+{#include components/manage-pagination page=rows basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

@@ -141,12 +141,25 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ---
 
-## 7. Profile Settings (`GET /profile`)
+## 7. Account security and author appearance
+
+### 7.1 Account security (`GET /account/security`, legacy `GET /profile` redirects here)
 - Requires authentication.  
-- Form to update name, email, password, profile picture, default blog banner.  
+- Form to update email and password.  
 - Password change requires current password; triggers a **password changed** account email.  
 - Email change requires verification: sets **pending email**, sends link to new address; confirmed email stays active until `GET /account/verify-email?token=…`.  
-- POST to `/forms/profile` with validation.
+- POST to `/forms/account/security` (legacy `/forms/profile` delegates when only security fields are sent).
+
+### 7.2 Author appearance (`GET /writing/appearance`)
+- Requires authentication.  
+- Form to update display name, profile picture, and default blog banner.  
+- Display name change requires current password; image-only saves do not.  
+- POST to `/forms/writing/appearance`.
+
+### 7.3 Author blogs (`GET /writing/blogs`)
+- List, create, and edit own blogs (name, slug, banner).  
+- **Settings** on a row opens the extended form (description, active, Git).  
+- Editors use **Manage** → **Blogs** for platform-wide list and deactivation.
 
 ---
 

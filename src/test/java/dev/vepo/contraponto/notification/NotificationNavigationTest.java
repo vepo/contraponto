@@ -25,10 +25,10 @@ class NotificationNavigationTest {
     void headerBellAfterMenuDoesNotDuplicateMain(App app) {
         app.login(recipient)
            .openNotificationsFromMenu()
-           .assertUrl("/notifications")
+           .assertUrl("/account")
            .assertSingleMainElement()
            .clickNotificationBell()
-           .assertUrl("/notifications")
+           .assertUrl("/account/notifications")
            .assertSingleMainElement();
     }
 

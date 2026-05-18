@@ -30,13 +30,13 @@ public class EmailVerificationEndpoint {
     public Response verify(@QueryParam("token") String token) {
         var verified = emailVerificationService.verify(token, loggedUser);
         if (verified.isEmpty()) {
-            return Response.seeOther(UriBuilder.fromPath("/profile")
+            return Response.seeOther(UriBuilder.fromPath("/account/security")
                                                .queryParam("error", "invalid-token")
                                                .build())
                            .build();
         }
 
-        return Response.seeOther(UriBuilder.fromPath("/profile")
+        return Response.seeOther(UriBuilder.fromPath("/account/security")
                                            .queryParam("verified", "true")
                                            .build())
                        .build();

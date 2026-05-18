@@ -167,10 +167,13 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
 | **Dashboard** | Author overview per selected blog: analytics (daily views, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
-| **Profile settings** | Update name, email (with verification), password, profile picture, default blog banner. | `components.ProfileEndpoint`, `ProfileUpdateEndpoint` |
+| **Account security** | Update email (with verification) and password. | `AccountSecurityEndpoint`, `AccountSecurityUpdateEndpoint` |
+| **Author appearance** | Update display name, profile picture, and default blog banner. | `AuthorAppearanceEndpoint`, `AuthorAppearanceUpdateEndpoint` |
+| **Author blogs** | List, create, and edit own blogs (name, slug, banner) in the Writing hub. Extended settings (description, active, Git) on the blog settings form. | `BlogManageEndpoint`, Writing hub `blogs` section |
+| **Platform blog management** | Editors list all blogs and deactivate others’ secondary blogs. | `BlogManageEndpoint`, Manage hub `blogs` section (`EDITOR`+) |
 | **User management** | Administrators create and edit users, roles, and passwords. | `UserManageEndpoint`, `UserSaveEndpoint` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
-| **Navigation hub** | Logged-in index page grouping related routes (Writing, Manage, Account, Review, Administration). | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` |
+| **Navigation hub** | Logged-in shell with sticky left sidebar sections and distinct URLs per feature (Writing → Library, Blogs, Appearance; Manage; Account; Review; Administration). Writing hub does not duplicate the header Write action. Manage **Blogs** nav is visible only to `EDITOR`+. Menu opens the hub default section. | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` and `/{hub}/{section}` |
 | **Breadcrumb trail** | Ordered navigation labels from Home or a hub to the current page; last item is not linked. | `BreadcrumbService`, `components/breadcrumb.html` |
 
 ### UI labels (user-visible copy)
@@ -196,7 +199,9 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Password reset — submit | Update password | Reset form |
 | Password reset — success | Your password was updated. Sign in with your new password. | After reset |
 | Password reset — invalid token | This reset link is invalid or has expired. Request a new one. | Invalid/expired token |
-| Profile — pending email | Verification pending for {email}. | Profile settings |
+| Account — pending email | Verification pending for {email}. | Account security |
+| Account — security saved toast | Account updated. | After account security save |
+| Author appearance — saved toast | Appearance updated. | After appearance save |
 | Profile — email verification sent | Check your new email to confirm the address change. | After email change request |
 | Profile — email verified | Email address updated. | After verification |
 | Account email — password changed subject | Your contraponto password was changed | Security notice |
@@ -239,11 +244,13 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Post — change details | Changes from version {n} | Expandable diff summary in modal |
 | Post — serie nav aria | Series navigation | On-post serie parts list |
 | Post — serie part count | Series of {n} parts | Subtitle under serie title on post page |
-| Profile — picture field | Profile picture | Profile settings |
-| Profile — default banner field | Default blog banner | Profile settings |
+| Author appearance — picture field | Profile picture | Author appearance |
+| Author appearance — default banner field | Default blog banner | Author appearance |
+| Author appearance — display name field | Display name | Author appearance |
+| Writing hub — blogs nav | Blogs | Writing left nav |
+| Manage hub — blogs nav | Blogs | Manage left nav (editors) |
 | Blog manage — banner field | Blog banner | Blog edit form |
 | Profile/blog — remove image | Remove | Image upload areas |
-| Profile — saved toast | Profile updated. | After profile save |
 | Git sync — history page title | Git sync history | `/blogs/{id}/git-sync` |
 | Git sync — view history link | View sync history | Blog manage Git section |
 | Git sync — succeeded | Sync succeeded | Run list/detail badge |

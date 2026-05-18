@@ -132,9 +132,11 @@ public class BlogSaveEndpoint {
         }
         var blog = new Blog(owner, slug, form.getName().trim(), nullToEmpty(form.getDescription()));
         blog.setActive(form.isActive());
-        var gitError = applyGitIntegrationFields(blog, form);
-        if (gitError.isPresent()) {
-            return badRequest(gitError.get());
+        if (!isAuthorCoreSave(form)) {
+            var gitError = applyGitIntegrationFields(blog, form);
+            if (gitError.isPresent()) {
+                return badRequest(gitError.get());
+            }
         }
         blogRepository.save(blog);
         blogBannerService.applyDefaultBannerOnCreate(blog);
@@ -142,14 +144,14 @@ public class BlogSaveEndpoint {
         blogRepository.save(blog);
         logger.info("Created blog id={} slug={}", blog.getId(), blog.getSlug());
         triggerGitWarmupIfConfigured(blog);
-        return successList();
+        return successList(form.getHub());
     }
 
     @DELETE
     @Path("{id}")
     @Transactional
     @Produces(MediaType.TEXT_HTML)
-    public Response deactivate(@PathParam("id") long id) {
+    public Response deactivate(@PathParam("id") long id, @jakarta.ws.rs.QueryParam("hub") String hub) {
         if (!loggedUser.isAuthenticated()) {
             return forbidden();
         }
@@ -164,7 +166,7 @@ public class BlogSaveEndpoint {
         }
 
         if (!blog.isActive()) {
-            return successList();
+            return successList(hub);
         }
 
         var activeCount = blogRepository.countActiveByOwnerId(blog.getOwner().getId());
@@ -175,7 +177,7 @@ public class BlogSaveEndpoint {
         blog.setActive(false);
         blogRepository.save(blog);
         logger.info("Deactivated blog id={}", blog.getId());
-        return successList();
+        return successList(hub);
     }
 
     private Response forbidden() {
@@ -186,12 +188,24 @@ public class BlogSaveEndpoint {
                     .build();
     }
 
+    private boolean isAuthorCoreSave(BlogForm form) {
+        return BlogHubContext.WRITING == BlogHubContext.fromHubParam(form.getHub()) && form.getDescription() == null;
+    }
+
     private Response notFound() {
         return Toast.response(Response.Status.NOT_FOUND)
                     .message("Blog not found.")
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
+    }
+
+    private BlogHubContext resolveSuccessHub(String hub) {
+        var context = BlogHubContext.fromHubParam(hub);
+        if (context == BlogHubContext.MANAGE && blogAccess.canListAll(loggedUser)) {
+            return BlogHubContext.MANAGE;
+        }
+        return BlogHubContext.WRITING;
     }
 
     @POST
@@ -214,18 +228,20 @@ public class BlogSaveEndpoint {
         return createBlog(form);
     }
 
-    private Response successList() {
-        var editorView = blogAccess.canListAll(loggedUser);
+    private Response successList(String hub) {
+        var hubContext = resolveSuccessHub(hub);
+        boolean platform = hubContext == BlogHubContext.MANAGE;
         return Toast.ok()
                     .message("Blog saved successfully.")
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url("/blogs")
-                    .page(BlogManageEndpoint.Templates.list(blogManageEndpoint.listPage(1, editorView),
-                                                            editorView,
+                    .url(platform ? "/manage/blogs" : "/writing/blogs")
+                    .page(BlogManageEndpoint.Templates.list(blogManageEndpoint.listPage(1, platform),
+                                                            hubContext,
                                                             customPageRepository.loadLinks(),
                                                             loggedUser,
-                                                            breadcrumbService.manageBlogs()))
+                                                            platform ? breadcrumbService.manageBlogs()
+                                                                     : breadcrumbService.writingBlogs()))
                     .build();
     }
 
@@ -247,19 +263,29 @@ public class BlogSaveEndpoint {
         if (updateError != null) {
             return badRequest(updateError);
         }
-        var gitError = applyGitIntegrationFields(blog, form);
-        if (gitError.isPresent()) {
-            return badRequest(gitError.get());
+        if (!isAuthorCoreSave(form)) {
+            var gitError = applyGitIntegrationFields(blog, form);
+            if (gitError.isPresent()) {
+                return badRequest(gitError.get());
+            }
         }
         blogBannerService.applyBannerFromForm(blog, form.getBannerId());
         blogRepository.save(blog);
         logger.info("Updated blog id={} slug={}", blog.getId(), blog.getSlug());
         triggerGitWarmupIfConfigured(blog);
-        return successList();
+        return successList(form.getHub());
     }
 
     private String updateExisting(Blog blog, BlogForm form) {
         blog.setName(form.getName().trim());
+
+        if (isAuthorCoreSave(form)) {
+            if (blog.isMain()) {
+                return null;
+            }
+            return updateSecondarySlug(blog, form);
+        }
+
         blog.setDescription(nullToEmpty(form.getDescription()));
 
         if (blog.isMain()) {
@@ -286,6 +312,18 @@ public class BlogSaveEndpoint {
         return null;
     }
 
+    private String updateSecondarySlug(Blog blog, BlogForm form) {
+        var slug = normalizeSlug(form.getSlug());
+        if (slug.equals(blog.getOwner().getUsername())) {
+            return "Secondary blog slug cannot match your username.";
+        }
+        if (blogRepository.existsSlug(blog.getOwner().getId(), slug, blog.getId())) {
+            return "A blog with this slug already exists.";
+        }
+        blog.setSlug(slug);
+        return null;
+    }
+
     private String validate(BlogForm form) {
         if (form.getName() == null || form.getName().isBlank()) {
             return "Name is required.";
@@ -304,9 +342,11 @@ public class BlogSaveEndpoint {
                 }
             }
         }
-        String gitIssue = validateGitIntegration(form);
-        if (gitIssue != null) {
-            return gitIssue;
+        if (!isAuthorCoreSave(form)) {
+            String gitIssue = validateGitIntegration(form);
+            if (gitIssue != null) {
+                return gitIssue;
+            }
         }
         return null;
     }

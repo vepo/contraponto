@@ -27,6 +27,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/review")
@@ -35,6 +36,8 @@ public class ReviewEndpoint {
 
     @CheckedTemplate
     public static class Templates {
+        public static native TemplateInstance panel(Page<Post> posts, String basePath);
+
         public static native TemplateInstance review(Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance row(Post post); // for HTMX swap
@@ -58,6 +61,18 @@ public class ReviewEndpoint {
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+    }
+
+    private Response forbidden() {
+        return Toast.response(Response.Status.FORBIDDEN)
+                    .message("Usuário não possui permissões de editor!")
+                    .type(Toast.Type.ERROR)
+                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                    .build();
+    }
+
+    public Page<Post> listPage(int page) {
+        return postRepository.findPublished(PageQuery.forGrid(20, page));
     }
 
     @PUT
@@ -97,6 +112,10 @@ public class ReviewEndpoint {
                        .build();
     }
 
+    public TemplateInstance renderHubPanel(int page, String basePath) {
+        return Templates.panel(listPage(page), basePath);
+    }
+
     /**
      * Main review page – shows all published posts with featured toggle.
      */
@@ -104,17 +123,8 @@ public class ReviewEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public Response review(@QueryParam("page") @DefaultValue("1") int page) {
         if (!loggedUser.isEditor()) {
-            return Toast.response(Response.Status.FORBIDDEN)
-                        .message("Usuário não possui permissões de editor!")
-                        .type(Toast.Type.ERROR)
-                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .build();
+            return forbidden();
         }
-        return Response.ok()
-                       .entity(Templates.review(postRepository.findPublished(PageQuery.forGrid(20, page)),
-                                                customPageRepository.loadLinks(),
-                                                loggedUser,
-                                                breadcrumbService.reviewFeaturedPosts()))
-                       .build();
+        return Response.seeOther(UriBuilder.fromPath("/editor/review").queryParam("page", page).build()).build();
     }
 }

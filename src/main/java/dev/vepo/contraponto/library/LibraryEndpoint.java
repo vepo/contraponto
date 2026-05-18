@@ -26,6 +26,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/library")
@@ -36,6 +37,8 @@ public class LibraryEndpoint {
     public static class Templates {
 
         public static native TemplateInstance library(LoggedUser user, Links links, BreadcrumbTrail breadcrumb);
+
+        public static native TemplateInstance panel();
 
         public static native TemplateInstance tab(Page<Post> posts, String type);
 
@@ -90,8 +93,12 @@ public class LibraryEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance library() {
-        return Templates.library(loggedUser, customPageRepository.loadLinks(), breadcrumbService.writingLibrary());
+    public Response library() {
+        return Response.seeOther(UriBuilder.fromPath("/writing/library").build()).build();
+    }
+
+    public TemplateInstance renderHubPanel() {
+        return Templates.panel();
     }
 
     @GET

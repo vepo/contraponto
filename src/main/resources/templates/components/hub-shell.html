@@ -1,0 +1,39 @@
+{#include components/breadcrumb trail=breadcrumb /}
+
+{#if singleSectionNav}
+<div class="hub-layout hub-layout--single">
+    <div class="hub-panel">
+        {panelContent}
+    </div>
+</div>
+{#else}
+<div class="hub-layout">
+    <div class="hub-nav__sticky">
+        <nav class="hub-nav" aria-label="{hubTitle} sections">
+            {#for group in navGroups}
+            {#if group.title}
+            <h2 class="hub-nav__group-title">{group.title}</h2>
+            {/if}
+            <ul class="hub-nav__list">
+                {#for section in group.sections}
+                <li>
+                    <a data-hx-get="{hubBasePath}/{section.slug}"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="{hubBasePath}/{section.slug}"
+                       class="hub-nav__link{#if section.slug == activeSlug} hub-nav__link--active{/if}"
+                       data-nav>
+                        {section.label}
+                    </a>
+                </li>
+                {/for}
+            </ul>
+            {/for}
+        </nav>
+    </div>
+    <div class="hub-panel">
+        {panelContent}
+    </div>
+</div>
+{/if}

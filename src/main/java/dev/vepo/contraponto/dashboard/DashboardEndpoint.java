@@ -22,6 +22,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/dashboard")
@@ -36,6 +38,8 @@ public class DashboardEndpoint {
                                                         Links links,
                                                         LoggedUser user,
                                                         BreadcrumbTrail breadcrumb);
+
+        public static native TemplateInstance panel(DashboardPage page);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -76,27 +80,11 @@ public class DashboardEndpoint {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance dashboard(@QueryParam("blogId") Long blogId) {
-        var draftsCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), false);
-        var publishedCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), true);
-        var recentDrafts = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), false, 5);
-        var recentPublished = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), true, 5);
-
-        Map<Long, Long> viewCounts = viewRepository.getViewCountsForPosts(recentPublished.stream()
-                                                                                         .map(Post::getId)
-                                                                                         .toList());
-
-        Long selectedBlogId = blogId != null ? blogId : analyticsService.resolveDefaultBlogId();
-
-        var links = customPageRepository.loadLinks();
-        return Templates.dashboard(new DashboardPage(draftsCount,
-                                                     publishedCount,
-                                                     recentDrafts,
-                                                     recentPublished,
-                                                     viewCounts,
-                                                     selectedBlogId),
-                                   links,
-                                   loggedUser,
-                                   breadcrumbService.manageDashboard());
+    public Response dashboard(@QueryParam("blogId") Long blogId) {
+        var builder = UriBuilder.fromPath("/manage/dashboard");
+        if (blogId != null) {
+            builder.queryParam("blogId", blogId);
+        }
+        return Response.seeOther(builder.build()).build();
     }
 }

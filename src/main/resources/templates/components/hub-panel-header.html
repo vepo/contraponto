@@ -1,0 +1,19 @@
+<header class="hub-panel__header">
+    <div class="hub-panel__header-text">
+        <h2 class="hub-panel__title">{title}</h2>
+        {#if subtitle}
+        <p class="hub-panel__subtitle">{subtitle}</p>
+        {/if}
+    </div>
+    {#if actionHref?? && actionHref}
+    <a data-hx-get="{actionHref}"
+       hx-select="main"
+       hx-target="main"
+       hx-swap="outerHTML"
+       hx-push-url="{actionHref}"
+       class="btn btn--primary btn--small"
+       data-nav>
+        {actionLabel}
+    </a>
+    {/if}
+</header>

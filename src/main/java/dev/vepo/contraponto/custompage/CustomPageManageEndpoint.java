@@ -26,6 +26,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/pages")
@@ -44,6 +45,8 @@ public class CustomPageManageEndpoint {
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
+
+        static native TemplateInstance panel(Page<CustomPageRow> pages, boolean editorView, String basePath);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -126,13 +129,7 @@ public class CustomPageManageEndpoint {
             return forbidden();
         }
 
-        var editorView = customPageAccess.canListAll(loggedUser);
-        return Response.ok(Templates.list(listPage(page, editorView),
-                                          editorView,
-                                          customPageRepository.loadLinks(),
-                                          loggedUser,
-                                          breadcrumbService.manageCustomPages()))
-                       .build();
+        return Response.seeOther(UriBuilder.fromPath("/manage/pages").queryParam("page", page).build()).build();
     }
 
     public Page<CustomPageRow> listPage(int page, boolean editorView) {
@@ -165,5 +162,10 @@ public class CustomPageManageEndpoint {
                                           loggedUser,
                                           breadcrumbService.manageCustomPageForm("New Page")))
                        .build();
+    }
+
+    public TemplateInstance renderHubPanel(int page, String basePath) {
+        var editorView = customPageAccess.canListAll(loggedUser);
+        return Templates.panel(listPage(page, editorView), editorView, basePath);
     }
 }

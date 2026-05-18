@@ -22,6 +22,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/comments")
@@ -34,6 +35,8 @@ public class CommentManageEndpoint {
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
+
+        static native TemplateInstance panel(Page<CommentManageRow> comments, String basePath);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -72,7 +75,13 @@ public class CommentManageEndpoint {
             return forbidden();
         }
 
-        return Response.ok(renderList(page)).build();
+        return Response.seeOther(UriBuilder.fromPath("/manage/comments").queryParam("page", page).build()).build();
+    }
+
+    public TemplateInstance renderHubPanel(int page, String basePath) {
+        var comments = commentRepository.findPendingPageForPostAuthor(loggedUser.getId(), PageQuery.forGrid(20, page))
+                                        .map(CommentManageRow::from);
+        return Templates.panel(comments, basePath);
     }
 
     TemplateInstance renderList(int page) {

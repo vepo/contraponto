@@ -26,6 +26,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/users")
@@ -42,6 +43,8 @@ public class UserManageEndpoint {
                                             BreadcrumbTrail breadcrumb);
 
         static native TemplateInstance list(Page<UserRow> users, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
+
+        static native TemplateInstance panel(Page<UserRow> users, String basePath);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -101,11 +104,7 @@ public class UserManageEndpoint {
             return forbidden();
         }
 
-        return Response.ok(Templates.list(listPage(page),
-                                          customPageRepository.loadLinks(),
-                                          loggedUser,
-                                          breadcrumbService.administrationUsers()))
-                       .build();
+        return Response.seeOther(UriBuilder.fromPath("/administration/users").queryParam("page", page).build()).build();
     }
 
     Page<UserRow> listPage(int page) {
@@ -130,5 +129,9 @@ public class UserManageEndpoint {
                                           loggedUser,
                                           breadcrumbService.administrationUserForm("New User")))
                        .build();
+    }
+
+    public TemplateInstance renderHubPanel(int page, String basePath) {
+        return Templates.panel(listPage(page), basePath);
     }
 }

@@ -1,0 +1,64 @@
+{#if editorView}
+{#include components/hub-panel-header title='Custom Pages' subtitle='Manage application and blog pages. Content is stored as HTML.' actionHref='/pages/new' actionLabel='New Page' /}
+{#else}
+{#include components/hub-panel-header title='Custom Pages' subtitle='Create and edit pages for your blogs. Content is stored as HTML.' actionHref='/pages/new' actionLabel='New Page' /}
+{/if}
+
+{#if pages.isEmpty()}
+<div class="pages-manage__empty">
+    <p>No custom pages yet.</p>
+    <a data-hx-get="/pages/new"
+       hx-select="main"
+       hx-target="main"
+       hx-swap="outerHTML"
+       hx-push-url="/pages/new"
+       class="btn btn--secondary"
+       data-nav>
+        Create your first page
+    </a>
+</div>
+{#else}
+<div class="pages-manage__list">
+    {#for row in pages.data}
+    <article class="pages-manage__row" id="page-row-{row.id}">
+        <div class="pages-manage__row-main">
+            <h3 class="pages-manage__row-title">{row.title}</h3>
+            <div class="pages-manage__row-meta">
+                <span class="pages-manage__badge">{row.scope}</span>
+                {#if row.section}
+                <span>{row.section}</span>
+                {/if}
+                <span>{row.placement}</span>
+                {#if row.published}
+                <span class="pages-manage__badge pages-manage__badge--published">Published</span>
+                {#else}
+                <span class="pages-manage__badge pages-manage__badge--draft">Draft</span>
+                {/if}
+            </div>
+            <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
+        </div>
+        <div class="pages-manage__row-actions">
+            <a data-hx-get="/pages/{row.id}/edit"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/pages/{row.id}/edit"
+               class="btn btn--secondary btn--small"
+               data-nav>
+                Edit
+            </a>
+            <button type="button"
+                    class="btn btn--small btn--danger"
+                    hx-delete="/forms/pages/{row.id}"
+                    hx-select="main"
+                    hx-target="main"
+                    hx-swap="outerHTML"
+                    hx-confirm="Delete this page?">
+                Delete
+            </button>
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=pages basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

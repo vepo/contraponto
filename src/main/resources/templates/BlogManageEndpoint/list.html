@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     {#include components/head}
-    My Blogs - contraponto
+    {#if hubContext.authorMode()}My Blogs{#else}All Blogs{/if} - contraponto
     {/include}
     <body hx-history-elt>
         {#include components/header /}
@@ -10,24 +10,26 @@
                 {#include components/breadcrumb trail=breadcrumb /}
                 <div class="pages-manage__header">
                     <div>
-                        <h1 class="pages-manage__title">My Blogs</h1>
+                        <h1 class="pages-manage__title">{#if hubContext.authorMode()}My Blogs{#else}All Blogs{/if}</h1>
                         <p class="pages-manage__subtitle">
-                            {#if editorView}
-                            Manage all blogs on the platform. Every user keeps a default blog at their profile URL.
-                            {#else}
+                            {#if hubContext.authorMode()}
                             Your default blog lives at your profile URL. Create secondary blogs for separate topics.
+                            {#else}
+                            Manage all blogs on the platform. Every user keeps a default blog at their profile URL.
                             {/if}
                         </p>
                     </div>
-                    <a data-hx-get="/blogs/new"
+                    {#if hubContext.authorMode()}
+                    <a data-hx-get="/blogs/new?hub=writing"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"
-                       hx-push-url="/blogs/new"
+                       hx-push-url="/blogs/new?hub=writing"
                        class="btn btn--primary"
                        data-nav>
                         New Blog
                     </a>
+                    {/if}
                 </div>
 
                 {#if blogs.isEmpty()}
@@ -41,7 +43,7 @@
                         <div class="pages-manage__row-main">
                             <h2 class="pages-manage__row-title">{row.name}</h2>
                             <div class="pages-manage__row-meta">
-                                {#if editorView}
+                                {#if !hubContext.authorMode()}
                                 <span class="pages-manage__badge">{row.owner}</span>
                                 {/if}
                                 {#if row.main}
@@ -61,21 +63,30 @@
                             <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
                         </div>
                         <div class="pages-manage__row-actions">
-                            {#if row.canEdit}
-                            <a data-hx-get="/blogs/{row.id}/edit"
+                            {#if row.canEdit && hubContext.authorMode()}
+                            <a data-hx-get="/blogs/{row.id}/edit?hub=writing"
                                hx-select="main"
                                hx-target="main"
                                hx-swap="outerHTML"
-                               hx-push-url="/blogs/{row.id}/edit"
+                               hx-push-url="/blogs/{row.id}/edit?hub=writing"
                                class="btn btn--secondary btn--small"
                                data-nav>
                                 Edit
+                            </a>
+                            <a data-hx-get="/blogs/{row.id}/settings"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-swap="outerHTML"
+                               hx-push-url="/blogs/{row.id}/settings"
+                               class="btn btn--secondary btn--small"
+                               data-nav>
+                                Settings
                             </a>
                             {/if}
                             {#if row.canDeactivate && !row.main && row.active}
                             <button type="button"
                                     class="btn btn--small btn--danger"
-                                    hx-delete="/forms/blogs/{row.id}"
+                                    hx-delete="/forms/blogs/{row.id}?hub={hubContext.hubParam}"
                                     hx-select="main"
                                     hx-target="main"
                                     hx-swap="outerHTML"
@@ -87,7 +98,11 @@
                     </article>
                     {/for}
                 </div>
-                {#include components/manage-pagination page=blogs basePath='/blogs' extraQuery='' fragmentTarget='' /}
+                {#if hubContext.authorMode()}
+                {#include components/manage-pagination page=blogs basePath='/writing/blogs' extraQuery='' fragmentTarget='' /}
+                {#else}
+                {#include components/manage-pagination page=blogs basePath='/manage/blogs' extraQuery='' fragmentTarget='' /}
+                {/if}
                 {/if}
             </div>
         </main>

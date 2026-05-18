@@ -26,6 +26,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/blogs")
@@ -37,7 +38,8 @@ public class BlogManageEndpoint {
         static native TemplateInstance form(Optional<Blog> blog,
                                             String username,
                                             String publicUrl,
-                                            boolean editorView,
+                                            BlogHubContext hubContext,
+                                            boolean coreFormOnly,
                                             boolean canDelete,
                                             long uploadBlogId,
                                             Links links,
@@ -45,10 +47,14 @@ public class BlogManageEndpoint {
                                             BreadcrumbTrail breadcrumb);
 
         static native TemplateInstance list(Page<BlogRow> blogs,
-                                            boolean editorView,
+                                            BlogHubContext hubContext,
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
+
+        static native TemplateInstance panel(Page<BlogRow> blogs,
+                                             BlogHubContext hubContext,
+                                             String basePath);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -74,11 +80,23 @@ public class BlogManageEndpoint {
         this.breadcrumbService = breadcrumbService;
     }
 
+    private BreadcrumbTrail breadcrumbForEdit(Blog blog, BlogHubContext hubContext, boolean full) {
+        if (hubContext == BlogHubContext.MANAGE) {
+            return breadcrumbService.manageBlogEdit(blog);
+        }
+        if (full) {
+            return breadcrumbService.writingBlogSettings(blog);
+        }
+        return breadcrumbService.writingBlogEdit(blog);
+    }
+
     @GET
     @Path("{id}/edit")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public Response edit(@PathParam("id") long id) {
+    public Response edit(@PathParam("id") long id,
+                         @QueryParam("hub") @DefaultValue("writing") String hub,
+                         @QueryParam("full") @DefaultValue("false") boolean full) {
         if (!loggedUser.isAuthenticated()) {
             return forbidden();
         }
@@ -88,15 +106,18 @@ public class BlogManageEndpoint {
             return forbidden();
         }
 
+        var hubContext = BlogHubContext.fromHubParam(hub);
+        boolean coreFormOnly = hubContext.authorMode() && !full;
         return Response.ok(Templates.form(Optional.of(blog),
                                           blog.getOwner().getUsername(),
                                           BlogEndpoint.extractUrl(blog),
-                                          blogAccess.canListAll(loggedUser),
+                                          hubContext,
+                                          coreFormOnly,
                                           blogAccess.canDelete(blog, loggedUser),
                                           blog.getId(),
                                           customPageRepository.loadLinks(blog.getId()),
                                           loggedUser,
-                                          breadcrumbService.manageBlogEdit(blog)))
+                                          breadcrumbForEdit(blog, hubContext, full)))
                        .build();
     }
 
@@ -115,13 +136,7 @@ public class BlogManageEndpoint {
             return forbidden();
         }
 
-        var editorView = blogAccess.canListAll(loggedUser);
-        return Response.ok(Templates.list(listPage(page, editorView),
-                                          editorView,
-                                          customPageRepository.loadLinks(),
-                                          loggedUser,
-                                          breadcrumbService.manageBlogs()))
-                       .build();
+        return Response.seeOther(UriBuilder.fromPath("/writing/blogs").queryParam("page", page).build()).build();
     }
 
     public Page<BlogRow> listPage(int page, boolean editorView) {
@@ -134,8 +149,13 @@ public class BlogManageEndpoint {
     @GET
     @Path("new")
     @Produces(MediaType.TEXT_HTML)
-    public Response newBlog() {
+    public Response newBlog(@QueryParam("hub") @DefaultValue("writing") String hub) {
         if (!loggedUser.isAuthenticated() || !blogAccess.canCreate(loggedUser)) {
+            return forbidden();
+        }
+
+        var hubContext = BlogHubContext.fromHubParam(hub);
+        if (hubContext == BlogHubContext.MANAGE) {
             return forbidden();
         }
 
@@ -145,12 +165,32 @@ public class BlogManageEndpoint {
         return Response.ok(Templates.form(Optional.empty(),
                                           loggedUser.getUsername(),
                                           "",
-                                          blogAccess.canListAll(loggedUser),
+                                          hubContext,
+                                          true,
                                           false,
                                           mainBlogId,
                                           customPageRepository.loadLinks(),
                                           loggedUser,
-                                          breadcrumbService.manageBlogNew()))
+                                          breadcrumbService.writingBlogNew()))
                        .build();
+    }
+
+    public TemplateInstance renderAuthorHubPanel(int page, String basePath) {
+        return Templates.panel(listPage(page, false), BlogHubContext.WRITING, basePath);
+    }
+
+    public TemplateInstance renderPlatformHubPanel(int page, String basePath) {
+        if (!blogAccess.canListAll(loggedUser)) {
+            throw new NotFoundException("Platform blog management requires editor role.");
+        }
+        return Templates.panel(listPage(page, true), BlogHubContext.MANAGE, basePath);
+    }
+
+    @GET
+    @Path("{id}/settings")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public Response settings(@PathParam("id") long id) {
+        return edit(id, BlogHubContext.WRITING.hubParam(), true);
     }
 }

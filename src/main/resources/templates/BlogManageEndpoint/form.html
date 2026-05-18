@@ -27,7 +27,7 @@
                             {/if}
                         </p>
                     </div>
-                    {#if blog.isPresent}
+                    {#if blog.isPresent && hubContext.authorMode()}
                     <a data-hx-get="/blogs/{blog.get().id}/images"
                        hx-select="main"
                        hx-target="main"
@@ -35,12 +35,21 @@
                        hx-push-url="/blogs/{blog.get().id}/images"
                        class="btn btn--secondary"
                        data-nav>Images</a>
-                    {/if}
-                    <a data-hx-get="/blogs"
+                    {#if coreFormOnly}
+                    <a data-hx-get="/blogs/{blog.get().id}/settings"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"
-                       hx-push-url="/blogs"
+                       hx-push-url="/blogs/{blog.get().id}/settings"
+                       class="btn btn--secondary"
+                       data-nav>Settings</a>
+                    {/if}
+                    {/if}
+                    <a data-hx-get="{#if hubContext.authorMode()}/writing/blogs{#else}/manage/blogs{/if}"
+                       hx-select="main"
+                       hx-target="main"
+                       hx-swap="outerHTML"
+                       hx-push-url="{#if hubContext.authorMode()}/writing/blogs{#else}/manage/blogs{/if}"
                        class="btn btn--secondary"
                        data-nav>
                         Back to list
@@ -64,45 +73,18 @@
                     {#if blog.isPresent}
                     <input type="hidden" name="id" value="{blog.get().id}">
                     {/if}
+                    <input type="hidden" name="hub" value="{hubContext.hubParam}">
+                    {#if blog.isEmpty && coreFormOnly}
+                    <input type="hidden" name="active" value="on">
+                    {/if}
+                    {#if blog.isPresent && coreFormOnly && !blog.get().main && blog.get().active}
+                    <input type="hidden" name="active" value="on">
+                    {/if}
 
-                    <div class="form-group">
-                        <label for="blogName">Name</label>
-                        <input type="text"
-                               id="blogName"
-                               name="name"
-                               placeholder="Blog name..."
-                               value="{#if blog.isPresent}{blog.get().name}{/if}"
-                               required
-                               min-size="1"
-                               max-size="255"
-                               autocomplete="off"/>
-                        <div class="error-message required">Name is required.</div>
-                        <div class="error-message min-value">Name is required.</div>
-                        <div class="error-message max-value">Name must be no more than 255 characters.</div>
-                    </div>
+                    {#include BlogManageEndpoint/formCoreFields /}
 
+                    {#if !coreFormOnly}
                     {#if blog.isEmpty || !blog.get().main}
-                    <div class="form-group">
-                        <label for="blogSlug">Slug</label>
-                        <div class="pages-form__slug-hint">
-                            URL path: <code>/{username}/<em>your-slug</em></code>
-                        </div>
-                        <input type="text"
-                               id="blogSlug"
-                               name="slug"
-                               placeholder="url-friendly-identifier"
-                               value="{#if blog.isPresent}{blog.get().slug}{/if}"
-                               pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*"
-                               required
-                               min-size="1"
-                               max-size="64"
-                               autocomplete="off"/>
-                        <div class="error-message required">Slug is required.</div>
-                        <div class="error-message min-value">Slug is required.</div>
-                        <div class="error-message max-value">Slug must be no more than 64 characters.</div>
-                        <div class="error-message pattern">Use only letters, numbers, hyphens and underscores.</div>
-                    </div>
-
                     <div class="form-group form-group--checkbox">
                         <label>
                             <input type="checkbox"
@@ -110,12 +92,6 @@
                                    {#if blog.isEmpty}checked{#else if blog.get().active}checked{/if}>
                             Active
                         </label>
-                    </div>
-                    {#else}
-                    <div class="form-group">
-                        <label>Slug</label>
-                        <input type="text" value="{blog.get().slug}" disabled>
-                        <input type="hidden" name="slug" value="{blog.get().slug}">
                     </div>
                     {/if}
 
@@ -125,19 +101,6 @@
                                   name="description"
                                   rows="4"
                                   placeholder="A short description (optional)">{#if blog.isPresent}{blog.get().description}{/if}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Blog banner</label>
-                        {#if blog.isPresent}
-                        {#if blog.get().banner}
-                        {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl=blog.get().banner.url initialId=blog.get().banner.uuid /}
-                        {#else}
-                        {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl='' initialId='' /}
-                        {/if}
-                        {#else}
-                        {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl='' initialId='' /}
-                        {/if}
                     </div>
 
                     {#if blog.isPresent}
@@ -203,14 +166,14 @@
                         </div>
                     </fieldset>
                     {/if}
-
+                    {/if}
                     <div class="pages-form__actions">
                         {#include components/htmx-spinner id='blogs-form-htmx-indicator' /}
                         <button type="submit" class="btn btn--primary" disabled>Save Blog</button>
                         {#if canDelete && blog.isPresent && blog.get().active}
                         <button type="button"
                                 class="btn btn--danger"
-                                hx-delete="/forms/blogs/{blog.get().id}"
+                                hx-delete="/forms/blogs/{blog.get().id}?hub={hubContext.hubParam}"
                                 hx-select="main"
                                 hx-target="main"
                                 hx-swap="outerHTML"

@@ -15,7 +15,35 @@ class NavigationHubTest {
     private User author;
 
     @Test
-    void editorSeesReviewHub(App app) {
+    void authorManageHubHidesPlatformBlogs(App app) {
+        app.login(author)
+           .openUserMenu()
+           .clickMenuLink("/manage")
+           .assertUrl("/manage")
+           .assertHubNavDoesNotContain("Blogs");
+    }
+
+    @Test
+    void editorManageHubShowsPlatformBlogs(App app) {
+        Given.cleanup();
+        var editor = Given.user()
+                          .withUsername("manageeditor")
+                          .withEmail("manageeditor@test.com")
+                          .withName("Manage Editor")
+                          .withPassword("password123")
+                          .withRole(Role.EDITOR)
+                          .persist();
+
+        app.login(editor)
+           .openUserMenu()
+           .clickMenuLink("/manage")
+           .clickHubSection("/manage", "blogs")
+           .assertUrl("/manage/blogs")
+           .assertBreadcrumb("Manage", "Blogs");
+    }
+
+    @Test
+    void editorMenuOpensReviewHubWithDefaultSection(App app) {
         Given.cleanup();
         var editor = Given.user()
                           .withUsername("hubeditor")
@@ -29,9 +57,26 @@ class NavigationHubTest {
            .openUserMenu()
            .clickMenuLink("/editor")
            .assertUrl("/editor")
-           .clickHubCard("/review")
-           .assertUrl("/review")
-           .assertBreadcrumb("Review", "Featured Posts");
+           .assertBreadcrumb("Review", "Featured Posts")
+           .clickHubSection("/editor", "tags")
+           .assertUrl("/editor/tags")
+           .assertBreadcrumb("Review", "Tags");
+    }
+
+    @Test
+    void legacyTagManageRedirectsToEditorTags(App app) {
+        Given.cleanup();
+        var editor = Given.user()
+                          .withUsername("legacyeditor")
+                          .withEmail("legacyeditor@test.com")
+                          .withName("Legacy Editor")
+                          .withPassword("password123")
+                          .withRole(Role.EDITOR)
+                          .persist();
+
+        app.login(editor)
+           .goToPath("/tags/manage")
+           .assertUrl("/editor/tags");
     }
 
     @Test
@@ -40,8 +85,6 @@ class NavigationHubTest {
            .openUserMenu()
            .clickMenuLink("/manage")
            .assertUrl("/manage")
-           .clickHubCard("/dashboard")
-           .assertUrl("/dashboard")
            .assertBreadcrumb("Manage", "Dashboard");
     }
 
@@ -57,13 +100,25 @@ class NavigationHubTest {
     }
 
     @Test
-    void writingHubListsLibrary(App app) {
+    void writingHubHasBlogsAndAppearance(App app) {
+        app.login(author)
+           .openUserMenu()
+           .clickMenuLink("/writing")
+           .clickHubSection("/writing", "blogs")
+           .assertUrl("/writing/blogs")
+           .assertBreadcrumb("Writing", "Blogs")
+           .clickHubSection("/writing", "appearance")
+           .assertUrl("/writing/appearance")
+           .assertBreadcrumb("Writing", "Appearance");
+    }
+
+    @Test
+    void writingHubOpensLibrary(App app) {
         app.login(author)
            .openUserMenu()
            .clickMenuLink("/writing")
            .assertUrl("/writing")
-           .clickHubCard("/library")
-           .assertUrl("/library")
-           .assertBreadcrumb("Writing", "Library");
+           .assertBreadcrumb("Writing", "Library")
+           .assertHubNavDoesNotContain("Write");
     }
 }

@@ -89,7 +89,7 @@ public class GitSyncHistoryEndpoint {
                                 entries,
                                 links,
                                 loggedUser,
-                                breadcrumbService.manageBlogGitSyncRun(blog, "Git sync run " + run.getId()));
+                                breadcrumbService.writingBlogGitSyncRun(blog, "Git sync run " + run.getId()));
     }
 
     @GET
@@ -99,7 +99,7 @@ public class GitSyncHistoryEndpoint {
         Blog blog = requireEditableBlog(blogId);
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
         Page<GitSyncRun> runs = gitSyncRunService.listForBlog(blogId, PageQuery.forGrid(20, page));
-        return Templates.list(blog, runs, links, loggedUser, breadcrumbService.manageBlogGitSync(blog));
+        return Templates.list(blog, runs, links, loggedUser, breadcrumbService.writingBlogGitSync(blog));
     }
 
     private Blog requireEditableBlog(long blogId) {

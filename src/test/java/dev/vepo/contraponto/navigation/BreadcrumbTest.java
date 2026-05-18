@@ -18,7 +18,7 @@ class BreadcrumbTest {
     @Test
     void authorSeesLibraryBreadcrumb(App app) {
         app.login(author)
-           .goToPath("/library")
+           .goToPath("/writing/library")
            .assertBreadcrumb("Writing", "Library");
     }
 
@@ -33,6 +33,7 @@ class BreadcrumbTest {
     void guestSeesPostBreadcrumb(App app) {
         app.access()
            .visitPost(author.getUsername(), publishedPost.getSlug())
+           .assertPageTopPresent()
            .assertBreadcrumb("Home", "Crumb Author", "Breadcrumb Post");
     }
 

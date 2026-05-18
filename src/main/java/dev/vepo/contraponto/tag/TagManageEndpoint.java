@@ -22,6 +22,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/tags/manage")
@@ -31,6 +32,8 @@ public class TagManageEndpoint {
     @CheckedTemplate
     public static class Templates {
         static native TemplateInstance list(Page<TagRow> tags, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
+
+        static native TemplateInstance panel(Page<TagRow> tags, String basePath);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -69,15 +72,19 @@ public class TagManageEndpoint {
             return forbidden();
         }
 
-        return Response.ok(Templates.list(listPage(page),
-                                          customPageRepository.loadLinks(),
-                                          loggedUser,
-                                          breadcrumbService.reviewTags()))
-                       .build();
+        var target = UriBuilder.fromPath("/editor/tags");
+        if (page > 1) {
+            target.queryParam("page", page);
+        }
+        return Response.seeOther(target.build()).build();
     }
 
     public Page<TagRow> listPage(int page) {
         return tagRepository.findPageForManagement(PageQuery.forGrid(20, page)).map(TagRow::from);
+    }
+
+    public TemplateInstance renderHubPanel(int page, String basePath) {
+        return Templates.panel(listPage(page), basePath);
     }
 
     TemplateInstance renderList() {

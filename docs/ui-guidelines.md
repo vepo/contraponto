@@ -63,14 +63,21 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 ### 3.5 User Menu
 - Dropdown showing avatar, name, email.
 - Items: **My Blog**, **Writing**, **Manage**, **Account**, **Review** (editor only), **Administration** (user administrator only), **Sign out**.
-- Each hub link opens an index page with section cards linking to features (Write, Library, Dashboard, Blogs, etc.).
-- Header shortcuts unchanged: **Write** button and notifications bell reach `/write` and `/notifications` in one step.
+- Each hub link opens a **left-sidebar shell**: breadcrumb, sticky section nav, and the active section panel (no hub-level duplicate title).
+- Default section loads on first open (e.g. Manage → Dashboard, Writing → Library, Review → Featured Posts).
+- Section URLs are bookmarkable (`/writing/blogs`, `/writing/appearance`, `/manage/blogs` for editors, `/account/security`, `/editor/tags`). Legacy paths (`/dashboard`, `/library`, `/profile`, `/blogs`, …) redirect to the matching section URL.
+- **Writing** hub sidebar lists **Library** only; compose via header **Write** (`/write`).
+- Panel list headers use **hub-panel__header** with compact primary actions (`btn--small`).
+- Desktop: section nav stays visible while the panel scrolls (`position: sticky`). Mobile: horizontal section tabs under the site header.
+- Header shortcuts unchanged: **Write** button → `/write`; notifications bell → `/account/notifications`.
 - The dropdown closes on escape or when clicking outside.
 
 ### 3.6 Breadcrumbs
 - Shown at the top of every full-page surface (inside `main`, above the page title).
+- **Post pages** pair breadcrumb and actions in a **page-top** toolbar (breadcrumb left, Edit / Feature / Follow right; stacks on narrow screens).
 - Public reading: root segment **Home** (`/`), then author/blog/post segments as applicable.
-- Logged-in manage: root is the **hub name** (Writing, Manage, Account, Review, Administration), not Home.
+- Logged-in hubs: **hub name** links to the hub default section; current **section name** is the last segment (e.g. Review › Tags).
+- Deep manage/editor forms (blog edit, tag edit) keep full-page breadcrumbs from the hub section to the form.
 - The current page is the last segment (not linked); ancestors use HTMX navigation.
 - HTMX partials (grids, tabs, modals) do not include breadcrumbs.
 

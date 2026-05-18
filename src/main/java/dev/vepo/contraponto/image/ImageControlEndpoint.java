@@ -81,6 +81,6 @@ public class ImageControlEndpoint {
         }
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
         Page<ImageControlRow> images = imageControlService.listForBlog(blog, PageQuery.forGrid(20, page));
-        return Templates.list(blog, images, links, loggedUser, breadcrumbService.manageBlogImages(blog));
+        return Templates.list(blog, images, links, loggedUser, breadcrumbService.writingBlogImages(blog));
     }
 }

@@ -1,0 +1,49 @@
+{#include components/hub-panel-header title='Security' subtitle='Update your email address and password.' /}
+
+<div id="securityMessage">
+    {#if emailVerified}
+    <div class="success-message">Email address updated.</div>
+    {#else if invalidToken}
+    <div class="error-message visible">This verification link is invalid or has expired.</div>
+    {/if}
+</div>
+
+{#if user.pendingEmail}
+<p class="profile-page__subtitle">Verification pending for {user.pendingEmail}.</p>
+{/if}
+
+<form class="profile-form"
+      hx-post="/forms/account/security"
+      hx-target="#securityMessage"
+      hx-swap="innerHTML"
+      hx-indicator="#security-htmx-indicator"
+      autocomplete="off">
+
+    <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" name="email" value="{user.email}" required>
+        <div class="error-message required">Valid email is required.</div>
+        <div class="error-message email-taken">Email already taken.</div>
+    </div>
+
+    <div class="form-group">
+        <label>Current Password</label>
+        <input type="password" name="currentPassword" required>
+        <div class="error-message required">Current password is required.</div>
+    </div>
+
+    <div class="form-group">
+        <label>New Password (optional)</label>
+        <input type="password" name="newPassword">
+        <div class="error-message min-length">Password must be at least 8 characters.</div>
+    </div>
+
+    <div class="form-group">
+        <label>Confirm New Password</label>
+        <input type="password" name="confirmPassword" match="input[name='newPassword']">
+        <div class="error-message match">Passwords do not match.</div>
+    </div>
+
+    {#include components/htmx-spinner id='security-htmx-indicator' /}
+    <button type="submit" class="btn btn--primary">Save Changes</button>
+</form>

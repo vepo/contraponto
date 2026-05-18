@@ -36,10 +36,9 @@ class BlogManageTest {
            .assertTitle("New Blog")
            .fillName("Travel Blog")
            .fillSlug("travel")
-           .fillDescription("Trips and notes")
            .assertSubmitEnabled()
            .submit()
-           .assertUrl("/blogs")
+           .assertUrl("/writing/blogs")
            .assertToastSuccess("Blog saved successfully")
            .assertBlogCount(2)
            .assertBlogListed("Travel Blog", "/" + USER_USERNAME + "/travel")
@@ -60,7 +59,7 @@ class BlogManageTest {
            .blogs()
            .assertBlogCount(2)
            .clickDeactivate("Archive Blog")
-           .assertUrl("/blogs")
+           .assertUrl("/writing/blogs")
            .assertToastSuccess("Blog saved successfully")
            .assertBlogCount(2);
     }
@@ -94,11 +93,14 @@ class BlogManageTest {
            .blogs()
            .clickEdit("Tech Blog")
            .fillName("Tech and Code")
-           .fillSlug("tech")
+           .assertSubmitEnabled()
+           .submit()
+           .assertUrl("/writing/blogs")
+           .clickSettings("Tech and Code")
            .fillDescription("Updated description")
            .assertSubmitEnabled()
            .submit()
-           .assertUrl("/blogs")
+           .assertUrl("/writing/blogs")
            .assertToastSuccess("Blog saved successfully")
            .assertBlogListed("Tech and Code", "/" + USER_USERNAME + "/tech");
     }
@@ -127,10 +129,11 @@ class BlogManageTest {
                           .persist();
 
         app.login(editor)
-           .blogs()
+           .manageBlogs()
+           .assertTitle("All Blogs")
            .assertEditNotAvailableOnList("Travel Blog")
            .clickDeactivate("Travel Blog")
-           .assertUrl("/blogs")
+           .assertUrl("/manage/blogs")
            .assertToastSuccess("Blog saved successfully");
     }
 

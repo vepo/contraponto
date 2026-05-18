@@ -1,0 +1,30 @@
+<h2 class="hub-panel__title">My Library</h2>
+<p class="hub-panel__subtitle library-page__subtitle">Drafts and published posts in one place.</p>
+
+<div class="library-tabs__row">
+    <div class="library-tabs">
+        <button type="button" class="library-tab library-tab--active"
+                data-tab="drafts"
+                hx-get="/library/components/tab/drafts"
+                hx-target="#libraryContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                hx-indicator="#library-htmx-indicator">
+            Drafts
+        </button>
+        <button type="button" class="library-tab"
+                data-tab="published"
+                hx-get="/library/components/tab/published"
+                hx-target="#libraryContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                hx-indicator="#library-htmx-indicator">
+            Published
+        </button>
+    </div>
+    {#include components/htmx-spinner id='library-htmx-indicator' /}
+</div>
+
+<div id="libraryContent" hx-trigger="load" hx-get="/library/components/tab/drafts" hx-swap="innerHTML">
+    <div class="loading-spinner">Loading...</div>
+</div>

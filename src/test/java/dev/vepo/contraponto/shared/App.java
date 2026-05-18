@@ -186,7 +186,7 @@ public class App {
         }
 
         public BlogManagePage assertTitle(String expected) {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title, .pages-manage__title")));
             assertThat(title.getText()).isEqualTo(expected);
             return this;
         }
@@ -227,8 +227,16 @@ public class App {
         }
 
         public BlogManagePage clickNewBlog() {
-            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get='/blogs/new']"))));
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("a[data-hx-get*='blogs/new']"))));
             wait.until(visibilityOfElementLocated(cssSelector("#blogName")));
+            waitForReady();
+            return this;
+        }
+
+        public BlogManagePage clickSettings(String title) {
+            var row = findRowByTitle(title);
+            reliableClick(row.findElement(By.linkText("Settings")));
+            wait.until(visibilityOfElementLocated(cssSelector("#blogDescription")));
             waitForReady();
             return this;
         }
@@ -1157,7 +1165,8 @@ public class App {
         }
 
         public ProfilePage assertErrorMessage(String expectedSubstring) {
-            var errorMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .error-message")));
+            var errorMsg =
+                    wait.until(visibilityOfElementLocated(cssSelector("#securityMessage .error-message, #appearanceMessage .error-message, #profileMessage .error-message")));
             assertThat(errorMsg.getText()).contains(expectedSubstring);
             return this;
         }
@@ -1175,7 +1184,8 @@ public class App {
         }
 
         public ProfilePage assertSuccessMessage(String expectedSubstring) {
-            var successMsg = wait.until(visibilityOfElementLocated(cssSelector("#profileMessage .success-message")));
+            var successMsg =
+                    wait.until(visibilityOfElementLocated(cssSelector("#securityMessage .success-message, #appearanceMessage .success-message, #profileMessage .success-message")));
             assertThat(successMsg.getText()).contains(expectedSubstring);
             return this;
         }
@@ -1769,6 +1779,11 @@ public class App {
         return this;
     }
 
+    public ProfilePage accountSecurity() {
+        _goTo("/account/security");
+        return new ProfilePage();
+    }
+
     public App assertAccessButtonIsDisplayed() {
         waitForReady();
         var loginBtn = wait.until(visibilityOfElementLocated(cssSelector("button.btn--auth-login")));
@@ -1811,6 +1826,13 @@ public class App {
     public App assertHeaderIsDisplayed() {
         var header = wait.until(visibilityOfElementLocated(className("site-header")));
         assertThat(header.isDisplayed()).isTrue();
+        return this;
+    }
+
+    public App assertHubNavDoesNotContain(String label) {
+        for (var link : driver.findElements(cssSelector(".hub-nav__link"))) {
+            assertThat(link.getText().trim()).isNotEqualTo(label);
+        }
         return this;
     }
 
@@ -1859,6 +1881,13 @@ public class App {
         return this;
     }
 
+    public App assertPageTopPresent() {
+        wait.until(visibilityOfElementLocated(cssSelector(".page-top")));
+        wait.until(visibilityOfElementLocated(cssSelector(".page-top .breadcrumb")));
+        wait.until(visibilityOfElementLocated(cssSelector(".page-top__actions")));
+        return this;
+    }
+
     public App assertPostTitles(List<String> titles) {
         var titlesElements = driver.findElements(By.cssSelector(".article-card__title, .featured__title"));
         assertThat(titlesElements).hasSize(titles.size())
@@ -1879,8 +1908,7 @@ public class App {
     }
 
     public BlogManagePage blogs() {
-        _goTo("/blogs");
-        return new BlogManagePage();
+        return writingBlogs();
     }
 
     public App clearAuth() {
@@ -1899,9 +1927,18 @@ public class App {
         return new BlogPage();
     }
 
+    @Deprecated
     public App clickHubCard(String path) {
         reliableClick(wait.until(elementToBeClickable(
                                                       cssSelector("a.nav-hub__card[data-hx-get='%s']".formatted(path)))));
+        waitForReady();
+        return this;
+    }
+
+    public App clickHubSection(String hubBasePath, String sectionSlug) {
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector(".hub-nav a.hub-nav__link[data-hx-get='%s/%s']"
+                                                                                                                 .formatted(hubBasePath, sectionSlug)))));
         waitForReady();
         return this;
     }
@@ -2037,6 +2074,11 @@ public class App {
         return this;
     }
 
+    public BlogManagePage manageBlogs() {
+        _goTo("/manage/blogs");
+        return new BlogManagePage();
+    }
+
     public BlogManagePage newBlog() {
         _goTo("/blogs/new");
         return new BlogManagePage();
@@ -2049,8 +2091,7 @@ public class App {
 
     public App openNotificationsFromMenu() {
         openUserMenu()
-                      .clickMenuLink("/account")
-                      .clickHubCard("/notifications");
+                      .clickMenuLink("/account");
         return this;
     }
 
@@ -2067,6 +2108,7 @@ public class App {
 
     public ProfilePage profile() {
         _goTo("/profile");
+        waitForReady();
         return new ProfilePage();
     }
 
@@ -2144,8 +2186,6 @@ public class App {
         return this;
     }
 
-    // Inside App class, after LibraryPage
-
     public App visitPost(String username, String slug) {
         _goTo("/" + username + "/post/" + slug);
         waitForReady();
@@ -2160,8 +2200,20 @@ public class App {
     }
     // Inside App class, after SearchPage
 
+    // Inside App class, after LibraryPage
+
     public WritePage writePage() {
         _goTo("/write");
         return new WritePage();
+    }
+
+    public ProfilePage writingAppearance() {
+        _goTo("/writing/appearance");
+        return new ProfilePage();
+    }
+
+    public BlogManagePage writingBlogs() {
+        _goTo("/writing/blogs");
+        return new BlogManagePage();
     }
 }

@@ -77,7 +77,7 @@ public class ImageAltSaveEndpoint {
                                                               images,
                                                               links,
                                                               loggedUser,
-                                                              breadcrumbService.manageBlogImages(blog)))
+                                                              breadcrumbService.writingBlogImages(blog)))
                     .build();
     }
 }

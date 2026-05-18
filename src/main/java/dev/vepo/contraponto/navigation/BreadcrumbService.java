@@ -13,12 +13,15 @@ import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class BreadcrumbService {
 
     public static final String HOME_LABEL = "Home";
+
     public static final String HOME_PATH = "/";
+
     public static final String TAGS_SEGMENT_LABEL = "Tag";
 
     private static String authorBlogUrl(User author) {
@@ -57,26 +60,33 @@ public class BreadcrumbService {
         return new BreadcrumbTrail(List.copyOf(items));
     }
 
-    public BreadcrumbTrail accountNotifications() {
-        return hubThenCurrent(NavigationHub.ACCOUNT, "Notifications");
+    private final NavigationHubRegistry hubRegistry;
+
+    @Inject
+    public BreadcrumbService(NavigationHubRegistry hubRegistry) {
+        this.hubRegistry = hubRegistry;
     }
 
-    public BreadcrumbTrail accountSettings() {
-        return hubThenCurrent(NavigationHub.ACCOUNT, "Settings");
+    public BreadcrumbTrail accountNotifications() {
+        return hubSection(NavigationHub.ACCOUNT, "Notifications");
+    }
+
+    public BreadcrumbTrail accountSecurity() {
+        return hubSection(NavigationHub.ACCOUNT, "Security");
     }
 
     public BreadcrumbTrail accountSubscriptions() {
-        return hubThenCurrent(NavigationHub.ACCOUNT, "Subscriptions");
+        return hubSection(NavigationHub.ACCOUNT, "Subscriptions");
     }
 
     public BreadcrumbTrail administrationUserForm(String currentLabel) {
-        return trail(link(NavigationHub.ADMINISTRATION.label(), NavigationHub.ADMINISTRATION.path()),
-                     link("Users", "/users"),
+        return trail(link(NavigationHub.ADMINISTRATION.label(), hubRegistry.defaultSectionPath(NavigationHub.ADMINISTRATION)),
+                     link("Users", hubRegistry.sectionPath(NavigationHub.ADMINISTRATION, "users")),
                      current(currentLabel));
     }
 
     public BreadcrumbTrail administrationUsers() {
-        return hubThenCurrent(NavigationHub.ADMINISTRATION, "Users");
+        return hubSection(NavigationHub.ADMINISTRATION, "Users");
     }
 
     public BreadcrumbTrail empty() {
@@ -164,90 +174,138 @@ public class BreadcrumbService {
         return trail(current(hub.label()));
     }
 
-    private BreadcrumbTrail hubThenCurrent(NavigationHub hub, String currentLabel) {
-        return trail(link(hub.label(), hub.path()), current(currentLabel));
+    public BreadcrumbTrail hubSection(NavigationHub hub, String sectionLabel) {
+        return trail(link(hub.label(), hubRegistry.defaultSectionPath(hub)), current(sectionLabel));
     }
 
     public BreadcrumbTrail manageBlogEdit(Blog blog) {
-        return trail(link(NavigationHub.MANAGE.label(), NavigationHub.MANAGE.path()),
-                     link("Blogs", "/blogs"),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
                      current(blog.getName()));
     }
 
     public BreadcrumbTrail manageBlogGitSync(Blog blog) {
-        return trail(link(NavigationHub.MANAGE.label(), NavigationHub.MANAGE.path()),
-                     link("Blogs", "/blogs"),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
                      link(blog.getName(), "/blogs/" + blog.getId() + "/edit"),
                      current("Git sync history"));
     }
 
     public BreadcrumbTrail manageBlogGitSyncRun(Blog blog, String runLabel) {
-        return trail(link(NavigationHub.MANAGE.label(), NavigationHub.MANAGE.path()),
-                     link("Blogs", "/blogs"),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
                      link(blog.getName(), "/blogs/" + blog.getId() + "/edit"),
                      link("Git sync history", "/blogs/" + blog.getId() + "/git-sync"),
                      current(runLabel));
     }
 
     public BreadcrumbTrail manageBlogImages(Blog blog) {
-        return trail(link(NavigationHub.MANAGE.label(), NavigationHub.MANAGE.path()),
-                     link("Blogs", "/blogs"),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
                      link(blog.getName(), "/blogs/" + blog.getId() + "/edit"),
                      current("Images"));
     }
 
     public BreadcrumbTrail manageBlogNew() {
-        return trail(link(NavigationHub.MANAGE.label(), NavigationHub.MANAGE.path()),
-                     link("Blogs", "/blogs"),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
                      current("New Blog"));
     }
 
     public BreadcrumbTrail manageBlogs() {
-        return hubThenCurrent(NavigationHub.MANAGE, "Blogs");
+        return hubSection(NavigationHub.MANAGE, "Blogs");
     }
 
     public BreadcrumbTrail manageComments() {
-        return hubThenCurrent(NavigationHub.MANAGE, "Comments");
+        return hubSection(NavigationHub.MANAGE, "Comments");
     }
 
     public BreadcrumbTrail manageCustomPageForm(String currentLabel) {
-        return trail(link(NavigationHub.MANAGE.label(), NavigationHub.MANAGE.path()),
-                     link("Custom Pages", "/pages"),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
+                     link("Custom Pages", hubRegistry.sectionPath(NavigationHub.MANAGE, "pages")),
                      current(currentLabel));
     }
 
     public BreadcrumbTrail manageCustomPages() {
-        return hubThenCurrent(NavigationHub.MANAGE, "Custom Pages");
+        return hubSection(NavigationHub.MANAGE, "Custom Pages");
     }
 
     public BreadcrumbTrail manageDashboard() {
-        return hubThenCurrent(NavigationHub.MANAGE, "Dashboard");
+        return hubSection(NavigationHub.MANAGE, "Dashboard");
     }
 
     public BreadcrumbTrail reviewFeaturedPosts() {
-        return hubThenCurrent(NavigationHub.REVIEW, "Featured Posts");
+        return hubSection(NavigationHub.REVIEW, "Featured Posts");
     }
 
     public BreadcrumbTrail reviewTagEdit(Tag tag) {
-        return trail(link(NavigationHub.REVIEW.label(), NavigationHub.REVIEW.path()),
-                     link("Tags", "/tags/manage"),
+        return trail(link(NavigationHub.REVIEW.label(), hubRegistry.defaultSectionPath(NavigationHub.REVIEW)),
+                     link("Tags", hubRegistry.sectionPath(NavigationHub.REVIEW, "tags")),
                      current(tag.getName()));
     }
 
     public BreadcrumbTrail reviewTags() {
-        return hubThenCurrent(NavigationHub.REVIEW, "Tags");
+        return hubSection(NavigationHub.REVIEW, "Tags");
+    }
+
+    public BreadcrumbTrail writingAppearance() {
+        return hubSection(NavigationHub.WRITING, "Appearance");
+    }
+
+    public BreadcrumbTrail writingBlogEdit(Blog blog) {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
+                     current(blog.getName()));
+    }
+
+    public BreadcrumbTrail writingBlogGitSync(Blog blog) {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
+                     link(blog.getName(), "/blogs/" + blog.getId() + "/settings"),
+                     current("Git sync history"));
+    }
+
+    public BreadcrumbTrail writingBlogGitSyncRun(Blog blog, String runLabel) {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
+                     link(blog.getName(), "/blogs/" + blog.getId() + "/settings"),
+                     link("Git sync history", "/blogs/" + blog.getId() + "/git-sync"),
+                     current(runLabel));
+    }
+
+    public BreadcrumbTrail writingBlogImages(Blog blog) {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
+                     link(blog.getName(), "/blogs/" + blog.getId() + "/settings"),
+                     current("Images"));
+    }
+
+    public BreadcrumbTrail writingBlogNew() {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
+                     current("New Blog"));
+    }
+
+    public BreadcrumbTrail writingBlogSettings(Blog blog) {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
+                     current("Settings — " + blog.getName()));
+    }
+
+    public BreadcrumbTrail writingBlogs() {
+        return hubSection(NavigationHub.WRITING, "Blogs");
     }
 
     public BreadcrumbTrail writingDraft(String draftTitle) {
         String label = draftTitle == null || draftTitle.isBlank() ? "Write" : draftTitle;
-        return trail(link(NavigationHub.WRITING.label(), NavigationHub.WRITING.path()), current(label));
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)), current(label));
     }
 
     public BreadcrumbTrail writingLibrary() {
-        return hubThenCurrent(NavigationHub.WRITING, "Library");
+        return hubSection(NavigationHub.WRITING, "Library");
     }
 
     public BreadcrumbTrail writingWrite() {
-        return hubThenCurrent(NavigationHub.WRITING, "Write");
+        return hubSection(NavigationHub.WRITING, "Write");
     }
 }

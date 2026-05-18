@@ -1,0 +1,9 @@
+<h2 class="hub-panel__title">Featured Posts</h2>
+<p class="hub-panel__subtitle">
+    Toggle the star to make a post appear on the home page.
+</p>
+
+<div class="review-list">
+    {#include ReviewEndpoint/grid posts=posts /}
+</div>
+{#include components/manage-pagination page=posts basePath=basePath extraQuery='' fragmentTarget='' /}
