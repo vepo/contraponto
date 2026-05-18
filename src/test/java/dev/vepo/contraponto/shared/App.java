@@ -1912,12 +1912,13 @@ public class App {
     public App login(User user) {
         var loggedUser = Given.inject(LoggedUserProvider.class)
                               .login(user);
+        driver.manage().deleteAllCookies();
         access();
         driver.manage()
-              .addCookie(new Cookie(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId()));
-        driver.navigate().refresh();
-        waitForReady();
-        syncCsrfCookieFromPage();
+              .addCookie(new Cookie.Builder(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId())
+                                                                                                         .path("/")
+                                                                                                         .build());
+        _goTo("/");
         return this;
     }
 
@@ -1982,16 +1983,22 @@ public class App {
     }
 
     private void syncCsrfCookieFromPage() {
-        var metas = driver.findElements(By.cssSelector("meta[name='csrf-token']"));
-        if (metas.isEmpty()) {
-            return;
-        }
-        var token = metas.getFirst().getAttribute("content");
+        var token = (String) ((JavascriptExecutor) driver).executeScript("""
+                                                                         var meta = document.querySelector('meta[name="csrf-token"]');
+                                                                         return meta ? meta.content : '';
+                                                                         """);
         if (token == null || token.isBlank()) {
             return;
         }
+        var existing = driver.manage().getCookieNamed(CsrfTokenService.COOKIE_NAME);
+        if (existing != null && token.equals(existing.getValue())) {
+            return;
+        }
+        driver.manage().deleteCookieNamed(CsrfTokenService.COOKIE_NAME);
         driver.manage()
-              .addCookie(new Cookie(CsrfTokenService.COOKIE_NAME, token));
+              .addCookie(new Cookie.Builder(CsrfTokenService.COOKIE_NAME, token)
+                                                                                .path("/")
+                                                                                .build());
     }
 
     public TagManagePage tagsManage() {
@@ -2023,7 +2030,6 @@ public class App {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
                                                                                    "return typeof htmx === 'undefined' || !document.querySelector('.htmx-request');")));
-        syncCsrfCookieFromPage();
         return this;
     }
     // Inside App class, after SearchPage
