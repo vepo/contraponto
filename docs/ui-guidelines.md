@@ -136,8 +136,13 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 ### 8.2 Sign‑In Modal
 - Fields: Email or Username, Password.
 - Error messages display inline (e.g., invalid credentials).
+- **Forgot password?** links to `/password-recovery`.
 
 Both modals are accessible via the header buttons.
+
+### 8.3 Password recovery
+- **Request page** (`/password-recovery`): email field, **Send reset link**, generic success message.
+- **Reset page** (`/password-recovery/reset?token=…`): new password + confirm, **Update password**; invalid/expired token shows a clear error and link to request again.
 
 ---
 
@@ -145,6 +150,7 @@ Both modals are accessible via the header buttons.
 
 **URL:** `/profile`
 - A narrow‑width form with fields: Full Name, Email, Current Password (required for changes), New Password (optional), Confirm New Password.
+- Email change shows **Verification pending for {email}.** until the new address is confirmed.
 - Validation rules: password mismatch, email format, etc.
 - “Save Changes” button.
 - Success/error messages appear above the form.

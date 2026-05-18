@@ -10,7 +10,17 @@
                 <h1 class="profile-page__title">Profile Settings</h1>
                 <p class="profile-page__subtitle">Update your account details and password.</p>
                 
-                <div id="profileMessage"></div>
+                <div id="profileMessage">
+                    {#if emailVerified}
+                    <div class="success-message">Email address updated.</div>
+                    {#else if invalidToken}
+                    <div class="error-message visible">This verification link is invalid or has expired.</div>
+                    {/if}
+                </div>
+
+                {#if user.pendingEmail}
+                <p class="profile-page__subtitle">Verification pending for {user.pendingEmail}.</p>
+                {/if}
                 
                 <form class="profile-form" 
                       hx-post="/forms/profile" 

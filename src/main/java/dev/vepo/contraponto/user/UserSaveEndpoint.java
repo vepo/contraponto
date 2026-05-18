@@ -3,6 +3,7 @@ package dev.vepo.contraponto.user;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.contraponto.auth.AccountEmailService;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -37,6 +38,7 @@ public class UserSaveEndpoint {
     private final UserManageEndpoint userManageEndpoint;
     private final LoggedUser loggedUser;
     private final LoggedUserProvider loggedUserProvider;
+    private final AccountEmailService accountEmailService;
 
     @Inject
     public UserSaveEndpoint(UserRepository userRepository,
@@ -46,7 +48,8 @@ public class UserSaveEndpoint {
                             CustomPageRepository customPageRepository,
                             UserManageEndpoint userManageEndpoint,
                             LoggedUser loggedUser,
-                            LoggedUserProvider loggedUserProvider) {
+                            LoggedUserProvider loggedUserProvider,
+                            AccountEmailService accountEmailService) {
         this.userRepository = userRepository;
         this.userAccess = userAccess;
         this.userService = userService;
@@ -55,13 +58,16 @@ public class UserSaveEndpoint {
         this.userManageEndpoint = userManageEndpoint;
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
+        this.accountEmailService = accountEmailService;
     }
 
-    private void applyPasswordChange(User user, UserManageForm form) {
+    private boolean applyPasswordChange(User user, UserManageForm form) {
         var newPassword = form.getNewPassword();
         if (newPassword != null && !newPassword.isBlank()) {
             user.setPasswordHash(passwordService.hashPassword(newPassword));
+            return true;
         }
+        return false;
     }
 
     private Response badRequest(String message) {
@@ -147,7 +153,7 @@ public class UserSaveEndpoint {
             return validationError;
         }
 
-        applyPasswordChange(user, form);
+        boolean passwordChanged = applyPasswordChange(user, form);
 
         user.setName(form.getName().trim());
         user.setEmail(form.getEmail().trim());
@@ -164,6 +170,10 @@ public class UserSaveEndpoint {
 
         if (user.getId().equals(loggedUser.getId())) {
             loggedUserProvider.update(loggedUser.getSessionId(), user);
+        }
+
+        if (passwordChanged) {
+            accountEmailService.sendPasswordChanged(user);
         }
 
         logger.info("Updated user id={} username={}", user.getId(), user.getUsername());
@@ -204,7 +214,9 @@ public class UserSaveEndpoint {
         if (!form.getEmail().contains("@") || !form.getEmail().contains(".")) {
             return badRequest("Please enter a valid email address.");
         }
-        if (userRepository.existsByEmail(form.getEmail().trim(), user.getId())) {
+        String trimmedEmail = form.getEmail().trim();
+        if (!trimmedEmail.equalsIgnoreCase(user.getEmail())
+                && userRepository.existsByEmail(trimmedEmail, user.getId())) {
             return badRequest("Email already registered.");
         }
         if (user.getId().equals(loggedUser.getId()) && !form.isActive()) {

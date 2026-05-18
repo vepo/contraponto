@@ -40,6 +40,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "pending_email")
+    private String pendingEmail;
+
     @Column(nullable = false)
     private String name;
 
@@ -142,6 +145,10 @@ public class User {
         return passwordHash;
     }
 
+    public String getPendingEmail() {
+        return pendingEmail;
+    }
+
     public Image getProfilePicture() {
         return profilePicture;
     }
@@ -201,6 +208,10 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public void setPendingEmail(String pendingEmail) {
+        this.pendingEmail = pendingEmail;
     }
 
     public void setProfilePicture(Image profilePicture) {

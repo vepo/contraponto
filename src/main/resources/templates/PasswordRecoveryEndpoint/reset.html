@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Choose a new password - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="profile-page" id="main-content">
+            <div class="container-narrow">
+                <h1 class="profile-page__title">Choose a new password</h1>
+
+                <div id="resetMessage">
+                    {#if success}
+                    <div class="success-message">Your password was updated. Sign in with your new password.</div>
+                    <p class="auth-form__switch"><a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a></p>
+                    {#else if invalidToken}
+                    <div class="error-message visible">This reset link is invalid or has expired. Request a new one.</div>
+                    <p class="auth-form__switch"><a href="/password-recovery">Request a new reset link</a></p>
+                    {#else if message}
+                    <div class="error-message visible">{message}</div>
+                    {/if}
+                </div>
+
+                {#if !success && !invalidToken}
+                <form class="profile-form"
+                      hx-post="/forms/auth/password-recovery/reset"
+                      hx-target="#resetMessage"
+                      hx-swap="innerHTML"
+                      hx-indicator="#reset-htmx-indicator"
+                      autocomplete="off">
+                    <input type="hidden" name="token" value="{token}">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" name="newPassword" required minlength="8">
+                        <div class="error-message min-length">Password must be at least 8 characters.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" name="confirmPassword" required>
+                    </div>
+                    {#include components/htmx-spinner id='reset-htmx-indicator' /}
+                    <button type="submit" class="btn btn--primary">Update password</button>
+                </form>
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+        <div id="modal-container"></div>
+    </body>
+</html>

@@ -143,13 +143,35 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ## 7. Profile Settings (`GET /profile`)
 - Requires authentication.  
-- Form to update name, email, password.  
-- Password change requires current password.  
+- Form to update name, email, password, profile picture, default blog banner.  
+- Password change requires current password; triggers a **password changed** account email.  
+- Email change requires verification: sets **pending email**, sends link to new address; confirmed email stays active until `GET /account/verify-email?token=…`.  
 - POST to `/forms/profile` with validation.
 
 ---
 
-## 8. Review Page (`GET /review`)
+## 8. Authentication
+
+### 8.1 Sign-up / Sign-in modals
+- Sign-up and sign-in via header modals (`GET /auth/modal?mode=signup|login`).  
+- Sign-in includes **Forgot password?** linking to password recovery.
+
+### 8.2 Password recovery
+- **Request:** `GET /password-recovery` → POST `/forms/auth/password-recovery/request` (generic success; email sent only for active accounts).  
+- **Reset:** link in email → `GET /password-recovery/reset?token=…` → POST `/forms/auth/password-recovery/reset`.  
+- Successful reset invalidates all sessions and sends a **password changed** notice.
+
+### 8.3 Account emails (access / user management)
+| Email | Trigger |
+|-------|---------|
+| Reset your contraponto password | Password recovery request |
+| Your contraponto password was changed | Reset, profile password change, admin sets new password |
+| Confirm your new email address | Profile email change (to pending address) |
+| Your contraponto email address was changed | After email verification (to previous address) |
+
+---
+
+## 9. Review Page (`GET /review`)
 - **Access:** Users with `EDITOR` role only.  
 - Lists all published posts across the platform.  
 - Each row has a star toggle; clicking it sends a PUT to toggle the `featured` flag and updates the row via HTMX swap.  

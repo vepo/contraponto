@@ -37,6 +37,10 @@ public class LoggedUserProvider {
                        .map(user -> new LoggedUser(user, sessionId));
     }
 
+    public void invalidateAllSessionsForUser(long userId) {
+        sessions.entrySet().removeIf(entry -> entry.getValue().getId().equals(userId));
+    }
+
     @Produces
     @RequestScoped
     public LoggedUser loadLoggedUser() {

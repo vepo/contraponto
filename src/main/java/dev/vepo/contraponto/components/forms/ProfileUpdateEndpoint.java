@@ -5,6 +5,8 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.contraponto.auth.AccountEmailService;
+import dev.vepo.contraponto.auth.EmailVerificationService;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -34,18 +36,24 @@ public class ProfileUpdateEndpoint {
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
     private final BlogBannerService blogBannerService;
+    private final EmailVerificationService emailVerificationService;
+    private final AccountEmailService accountEmailService;
 
     @Inject
     public ProfileUpdateEndpoint(LoggedUser loggedUser,
                                  LoggedUserProvider loggedUserProvider,
                                  UserRepository userRepository,
                                  PasswordService passwordService,
-                                 BlogBannerService blogBannerService) {
+                                 BlogBannerService blogBannerService,
+                                 EmailVerificationService emailVerificationService,
+                                 AccountEmailService accountEmailService) {
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.blogBannerService = blogBannerService;
+        this.emailVerificationService = emailVerificationService;
+        this.accountEmailService = accountEmailService;
     }
 
     private String buildErrorResponseBody(String message) {
@@ -84,13 +92,21 @@ public class ProfileUpdateEndpoint {
         }
 
         boolean updated = false;
-        if (!request.email().equals(user.getEmail())) {
-            var maybeOtherUser = userRepository.findByEmail(request.email());
-            if (maybeOtherUser.isPresent() && !maybeOtherUser.get().getId().equals(user.getId())) {
+        boolean passwordChanged = false;
+        String requestedEmail = request.email().trim();
+
+        if (!requestedEmail.equals(user.getEmail())) {
+            if (userRepository.existsByEmail(requestedEmail, user.getId())) {
                 return Response.ok(buildErrorResponseBody("Email already registered"))
                                .build();
             }
-            user.setEmail(request.email());
+            emailVerificationService.requestEmailChange(user, requestedEmail);
+            return Response.ok(buildSuccessResponseBody("Check your new email to confirm the address change."))
+                           .build();
+        }
+
+        if (user.getPendingEmail() != null) {
+            user.setPendingEmail(null);
             updated = true;
         }
 
@@ -104,9 +120,14 @@ public class ProfileUpdateEndpoint {
                 return Response.ok(buildErrorResponseBody("Passwords do not match"))
                                .build();
             }
+            if (request.newPassword().length() < 8) {
+                return Response.ok(buildErrorResponseBody("Password must be at least 8 characters."))
+                               .build();
+            }
 
             user.setPasswordHash(passwordService.hashPassword(request.newPassword()));
             updated = true;
+            passwordChanged = true;
         }
 
         if (request.profilePictureId() != null) {
@@ -122,6 +143,10 @@ public class ProfileUpdateEndpoint {
         if (updated) {
             this.userRepository.update(user);
             loggedUserProvider.update(loggedUser.getSessionId(), user);
+        }
+
+        if (passwordChanged) {
+            accountEmailService.sendPasswordChanged(user);
         }
 
         return Response.ok(buildSuccessResponseBody("Profile updated.")).build();

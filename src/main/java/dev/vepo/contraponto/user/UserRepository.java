@@ -28,6 +28,7 @@ public class UserRepository {
         var query = new StringBuilder("""
                                       SELECT COUNT(u) FROM User u
                                       WHERE u.email = :email
+                                         OR u.pendingEmail = :email
                                       """);
         if (excludeUserId != null) {
             query.append(" AND u.id <> :excludeId");

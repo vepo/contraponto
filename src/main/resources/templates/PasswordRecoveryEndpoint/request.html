@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    Reset your password - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="profile-page" id="main-content">
+            <div class="container-narrow">
+                <h1 class="profile-page__title">Reset your password</h1>
+                <p class="profile-page__subtitle">Enter your account email and we will send reset instructions.</p>
+
+                <div id="recoveryMessage">
+                    {#if success}
+                    <div class="success-message">If an account exists for that email, we sent reset instructions.</div>
+                    {#else if message}
+                    <div class="error-message visible">{message}</div>
+                    {/if}
+                </div>
+
+                {#if !success}
+                <form class="profile-form"
+                      hx-post="/forms/auth/password-recovery/request"
+                      hx-target="#recoveryMessage"
+                      hx-swap="innerHTML"
+                      hx-indicator="#recovery-htmx-indicator"
+                      autocomplete="off">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" required>
+                        <div class="error-message required">Email is required.</div>
+                    </div>
+                    {#include components/htmx-spinner id='recovery-htmx-indicator' /}
+                    <button type="submit" class="btn btn--primary">Send reset link</button>
+                </form>
+                {/if}
+
+                <p class="auth-form__switch">
+                    <a href="/">Back to home</a>
+                    · <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a>
+                </p>
+            </div>
+        </main>
+        {#include components/footer /}
+        <div id="modal-container"></div>
+    </body>
+</html>

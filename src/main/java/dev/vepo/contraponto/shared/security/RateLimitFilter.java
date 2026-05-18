@@ -71,6 +71,7 @@ public class RateLimitFilter implements ContainerRequestFilter {
         String normalized = path.startsWith("/") ? path.substring(1) : path;
         return normalized.equals("forms/auth/login")
                 || normalized.equals("forms/auth/signup")
+                || normalized.equals("forms/auth/password-recovery/request")
                 || normalized.startsWith("forms/posts/") && normalized.endsWith("/comments");
     }
 

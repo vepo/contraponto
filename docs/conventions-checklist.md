@@ -44,7 +44,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 - [x] **Toast helper** — documented in [htmx-events.md](htmx-events.md) §3–4 (`Toast` vs raw headers).
 - [x] **HTMX scoped events** — [htmx-events.md](htmx-events.md): auth allowlist, lifecycle hooks, anti-patterns.
 - [ ] **Deferred actions after login** — pattern for session-stored intents (follow-after-login); generalize or document as one-off.
-- [ ] **Email** — document `quarkus.mailer.*`, mock in dev/test, `tb_email_notification_log` dedup rules.
+- [x] **Email** — `quarkus.mailer.*`, mock in dev/test; post-publish dedup via `tb_email_notification_log`; account emails in domain spec §UI labels and `auth/AccountEmailService`.
 - [ ] **Admin path naming** — `/review`, `/users`, `/blogs`, `/pages` are not under `/admin`; decide if rename or document as intentional.
 
 ### Low priority / nice to have

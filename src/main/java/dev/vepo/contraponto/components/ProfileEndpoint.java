@@ -15,9 +15,11 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 @Logged
@@ -27,7 +29,8 @@ public class ProfileEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance profile(Links links, User user, long mainBlogId, LoggedUser loggedUser);
+        public static native TemplateInstance profile(Links links, User user, long mainBlogId, LoggedUser loggedUser,
+                                                      boolean emailVerified, boolean invalidToken);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -55,10 +58,13 @@ public class ProfileEndpoint {
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance profile() {
+    public TemplateInstance profile(@QueryParam("verified") @DefaultValue("false") boolean emailVerified,
+                                    @QueryParam("error") String error) {
         logger.info("Reloading meny...");
         var user = userRepository.findById(loggedUser.getId()).orElseThrow();
         var mainBlogId = blogRepository.findMainByOwnerId(user.getId()).map(b -> b.getId()).orElse(0L);
-        return Templates.profile(customPageRepository.loadLinks(), user, mainBlogId, loggedUser);
+        boolean invalidToken = "invalid-token".equals(error);
+        return Templates.profile(customPageRepository.loadLinks(), user, mainBlogId, loggedUser,
+                                 emailVerified, invalidToken);
     }
 }

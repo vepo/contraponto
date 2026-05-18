@@ -29,7 +29,10 @@ public class CsrfFilter implements ContainerRequestFilter {
             return false;
         }
         String normalized = path.startsWith("/") ? path.substring(1) : path;
-        if (normalized.equals("forms/auth/login") || normalized.equals("forms/auth/signup")) {
+        if (normalized.equals("forms/auth/login")
+                || normalized.equals("forms/auth/signup")
+                || normalized.equals("forms/auth/password-recovery/request")
+                || normalized.equals("forms/auth/password-recovery/reset")) {
             return false;
         }
         return normalized.startsWith("forms/") || normalized.startsWith("api/images");

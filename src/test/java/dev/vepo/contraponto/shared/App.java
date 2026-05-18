@@ -941,6 +941,29 @@ public class App {
 
     }
 
+    public class PasswordRecoveryPage extends Page<PasswordRecoveryPage> {
+        private PasswordRecoveryPage() {}
+
+        public PasswordRecoveryPage assertSuccessMessage(String expectedSubstring) {
+            var successMsg = wait.until(visibilityOfElementLocated(cssSelector("#recoveryMessage .success-message")));
+            assertThat(successMsg.getText()).contains(expectedSubstring);
+            return this;
+        }
+
+        public PasswordRecoveryPage fillEmail(String email) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='email']")));
+            input.clear();
+            input.sendKeys(email);
+            return this;
+        }
+
+        public PasswordRecoveryPage submit() {
+            reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
+            waitForReady();
+            return this;
+        }
+    }
+
     public class PostPage extends Page<PostPage> {
         private static final String FOLLOW_BUTTON_SELECTOR = ".blog-audience button[hx-post*='/follow']";
 
@@ -1982,6 +2005,11 @@ public class App {
                                                       cssSelector(".user-menu__dropdown a[data-hx-get='/notifications']"))));
         waitForReady();
         return this;
+    }
+
+    public PasswordRecoveryPage passwordRecovery() {
+        _goTo("/password-recovery");
+        return new PasswordRecoveryPage();
     }
 
     public ProfilePage profile() {

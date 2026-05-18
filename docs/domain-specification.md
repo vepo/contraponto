@@ -46,6 +46,11 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Author** | User who owns at least one blog and writes posts. Implied by blog ownership, not a separate role. | `Post.getAuthor()` → blog owner |
 | **Reader** | Any user or guest consuming published content. | — |
 | **Session** | Authenticated browser state (`__session` cookie). | `LoggedUser` |
+| **Password recovery** | Self-service flow to reset a forgotten password via email link. | `PasswordRecoveryEndpoint` |
+| **Password reset token** | Single-use, time-limited secret sent by email; stored hashed in `tb_user_account_tokens`. | `UserAccountToken` |
+| **Pending email** | New email address awaiting verification; login and notifications use the confirmed email until verified. | `User.pendingEmail` |
+| **Email verification** | Confirms a **pending email** via link; promotes it to the account email. | `EmailVerificationEndpoint` |
+| **Account email** | Transactional HTML message for access or user management (password reset, password changed, email verification). | `AccountEmailService` |
 | **Role** | Platform capability assigned to a user (multi-role). | `Role` enum |
 | **User** (role) | Default role; write own content. | `Role.USER` — label: "User" |
 | **Editor** | Curate site-wide: feature posts, review queue, tag metadata. | `Role.EDITOR` — label: "Editor" |
@@ -162,7 +167,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
 | **Dashboard** | Author overview per selected blog: analytics (daily views, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
-| **Profile settings** | Update name, email, password, profile picture, default blog banner. | `components.ProfileEndpoint`, `ProfileUpdateEndpoint` |
+| **Profile settings** | Update name, email (with verification), password, profile picture, default blog banner. | `components.ProfileEndpoint`, `ProfileUpdateEndpoint` |
+| **User management** | Administrators create and edit users, roles, and passwords. | `UserManageEndpoint`, `UserSaveEndpoint` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
 
 ### UI labels (user-visible copy)
@@ -174,6 +180,21 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Auth — login | Sign in | Modal, comment gate |
 | Auth — register | Sign up | Modal |
 | Auth — logout | Log out | Menu |
+| Auth — forgot password link | Forgot password? | Login modal |
+| Password recovery — title | Reset your password | `/password-recovery` |
+| Password recovery — submit | Send reset link | Request form |
+| Password recovery — success | If an account exists for that email, we sent reset instructions. | After request |
+| Password reset — title | Choose a new password | `/password-recovery/reset` |
+| Password reset — submit | Update password | Reset form |
+| Password reset — success | Your password was updated. Sign in with your new password. | After reset |
+| Password reset — invalid token | This reset link is invalid or has expired. Request a new one. | Invalid/expired token |
+| Profile — pending email | Verification pending for {email}. | Profile settings |
+| Profile — email verification sent | Check your new email to confirm the address change. | After email change request |
+| Profile — email verified | Email address updated. | After verification |
+| Account email — password changed subject | Your contraponto password was changed | Security notice |
+| Account email — reset subject | Reset your contraponto password | Password recovery |
+| Account email — verify email subject | Confirm your new email address | Email verification |
+| Account email — email changed subject | Your contraponto email address was changed | Notice to old address |
 | Write — save | Save draft | Write toolbar |
 | Write — publish | Publish | Write toolbar |
 | Blog audience — follow (off) | Follow | Blog page, guest |
@@ -263,6 +284,12 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 18. **Effective blog banner** is resolved at display time; new secondary blogs copy the owner's **default blog banner** FK at creation when set (same `Image` row, not a duplicate file).
 19. **Custom pages** served publicly must be **published** and present in cache after changes.
 20. Public URLs for posts and custom pages must use `PostEndpoint.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building.
+21. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
+22. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
+23. **Inactive users** cannot complete password recovery.
+24. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
+25. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
+26. After a successful password reset, all **sessions** for that user are invalidated.
 
 ---
 
@@ -293,6 +320,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | Notifications & audience | `dev.vepo.contraponto.notification` |
 | Comments | `dev.vepo.contraponto.comment` |
 | Git sync | `dev.vepo.contraponto.git` |
+| Auth (tokens, account email, recovery) | `dev.vepo.contraponto.auth` |
 | Auth & profile forms | `dev.vepo.contraponto.components.forms` |
 | Profile page | `dev.vepo.contraponto.components` |
 | Editor review | `dev.vepo.contraponto.admin` |
