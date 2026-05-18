@@ -717,6 +717,17 @@ public class App {
             return this;
         }
 
+        public Featured assertNoCoverImage() {
+            assertThat(elm.findElements(cssSelector(".featured__image"))).isEmpty();
+            return this;
+        }
+
+        public Featured assertNoCoverLayout() {
+            var grid = elm.findElement(className("featured__grid"));
+            assertThat(grid.getAttribute("class")).contains("featured__grid--no-cover");
+            return this;
+        }
+
         public Featured assertTitle() {
             var featuredTitle = elm.findElement(className("featured__title"));
             assertThat(featuredTitle.getText()).isNotBlank();

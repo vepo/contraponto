@@ -49,6 +49,32 @@ class HomeTest {
     }
 
     @Test
+    void featuredHeroWithoutCoverUsesFullWidthLayout(App app) {
+        Given.cleanup();
+        var author = Given.user()
+                          .withUsername("no-cover-user")
+                          .withEmail("no-cover@example.com")
+                          .withPassword("homepass123")
+                          .withName("No Cover Author")
+                          .persist();
+
+        Given.post()
+             .withTitle("Featured Without Cover")
+             .withSlug("featured-no-cover")
+             .withDescription("Hero post with no cover image")
+             .withContent("Content for featured hero without cover.")
+             .withAuthor(author)
+             .withFeatured(true)
+             .persist();
+
+        app.access()
+           .featuredCard()
+           .assertTitle("Featured Without Cover")
+           .assertNoCoverLayout()
+           .assertNoCoverImage();
+    }
+
+    @Test
     void featuredPostIsDisplayedWhenExists(App app) {
         app.access()
            // If there is at least one post, the featured section should be present

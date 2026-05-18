@@ -1,6 +1,6 @@
 <section class="featured">
     <div class="container">
-        <div class="featured__grid">
+        <div class="featured__grid{#if !post.coverUrl} featured__grid--no-cover{/if}">
             <div class="featured__content">
                 <div class="featured__category">Featured</div>
                 <h1 class="featured__title">
@@ -24,7 +24,7 @@
                     <span>{post.liveContent.readTime}</span>
                 </div>
             </div>
-            {#if post.cover}
+            {#if post.coverUrl}
             <div class="featured__image">
                 <img src="{post.coverUrl}" alt="{post.liveTitle}"/>
             </div>

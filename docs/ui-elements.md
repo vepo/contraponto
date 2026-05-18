@@ -109,6 +109,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `user-menu`, `user-menu__*` | `MenuEndpoint/menu.html` | |
 | `article-card`, `article-meta` | Home/blog/tag grids | Post cards |
 | `featured`, `featured__*` | Home/blog featured hero | |
+| `featured__grid--no-cover` | `HomeEndpoint/featured.html` | Single-column hero when post has no cover |
 | `posts-grid`, `load-more` | Grid partials | |
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
 | `post-serie-nav`, `post-serie-nav__*` | `PostEndpoint/serie-nav.html` | Serie parts list on post page |

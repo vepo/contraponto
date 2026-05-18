@@ -655,6 +655,10 @@ a {
   align-items: center;
 }
 
+.featured__grid--no-cover {
+  grid-template-columns: 1fr;
+}
+
 .featured__category {
   font-family: var(--font-sans);
   font-size: 12px;
