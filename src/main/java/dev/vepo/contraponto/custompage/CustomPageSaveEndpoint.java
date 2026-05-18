@@ -148,46 +148,12 @@ public class CustomPageSaveEndpoint {
                         .build();
         }
 
-        CustomPage page;
-        Long blogIdForSlug;
-
-        if (form.getId() != null) {
-            page = customPageRepository.findByIdForManagement(form.getId())
-                                       .orElse(null);
-            if (page == null) {
-                return notFound();
-            }
-            if (!customPageAccess.canEdit(page, loggedUser)) {
-                return forbidden();
-            }
-            blogIdForSlug = resolveBlogId(form, page.getBlog());
-            if (!applyScope(page, form, blogIdForSlug)) {
-                return forbidden();
-            }
-        } else {
-            blogIdForSlug = resolveBlogId(form, null);
-            if (blogIdForSlug == null && !form.isApplicationScope()) {
-                return Toast.response(Response.Status.BAD_REQUEST)
-                            .message("Select a blog for this page.")
-                            .type(Toast.Type.ERROR)
-                            .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                            .build();
-            }
-            if (!form.isApplicationScope() && blogIdForSlug != null) {
-                var blog = blogRepository.findById(blogIdForSlug).orElse(null);
-                if (blog == null || !customPageAccess.canEditBlog(blog, loggedUser)) {
-                    return forbidden();
-                }
-                page = customPageRepository.newPage(blog);
-            } else if (form.isApplicationScope()) {
-                if (!customPageAccess.canManageApplicationPages(loggedUser)) {
-                    return forbidden();
-                }
-                page = customPageRepository.newPage(null);
-            } else {
-                return forbidden();
-            }
+        var resolved = resolvePageForSave(form);
+        if (resolved.errorResponse() != null) {
+            return resolved.errorResponse();
         }
+        CustomPage page = resolved.page();
+        Long blogIdForSlug = resolved.blogIdForSlug();
 
         if (customPageRepository.existsSlug(form.getSlug(), blogIdForSlug, page.getId())) {
             return Toast.response(Response.Status.BAD_REQUEST)
@@ -220,6 +186,56 @@ public class CustomPageSaveEndpoint {
                                                                   customPageRepository.loadLinks(),
                                                                   loggedUser))
                     .build();
+    }
+
+    private PageSaveResolution resolvePageForSave(CustomPageForm form) {
+        if (form.getId() != null) {
+            var page = customPageRepository.findByIdForManagement(form.getId()).orElse(null);
+            if (page == null) {
+                return PageSaveResolution.error(notFound());
+            }
+            if (!customPageAccess.canEdit(page, loggedUser)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            Long blogIdForSlug = resolveBlogId(form, page.getBlog());
+            if (!applyScope(page, form, blogIdForSlug)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            return PageSaveResolution.ok(page, blogIdForSlug);
+        }
+
+        Long blogIdForSlug = resolveBlogId(form, null);
+        if (blogIdForSlug == null && !form.isApplicationScope()) {
+            return PageSaveResolution.error(Toast.response(Response.Status.BAD_REQUEST)
+                                                 .message("Select a blog for this page.")
+                                                 .type(Toast.Type.ERROR)
+                                                 .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                                                 .build());
+        }
+        if (!form.isApplicationScope() && blogIdForSlug != null) {
+            var blog = blogRepository.findById(blogIdForSlug).orElse(null);
+            if (blog == null || !customPageAccess.canEditBlog(blog, loggedUser)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            return PageSaveResolution.ok(customPageRepository.newPage(blog), blogIdForSlug);
+        }
+        if (form.isApplicationScope()) {
+            if (!customPageAccess.canManageApplicationPages(loggedUser)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            return PageSaveResolution.ok(customPageRepository.newPage(null), blogIdForSlug);
+        }
+        return PageSaveResolution.error(forbidden());
+    }
+
+    private record PageSaveResolution(CustomPage page, Long blogIdForSlug, Response errorResponse) {
+        static PageSaveResolution ok(CustomPage page, Long blogIdForSlug) {
+            return new PageSaveResolution(page, blogIdForSlug, null);
+        }
+
+        static PageSaveResolution error(Response errorResponse) {
+            return new PageSaveResolution(null, null, errorResponse);
+        }
     }
 
     private String validate(CustomPageForm form) {

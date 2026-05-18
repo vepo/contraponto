@@ -105,9 +105,20 @@ public class BlogGitImportService {
             return;
         }
 
-        String raw = Files.readString(markdownPath);
-        PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = markdownCodec.parseMarkdownDocument(raw);
+        PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
+        IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog);
+        applyPostFields(draft, doc, blog, workspace, convention);
+        finalizeIngestion(draft, doc);
+    }
 
+    private PostGitMarkdownCodec.ParsedFrontMatterMarkdown readMarkdown(Path markdownPath) throws IOException {
+        return markdownCodec.parseMarkdownDocument(Files.readString(markdownPath));
+    }
+
+    private IngestedPostDraft resolvePostDraft(PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
+                                               ParsedPathStem stem,
+                                               SourceKind sourceKind,
+                                               Blog blog) {
         String slugYaml = trimToNull(doc.frontMatter().get("slug"));
         String slug = slugYaml != null ? slugYaml.toLowerCase(Locale.ROOT) : stem.slug().toLowerCase(Locale.ROOT);
 
@@ -116,25 +127,27 @@ public class BlogGitImportService {
             title = stem.slug().replace('-', ' ');
         }
 
-        Optional<Boolean> yamlPublishedFlag = parseBoolean(doc.frontMatter().get("published"));
-        boolean folderDefaultPublished = switch (sourceKind) {
-            case POSTS_FOLDER -> true;
-            case DRAFTS_FOLDER -> false;
-        };
-        boolean published = yamlPublishedFlag.orElse(folderDefaultPublished);
-
+        boolean published = parseBoolean(doc.frontMatter().get("published")).orElse(sourceKind == SourceKind.POSTS_FOLDER);
         Optional<Post> existing = locateExisting(doc, slug, blog);
         Post post = existing.orElseGet(() -> wireNewDraftPostStub(blog));
-        boolean existedBefore = existing.isPresent();
+        return new IngestedPostDraft(post, existing.isPresent(), slug, title, published, stem);
+    }
 
+    private void applyPostFields(IngestedPostDraft draft,
+                                 PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
+                                 Blog blog,
+                                 Path workspace,
+                                 JekyllLayoutConvention convention)
+            throws IOException {
+        Post post = draft.post();
         String description = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");
         String body = Objects.requireNonNullElse(doc.body(), "");
         body = gitImageSyncService.prepareBodyForImport(body.stripTrailing(), blog, workspace, convention);
 
         serieService.applySerieTitleToPost(post, trimToNull(doc.frontMatter().get("serie")));
 
-        post.setSlug(slug);
-        post.setTitle(title);
+        post.setSlug(draft.slug());
+        post.setTitle(draft.title());
         post.setDescription(description);
         post.setContent(body);
         applyCoverFromFrontMatter(post, trimToNull(doc.frontMatter().get("cover")), convention, workspace, blog);
@@ -143,39 +156,56 @@ public class BlogGitImportService {
         Optional<Boolean> featuredFlag = parseBoolean(doc.frontMatter().get("featured"));
         if (featuredFlag.isPresent()) {
             post.setFeatured(featuredFlag.get());
-        } else if (!existedBefore) {
+        } else if (!draft.existedBefore()) {
             post.setFeatured(false);
         }
 
         LocalDateTime now = LocalDateTime.now();
-        if (!existedBefore) {
+        if (!draft.existedBefore()) {
             post.setCreatedAt(now);
         }
+        applyPublishedState(post, draft, doc, now);
+    }
 
-        post.setPublished(published);
-        if (published) {
-            LocalDateTime inferred = stem.optionalPublishedDay().map(LocalDate::atStartOfDay).orElse(null);
-            LocalDateTime fmTime = parseDateTime(trimToNull(doc.frontMatter().get("published_at")));
-            LocalDateTime effective = fmTime != null ? fmTime : Objects.requireNonNullElse(inferred, now);
-            if (!existedBefore || fmTime != null || inferred != null) {
-                post.setPublishedAt(effective);
-            } else if (post.getPublishedAt() == null) {
-                post.setPublishedAt(now);
-            }
-        } else {
+    private void applyPublishedState(Post post,
+                                     IngestedPostDraft draft,
+                                     PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
+                                     LocalDateTime now) {
+        post.setPublished(draft.published());
+        if (!draft.published()) {
             post.setPublishedAt(null);
+            return;
         }
+        LocalDateTime inferred = draft.stem().optionalPublishedDay().map(LocalDate::atStartOfDay).orElse(null);
+        LocalDateTime fmTime = parseDateTime(trimToNull(doc.frontMatter().get("published_at")));
+        LocalDateTime effective = fmTime != null ? fmTime : Objects.requireNonNullElse(inferred, now);
+        if (!draft.existedBefore() || fmTime != null || inferred != null) {
+            post.setPublishedAt(effective);
+        } else if (post.getPublishedAt() == null) {
+            post.setPublishedAt(now);
+        }
+    }
 
-        if (!existedBefore) {
+    private void finalizeIngestion(IngestedPostDraft draft, PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc)
+            throws IOException {
+        Post post = draft.post();
+        if (!draft.existedBefore()) {
             postRepository.saveFromGit(post);
         }
         attachTags(doc.frontMatter().get("tags"), post);
         postImageDependencyService.syncPostDependencies(post);
-        if (published) {
+        if (draft.published()) {
             publicationService.publish(post);
         }
         entityManager.flush();
     }
+
+    private record IngestedPostDraft(Post post,
+                                     boolean existedBefore,
+                                     String slug,
+                                     String title,
+                                     boolean published,
+                                     ParsedPathStem stem) {}
 
     private void applyCoverFromFrontMatter(Post post,
                                            String coverPath,

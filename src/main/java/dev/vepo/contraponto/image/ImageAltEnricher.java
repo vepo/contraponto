@@ -20,6 +20,19 @@ public class ImageAltEnricher {
         return value.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;");
     }
 
+    private static String replacementForMatch(Matcher matcher, Map<String, String> alts) {
+        String uuid = matcher.group(3);
+        String alt = alts.get(uuid);
+        if (alt == null) {
+            return matcher.group(0);
+        }
+        String tag = matcher.group(0);
+        if (tag.matches("(?is).*\\balt\\s*=.*")) {
+            return tag.replaceAll("(?is)\\balt\\s*=\\s*[\"'][^\"']*[\"']", "alt=\"" + alt + "\"");
+        }
+        return tag.replaceFirst(">$", " alt=\"" + alt + "\">");
+    }
+
     private final ImageRepository imageRepository;
 
     private final ContentImageMarkerService markerService;
@@ -52,19 +65,7 @@ public class ImageAltEnricher {
         Matcher matcher = IMG_TAG.matcher(html);
         StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
-            String uuid = matcher.group(3);
-            String alt = alts.get(uuid);
-            String replacement = matcher.group(1) + matcher.group(2) + matcher.group(4);
-            if (alt != null) {
-                String tag = matcher.group(0);
-                if (tag.matches("(?is).*\\balt\\s*=.*")) {
-                    replacement = tag.replaceAll("(?is)\\balt\\s*=\\s*[\"'][^\"']*[\"']", "alt=\"" + alt + "\"");
-                } else {
-                    replacement = tag.replaceFirst(">$", " alt=\"" + alt + "\">");
-                }
-            } else {
-                replacement = matcher.group(0);
-            }
+            String replacement = replacementForMatch(matcher, alts);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(sb);

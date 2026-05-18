@@ -19,6 +19,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.HashSet;
+import java.util.Set;
 
 @Logged
 @ApplicationScoped
@@ -53,6 +55,13 @@ public class UserSaveEndpoint {
         this.userManageEndpoint = userManageEndpoint;
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
+    }
+
+    private void applyPasswordChange(User user, UserManageForm form) {
+        var newPassword = form.getNewPassword();
+        if (newPassword != null && !newPassword.isBlank()) {
+            user.setPasswordHash(passwordService.hashPassword(newPassword));
+        }
     }
 
     private Response badRequest(String message) {
@@ -104,6 +113,14 @@ public class UserSaveEndpoint {
                     .build();
     }
 
+    private Set<Role> resolveRoles(UserManageForm form, User user) {
+        var roles = userAccess.parseRoles(loggedUser, form.getRoles());
+        if (roles.isEmpty()) {
+            roles = new HashSet<>(user.getRoles());
+        }
+        return roles;
+    }
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -125,51 +142,21 @@ public class UserSaveEndpoint {
             return notFound();
         }
 
-        if (form.getName() == null || form.getName().isBlank()) {
-            return badRequest("Name is required.");
+        var validationError = validateUpdate(form, user);
+        if (validationError != null) {
+            return validationError;
         }
 
-        if (form.getEmail() == null || form.getEmail().isBlank()) {
-            return badRequest("Email is required.");
-        }
-
-        if (!form.getEmail().contains("@") || !form.getEmail().contains(".")) {
-            return badRequest("Please enter a valid email address.");
-        }
-
-        if (userRepository.existsByEmail(form.getEmail().trim(), user.getId())) {
-            return badRequest("Email already registered.");
-        }
-
-        if (user.getId().equals(loggedUser.getId()) && !form.isActive()) {
-            return badRequest("You cannot deactivate your own account.");
-        }
-
-        var newPassword = form.getNewPassword();
-        if (newPassword != null && !newPassword.isBlank()) {
-            if (newPassword.length() < 8) {
-                return badRequest("Password must be at least 8 characters.");
-            }
-            user.setPasswordHash(passwordService.hashPassword(newPassword));
-        }
+        applyPasswordChange(user, form);
 
         user.setName(form.getName().trim());
         user.setEmail(form.getEmail().trim());
         user.setActive(form.isActive());
 
-        var roles = userAccess.parseRoles(loggedUser, form.getRoles());
-        if (roles.isEmpty()) {
-            roles = new java.util.HashSet<>(user.getRoles());
-        }
-        if (roles.isEmpty()) {
-            return badRequest("Select at least one role.");
-        }
-
-        if (user.getId().equals(loggedUser.getId()) && !roles.contains(Role.USER_ADMINISTRATOR) && !roles.contains(Role.ADMIN)) {
-            var stillAdmin = user.getRoles().stream().anyMatch(r -> r == Role.USER_ADMINISTRATOR || r == Role.ADMIN);
-            if (stillAdmin) {
-                return badRequest("You cannot remove your own administrator access.");
-            }
+        var roles = resolveRoles(form, user);
+        var roleError = validateRoleChange(user, roles);
+        if (roleError != null) {
+            return roleError;
         }
 
         user.setRoles(roles);
@@ -190,5 +177,43 @@ public class UserSaveEndpoint {
                                                             customPageRepository.loadLinks(),
                                                             loggedUser))
                     .build();
+    }
+
+    private Response validateRoleChange(User user, Set<Role> roles) {
+        if (roles.isEmpty()) {
+            return badRequest("Select at least one role.");
+        }
+        if (user.getId().equals(loggedUser.getId())
+                && !roles.contains(Role.USER_ADMINISTRATOR)
+                && !roles.contains(Role.ADMIN)) {
+            var stillAdmin = user.getRoles().stream().anyMatch(r -> r == Role.USER_ADMINISTRATOR || r == Role.ADMIN);
+            if (stillAdmin) {
+                return badRequest("You cannot remove your own administrator access.");
+            }
+        }
+        return null;
+    }
+
+    private Response validateUpdate(UserManageForm form, User user) {
+        if (form.getName() == null || form.getName().isBlank()) {
+            return badRequest("Name is required.");
+        }
+        if (form.getEmail() == null || form.getEmail().isBlank()) {
+            return badRequest("Email is required.");
+        }
+        if (!form.getEmail().contains("@") || !form.getEmail().contains(".")) {
+            return badRequest("Please enter a valid email address.");
+        }
+        if (userRepository.existsByEmail(form.getEmail().trim(), user.getId())) {
+            return badRequest("Email already registered.");
+        }
+        if (user.getId().equals(loggedUser.getId()) && !form.isActive()) {
+            return badRequest("You cannot deactivate your own account.");
+        }
+        var newPassword = form.getNewPassword();
+        if (newPassword != null && !newPassword.isBlank() && newPassword.length() < 8) {
+            return badRequest("Password must be at least 8 characters.");
+        }
+        return null;
     }
 }
