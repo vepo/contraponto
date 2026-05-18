@@ -131,7 +131,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
-| **Git integration** | Per-blog export/import to a remote Git repo (Jekyll layout). | `Blog.gitEnabled`, etc. |
+| **Git integration** | Per-blog export/import to a remote Git repo over HTTPS (any host; Jekyll layout). | `Blog.gitEnabled`, etc. |
 | **Git sync request** | Event after publish to export post to Git when enabled. | `PostGitSyncRequestedEvent` |
 | **Remote poll** | Scheduled pull of remote changes when poll enabled. | `GitRemotePollScheduler` |
 

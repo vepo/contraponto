@@ -141,13 +141,13 @@
 
                     {#if blog.isPresent}
                     <fieldset class="git-sync">
-                        <legend class="git-sync__legend">GitHub sync</legend>
+                        <legend class="git-sync__legend">Git sync</legend>
                         <p class="git-sync__intro form-group__hint">
-                            Publish posts to a GitHub repository using Contraponto’s Jekyll-style layout
+                            Publish posts to a remote Git repository using Contraponto’s Jekyll-style layout
                             (<code>_posts/</code>, <code>_drafts/</code>, YAML front matter).
                             <a href="https://github.com/vepo/contraponto/blob/main/docs/git-jekyll-convention.md"
                                target="_blank"
-                               rel="noopener noreferrer">Layout convention on GitHub</a>.
+                               rel="noopener noreferrer">Layout convention</a>.
                         </p>
                         <label class="git-sync__enable">
                             <input type="checkbox"
@@ -155,20 +155,20 @@
                                    name="git_enabled"
                                    {#if blog.get().gitEnabled}checked{/if}>
                             <span class="git-sync__enable-card">
-                                <span class="git-sync__enable-title">Enable GitHub sync for this blog</span>
+                                <span class="git-sync__enable-title">Enable Git sync for this blog</span>
                                 <span class="git-sync__enable-desc">
-                                    After each draft save or publish, push Markdown to your GitHub repository.
+                                    After each draft save or publish, push Markdown to your remote Git repository.
                                 </span>
                             </span>
                         </label>
                         <div class="git-sync__config">
                             <div class="git-sync__fields-row">
                                 <div class="form-group">
-                                    <label for="gitRemoteUrl">GitHub repository URL</label>
+                                    <label for="gitRemoteUrl">Git remote URL</label>
                                     <input type="url"
                                            id="gitRemoteUrl"
                                            name="git_remote_url"
-                                           placeholder="https://github.com/you/your-site.git"
+                                           placeholder="https://git.example.com/you/your-site.git"
                                            {#if blog.get().gitRemoteUrl}
                                            value="{blog.get().gitRemoteUrl}"
                                            {/if}
@@ -187,7 +187,7 @@
                                            maxlength="255"
                                            autocomplete="off"/>
                                     <p class="form-group__hint">
-                                        Use a dedicated branch if GitHub Pages builds from <code>main</code>.
+                                        Use a dedicated branch if your site or CI builds from <code>main</code>.
                                     </p>
                                 </div>
                             </div>

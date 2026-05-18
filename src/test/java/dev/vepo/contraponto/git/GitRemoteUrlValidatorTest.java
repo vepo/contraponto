@@ -14,6 +14,11 @@ class GitRemoteUrlValidatorTest {
     GitRemoteUrlValidator validator;
 
     @Test
+    void acceptsNonGithubHttpsHost() {
+        assertThat(validator.validate("https://gitlab.com/example/repo.git")).isEmpty();
+    }
+
+    @Test
     void acceptsPublicHttpsUrl() {
         assertThat(validator.validate("https://github.com/example/repo.git")).isEmpty();
     }
