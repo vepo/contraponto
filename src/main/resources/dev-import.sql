@@ -72,18 +72,39 @@ SELECT 'Carol Explores APIs', 'carol', 'GraphQL, REST, and API design', u.id, TR
 FROM tb_users u WHERE u.username = 'carol';
 
 -- ============================================
--- 4. Images
+-- 4. Images (blog_id and uploaded_by_user_id required since V0.0.2)
 -- ============================================
-INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at)
-VALUES
-    ('img-distributed-001', 'distributed.jpg', 'image/jpeg', 200000, '/tmp/contraponto-images/distributed.jpg', 'https://picsum.photos/id/1/800/600', TRUE, '2024-01-10 08:00:00'),
-    ('img-microservices-002', 'microservices.jpg', 'image/jpeg', 180000, '/tmp/contraponto-images/microservices.jpg', 'https://picsum.photos/id/2/800/600', TRUE, '2024-02-01 08:00:00'),
-    ('img-kafka-003', 'kafka.jpg', 'image/jpeg', 210000, '/tmp/contraponto-images/kafka.jpg', 'https://picsum.photos/id/3/800/600', TRUE, '2024-03-01 08:00:00'),
-    ('img-observability-004', 'observability.jpg', 'image/jpeg', 195000, '/tmp/contraponto-images/observability.jpg', 'https://picsum.photos/id/4/800/600', TRUE, '2024-04-01 08:00:00'),
-    ('img-loom-005', 'loom.jpg', 'image/jpeg', 175000, '/tmp/contraponto-images/loom.jpg', 'https://picsum.photos/id/5/800/600', TRUE, '2024-05-01 08:00:00'),
-    ('img-ddd-006', 'ddd.jpg', 'image/jpeg', 160000, '/tmp/contraponto-images/ddd.jpg', 'https://picsum.photos/id/6/800/600', TRUE, '2024-06-01 08:00:00'),
-    ('img-graphql-007', 'graphql.jpg', 'image/jpeg', 185000, '/tmp/contraponto-images/graphql.jpg', 'https://picsum.photos/id/7/800/600', TRUE, '2024-07-01 08:00:00'),
-    ('img-draft-008', 'draft.jpg', 'image/jpeg', 120000, '/tmp/contraponto-images/draft.jpg', 'https://picsum.photos/id/8/800/600', TRUE, '2024-08-01 08:00:00');
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-distributed-001', 'distributed.jpg', 'image/jpeg', 200000, '/tmp/contraponto-images/distributed.jpg', 'https://picsum.photos/id/1/800/600', TRUE, '2024-01-10 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-microservices-002', 'microservices.jpg', 'image/jpeg', 180000, '/tmp/contraponto-images/microservices.jpg', 'https://picsum.photos/id/2/800/600', TRUE, '2024-02-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-kafka-003', 'kafka.jpg', 'image/jpeg', 210000, '/tmp/contraponto-images/kafka.jpg', 'https://picsum.photos/id/3/800/600', TRUE, '2024-03-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-observability-004', 'observability.jpg', 'image/jpeg', 195000, '/tmp/contraponto-images/observability.jpg', 'https://picsum.photos/id/4/800/600', TRUE, '2024-04-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-loom-005', 'loom.jpg', 'image/jpeg', 175000, '/tmp/contraponto-images/loom.jpg', 'https://picsum.photos/id/5/800/600', TRUE, '2024-05-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-ddd-006', 'ddd.jpg', 'image/jpeg', 160000, '/tmp/contraponto-images/ddd.jpg', 'https://picsum.photos/id/6/800/600', TRUE, '2024-06-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.slug = 'architecture-notes';
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-graphql-007', 'graphql.jpg', 'image/jpeg', 185000, '/tmp/contraponto-images/graphql.jpg', 'https://picsum.photos/id/7/800/600', TRUE, '2024-07-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'carol' AND b.main;
+
+INSERT INTO tb_images (uuid, filename, content_type, size, file_path, url, active, created_at, blog_id, uploaded_by_user_id)
+SELECT 'img-draft-008', 'draft.jpg', 'image/jpeg', 120000, '/tmp/contraponto-images/draft.jpg', 'https://picsum.photos/id/8/800/600', TRUE, '2024-08-01 08:00:00', b.id, u.id
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
 
 -- ============================================
 -- 5. Series

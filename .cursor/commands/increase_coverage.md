@@ -49,6 +49,6 @@ Follow this exact loop:
 - Do **not** delete or weaken existing assertions.
 - Prefer adding new test methods over modifying production code, unless the production code is clearly buggy.
 - If a method is unreachable due to design issues (private methods, complex dependencies), use reflection, or refactor the production code to be testable (e.g., extract logic, add package-private access).
-- Keep a log of changes in `coverage_log.md`.
+- Keep a log of changes in `reports/coverage_log-{sequential number}.md`.
 
 Start the loop now.
