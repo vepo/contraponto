@@ -9,6 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.image.ContentImageMarkerService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublicationService;
@@ -33,7 +34,7 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance write(WritePage writePage);
+        public static native TemplateInstance write(WritePage writePage, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -79,13 +80,16 @@ public class WriteEndpoint {
     public TemplateInstance write() {
         var blogs = blogRepository.findActiveBlogs(loggedUser.getId());
         Long selectedBlogId = findDefaultBlogId(blogs);
+        var links = customPageRepository.loadLinks();
         return Templates.write(new WritePage(Optional.empty(),
                                              "",
                                              blogs,
                                              selectedBlogId,
                                              "[]",
                                              "",
-                                             false));
+                                             false),
+                               links,
+                               loggedUser);
     }
 
     @GET
@@ -106,12 +110,15 @@ public class WriteEndpoint {
         String initialSerieTitle = post.getSerie() != null ? post.getSerie().getTitle() : "";
         boolean hasUnpublishedChanges = publicationService.hasUnpublishedChanges(post);
         String editorContent = contentImageMarkerService.toEditorContent(post.getContent());
+        var links = customPageRepository.loadLinks();
         return Templates.write(new WritePage(maybePost,
                                              editorContent,
                                              blogs,
                                              selectedBlogId,
                                              initialTagsJson,
                                              initialSerieTitle,
-                                             hasUnpublishedChanges));
+                                             hasUnpublishedChanges),
+                               links,
+                               loggedUser);
     }
 }

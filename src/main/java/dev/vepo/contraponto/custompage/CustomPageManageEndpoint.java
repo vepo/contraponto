@@ -32,7 +32,7 @@ public class CustomPageManageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance form(CustomPageFormView formView);
+        static native TemplateInstance form(CustomPageFormView formView, Links links, LoggedUser user);
 
         static native TemplateInstance list(Page<CustomPageRow> pages, boolean editorView, Links links, LoggedUser user);
 
@@ -79,12 +79,15 @@ public class CustomPageManageEndpoint {
         }
 
         var editorView = customPageAccess.canListAll(loggedUser);
+        var links = linksFor(page);
         return Response.ok(Templates.form(new CustomPageFormView(page,
                                                                  CustomPagePaths.pathSlug(page.getSlug()),
                                                                  CustomPagePaths.publicUrl(page),
                                                                  availableBlogs(editorView),
                                                                  editorView,
-                                                                 page.getBlog() == null)))
+                                                                 page.getBlog() == null),
+                                          links,
+                                          loggedUser))
                        .build();
     }
 
@@ -137,12 +140,15 @@ public class CustomPageManageEndpoint {
                               : blogRepository.findMainByOwnerId(loggedUser.getId()).orElseThrow(NotFoundException::new);
         var page = customPageRepository.newPage(blog);
 
+        var links = customPageRepository.loadLinks();
         return Response.ok(Templates.form(new CustomPageFormView(page,
                                                                  CustomPagePaths.pathSlug(page.getSlug()),
                                                                  editorView ? "" : CustomPagePaths.publicUrl(page),
                                                                  availableBlogs(editorView),
                                                                  editorView,
-                                                                 editorView)))
+                                                                 editorView),
+                                          links,
+                                          loggedUser))
                        .build();
     }
 }

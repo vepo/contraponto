@@ -287,7 +287,7 @@ public class BlogGitIntegrationService {
         }
     }
 
-    void syncBlogFromGitTransactional(long blogId) throws IOException {
+    void syncBlogFromGitTransactional(long blogId) throws IOException, GitAPIException {
         Optional<Blog> blogOpt = blogRepository.findById(blogId);
         if (blogOpt.isEmpty()) {
             return;

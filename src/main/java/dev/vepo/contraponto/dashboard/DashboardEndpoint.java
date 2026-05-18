@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -29,7 +30,7 @@ public class DashboardEndpoint {
     public static class Templates {
         public static native TemplateInstance analytics(DashboardAnalytics analytics);
 
-        public static native TemplateInstance dashboard(DashboardPage page);
+        public static native TemplateInstance dashboard(DashboardPage page, Links links, LoggedUser user);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -79,11 +80,14 @@ public class DashboardEndpoint {
 
         Long selectedBlogId = blogId != null ? blogId : analyticsService.resolveDefaultBlogId();
 
+        var links = customPageRepository.loadLinks();
         return Templates.dashboard(new DashboardPage(draftsCount,
                                                      publishedCount,
                                                      recentDrafts,
                                                      recentPublished,
                                                      viewCounts,
-                                                     selectedBlogId));
+                                                     selectedBlogId),
+                                   links,
+                                   loggedUser);
     }
 }

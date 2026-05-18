@@ -77,7 +77,7 @@
                                     <span>Click or drag to upload cover image</span>
                                     <small>JPG, PNG, GIF, WebP up to 10MB</small>
                                 </div>
-                                <div id="coverPreview" class="write-form__cover-preview{#if writePage.post.isEmpty || writePage.post.get().getCover() == null} u-hidden{/if}">
+                                <div id="coverPreview" class="write-form__cover-preview{#if !writePage.post.isPresent || writePage.post.get().getCover() == null} u-hidden{/if}">
                                     <img id="coverPreviewImg" src="{#if writePage.post.isPresent}{writePage.post.get().coverUrl}{/if}" alt="Cover preview"/>
                                     <button type="button" id="removeCoverBtn" class="write-form__cover-remove">✕</button>
                                 </div>
