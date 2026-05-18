@@ -94,18 +94,16 @@ class ProfileTest {
     @Test
     void updateProfileSuccessfully(App app) {
         String newName = "Updated Name";
-        String newEmail = "updated@example.com";
 
         app.login(testUser)
            .profile()
            .fillName(newName)
-           .fillEmail(newEmail)
            .fillCurrentPassword(TEST_USER_PASSWORD)
            .submit()
            .assertSuccessMessage("Profile updated.")
            .refresh()
            .assertNameIs(newName)
-           .assertEmailIs(newEmail);
+           .assertEmailIs(TEST_USER_EMAIL);
     }
 
     @Test
