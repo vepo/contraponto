@@ -48,6 +48,19 @@ class PageTest {
     }
 
     @Test
+    void mapPreservesPaginationMetadata() {
+        var page = new Page<>(List.of("a", "b"), 1, 2, 5);
+        var mapped = page.map(String::toUpperCase);
+        assertThat(mapped.data()).containsExactly("A", "B");
+        assertThat(mapped.page()).isEqualTo(1);
+        assertThat(mapped.limit()).isEqualTo(2);
+        assertThat(mapped.total()).isEqualTo(5);
+        assertThat(mapped.hasNext()).isTrue();
+        assertThat(mapped.nextPage()).isEqualTo(2);
+        assertThat(mapped.previousPage()).isZero();
+    }
+
+    @Test
     void paginationHelpers() {
         var page = new Page<>(IntStream.range(0, 20).mapToObj(i -> i).toList(), 2, 20, 45);
         assertThat(page.totalPages()).isEqualTo(3);
@@ -60,5 +73,8 @@ class PageTest {
         assertThat(empty.totalPages()).isZero();
         assertThat(empty.rangeStart()).isZero();
         assertThat(empty.rangeEnd()).isZero();
+        assertThat(empty.isEmpty()).isTrue();
+        assertThat(empty.hasPrevious()).isFalse();
+        assertThat(empty.hasNext()).isFalse();
     }
 }

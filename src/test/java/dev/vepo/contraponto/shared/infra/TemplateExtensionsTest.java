@@ -34,6 +34,15 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void coverUrlFallsBackToDraftCover() {
+        var cover = new dev.vepo.contraponto.image.Image();
+        cover.setUrl("/api/images/draft.png");
+        var post = new Post();
+        post.setCover(cover);
+        assertThat(TemplateExtensions.coverUrl(post)).isEqualTo("/api/images/draft.png");
+    }
+
+    @Test
     void coverUrlPrefersLivePublicationCover() {
         var cover = new Image();
         cover.setUrl("/api/images/cover.png");
@@ -83,6 +92,34 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void linkUrlForFollowReturnsBlogUrl() {
+        var owner = new User();
+        owner.setUsername("bob");
+        var blog = new Blog();
+        blog.setName("Bob Blog");
+        blog.setOwner(owner);
+        blog.setMain(true);
+        var notification = new Notification();
+        notification.setType(NotificationType.NEW_FOLLOW);
+        notification.setBlog(blog);
+        assertThat(TemplateExtensions.linkUrl(notification)).isEqualTo("/bob");
+    }
+
+    @Test
+    void liveContentAndPublishedAtPreferLivePublication() {
+        var post = new Post();
+        post.setContent("draft");
+        post.setPublishedAt(LocalDateTime.of(2026, 1, 1, 8, 0));
+        var live = new PostPublication();
+        live.setContent("live");
+        live.setPublishedAt(LocalDateTime.of(2026, 2, 1, 9, 0));
+        post.setLivePublication(live);
+        var view = new PublishedPostView(post, live);
+        assertThat(TemplateExtensions.liveContent(post)).isEqualTo("live");
+        assertThat(TemplateExtensions.livePublishedAt(view)).isEqualTo(live.getPublishedAt());
+    }
+
+    @Test
     void liveTagsPreferPublicationTags() {
         var tag = new Tag();
         tag.setSlug("news");
@@ -91,6 +128,13 @@ class TemplateExtensionsTest {
         var live = new PostPublication();
         live.setTags(List.of(tag));
         assertThat(TemplateExtensions.liveTags(new PublishedPostView(post, live))).containsExactly(tag);
+    }
+
+    @Test
+    void liveTitleOnPostFallsBackToDraftTitle() {
+        var post = new Post();
+        post.setTitle("Draft title");
+        assertThat(TemplateExtensions.liveTitle(post)).isEqualTo("Draft title");
     }
 
     @Test
@@ -176,6 +220,25 @@ class TemplateExtensionsTest {
         subscribe.setBlog(blog);
         subscribe.setActor(actor);
         assertThat(TemplateExtensions.message(subscribe)).isEqualTo("Fan subscribed by email to Studio");
+    }
+
+    @Test
+    void notificationMessageUsesSlugWhenTitleBlank() {
+        var owner = new User();
+        owner.setUsername("bob");
+        var blog = new Blog();
+        blog.setName("Bob Blog");
+        blog.setOwner(owner);
+        blog.setMain(true);
+        var post = new Post();
+        post.setTitle("   ");
+        post.setSlug("quiet-launch");
+        post.setBlog(blog);
+        var notification = new Notification();
+        notification.setType(NotificationType.NEW_POST);
+        notification.setBlog(blog);
+        notification.setPost(post);
+        assertThat(TemplateExtensions.message(notification)).isEqualTo("Bob Blog published quiet-launch");
     }
 
     @Test
