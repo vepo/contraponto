@@ -974,7 +974,7 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     ORDER BY r.started_at DESC LIMIT 1;
 
     INSERT INTO tb_git_sync_runs (
-        blog_id, operation, trigger_kind, started_at, finished_at,
+        blog_id, post_id, operation, trigger_kind, started_at, finished_at,
         outcome, git_error_kind, repository_readable, data_loadable,
         remote_url, branch, commit_before, commit_after,
         convention_snapshot, settings_snapshot, summary_message, error_detail
