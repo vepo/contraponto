@@ -3,7 +3,7 @@ package dev.vepo.contraponto.shared.infra;
 import java.time.LocalDateTime;
 
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
-import dev.vepo.contraponto.shared.security.CsrfTokenResolver;
+import dev.vepo.contraponto.shared.security.CurrentCsrfToken;
 import io.quarkus.qute.TemplateGlobal;
 import jakarta.enterprise.inject.spi.CDI;
 
@@ -17,11 +17,11 @@ public class Globals {
 
     @TemplateGlobal(name = "csrfToken")
     public static String csrfToken() {
-        var resolver = CDI.current().select(CsrfTokenResolver.class);
-        if (!resolver.isResolvable()) {
+        var current = CDI.current().select(CurrentCsrfToken.class);
+        if (!current.isResolvable()) {
             return "";
         }
-        return resolver.get().currentToken();
+        return current.get().get();
     }
 
     @TemplateGlobal(name = "currentYear")

@@ -7,20 +7,14 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 @RequestScoped
 public class CsrfTokenResolver {
 
-    private final ContainerRequestContext requestContext;
-    private final CsrfTokenService csrfTokenService;
+    private final CurrentCsrfToken currentCsrfToken;
 
     @Inject
-    public CsrfTokenResolver(ContainerRequestContext requestContext, CsrfTokenService csrfTokenService) {
-        this.requestContext = requestContext;
-        this.csrfTokenService = csrfTokenService;
+    public CsrfTokenResolver(CurrentCsrfToken currentCsrfToken) {
+        this.currentCsrfToken = currentCsrfToken;
     }
 
     public String currentToken() {
-        Object token = requestContext.getProperty(CsrfRequestSetupFilter.TOKEN_PROPERTY);
-        if (token != null && !token.toString().isBlank()) {
-            return token.toString();
-        }
-        return csrfTokenService.readToken(requestContext.getCookies());
+        return currentCsrfToken.get();
     }
 }
