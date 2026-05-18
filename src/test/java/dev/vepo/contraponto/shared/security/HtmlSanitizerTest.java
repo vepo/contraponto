@@ -20,9 +20,21 @@ class HtmlSanitizerTest {
     }
 
     @Test
+    void preservesApiImageSrc() {
+        String input = "<p><img src=\"/api/images/550e8400-e29b-41d4-a716-446655440000.png\" alt=\"caption\"></p>";
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).contains("src=\"/api/images/550e8400-e29b-41d4-a716-446655440000.png\"");
+    }
+
+    @Test
     void removesOnerrorHandlers() {
         String input = "<img src=\"/x.png\" onerror=\"alert(1)\" alt=\"x\">";
         assertThat(htmlSanitizer.sanitizePostHtml(input)).doesNotContain("onerror");
+    }
+
+    @Test
+    void stripsJavascriptImageSrc() {
+        String input = "<img src=\"javascript:alert(1)\" alt=\"x\">";
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).doesNotContain("javascript:");
     }
 
     @Test

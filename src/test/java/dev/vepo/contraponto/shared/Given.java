@@ -242,6 +242,11 @@ public interface Given {
             return this;
         }
 
+        public PostBuilder withFormat(Format format) {
+            this.format = format;
+            return this;
+        }
+
         public PostBuilder withPublished(boolean published) {
             this.published = published;
             return this;
