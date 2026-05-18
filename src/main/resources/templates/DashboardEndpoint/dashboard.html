@@ -9,7 +9,13 @@
             <div class="container-narrow">
                 <h1 class="dashboard-page__title">Dashboard</h1>
                 <p class="dashboard-page__subtitle">Overview of your writing activity.</p>
-                
+
+                <div id="dashboardAnalytics"
+                     hx-trigger="load"
+                     hx-get="/dashboard/components/analytics?blogId={selectedBlogId}"
+                     hx-swap="outerHTML">
+                </div>
+
                 <!-- Stats cards -->
                 <div class="dashboard-stats">
                     <div class="stat-card">

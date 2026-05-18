@@ -135,6 +135,7 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ### 6.2 Dashboard (`GET /dashboard`)
 - Ownership: only authenticated users.  
+- **Analytics:** Per selected blog (`?blogId=` optional; defaults to main blog). `GET /dashboard/components/analytics` returns HTMX fragment with daily views (optional comparison to previous calendar month), new followers, and new email subscribers for the chosen month.  
 - Displays counts and recent activity (drafts, published) across all user’s blogs.  
 - Quick action to write.
 

@@ -20,6 +20,24 @@ public class BlogAudienceRepository {
         this.entityManager = entityManager;
     }
 
+    public long countEmailSubscribersByBlogId(long blogId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(a) FROM BlogAudience a
+                                         WHERE a.blog.id = :blogId AND a.emailSubscribed = TRUE
+                                         """, Long.class)
+                            .setParameter("blogId", blogId)
+                            .getSingleResult();
+    }
+
+    public long countFollowersByBlogId(long blogId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(a) FROM BlogAudience a
+                                         WHERE a.blog.id = :blogId AND a.followed = TRUE
+                                         """, Long.class)
+                            .setParameter("blogId", blogId)
+                            .getSingleResult();
+    }
+
     @Transactional
     public void delete(BlogAudience audience) {
         entityManager.remove(entityManager.contains(audience) ? audience : entityManager.merge(audience));

@@ -1,8 +1,10 @@
 package dev.vepo.contraponto.view;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,31 @@ public class ViewRepository {
         return entityManager.createQuery("SELECT COUNT(v) FROM View v WHERE v.post = :post", Long.class)
                             .setParameter("post", post)
                             .getSingleResult();
+    }
+
+    public Map<LocalDate, Long> countDailyByBlogId(long blogId, LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT CAST(v.viewed_at AS date), COUNT(*)
+                                                              FROM tb_views v
+                                                              JOIN tb_posts p ON v.post_id = p.id
+                                                              WHERE p.blog_id = :blogId
+                                                                AND v.viewed_at >= :start
+                                                                AND v.viewed_at < :end
+                                                              GROUP BY CAST(v.viewed_at AS date)
+                                                              ORDER BY 1
+                                                              """)
+                                           .setParameter("blogId", blogId)
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .getResultList();
+
+        Map<LocalDate, Long> counts = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            LocalDate day = row[0] instanceof java.sql.Date sqlDate ? sqlDate.toLocalDate() : LocalDate.parse(row[0].toString());
+            counts.put(day, ((Number) row[1]).longValue());
+        }
+        return counts;
     }
 
     public Map<Long, Long> getViewCountsForPosts(List<Long> postIds) {

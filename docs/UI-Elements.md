@@ -132,6 +132,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 |-------|-----------|-------|
 | `profile-page`, `profile-form` | `ProfileEndpoint/profile.html` | |
 | `dashboard-page`, `stat-card`, `recent-*` | `DashboardEndpoint/dashboard.html` | |
+| `dashboard-analytics`, `dashboard-chart` | `DashboardEndpoint/analytics.html` | Per-blog charts; HTMX month nav |
 | `library-page`, `library-tab`, `library-tabs` | `LibraryEndpoint/library.html` | |
 | `draft-card`, `drafts-page` | `LibraryEndpoint/tab.html` | |
 | `post-card` | Library published tab | |

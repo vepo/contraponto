@@ -1,6 +1,10 @@
 package dev.vepo.contraponto.notification;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -17,6 +21,38 @@ public class NotificationRepository {
     @Inject
     public NotificationRepository(EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    public Map<LocalDate, Long> countDailyByBlogAndType(long blogId,
+                                                        long recipientUserId,
+                                                        NotificationType type,
+                                                        LocalDateTime startInclusive,
+                                                        LocalDateTime endExclusive) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT CAST(n.created_at AS date), COUNT(*)
+                                                              FROM tb_notifications n
+                                                              WHERE n.blog_id = :blogId
+                                                                AND n.recipient_user_id = :recipientUserId
+                                                                AND n.type = :type
+                                                                AND n.created_at >= :start
+                                                                AND n.created_at < :end
+                                                              GROUP BY CAST(n.created_at AS date)
+                                                              ORDER BY 1
+                                                              """)
+                                           .setParameter("blogId", blogId)
+                                           .setParameter("recipientUserId", recipientUserId)
+                                           .setParameter("type", type.name())
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .getResultList();
+
+        Map<LocalDate, Long> counts = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            LocalDate day = row[0] instanceof java.sql.Date sqlDate ? sqlDate.toLocalDate() : LocalDate.parse(row[0].toString());
+            counts.put(day, ((Number) row[1]).longValue());
+        }
+        return counts;
     }
 
     public long countUnread(long recipientUserId) {

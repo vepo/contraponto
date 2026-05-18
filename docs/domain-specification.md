@@ -145,7 +145,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Write** | Editor for creating or editing a post (`/write`, `/write/draft/{id}`). | `WriteEndpoint` |
 | **Image control** | Per-blog list of uploaded images, usages, and alt text (`/blogs/{id}/images`). | `ImageControlEndpoint` |
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
-| **Dashboard** | Author overview: counts and recent drafts/published. | `DashboardEndpoint` |
+| **Dashboard** | Author overview per selected blog: analytics (daily views, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
+| **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
 | **Profile settings** | Update name, email, password. | `ProfileEndpoint` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
 
@@ -173,6 +174,15 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Notifications empty | No notifications yet. Follow blogs to see new posts here. | Notifications page |
 | Menu — editor | Featured Posts | Links to `/review` |
 | Dashboard stat | Published posts | Dashboard card |
+| Dashboard — blog selector | Blog | Analytics scope |
+| Dashboard — month navigation | Previous month / Next month | Analytics toolbar |
+| Dashboard — compare views | Compare with previous month / Hide comparison | Views chart toggle |
+| Dashboard chart | Daily views | Views bar chart heading |
+| Dashboard chart | New followers | Followers bar chart heading |
+| Dashboard chart | New email subscribers | Subscribers bar chart heading |
+| Dashboard summary | {n} views this month | Views chart total |
+| Dashboard summary | +{n} new this month · {m} followers total | Followers chart |
+| Dashboard summary | +{n} new this month · {m} subscribers total | Subscribers chart |
 | Comment moderation | Approve / Reject | Post owner (implicit in moderation UI) |
 | Custom page — published badge | Published | Manage list |
 | Image control — page title | Images | `/blogs/{id}/images` |

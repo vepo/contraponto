@@ -171,9 +171,12 @@ Both modals are accessible via the header buttons.
 ## 11. Dashboard
 
 **URL:** `/dashboard`
+- **Analytics (per blog):** Blog selector; month navigation (Previous / Next); optional “Compare with previous month” on daily views. Three bar charts: Daily views, New followers, New email subscribers. Each chart shows month totals; audience charts show current totals.
 - **Stats cards:** Number of drafts and published posts (clickable links to library filtered by tab).
 - **Recent drafts / published:** Lists with title, last‑updated date, views (for published).
 - **Quick action:** “✍️ Write a new story” button.
+
+Analytics load via HTMX (`GET /dashboard/components/analytics`) on page load and when blog, month, or compare changes.
 
 ---
 

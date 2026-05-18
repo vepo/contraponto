@@ -127,7 +127,6 @@ public class PublishEndpoint {
                                                       links,
                                                       loggedUser,
                                                       0L,
-                                                      List.of(),
                                                       audienceComponentEndpoint.buildView(blog)))
                     .build();
     }

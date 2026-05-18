@@ -14,9 +14,11 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 @Logged
@@ -26,13 +28,16 @@ public class DashboardEndpoint {
 
     @CheckedTemplate
     public static class Templates {
+        public static native TemplateInstance analytics(DashboardAnalytics analytics);
+
         public static native TemplateInstance dashboard(LoggedUser user,
                                                         long draftsCount,
                                                         long publishedCount,
                                                         List<Post> recentDrafts,
                                                         List<Post> recentPublished,
                                                         Map<Long, Long> viewCounts,
-                                                        Links links);
+                                                        Links links,
+                                                        Long selectedBlogId);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -42,28 +47,45 @@ public class DashboardEndpoint {
     private final PostRepository postRepository;
     private final ViewRepository viewRepository;
     private final CustomPageRepository customPageRepository;
+    private final DashboardAnalyticsService analyticsService;
     private final LoggedUser loggedUser;
 
     @Inject
-    public DashboardEndpoint(PostRepository postRepository, ViewRepository viewRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public DashboardEndpoint(PostRepository postRepository,
+                             ViewRepository viewRepository,
+                             CustomPageRepository customPageRepository,
+                             DashboardAnalyticsService analyticsService,
+                             LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.viewRepository = viewRepository;
         this.customPageRepository = customPageRepository;
+        this.analyticsService = analyticsService;
         this.loggedUser = loggedUser;
     }
 
     @GET
+    @Path("components/analytics")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance dashboard() {
+    public TemplateInstance analytics(@QueryParam("blogId") Long blogId,
+                                      @QueryParam("year") Integer year,
+                                      @QueryParam("month") Integer month,
+                                      @QueryParam("compare") @DefaultValue("false") boolean compare) {
+        return Templates.analytics(analyticsService.load(blogId, year, month, compare));
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance dashboard(@QueryParam("blogId") Long blogId) {
         var draftsCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), false);
         var publishedCount = postRepository.countByAuthorAndPublished(loggedUser.getId(), true);
         var recentDrafts = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), false, 5);
         var recentPublished = postRepository.findRecentByAuthorAndPublished(loggedUser.getId(), true, 5);
 
-        // Fetch view counts for the published posts
         Map<Long, Long> viewCounts = viewRepository.getViewCountsForPosts(recentPublished.stream()
                                                                                          .map(Post::getId)
                                                                                          .toList());
+
+        Long selectedBlogId = blogId != null ? blogId : analyticsService.resolveDefaultBlogId();
 
         return Templates.dashboard(loggedUser,
                                    draftsCount,
@@ -71,6 +93,7 @@ public class DashboardEndpoint {
                                    recentDrafts,
                                    recentPublished,
                                    viewCounts,
-                                   customPageRepository.loadLinks());
+                                   customPageRepository.loadLinks(),
+                                   selectedBlogId);
     }
 }

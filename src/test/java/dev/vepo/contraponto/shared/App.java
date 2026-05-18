@@ -26,6 +26,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.locators.RelativeLocator;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.blog.Blog;
@@ -499,6 +500,16 @@ public class App {
     public class DashboardPage extends Page<DashboardPage> {
         private DashboardPage() {}
 
+        public DashboardPage assertAnalyticsLoaded() {
+            wait.until(visibilityOfElementLocated(cssSelector("#dashboardAnalytics .dashboard-chart")));
+            return this;
+        }
+
+        public DashboardPage assertCompareLegendVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".dashboard-chart__legend")));
+            return this;
+        }
+
         public DashboardPage assertDraftsStatCount(int expected) {
             var stat = wait.until(visibilityOfElementLocated(cssSelector(".stat-card:first-child .stat-card__value")));
             assertThat(stat.getText()).isEqualTo(Integer.toString(expected));
@@ -516,6 +527,19 @@ public class App {
             var section = wait.until(visibilityOfElementLocated(cssSelector(".recent-section:last-child")));
             var msg = section.findElement(cssSelector(".recent-section__empty"));
             assertThat(msg.getText()).contains("No published posts yet");
+            return this;
+        }
+
+        public DashboardPage assertMonthLabel(String expectedLabel) {
+            var label = wait.until(visibilityOfElementLocated(cssSelector(".dashboard-analytics__month-label")));
+            assertThat(label.getText()).isEqualTo(expectedLabel);
+            return this;
+        }
+
+        public DashboardPage assertNewFollowersSummary(long newThisMonth, long total) {
+            var summary = wait.until(visibilityOfElementLocated(cssSelector("#dashboardFollowersTitle + .dashboard-chart__summary")));
+            assertThat(summary.getText()).contains("+" + newThisMonth + " new this month");
+            assertThat(summary.getText()).contains(total + " followers total");
             return this;
         }
 
@@ -571,6 +595,20 @@ public class App {
             return this;
         }
 
+        public DashboardPage assertViewsSummary(long expectedViews) {
+            var summary = wait.until(visibilityOfElementLocated(cssSelector("#dashboardViewsTitle + .dashboard-chart__summary")));
+            assertThat(summary.getText()).contains(expectedViews + " views this month");
+            return this;
+        }
+
+        public DashboardPage clickPreviousMonth() {
+            var links = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".dashboard-analytics__month-link")));
+            reliableClick(links.getFirst());
+            waitForReady();
+            wait.until(visibilityOfElementLocated(cssSelector("#dashboardAnalytics .dashboard-chart")));
+            return this;
+        }
+
         public WritePage clickRecentDraft(int index) {
             var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".recent-section:first-child .recent-list__item")));
             assertThat(items).hasSizeGreaterThan(index);
@@ -607,6 +645,24 @@ public class App {
             reliableClick(btn);
             waitForReady();
             return new WritePage();
+        }
+
+        public DashboardPage enableCompareViews() {
+            var link = wait.until(elementToBeClickable(cssSelector("a.dashboard-analytics__compare-link")));
+            if (link.getText().contains("Compare with previous month")) {
+                reliableClick(link);
+                waitForReady();
+                wait.until(visibilityOfElementLocated(cssSelector(".dashboard-chart__legend")));
+            }
+            return this;
+        }
+
+        public DashboardPage selectBlog(String blogName) {
+            var selectElement = wait.until(visibilityOfElementLocated(By.id("dashboardBlogSelect")));
+            new Select(selectElement).selectByVisibleText(blogName);
+            waitForReady();
+            wait.until(visibilityOfElementLocated(cssSelector("#dashboardAnalytics .dashboard-chart")));
+            return this;
         }
     }
 
@@ -1736,6 +1792,15 @@ public class App {
         _goTo(TemplateExtensions.url(post));
         waitForReady();
         return new PostPage();
+    }
+
+    public DashboardPage goToAnalyticsFragment(long blogId, boolean compare) {
+        var path = "/dashboard/components/analytics?blogId=" + blogId;
+        if (compare) {
+            path += "&compare=true";
+        }
+        _goTo(path);
+        return new DashboardPage();
     }
 
     public ImageControlPage goToBlogImages(long blogId) {

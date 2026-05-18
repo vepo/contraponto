@@ -1,0 +1,124 @@
+<div id="dashboardAnalytics" class="dashboard-analytics">
+    <div id="dashboardAnalytics-controls" class="dashboard-analytics__toolbar">
+        <div class="dashboard-analytics__blog">
+            <label class="dashboard-analytics__label" for="dashboardBlogSelect">Blog</label>
+            <select id="dashboardBlogSelect"
+                    name="blogId"
+                    class="dashboard-analytics__select"
+                    hx-get="/dashboard/components/analytics"
+                    hx-target="#dashboardAnalytics"
+                    hx-swap="outerHTML"
+                    hx-include="#dashboardAnalytics-controls"
+                    hx-trigger="change">
+                {#for ownedBlog in analytics.ownedBlogs}
+                <option value="{ownedBlog.id}" {#if ownedBlog.id == analytics.blog.id}selected{/if}>{ownedBlog.name}</option>
+                {/for}
+            </select>
+        </div>
+
+        <div class="dashboard-analytics__month-nav">
+            <a class="dashboard-analytics__month-link"
+               data-hx-get="/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.previousYear}&month={analytics.previousMonth}{#if analytics.compareViews}&compare=true{/if}"
+               hx-target="#dashboardAnalytics"
+               hx-swap="outerHTML"
+               hx-push-url="false">Previous month</a>
+            <span class="dashboard-analytics__month-label">{analytics.monthLabel}</span>
+            {#if analytics.canGoNextMonth}
+            <a class="dashboard-analytics__month-link"
+               data-hx-get="/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.nextYear}&month={analytics.nextMonth}{#if analytics.compareViews}&compare=true{/if}"
+               hx-target="#dashboardAnalytics"
+               hx-swap="outerHTML"
+               hx-push-url="false">Next month</a>
+            {/if}
+        </div>
+
+        {#if analytics.compareViews}
+        <a class="dashboard-analytics__compare-link"
+           data-hx-get="/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}"
+           hx-target="#dashboardAnalytics"
+           hx-swap="outerHTML"
+           hx-push-url="false">Hide comparison</a>
+        {#else}
+        <a class="dashboard-analytics__compare-link"
+           data-hx-get="/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}&compare=true"
+           hx-target="#dashboardAnalytics"
+           hx-swap="outerHTML"
+           hx-push-url="false">Compare with previous month</a>
+        {/if}
+
+        <input type="hidden" name="year" value="{analytics.year}">
+        <input type="hidden" name="month" value="{analytics.month}">
+    </div>
+
+    <section class="dashboard-chart" aria-labelledby="dashboardViewsTitle">
+        <h3 id="dashboardViewsTitle" class="dashboard-chart__title">Daily views</h3>
+        <p class="dashboard-chart__summary">
+            {analytics.views.total} views this month
+            {#if analytics.viewsComparison}
+            · {analytics.viewsPercentChange}% vs previous month
+            {/if}
+        </p>
+        {#if analytics.viewsComparison}
+        <div class="dashboard-chart__legend">
+            <span class="dashboard-chart__legend-item dashboard-chart__legend-item--current">{analytics.views.label}</span>
+            <span class="dashboard-chart__legend-item dashboard-chart__legend-item--comparison">{analytics.viewsComparison.label}</span>
+        </div>
+        {/if}
+        <div class="dashboard-chart__plot" role="img" aria-label="Daily views for {analytics.monthLabel}">
+            {#for day in analytics.views.days}
+            <div class="dashboard-chart__day"
+                 title="Day {day.day.dayOfMonth}: {day.count} views{#if analytics.viewsComparison}, {analytics.viewsComparison.countForDayOfMonth(day.day.dayOfMonth)} previous month{/if}">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(analytics.viewsChartMax)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                    {#if analytics.viewsComparison}
+                    <div class="dashboard-chart__bar dashboard-chart__bar--comparison"
+                         style="height: {analytics.viewsComparison.barHeightForDayOfMonth(day.day.dayOfMonth, analytics.viewsChartMax)}%"
+                         {#if analytics.viewsComparison.countForDayOfMonth(day.day.dayOfMonth) > 0}data-has-value="true"{/if}></div>
+                    {/if}
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+
+    <section class="dashboard-chart" aria-labelledby="dashboardFollowersTitle">
+        <h3 id="dashboardFollowersTitle" class="dashboard-chart__title">New followers</h3>
+        <p class="dashboard-chart__summary">
+            +{analytics.newFollowers.total} new this month · {analytics.totalFollowers} followers total
+        </p>
+        <div class="dashboard-chart__plot" role="img" aria-label="New followers for {analytics.monthLabel}">
+            {#for day in analytics.newFollowers.days}
+            <div class="dashboard-chart__day" title="Day {day.day.dayOfMonth}: {day.count} new followers">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(analytics.newFollowers.maxDailyCount)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+
+    <section class="dashboard-chart" aria-labelledby="dashboardSubscribersTitle">
+        <h3 id="dashboardSubscribersTitle" class="dashboard-chart__title">New email subscribers</h3>
+        <p class="dashboard-chart__summary">
+            +{analytics.newSubscribers.total} new this month · {analytics.totalSubscribers} subscribers total
+        </p>
+        <div class="dashboard-chart__plot" role="img" aria-label="New email subscribers for {analytics.monthLabel}">
+            {#for day in analytics.newSubscribers.days}
+            <div class="dashboard-chart__day" title="Day {day.day.dayOfMonth}: {day.count} new subscribers">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(analytics.newSubscribers.maxDailyCount)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+</div>

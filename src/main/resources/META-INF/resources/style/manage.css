@@ -296,6 +296,194 @@
     padding: 3rem 0;
     color: var(--color-text-muted);
 }
+/* Dashboard analytics */
+.dashboard-analytics {
+    margin-bottom: 3rem;
+}
+
+.dashboard-analytics__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.dashboard-analytics__label {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.dashboard-analytics__select {
+    min-width: 12rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.dashboard-analytics__month-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    justify-content: center;
+    min-width: 14rem;
+}
+
+.dashboard-analytics__month-label {
+    font-family: var(--font-serif-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 9rem;
+    text-align: center;
+}
+
+.dashboard-analytics__month-link {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dashboard-analytics__month-link:hover {
+    text-decoration: underline;
+}
+
+.dashboard-analytics__compare-link {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dashboard-analytics__compare-link:hover {
+    text-decoration: underline;
+}
+
+.dashboard-chart {
+    margin-bottom: 2.5rem;
+}
+
+.dashboard-chart__title {
+    font-family: var(--font-serif-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+.dashboard-chart__summary {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+}
+
+.dashboard-chart__legend {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+}
+
+.dashboard-chart__legend-item::before {
+    content: '';
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 2px;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+}
+
+.dashboard-chart__legend-item--current::before {
+    background: var(--color-primary);
+}
+
+.dashboard-chart__legend-item--comparison::before {
+    background: var(--color-text-muted);
+    opacity: 0.55;
+}
+
+.dashboard-chart__plot {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 10rem;
+    overflow-x: auto;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.dashboard-chart__day {
+    flex: 1 0 0.5rem;
+    min-width: 0.45rem;
+    max-width: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    position: relative;
+}
+
+.dashboard-chart__bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1px;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+}
+
+.dashboard-chart__bar {
+    width: 45%;
+    min-height: 0;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.2s ease;
+}
+
+.dashboard-chart__bar--current {
+    background: var(--color-primary);
+}
+
+.dashboard-chart__bar--comparison {
+    background: var(--color-text-muted);
+    opacity: 0.45;
+}
+
+.dashboard-chart__bar[data-has-value] {
+    min-height: 2px;
+}
+
+.dashboard-chart__day-label {
+    position: absolute;
+    bottom: -1.35rem;
+    font-family: var(--font-sans);
+    font-size: 0.55rem;
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+
+.dashboard-chart__day:nth-child(5n) .dashboard-chart__day-label,
+.dashboard-chart__day:first-child .dashboard-chart__day-label,
+.dashboard-chart__day:last-child .dashboard-chart__day-label {
+    font-size: 0.6rem;
+}
+
 /* Dashboard Page */
 .dashboard-stats {
     display: grid;

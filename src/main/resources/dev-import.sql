@@ -1,9 +1,16 @@
 -- Dev seed data for contraponto (loaded on every dev startup via DatabaseDevSetup)
 -- All dev users share the same bcrypt hash as admin (login with your admin password).
+--
+-- Highlights: multi-blog URLs, version history, comments (/comments moderation),
+-- custom pages (/page/..., /{user}/page/..., /{user}/{blog}/page/...), git on alice's blog,
+-- follow/subscribe, notifications, email log, featured/review, drafts, series, tags, RSS/search.
 
 -- ============================================
 -- 1. Reset content (keep schema seed: admin user + blog + footer pages)
 -- ============================================
+DELETE FROM tb_custom_page_image_dependencies;
+DELETE FROM tb_custom_pages WHERE slug NOT IN ('/sobre', '/contato', '/privacidade', '/termos');
+TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
 TRUNCATE TABLE tb_notifications CASCADE;
 TRUNCATE TABLE tb_blog_audience CASCADE;
@@ -37,7 +44,8 @@ VALUES
     ('bob', 'bob@contraponto.blog', 'Bob Martins', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
     ('carol', 'carol@contraponto.blog', 'Carol Silva', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
     ('dave', 'dave@contraponto.blog', 'Dave Reader', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
-    ('eve', 'eve@contraponto.blog', 'Eve Subscriber', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW());
+    ('eve', 'eve@contraponto.blog', 'Eve Subscriber', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
+    ('ghost', 'ghost@contraponto.blog', 'Inactive Account', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', FALSE, NOW(), NOW());
 
 INSERT INTO tb_user_roles (user_id, role)
 SELECT u.id, v.role
@@ -48,7 +56,8 @@ FROM (VALUES
     ('bob', 'USER'),
     ('carol', 'USER'),
     ('dave', 'USER'),
-    ('eve', 'USER')
+    ('eve', 'USER'),
+    ('ghost', 'USER')
 ) AS v(username, role)
 JOIN tb_users u ON u.username = v.username;
 
@@ -70,6 +79,49 @@ FROM tb_users u WHERE u.username = 'bob';
 INSERT INTO tb_blogs (name, slug, description, owner_id, main, active, created_at)
 SELECT 'Carol Explores APIs', 'carol', 'GraphQL, REST, and API design', u.id, TRUE, TRUE, NOW()
 FROM tb_users u WHERE u.username = 'carol';
+
+UPDATE tb_blogs b
+SET git_enabled = TRUE,
+    git_remote_url = 'https://github.com/contraponto-dev/alice-on-systems.git',
+    git_branch = 'main',
+    git_last_known_commit = '7f3a9c2e1b0d4f8a6e5d4c3b2a19087'
+FROM tb_users u
+WHERE b.owner_id = u.id AND u.username = 'alice' AND b.main;
+
+-- ============================================
+-- 3b. Custom pages (footer pages come from Flyway migration)
+-- ============================================
+INSERT INTO tb_custom_pages (slug, section, title, content, placement, blog_id, published, created_at, published_at, updated_at)
+VALUES (
+    '/dev-playbook',
+    'Platform',
+    'Developer playbook',
+    '<h2>Local development</h2>
+    <p>Seed users share the <code>admin</code> password: <code>alice</code>, <code>bob</code>, <code>carol</code>, <code>editor</code>, <code>dave</code>, <code>eve</code>.</p>
+    <ul>
+        <li><a href="/review">Featured review</a> — sign in as <code>editor</code></li>
+        <li><a href="/comments">Comment moderation</a> — sign in as <code>alice</code></li>
+        <li><a href="/users">User admin</a> — sign in as <code>admin</code></li>
+    </ul>',
+    'NONE',
+    NULL,
+    TRUE,
+    NOW(),
+    NOW(),
+    NOW()
+);
+
+INSERT INTO tb_custom_pages (slug, section, title, content, placement, blog_id, published, created_at, published_at, updated_at)
+SELECT '/about', 'About', 'About Alice', '<p>Alice writes about distributed systems, Kafka, and observability on this blog.</p>', 'SIDEBAR', b.id, TRUE, NOW(), NOW(), NOW()
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+
+INSERT INTO tb_custom_pages (slug, section, title, content, placement, blog_id, published, created_at, published_at, updated_at)
+SELECT '/reading-list', 'Resources', 'Architecture reading list', '<ul><li>Domain-Driven Design — Evans</li><li>Building Microservices — Newman</li><li>Designing Data-Intensive Applications — Kleppmann</li></ul>', 'SIDEBAR', b.id, TRUE, NOW(), NOW(), NOW()
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.slug = 'architecture-notes';
+
+INSERT INTO tb_custom_pages (slug, section, title, content, placement, blog_id, published, created_at, published_at, updated_at)
+SELECT '/about-draft', 'About', 'About Bob (draft)', '<p>Work in progress — publish from <a href="/pages">Manage pages</a>.</p>', 'NONE', b.id, FALSE, NOW(), NULL, NOW()
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.main;
 
 -- ============================================
 -- 4. Images (blog_id and uploaded_by_user_id required since V0.0.2)
@@ -168,6 +220,9 @@ DECLARE
     v_post_graphql BIGINT;
     v_post_welcome BIGINT;
     v_post_draft BIGINT;
+    v_post_bob_main BIGINT;
+    v_comment_intro_root BIGINT;
+    v_comment_eve_pending BIGINT;
 BEGIN
     SELECT b.id INTO v_admin_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'admin' AND b.main;
     SELECT b.id INTO v_alice_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
@@ -344,6 +399,20 @@ Types, resolvers, and N+1 avoidance with batch loaders.',
         '2024-05-10 12:00:00', '2024-05-10 12:00:00', '2024-05-10 12:00:00', v_img7, NULL
     ) RETURNING id INTO v_post_graphql;
 
+    -- Bob: main blog (public URL /bob/post/... — distinct from architecture-notes)
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'pragmatic-monoliths',
+        'Pragmatic Monoliths Before Microservices',
+        v_bob_blog,
+        'When a modular monolith beats premature distribution.',
+        '## Start simple
+
+Extract services only when team boundaries and scaling needs are clear — not because diagrams look modern.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-05-01 10:00:00', '2024-05-01 10:00:00', '2024-05-01 10:00:00', NULL, NULL
+    ) RETURNING id INTO v_post_bob_main;
+
     -- ============================================
     -- 8. Post tags
     -- ============================================
@@ -374,6 +443,11 @@ Types, resolvers, and N+1 avoidance with batch loaders.',
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p JOIN tb_tags t ON t.slug = 'graphql'
     WHERE p.id = v_post_graphql;
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.id = v_post_bob_main AND t.slug IN ('java', 'microservices', 'ddd');
 
     -- ============================================
     -- 9. Publication history (versioned snapshots)
@@ -516,5 +590,85 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
     SELECT p.id, (SELECT id FROM tb_users WHERE username = 'dave'), 'dave-session', '2024-05-03 12:00:00'
     FROM tb_posts p WHERE p.slug = 'graphql-java-spring-boot';
+
+    -- ============================================
+    -- 13. Post comments (threads, moderation, /comments inbox)
+    -- ============================================
+    INSERT INTO tb_post_comments (post_id, author_id, parent_id, root_id, body, status, created_at, approved_at)
+    VALUES (
+        v_post_intro,
+        (SELECT id FROM tb_users WHERE username = 'dave'),
+        NULL, NULL,
+        'Clear explanation of CAP — especially the partition tolerance trade-off.',
+        'APPROVED', '2024-05-04 10:00:00', '2024-05-04 10:00:00'
+    ) RETURNING id INTO v_comment_intro_root;
+
+    INSERT INTO tb_post_comments (post_id, author_id, parent_id, root_id, body, status, created_at, approved_at)
+    VALUES (
+        v_post_intro,
+        (SELECT id FROM tb_users WHERE username = 'alice'),
+        v_comment_intro_root, v_comment_intro_root,
+        'Thanks Dave — a CRDT follow-up is on my draft list.',
+        'APPROVED', '2024-05-04 11:30:00', '2024-05-04 11:30:00'
+    );
+
+    INSERT INTO tb_post_comments (post_id, author_id, parent_id, root_id, body, status, created_at, approved_at)
+    VALUES (
+        v_post_intro,
+        (SELECT id FROM tb_users WHERE username = 'eve'),
+        NULL, NULL,
+        'Could you cover consensus algorithms in a future post?',
+        'PENDING', '2024-05-05 09:00:00', NULL
+    ) RETURNING id INTO v_comment_eve_pending;
+
+    INSERT INTO tb_post_comments (post_id, author_id, parent_id, root_id, body, status, created_at, approved_at)
+    VALUES (
+        v_post_kafka,
+        (SELECT id FROM tb_users WHERE username = 'bob'),
+        NULL, NULL,
+        'We use Spring Kafka daily — error handler tips would help.',
+        'PENDING', '2024-05-06 14:00:00', NULL
+    );
+
+    INSERT INTO tb_post_comments (post_id, author_id, parent_id, root_id, body, status, created_at, approved_at)
+    VALUES (
+        v_post_graphql,
+        (SELECT id FROM tb_users WHERE username = 'dave'),
+        NULL, NULL,
+        'Batch loaders saved us from N+1 queries on our schema.',
+        'APPROVED', '2024-05-11 08:00:00', '2024-05-11 08:00:00'
+    );
+
+    INSERT INTO tb_post_comments (post_id, author_id, parent_id, root_id, body, status, created_at, approved_at)
+    VALUES (
+        v_post_intro,
+        (SELECT id FROM tb_users WHERE username = 'bob'),
+        NULL, NULL,
+        'Promotional link removed by moderator.',
+        'REJECTED', '2024-05-03 12:00:00', NULL
+    );
+
+    INSERT INTO tb_notifications (recipient_user_id, type, blog_id, post_id, publication_id, actor_user_id, read, created_at, comment_id)
+    SELECT owner.id, 'NEW_COMMENT', b.id, v_post_intro, pub.id, e.id, FALSE, '2024-05-05 09:05:00', v_comment_eve_pending
+    FROM tb_users owner, tb_users e, tb_blogs b, tb_post_publications pub
+    WHERE owner.username = 'alice' AND e.username = 'eve'
+      AND b.owner_id = owner.id AND b.main
+      AND pub.post_id = v_post_intro
+      AND pub.version = (SELECT MAX(p2.version) FROM tb_post_publications p2 WHERE p2.post_id = v_post_intro);
+
+    -- ============================================
+    -- 14. Email notification log (subscribe flow)
+    -- ============================================
+    INSERT INTO tb_email_notification_log (publication_id, user_id, sent_at)
+    SELECT pub.id, e.id, '2024-04-05 10:30:00'
+    FROM tb_users e, tb_post_publications pub
+    WHERE e.username = 'eve' AND pub.post_id = v_post_kafka AND pub.version = 1
+    ON CONFLICT (publication_id, user_id) DO NOTHING;
+
+    INSERT INTO tb_email_notification_log (publication_id, user_id, sent_at)
+    SELECT pub.id, e.id, '2024-05-10 12:10:00'
+    FROM tb_users e, tb_post_publications pub
+    WHERE e.username = 'eve' AND pub.post_id = v_post_graphql AND pub.version = 1
+    ON CONFLICT (publication_id, user_id) DO NOTHING;
 
 END $$;
