@@ -352,7 +352,7 @@ public interface Given {
 
     public static void cleanup() {
         transaction(() -> {
-            Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Blog.class, User.class)
+            Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Image.class, Blog.class, User.class)
                   .sequential()
                   .forEachOrdered(Given::deleteAll);
         });

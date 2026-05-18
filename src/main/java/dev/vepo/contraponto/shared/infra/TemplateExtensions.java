@@ -184,7 +184,11 @@ public class TemplateExtensions {
         if (html == null || html.isBlank()) {
             return html == null ? "" : html;
         }
-        return Arc.container().instance(ImageAltEnricher.class).get().enrichHtml(html);
+        var enricher = Arc.container().instance(ImageAltEnricher.class);
+        if (!enricher.isAvailable()) {
+            return html;
+        }
+        return enricher.get().enrichHtml(html);
     }
 
     @TemplateExtension

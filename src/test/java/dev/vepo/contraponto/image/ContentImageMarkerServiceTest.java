@@ -32,6 +32,15 @@ class ContentImageMarkerServiceTest {
     }
 
     @Test
+    void stripMarkersForExportMatchesEditorContent() {
+        String stored = """
+                        <!-- contraponto:image uuid="550e8400-e29b-41d4-a716-446655440000" -->
+                        ![pic](/api/images/550e8400-e29b-41d4-a716-446655440000.png)
+                        """;
+        assertThat(markerService.stripMarkersForExport(stored)).isEqualTo(markerService.toEditorContent(stored));
+    }
+
+    @Test
     void stripsMarkersForEditor() {
         String stored = """
                         <!-- contraponto:image uuid="550e8400-e29b-41d4-a716-446655440000" -->
