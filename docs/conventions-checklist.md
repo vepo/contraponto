@@ -22,13 +22,14 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Custom page URL shapes | ✅ | ⚠️ (old `/page/{username}/...`) | — | ✅ |
 | Roles (`USER_ADMINISTRATOR`) | ✅ | ❌ | — | ✅ |
 | User/blog admin UI | ✅ | ❌ | — | — |
+| UI feature catalog (paths & step counts) | ✅ | — | — | ✅ [feature-catalog.md](feature-catalog.md) + `feature-catalog.mdc` |
 | HTMX events / scoped refresh | ✅ | — | — | — |
 
 ## Conventions to adopt or document
 
 ### High priority (code exists, docs lag)
 
-- [ ] **Update [application-guidelines.md](application-guidelines.md)** — notifications, tags, series, publications, `/users`, `/blogs`, `/pages`, RSS, git, corrected custom-page URLs (`CustomPagePaths`).
+- [ ] **Update [application-guidelines.md](application-guidelines.md)** — notifications, tags, series, publications, `/users`, `/blogs`, `/pages`, RSS, git, corrected custom-page URLs (`CustomPagePaths`). UI access paths: see [feature-catalog.md](feature-catalog.md).
 - [x] **Update [ui-guidelines.md](ui-guidelines.md)** — notification bell/inbox, follow/subscribe, tag/serie, comments, subscriptions, version history (see §18–23).
 - [x] **UI element catalog** — [ui-elements.md](ui-elements.md); Cursor rule `contraponto-ui.mdc`; CSS split main / manage / write.
 - [ ] **Service layer guideline** — when logic belongs in `XxxService` vs endpoint vs repository (ARCHITECTURE §5 is a start; add examples per package).
@@ -65,6 +66,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Root `AGENTS.md` index | ✅ |
 | Legacy `.cursorrules` removed | ✅ (use `.cursor/rules/`) |
 | File-scoped rules for tests | ✅ `contraponto-tests.mdc` |
+| Feature catalog maintenance rule | ✅ `feature-catalog.mdc` (always-on) |
 
 ## Implemented features (reference — keep ARCHITECTURE in sync)
 

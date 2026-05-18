@@ -194,6 +194,7 @@ Full DDL: `src/main/resources/db/migration/V0.0.1__Initial_schema.sql`
 6. `@WebTest` + `App` DSL updates.
 7. Header/footer/navigation links if user-visible.
 8. Update [docs/application-guidelines.md](docs/application-guidelines.md) for new routes.
+9. Update [docs/feature-catalog.md](docs/feature-catalog.md) if user-facing navigation or routes changed (step counts and menu paths).
 
 ## 16. Testing example
 

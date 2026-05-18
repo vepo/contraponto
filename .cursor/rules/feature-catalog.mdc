@@ -1,0 +1,44 @@
+---
+description: Keep docs/feature-catalog.md aligned with UI features and navigation
+alwaysApply: true
+---
+
+# Feature catalog maintenance
+
+The UI feature index lives in [docs/feature-catalog.md](../../docs/feature-catalog.md). It must stay accurate whenever user-facing navigation or routes change.
+
+## When to update (same change / PR)
+
+- New or changed `@Path` on a user-facing page, form, or modal.
+- New or changed links in:
+  - [MenuEndpoint/menu.html](../../src/main/resources/templates/MenuEndpoint/menu.html)
+  - [components/header.html](../../src/main/resources/templates/components/header.html)
+  - Manage list templates (`*ManageEndpoint/*.html`) or primary in-page CTAs (post action bar, blog audience, library rows).
+- New role gate, renamed menu label, or moved feature between menu sections.
+- New dev persona required to exercise a surface → update catalog appendix and [development-experience.mdc](development-experience.mdc) / [dev-import.sql](../../src/main/resources/dev-import.sql) if applicable.
+
+## What to update
+
+For each affected feature row:
+
+1. **Feature** name (match menu/UI label where possible).
+2. **Audience** (guest, `USER`, `EDITOR`, admin roles).
+3. **URL** (`GET`/`POST` path).
+4. **Steps** — count using the rules in the catalog intro (sign-in = 1 step, open user menu = 1 step, each nav click = 1 step).
+5. **UI path** — numbered click sequence from `/` or the natural entry page.
+
+Bump **Last verified** date (and commit hash if known) at the top of `feature-catalog.md`.
+
+## How to verify
+
+1. Click through the documented path from `/` in `%dev` (`./mvnw quarkus:dev`).
+2. Confirm the route and role match seed personas in [dev-import.sql](../../src/main/resources/dev-import.sql).
+
+## Out of scope for this file
+
+Do **not** add RSS feeds, `/api/*` JSON endpoints, or email-only links to the catalog. Document those in [ARCHITECTURE.md](../../ARCHITECTURE.md) only.
+
+## Related docs
+
+- [ARCHITECTURE.md](../../ARCHITECTURE.md) §15 — feature checklist includes catalog update.
+- [AGENTS.md](../../AGENTS.md) — index entry for `docs/feature-catalog.md`.
