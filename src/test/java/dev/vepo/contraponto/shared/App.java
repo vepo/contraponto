@@ -1692,6 +1692,7 @@ public class App {
     private void _goTo(String url) {
         driver.navigate().to(rootUri + url);
         waitForReady();
+        syncCsrfCookieFromPage();
     }
 
     private void _loadMore() {
@@ -1981,8 +1982,11 @@ public class App {
     }
 
     private void syncCsrfCookieFromPage() {
-        var meta = driver.findElement(By.cssSelector("meta[name='csrf-token']"));
-        var token = meta.getAttribute("content");
+        var metas = driver.findElements(By.cssSelector("meta[name='csrf-token']"));
+        if (metas.isEmpty()) {
+            return;
+        }
+        var token = metas.getFirst().getAttribute("content");
         if (token == null || token.isBlank()) {
             return;
         }
@@ -2019,6 +2023,7 @@ public class App {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
                                                                                    "return typeof htmx === 'undefined' || !document.querySelector('.htmx-request');")));
+        syncCsrfCookieFromPage();
         return this;
     }
     // Inside App class, after SearchPage

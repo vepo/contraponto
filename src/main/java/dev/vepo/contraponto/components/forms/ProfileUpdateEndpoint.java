@@ -79,7 +79,7 @@ public class ProfileUpdateEndpoint {
 
         var user = mabyeUser.get();
         if (!passwordService.verifyPassword(request.currentPassword(), user.getPasswordHash())) {
-            return Response.ok(buildErrorResponseBody("Current password is incorrect!"))
+            return Response.ok(buildErrorResponseBody("Current password is incorrect"))
                            .build();
         }
 
@@ -87,7 +87,7 @@ public class ProfileUpdateEndpoint {
         if (!request.email().equals(user.getEmail())) {
             var maybeOtherUser = userRepository.findByEmail(request.email());
             if (maybeOtherUser.isPresent() && !maybeOtherUser.get().getId().equals(user.getId())) {
-                return Response.ok(buildErrorResponseBody("Email already registered!"))
+                return Response.ok(buildErrorResponseBody("Email already registered"))
                                .build();
             }
             user.setEmail(request.email());
@@ -101,7 +101,7 @@ public class ProfileUpdateEndpoint {
 
         if (Objects.nonNull(request.newPassword()) && !request.newPassword().isBlank()) {
             if (!request.newPassword().equals(request.confirmPassword())) {
-                return Response.ok(buildErrorResponseBody("Passwords do not match!"))
+                return Response.ok(buildErrorResponseBody("Passwords do not match"))
                                .build();
             }
 
