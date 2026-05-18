@@ -19,6 +19,7 @@ import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.image.RenderedHtmlEnricher;
 import dev.vepo.contraponto.renderer.Renderer;
+import dev.vepo.contraponto.shared.security.HtmlSanitizer;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.tag.Tag;
@@ -186,6 +187,10 @@ public class TemplateExtensions {
     private static String enrichRendered(String html) {
         if (html == null || html.isBlank()) {
             return html == null ? "" : html;
+        }
+        var sanitizer = CDI.current().select(HtmlSanitizer.class);
+        if (sanitizer.isResolvable()) {
+            html = sanitizer.get().sanitizePostHtml(html);
         }
         var enricher = CDI.current().select(RenderedHtmlEnricher.class);
         if (!enricher.isResolvable()) {

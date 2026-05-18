@@ -6,7 +6,8 @@
     </div>
     <div class="modal__body">
       <div id="authError"></div>
-      <form hx-post="/forms/auth/{mode}" 
+      <form hx-post="/forms/auth/{mode}"
+            hx-headers='{"X-CSRF-Token": "{csrfToken}"}'
             hx-target="#authError" 
             hx-target-error="#modal-container .response.error" 
             hx-swap="innerHTML"

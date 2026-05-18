@@ -7,7 +7,17 @@ class MainManager {
         this.bindErrorMessage = this.bindErrorMessage.bind(this);
         this.setupRouteBasedElementsEnabler();
         this.setupErrorHandler();
+        this.setupCsrfHeader();
         this.updateUIElements();
+    }
+
+    setupCsrfHeader() {
+        document.body.addEventListener('htmx:configRequest', (evt) => {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta && meta.content) {
+                evt.detail.headers['X-CSRF-Token'] = meta.content;
+            }
+        });
     }
 
     setupErrorHandler() {
@@ -24,7 +34,15 @@ class MainManager {
                 }
 
                 const errorElm = document.querySelector(errorElmSelector.value);
-                errorElm.innerHTML = msg;
+                errorElm.textContent = '';
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(msg, 'text/html');
+                const errorMessage = doc.querySelector('.error-message');
+                if (errorMessage) {
+                    errorElm.appendChild(errorMessage);
+                } else {
+                    errorElm.textContent = msg;
+                }
                 const errorMessages = errorElm.querySelectorAll('.error-message');
                 errorMessages.forEach(elm => elm.classList.add('visible'));
             } else {

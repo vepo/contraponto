@@ -39,8 +39,8 @@ public class ImageService {
     }
 
     @Transactional
-    public void deleteImage(String uuid) {
-        Image image = imageRepository.findByUuid(uuid)
+    public void deleteImage(String uuid, long blogId) {
+        Image image = imageRepository.findByUuidAndBlogId(uuid, blogId)
                                      .orElseThrow(() -> new WebApplicationException("Image not found",
                                                                                     Response.Status.NOT_FOUND));
 

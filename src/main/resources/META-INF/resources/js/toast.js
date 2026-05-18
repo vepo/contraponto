@@ -44,13 +44,14 @@ class ToastManager {
             toast.removeChild(toast.firstChild);
         }
 
+        const wrapper = document.createElement('div');
         if (type === 'Success') {
-            toast.innerHTML = `<div class="toast--success">${message}</div>`;
+            wrapper.className = 'toast--success';
         } else if (type === 'Error') {
-            toast.innerHTML = `<div class="toast--error">${message}</div>`;
-        } else {
-            toast.innerHTML = message;
+            wrapper.className = 'toast--error';
         }
+        wrapper.textContent = message;
+        toast.appendChild(wrapper);
 
         if (this.timeoutId) {
             clearTimeout(this.timeoutId);

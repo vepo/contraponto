@@ -7,6 +7,7 @@ import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionCookieSupport;
 import dev.vepo.contraponto.user.UserRepository;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import dev.vepo.contraponto.view.ViewRepository;
@@ -40,16 +41,19 @@ public class LoginEndpoint {
     private final ViewRepository viewRepository;
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
+    private final SessionCookieSupport sessionCookieSupport;
 
     @Inject
     public LoginEndpoint(UserRepository userRepository,
                          ViewRepository viewRepository,
                          LoggedUserProvider loggedUserProvider,
-                         PasswordService passwordService) {
+                         PasswordService passwordService,
+                         SessionCookieSupport sessionCookieSupport) {
         this.userRepository = userRepository;
         this.viewRepository = viewRepository;
         this.loggedUserProvider = loggedUserProvider;
         this.passwordService = passwordService;
+        this.sessionCookieSupport = sessionCookieSupport;
     }
 
     /**
@@ -65,8 +69,7 @@ public class LoginEndpoint {
      * Builds the Set-Cookie header value for the session cookie.
      */
     private String buildSessionCookieHeader(String sessionId) {
-        return String.format("%s=%s; Path=%s",
-                             SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_PATH);
+        return sessionCookieSupport.buildSessionCookie(sessionId);
     }
 
     /**

@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.post.PostWriteService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
@@ -57,7 +57,7 @@ public class PublishEndpoint {
 
     private final PostRepository postRepository;
     private final PostPublicationService publicationService;
-    private final BlogRepository blogRepository;
+    private final PostWriteService postWriteService;
     private final CustomPageRepository customPageRepository;
     private final ImageRepository imageRepository;
     private final PostImageDependencyService postImageDependencyService;
@@ -70,7 +70,7 @@ public class PublishEndpoint {
     @Inject
     public PublishEndpoint(PostRepository postRepository,
                            PostPublicationService publicationService,
-                           BlogRepository blogRepository,
+                           PostWriteService postWriteService,
                            CustomPageRepository customPageRepository,
                            ImageRepository imageRepository,
                            PostImageDependencyService postImageDependencyService,
@@ -81,7 +81,7 @@ public class PublishEndpoint {
                            LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
-        this.blogRepository = blogRepository;
+        this.postWriteService = postWriteService;
         this.customPageRepository = customPageRepository;
         this.imageRepository = imageRepository;
         this.postImageDependencyService = postImageDependencyService;
@@ -149,13 +149,6 @@ public class PublishEndpoint {
         }
     }
 
-    private Post getOrCreatePost(SaveDraftRequest request) {
-        if (request.id() != null) {
-            return postRepository.findByIdWithTags(request.id()).orElseGet(Post::new);
-        }
-        return new Post();
-    }
-
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
@@ -170,17 +163,10 @@ public class PublishEndpoint {
             return validationError.get();
         }
 
-        // Fetch and validate blog
-        Blog blog = blogRepository.findById(request.blogId())
-                                  .filter(b -> b.getOwner().getId()
-                                                .equals(loggedUser.getId()))
-                                  .orElseThrow(() -> new NotFoundException(
-                                                                           "Blog not found! blogId=" + request.blogId()));
-
-        Post post = getOrCreatePost(request);
-        post.setBlog(blog);
+        Blog blog = postWriteService.requireEditableBlog(request.blogId(), loggedUser);
+        Post post = postWriteService.resolvePostForWrite(request.id(), blog, loggedUser);
         setFormatIfProvided(post, request);
-        updateCoverImage(post, request);
+        updateCoverImage(post, request, blog);
         fillPostMetadata(post, request);
         generateSlugIfMissing(post, request);
         serieService.applySerieTitleToPost(post, request.serieTitle());
@@ -210,9 +196,9 @@ public class PublishEndpoint {
         return postRepository.slugExists(blogId, request.slug(), request.id());
     }
 
-    private void updateCoverImage(Post post, SaveDraftRequest request) {
+    private void updateCoverImage(Post post, SaveDraftRequest request, Blog blog) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuid(request.coverId()).ifPresent(post::setCover);
+            imageRepository.findByUuidAndBlogId(request.coverId(), blog.getId()).ifPresent(post::setCover);
         } else if (post.getCover() != null) {
             post.setCover(null);
         }

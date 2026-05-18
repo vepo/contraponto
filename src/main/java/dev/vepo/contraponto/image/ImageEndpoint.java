@@ -58,9 +58,20 @@ public class ImageEndpoint {
     @DELETE
     @Path("/{uuid}")
     @Logged
-    public Response deleteImage(@PathParam("uuid") String uuid) {
+    public Response deleteImage(@PathParam("uuid") String uuid, @QueryParam("blogId") Long blogId) {
         try {
-            imageService.deleteImage(uuid);
+            if (blogId == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                               .entity(new ErrorResponse("blogId is required"))
+                               .build();
+            }
+            Blog blog = blogRepository.findById(blogId).orElse(null);
+            if (blog == null || !blogAccess.canEdit(blog, loggedUser)) {
+                return Response.status(Response.Status.FORBIDDEN)
+                               .entity(new ErrorResponse("Blog not found or access denied"))
+                               .build();
+            }
+            imageService.deleteImage(uuid, blog.getId());
             return Response.noContent().build();
         } catch (WebApplicationException e) {
             return Response.status(e.getResponse().getStatus())

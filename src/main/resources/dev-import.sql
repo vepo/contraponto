@@ -177,6 +177,10 @@ INSERT INTO tb_series (blog_id, title, slug, created_at)
 SELECT b.id, 'Domain-driven design', 'ddd', NOW()
 FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.slug = 'architecture-notes';
 
+INSERT INTO tb_series (blog_id, title, slug, created_at)
+SELECT b.id, 'API design journey', 'api-design', NOW()
+FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'carol' AND b.main;
+
 -- ============================================
 -- 6. Tags
 -- ============================================
@@ -208,6 +212,7 @@ DECLARE
     v_serie_events BIGINT;
     v_serie_spring BIGINT;
     v_serie_ddd BIGINT;
+    v_serie_api BIGINT;
     v_img1 BIGINT; v_img2 BIGINT; v_img3 BIGINT; v_img4 BIGINT; v_img5 BIGINT;
     v_img6 BIGINT; v_img7 BIGINT; v_img8 BIGINT;
     v_post_intro BIGINT;
@@ -234,6 +239,7 @@ BEGIN
     SELECT id INTO v_serie_events FROM tb_series WHERE blog_id = v_alice_blog AND slug = 'event-streaming';
     SELECT id INTO v_serie_spring FROM tb_series WHERE blog_id = v_alice_blog AND slug = 'spring-ecosystem';
     SELECT id INTO v_serie_ddd FROM tb_series WHERE blog_id = v_bob_arch AND slug = 'ddd';
+    SELECT id INTO v_serie_api FROM tb_series WHERE blog_id = v_carol_blog AND slug = 'api-design';
 
     SELECT id INTO v_img1 FROM tb_images WHERE uuid = 'img-distributed-001';
     SELECT id INTO v_img2 FROM tb_images WHERE uuid = 'img-microservices-002';
@@ -307,11 +313,11 @@ This is the **live draft** with an expanded Resilience4j section and updated dia
         '## Event-driven basics
 
 Topics, partitions, and consumer groups explained with Spring Boot examples.',
-        'MARKDOWN', TRUE, FALSE,
+        'MARKDOWN', TRUE, TRUE,
         '2024-04-05 10:00:00', '2024-04-05 10:00:00', '2024-04-05 10:00:00', v_img3, v_serie_events
     ) RETURNING id INTO v_post_kafka;
 
-  INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
     VALUES (
         'observability-java-distributed-systems',
         'Observability in Java Distributed Systems',
@@ -341,6 +347,123 @@ Lightweight threads managed by the JVM — millions of concurrent tasks without 
         'ASCIIDOC', TRUE, FALSE,
         '2024-01-20 09:00:00', '2024-01-20 09:00:00', '2024-01-20 09:00:00', v_img5, v_serie_dist
     ) RETURNING id INTO v_post_loom;
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'cap-theorem-practical-guide',
+        'The CAP Theorem: A Practical Guide for Java Teams',
+        v_alice_blog,
+        'What consistency, availability, and partition tolerance mean when you ship services, not textbooks.',
+        '## Pick two — in production
+
+When the network splits, every datastore forces a trade-off. This post walks through real outage stories and how teams document their chosen guarantees.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-01-25 10:00:00', '2024-01-25 10:00:00', '2024-01-25 10:00:00', v_img1, v_serie_dist
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'consensus-raft-paxos-overview',
+        'Consensus Algorithms: Raft and Paxos for Practitioners',
+        v_alice_blog,
+        'Leader election, log replication, and when to reach for etcd or Consul instead of rolling your own.',
+        '## Why consensus matters
+
+Single-leader replication keeps state machines aligned across nodes. We compare Raft''s understandability with Paxos''s theoretical roots.',
+        'MARKDOWN', TRUE, TRUE,
+        '2024-02-05 11:00:00', '2024-02-05 11:00:00', '2024-02-05 11:00:00', v_img1, v_serie_dist
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'idempotency-keys-distributed-apis',
+        'Idempotency Keys for Distributed HTTP APIs',
+        v_alice_blog,
+        'Safe retries without duplicate side effects — patterns for gateways and microservices.',
+        '## At-least-once delivery
+
+Clients retry; servers must deduplicate. Store idempotency keys with TTLs and return the original response on replay.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-03-01 09:30:00', '2024-03-01 09:30:00', '2024-03-01 09:30:00', NULL, v_serie_dist
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'dead-letter-queues-kafka',
+        'Dead Letter Queues with Kafka and Spring',
+        v_alice_blog,
+        'Route poison messages to a DLT, alert operators, and replay after fixes without blocking the main topic.',
+        '## When consumers fail
+
+Retry with backoff, then publish to a dead-letter topic with headers that preserve the original partition and offset context.',
+        'MARKDOWN', TRUE, TRUE,
+        '2024-04-12 14:00:00', '2024-04-12 14:00:00', '2024-04-12 14:00:00', v_img3, v_serie_events
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'transactional-outbox-pattern',
+        'The Transactional Outbox Pattern in Spring Boot',
+        v_alice_blog,
+        'Publish domain events reliably by writing to an outbox table in the same database transaction.',
+        '## Dual writes are hard
+
+Couple aggregate persistence with outbox rows; a separate relay process publishes to Kafka after commit.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-04-20 10:00:00', '2024-04-20 10:00:00', '2024-04-20 10:00:00', v_img3, v_serie_events
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'spring-cloud-gateway-routing',
+        'Spring Cloud Gateway: Routing and Filters',
+        v_alice_blog,
+        'Centralize cross-cutting concerns — auth, rate limits, and request logging — at the edge.',
+        '== Gateway routes
+
+Predicate factories match paths and headers; filter chains rewrite requests before they hit downstream services.',
+        'ASCIIDOC', TRUE, FALSE,
+        '2024-03-15 13:00:00', '2024-03-15 13:00:00', '2024-03-15 13:00:00', v_img2, v_serie_spring
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'resilience4j-circuit-breakers',
+        'Resilience4j Circuit Breakers in Production',
+        v_alice_blog,
+        'Tune failure thresholds, half-open probes, and fallbacks so cascading outages stop at the boundary.',
+        '## Fail fast, recover safely
+
+Monitor call rates and slow calls; open the circuit before thread pools exhaust waiting on a sick dependency.',
+        'MARKDOWN', TRUE, TRUE,
+        '2024-03-22 16:00:00', '2024-03-22 16:00:00', '2024-03-22 16:00:00', v_img2, v_serie_spring
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'kubernetes-health-probes-java',
+        'Kubernetes Health Probes for Java Services',
+        v_alice_blog,
+        'Liveness, readiness, and startup probes with Quarkus and Spring Actuator endpoints.',
+        '## Probe semantics
+
+Readiness removes pods from Service endpoints; liveness restarts stuck JVMs. Align timeouts with your slowest cold start.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-05-15 08:00:00', '2024-05-15 08:00:00', '2024-05-15 08:00:00', v_img4, NULL
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'contract-testing-pact',
+        'Contract Testing with Pact and Testcontainers',
+        v_alice_blog,
+        'Consumer-driven contracts that catch breaking API changes before integration environments do.',
+        '## Contracts as CI gates
+
+Providers verify published pacts; consumers pin expectations per release train.',
+        'MARKDOWN', TRUE, TRUE,
+        '2024-05-20 10:00:00', '2024-05-20 10:00:00', '2024-05-20 10:00:00', NULL, NULL
+    );
 
     -- Alice: draft
     INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
@@ -385,6 +508,45 @@ Append-only stores, projections, and replay for auditing.',
         '2024-04-18 09:00:00', '2024-04-18 09:00:00', '2024-04-18 09:00:00', v_img6, v_serie_ddd
     ) RETURNING id INTO v_post_events;
 
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'tactical-ddd-aggregates',
+        'Tactical DDD: Aggregates and Repositories',
+        v_bob_arch,
+        'Consistency boundaries, invariant enforcement, and repository interfaces that match the domain.',
+        '## One aggregate per transaction
+
+Keep clusters small; reference other aggregates by identity, not object graphs.',
+        'MARKDOWN', TRUE, TRUE,
+        '2024-03-20 11:00:00', '2024-03-20 11:00:00', '2024-03-20 11:00:00', v_img6, v_serie_ddd
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'context-mapping-workshop',
+        'Context Mapping Workshop Notes',
+        v_bob_arch,
+        'Facilitation tips for drawing bounded contexts with product and platform teams.',
+        '## Workshop flow
+
+Start from user journeys, name contexts, then negotiate upstream/downstream relationships on a wall-sized map.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-04-01 15:00:00', '2024-04-01 15:00:00', '2024-04-01 15:00:00', NULL, v_serie_ddd
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'cqrs-read-models',
+        'CQRS Read Models Without the Hype',
+        v_bob_arch,
+        'When separate write and read models pay off — and when a single model is enough.',
+        '## Projections
+
+Optimize queries with denormalized views fed by domain events, but measure complexity before splitting stacks.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-05-05 09:00:00', '2024-05-05 09:00:00', '2024-05-05 09:00:00', v_img6, v_serie_ddd
+    );
+
     -- Carol
     INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
     VALUES (
@@ -396,8 +558,34 @@ Append-only stores, projections, and replay for auditing.',
 
 Types, resolvers, and N+1 avoidance with batch loaders.',
         'MARKDOWN', TRUE, TRUE,
-        '2024-05-10 12:00:00', '2024-05-10 12:00:00', '2024-05-10 12:00:00', v_img7, NULL
+        '2024-05-10 12:00:00', '2024-05-10 12:00:00', '2024-05-10 12:00:00', v_img7, v_serie_api
     ) RETURNING id INTO v_post_graphql;
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'rest-api-versioning-strategies',
+        'REST API Versioning Strategies That Scale',
+        v_carol_blog,
+        'URL paths, headers, and content negotiation — pick a default and document migration windows.',
+        '## Versioning trade-offs
+
+Explicit `/v2` paths are easy to cache; `Accept` headers keep URLs stable but complicate client libraries.',
+        'MARKDOWN', TRUE, TRUE,
+        '2024-05-18 10:00:00', '2024-05-18 10:00:00', '2024-05-18 10:00:00', v_img7, v_serie_api
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'cursor-pagination-rest-apis',
+        'Cursor Pagination for REST APIs',
+        v_carol_blog,
+        'Stable pages under concurrent writes using opaque cursors instead of offset/limit.',
+        '## Why offsets break
+
+Large `OFFSET` scans get slow; cursors encode sort keys so clients always move forward through live data.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-05-22 14:00:00', '2024-05-22 14:00:00', '2024-05-22 14:00:00', NULL, v_serie_api
+    );
 
     -- Bob: main blog (public URL /bob/post/... — distinct from architecture-notes)
     INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
@@ -424,6 +612,43 @@ Extract services only when team boundaries and scaling needs are clear — not b
     SELECT p.id, t.id FROM tb_posts p
     CROSS JOIN tb_tags t
     WHERE p.id IN (v_post_intro, v_post_obs, v_post_loom) AND t.slug IN ('java', 'distributed-systems');
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_dist
+      AND p.id NOT IN (v_post_intro, v_post_obs, v_post_loom)
+      AND t.slug IN ('java', 'distributed-systems');
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_events AND t.slug IN ('java', 'kafka', 'spring-boot');
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_spring AND t.slug IN ('java', 'spring-boot', 'microservices');
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.blog_id = v_bob_arch AND p.serie_id = v_serie_ddd
+      AND p.id NOT IN (v_post_ddd, v_post_events) AND t.slug IN ('ddd', 'distributed-systems');
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.blog_id = v_carol_blog AND p.serie_id = v_serie_api AND t.slug IN ('graphql', 'java');
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p JOIN tb_tags t ON t.slug = 'kubernetes'
+    WHERE p.slug = 'kubernetes-health-probes-java';
+
+    INSERT INTO tb_post_tags (post_id, tag_id)
+    SELECT p.id, t.id FROM tb_posts p
+    CROSS JOIN tb_tags t
+    WHERE p.slug = 'contract-testing-pact' AND t.slug IN ('java', 'testing', 'microservices');
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p
@@ -590,6 +815,18 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
     SELECT p.id, (SELECT id FROM tb_users WHERE username = 'dave'), 'dave-session', '2024-05-03 12:00:00'
     FROM tb_posts p WHERE p.slug = 'graphql-java-spring-boot';
+
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
+    SELECT p.id, NULL, 'anon-session-3', '2024-05-18 09:00:00'
+    FROM tb_posts p WHERE p.slug = 'consensus-raft-paxos-overview';
+
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
+    SELECT p.id, NULL, 'anon-session-4', '2024-05-19 10:00:00'
+    FROM tb_posts p WHERE p.slug = 'dead-letter-queues-kafka';
+
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
+    SELECT p.id, NULL, 'anon-session-5', '2024-05-20 11:00:00'
+    FROM tb_posts p WHERE p.slug = 'rest-api-versioning-strategies';
 
     -- ============================================
     -- 13. Post comments (threads, moderation, /comments inbox)

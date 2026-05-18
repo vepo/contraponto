@@ -46,16 +46,17 @@ class ImageServiceTest {
         Given.transaction(() -> {
             dependencyRepository.persistPostDependency(new PostImageDependency(post, image, ImageRole.INLINE));
         });
-        assertThatThrownBy(() -> imageService.deleteImage(image.getUuid()))
-                                                                           .isInstanceOf(WebApplicationException.class)
-                                                                           .extracting(ex -> ((WebApplicationException) ex).getResponse().getStatus())
-                                                                           .isEqualTo(409);
+        assertThatThrownBy(() -> imageService.deleteImage(image.getUuid(), blog.getId()))
+                                                                                         .isInstanceOf(WebApplicationException.class)
+                                                                                         .extracting(ex -> ((WebApplicationException) ex).getResponse()
+                                                                                                                                         .getStatus())
+                                                                                         .isEqualTo(409);
     }
 
     @Test
     void deleteImageRemovesUnreferencedImage() {
         var image = Given.randomCover(blog);
-        imageService.deleteImage(image.getUuid());
+        imageService.deleteImage(image.getUuid(), blog.getId());
         assertThat(imageRepository.findByUuid(image.getUuid())).isEmpty();
     }
 

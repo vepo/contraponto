@@ -2,9 +2,10 @@ package dev.vepo.contraponto.components.forms;
 
 import java.util.Optional;
 
-import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.image.ImageRepository;
+import dev.vepo.contraponto.post.PostWriteService;
 import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
@@ -38,7 +39,7 @@ public class SaveDraftEndpoint {
     private static final String SUCCESS_MSG_DRAFT_SAVED = "Draft saved successfully!";
 
     private final PostRepository postRepository;
-    private final BlogRepository blogRepository;
+    private final PostWriteService postWriteService;
     private final ImageRepository imageRepository;
     private final PostImageDependencyService postImageDependencyService;
     private final TagService tagService;
@@ -48,7 +49,7 @@ public class SaveDraftEndpoint {
 
     @Inject
     public SaveDraftEndpoint(PostRepository postRepository,
-                             BlogRepository blogRepository,
+                             PostWriteService postWriteService,
                              ImageRepository imageRepository,
                              PostImageDependencyService postImageDependencyService,
                              TagService tagService,
@@ -56,7 +57,7 @@ public class SaveDraftEndpoint {
                              Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                              LoggedUser loggedUser) {
         this.postRepository = postRepository;
-        this.blogRepository = blogRepository;
+        this.postWriteService = postWriteService;
         this.imageRepository = imageRepository;
         this.postImageDependencyService = postImageDependencyService;
         this.tagService = tagService;
@@ -92,13 +93,6 @@ public class SaveDraftEndpoint {
         // Note: This endpoint does NOT set published or publishedAt – it's a draft.
     }
 
-    private Post getOrCreatePost(SaveDraftRequest request) {
-        if (request.id() != null) {
-            return postRepository.findByIdWithTags(request.id()).orElseGet(Post::new);
-        }
-        return new Post();
-    }
-
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
@@ -113,12 +107,9 @@ public class SaveDraftEndpoint {
             return validationError.get();
         }
 
-        var blog = blogRepository.findById(request.blogId())
-                                 .filter(b -> b.getOwner().getId() == loggedUser.getId()) // validating owner
-                                 .orElseThrow(() -> new NotFoundException("Blog not found!! blogId=%s".formatted(request.blogId())));
-        var post = getOrCreatePost(request);
-        post.setBlog(blog);
-        updateCoverImageIfProvided(post, request);
+        Blog blog = postWriteService.requireEditableBlog(request.blogId(), loggedUser);
+        Post post = postWriteService.resolvePostForWrite(request.id(), blog, loggedUser);
+        updateCoverImageIfProvided(post, request, blog);
         setFormat(post, request);
         fillPostMetadata(post, request);
         serieService.applySerieTitleToPost(post, request.serieTitle());
@@ -139,9 +130,9 @@ public class SaveDraftEndpoint {
         }
     }
 
-    private void updateCoverImageIfProvided(Post post, SaveDraftRequest request) {
+    private void updateCoverImageIfProvided(Post post, SaveDraftRequest request, Blog blog) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuid(request.coverId())
+            imageRepository.findByUuidAndBlogId(request.coverId(), blog.getId())
                            .ifPresent(post::setCover);
         }
         // Note: Unlike publish endpoint, we do NOT clear cover if coverId is missing.

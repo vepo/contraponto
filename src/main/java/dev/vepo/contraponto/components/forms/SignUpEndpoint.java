@@ -3,6 +3,7 @@ package dev.vepo.contraponto.components.forms;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionCookieSupport;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.UserService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,12 +29,15 @@ public class SignUpEndpoint {
 
     private final LoggedUserProvider loggedUserProvider;
     private final UserService userService;
+    private final SessionCookieSupport sessionCookieSupport;
 
     @Inject
     public SignUpEndpoint(LoggedUserProvider loggedUserProvider,
-                          UserService userService) {
+                          UserService userService,
+                          SessionCookieSupport sessionCookieSupport) {
         this.loggedUserProvider = loggedUserProvider;
         this.userService = userService;
+        this.sessionCookieSupport = sessionCookieSupport;
     }
 
     /**
@@ -49,8 +53,7 @@ public class SignUpEndpoint {
      * Builds the Set-Cookie header value for the session cookie.
      */
     private String buildSessionCookieHeader(String sessionId) {
-        return String.format("%s=%s; Path=%s; HttpOnly; SameSite=Strict",
-                             SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_PATH);
+        return sessionCookieSupport.buildSessionCookie(sessionId);
     }
 
     /**
