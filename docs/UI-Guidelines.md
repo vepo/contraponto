@@ -286,7 +286,7 @@ Compact outline buttons; active state uses primary border colour.
 
 ## 23. Post change history
 
-On the post page (author): collapsible **Change history** section listing publication versions, “current” badge, and diffs from previous version when expanded.
+On the post page (all readers): **Version {n}** with a history icon in `article-page__metadata` (live snapshot, **current** badge). Click opens a **Change history** modal listing publication versions with timestamps; each non-initial version can expand to show diffs from the previous version.
 
 ---
 

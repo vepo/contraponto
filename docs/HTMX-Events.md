@@ -60,6 +60,7 @@ Update this table when adding auth-dependent UI.
 | write-btn wrapper | `GET /components/write-btn` | No | Yes |
 | `#notification-badge-container` | `GET /components/notifications/badge` | No | Yes |
 | `#blog-audience-{blogId}` | `GET /components/blogs/{id}/audience` | No | Yes, if on page |
+| `#comments` (post lazy-load shell) | `GET {post.url}/components/comments` | No | Yes, on post page |
 | `#main-content` (subscriptions) | `GET /subscriptions` (select `main`) | No | Yes, on subscriptions page |
 | `#main` | — | No | **Never** on auth events |
 

@@ -39,11 +39,12 @@ public class PostEndpoint {
     public static class Templates {
         public static native TemplateInstance history(List<PostChangeDiffService.VersionDiff> versions);
 
+        public static native TemplateInstance historyModal(List<PostChangeDiffService.VersionDiff> versions);
+
         public static native TemplateInstance post(PublishedPostView view,
                                                    Links links,
                                                    LoggedUser user,
                                                    long viewCount,
-                                                   List<PostChangeDiffService.VersionDiff> versions,
                                                    BlogAudienceView audience);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
@@ -114,10 +115,24 @@ public class PostEndpoint {
         return historyFor(postRepository.findBlogPost(username, blogSlug, slug));
     }
 
+    @GET
+    @Path("{blogSlug}/post/{slug}/components/history/modal")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance blogPostHistoryModal(@PathParam("username") String username,
+                                                 @PathParam("blogSlug") String blogSlug,
+                                                 @PathParam("slug") String slug) {
+        return historyModalFor(postRepository.findBlogPost(username, blogSlug, slug));
+    }
+
     private TemplateInstance historyFor(Optional<Post> maybePost) {
         Post post = maybePost.orElseThrow(() -> new NotFoundException("Post not found"));
-        List<PostPublication> publications = publicationRepository.findByPostIdOrderByVersionDesc(post.getId());
-        return Templates.history(changeDiffService.buildVersionDiffs(publications));
+        return Templates.history(versionDiffsFor(post));
+    }
+
+    private TemplateInstance historyModalFor(Optional<Post> maybePost) {
+        Post post = maybePost.orElseThrow(() -> new NotFoundException("Post not found"));
+        return Templates.historyModal(versionDiffsFor(post));
     }
 
     private Links loadLinks(Post post) {
@@ -149,6 +164,15 @@ public class PostEndpoint {
         return historyFor(postRepository.findMainBlogPost(username, slug));
     }
 
+    @GET
+    @Path("post/{slug}/components/history/modal")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance mainBlogPostHistoryModal(@PathParam("username") String username,
+                                                     @PathParam("slug") String slug) {
+        return historyModalFor(postRepository.findMainBlogPost(username, slug));
+    }
+
     private Response renderPost(Post post, HttpHeaders headers) {
         // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));
@@ -161,9 +185,8 @@ public class PostEndpoint {
 
         PostPublication live = post.getLivePublication();
         PublishedPostView view = new PublishedPostView(post, live);
-        var versions = changeDiffService.buildVersionDiffs(publicationRepository.findByPostIdOrderByVersionDesc(post.getId()));
         BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
-        TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, versions, audience);
+        TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, audience);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));
@@ -213,5 +236,10 @@ public class PostEndpoint {
                            .entity(Templates.toggle(post, loggedUser))
                            .build();
         }
+    }
+
+    private List<PostChangeDiffService.VersionDiff> versionDiffsFor(Post post) {
+        List<PostPublication> publications = publicationRepository.findByPostIdOrderByVersionDesc(post.getId());
+        return changeDiffService.buildVersionDiffs(publications);
     }
 }

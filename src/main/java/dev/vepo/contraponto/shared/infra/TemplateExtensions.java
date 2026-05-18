@@ -206,6 +206,12 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static int liveVersion(PublishedPostView view) {
+        PostPublication live = liveOf(view);
+        return live != null ? live.getVersion() : 0;
+    }
+
+    @TemplateExtension
     public static String blogGridLoadMorePath(String username) {
         return "/%s/components/grid".formatted(username);
     }

@@ -77,7 +77,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Live publication** | The snapshot readers see; pointer on `Post.livePublication`. | `Post.livePublication` |
 | **Unpublished changes** | Working post differs from live snapshot while still published. | `hasUnpublishedChanges` |
 | **Featured** | Post flagged for homepage curation (`featured = true`). | Editor toggle |
-| **Version history** | Diff of publication snapshots on the post page (author view). | `PostChangeDiffService` |
+| **Version history** | Diff of publication snapshots; metadata shows live version; full list in a modal on the post page (all readers). | `PostChangeDiffService` |
 | **Serie** | Ordered collection of posts within one blog. | `Serie` |
 | **Tag** | Global taxonomy label; posts link via join table; snapshots copy tags at publish. | `Tag` |
 | **Uploaded image** | Blog-scoped image file stored in `tb_images` with optional **alt text**. | `Image` |
@@ -179,6 +179,10 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Image control — empty | No images uploaded for this blog yet. | Image list |
 | Image control — alt field | Alt text | Image row form |
 | Image control — updated toast | Image updated. | Alt save |
+| Post — version (metadata) | Version {n} | Post page metadata trigger |
+| Post — version badge | current | Metadata and modal list (latest snapshot) |
+| Post — change history modal | Change history | Modal title |
+| Post — change details | Changes from version {n} | Expandable diff summary in modal |
 
 Toast messages and validation errors should describe the domain action (e.g. "Cannot follow or subscribe to your own blog") in plain language consistent with the terms above.
 

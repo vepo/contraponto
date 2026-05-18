@@ -1,0 +1,70 @@
+---
+description: Dev seed data (dev-import.sql) so every feature is explorable locally
+alwaysApply: true
+---
+
+# Development experience — dev seed data
+
+Local dev must let a human click through every user-facing surface without manual DB work. That dataset lives in [`src/main/resources/dev-import.sql`](../../src/main/resources/dev-import.sql).
+
+## How it loads
+
+- **Profile:** `%dev` only — [`DatabaseDevSetup`](../../src/main/java/dev/vepo/contraponto/shared/infra/DatabaseDevSetup.java) runs the script on every startup.
+- **Fresh DB:** `%dev.quarkus.flyway.clean-at-start=true` resets schema + migration seed (admin, footer custom pages), then `dev-import.sql` repopulates content.
+- **Run:** `./mvnw quarkus:dev` → [http://localhost:8080](http://localhost:8080) ([README](../../README.md)).
+
+## When adding or changing a feature
+
+Treat `dev-import.sql` as part of the same change as endpoint + template (see [ARCHITECTURE.md](../../ARCHITECTURE.md) §9). Before marking work done, confirm you can **see and exercise** the feature in dev without extra steps.
+
+| If the feature involves… | Seed should include… |
+|--------------------------|----------------------|
+| New table / aggregate | At least one row a logged-in user can open from normal navigation |
+| New role or permission | A dev user with that role (see existing cast below) |
+| New post/publication state | A post in that state (draft, published, republish history, featured, etc.) |
+| Audience / notifications | `tb_blog_audience` + sample `tb_notifications` where relevant |
+| Editor-only flows (`/review`, featured) | `editor` user + `featured` posts |
+| Multi-blog URLs | A secondary blog (e.g. bob’s `architecture-notes`) |
+| Tags / series / RSS / search | Tagged posts, series membership, enough volume to paginate if applicable |
+
+If migration seed already covers it (e.g. global footer **custom pages** in `V0.0.1__Initial_schema.sql`), extend `dev-import.sql` only when dev needs **additional** examples.
+
+## Script structure (follow existing sections)
+
+1. **Reset** — `TRUNCATE` / `DELETE` dev content; keep `admin` user, admin blog, and migration-seeded globals.
+2. **Users & roles** — fixed personas (do not rename casually; tests/docs may refer to them).
+3. **Blogs → images → series → tags → posts → publications** — large block uses `DO $$ … END $$` with variables for FK wiring.
+4. **Audience, notifications, views** — social/engagement samples.
+
+Add a numbered section comment (`-- ============================================`) when introducing a new block.
+
+## Conventions
+
+- **Passwords:** all dev users use the **same bcrypt hash as `admin`** (see file header). Log in as any seeded username with the admin password.
+- **Prefer stable slugs/usernames** (`alice`, `introduction-to-distributed-systems-java`) so URLs are predictable in manual testing and docs.
+- **Use subqueries** (`INSERT … SELECT … JOIN tb_users u ON u.username = 'alice'`) instead of hard-coded numeric IDs.
+- **Respect FK order** when adding tables; extend the reset section if you truncate new content tables.
+- **Publishing model:** published posts need `tb_post_publications` rows and `live_publication_id` set like production (see existing version-history examples).
+- **Do not** rely on `dev-import.sql` in tests — use `Given` builders ([contraponto-tests.mdc](contraponto-tests.mdc)).
+
+## Dev personas (reference)
+
+| Username | Roles | Typical use |
+|----------|-------|-------------|
+| `admin` | ADMIN, USER_ADMINISTRATOR | Platform admin, `/users`, welcome post |
+| `editor` | USER, EDITOR | Featured curation `/review` |
+| `alice`, `bob`, `carol` | USER | Authors; main + secondary blogs |
+| `dave` | USER | Follower, notification recipient |
+| `eve` | USER | Email subscriber (mock mailer in dev) |
+
+## Checklist before finishing
+
+- [ ] Restarted `./mvnw quarkus:dev` (or full reload) and script ran without SQL errors
+- [ ] Opened the new/changed UI as the right persona (anonymous vs author vs editor vs admin)
+- [ ] Linked navigation reaches the seed data (home, blog, post, library, manage surfaces — not only a raw ID in Dev UI)
+
+## Never
+
+- Ship a user-facing feature with **only** empty states in dev (no seed rows).
+- Put secrets or production credentials in `dev-import.sql`.
+- Break the admin/migration baseline (truncating `tb_users` for `admin`, or deleting migration custom pages).

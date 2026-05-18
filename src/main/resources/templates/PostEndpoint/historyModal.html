@@ -1,0 +1,11 @@
+<div id="postHistoryModal" class="modal modal--open">
+    <div class="modal__container modal__container--history">
+        <div class="modal__header">
+            <h2 class="modal__title">Change history</h2>
+            <button type="button" class="modal__close" onclick="this.closest('.modal').remove()" aria-label="Close">✕</button>
+        </div>
+        <div class="modal__body">
+            {#include PostEndpoint/history-list versions=versions /}
+        </div>
+    </div>
+</div>

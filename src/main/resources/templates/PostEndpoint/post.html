@@ -66,6 +66,21 @@
                     <div>Updated: {view.livePublishedAt.formatDate}</div>
                     {/if}
                     <div>👁️ {viewCount} views</div>
+                    {#if view.hasLivePublication}
+                    <button type="button"
+                            class="article-page__version"
+                            aria-label="Change history"
+                            hx-get="{view.post.url}/components/history/modal"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML">
+                        <svg class="article-page__version-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span>Version {view.liveVersion}</span>
+                        <span class="post-history__badge">current</span>
+                    </button>
+                    {/if}
                 </div>
 
                 <article class="article-page__content">
@@ -75,12 +90,11 @@
                 <div id="comments"
                      class="comments-section comments-section--loading"
                      hx-get="{view.post.url}/components/comments"
-                     hx-trigger="load"
+                     hx-trigger="load, {authRefreshTrigger}"
                      hx-target="#comments"
                      hx-swap="innerHTML">
                 </div>
 
-                {#include PostEndpoint/history versions=versions /}
             </div>
         </main>
 

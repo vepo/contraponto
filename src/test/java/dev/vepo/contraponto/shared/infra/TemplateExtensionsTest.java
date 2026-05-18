@@ -103,6 +103,19 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void liveVersionReturnsPublicationVersion() {
+        var post = new Post();
+        var live = new PostPublication();
+        live.setVersion(3);
+        assertThat(TemplateExtensions.liveVersion(new PublishedPostView(post, live))).isEqualTo(3);
+    }
+
+    @Test
+    void liveVersionReturnsZeroWithoutPublication() {
+        assertThat(TemplateExtensions.liveVersion(new PublishedPostView(new Post(), null))).isZero();
+    }
+
+    @Test
     void notificationMessageAndLinkForNewComment() {
         var owner = new User();
         owner.setUsername("bob");

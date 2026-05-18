@@ -72,7 +72,8 @@ class PostCommentTest {
                .then()
                .statusCode(200)
                .body(containsString("id=\"comments\""))
-               .body(containsString("/components/comments"));
+               .body(containsString("/components/comments"))
+               .body(containsString("loggedIn from:body"));
     }
 
     @Test

@@ -854,6 +854,36 @@ public class App {
 
         private PostPage() {}
 
+        public PostPage assertChangeDiffVisible() {
+            var modal = driver.findElement(By.id("postHistoryModal"));
+            wait.until(d -> !modal.findElements(cssSelector(".post-history__diff-ins")).isEmpty());
+            return this;
+        }
+
+        public PostPage assertChangeHistoryModalTitle() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
+            assertThat(modal.findElement(cssSelector(".modal__title")).getText()).isEqualTo("Change history");
+            return this;
+        }
+
+        public PostPage assertCommentsFormVisible() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var forms = driver.findElements(cssSelector("#comments .comment-form"));
+                return forms.size() == 1 && forms.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertCommentsSignInGateVisible() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var hints = driver.findElements(cssSelector("#comments .comments-section__login-hint"));
+                return hints.size() == 1
+                        && hints.get(0).isDisplayed()
+                        && hints.get(0).getText().contains("Sign in");
+            });
+            return this;
+        }
+
         public PostPage assertCoverImagePresent() {
             var coverImage = wait.until(visibilityOfElementLocated(cssSelector(".article-page__cover-image")));
             assertThat(coverImage.isDisplayed()).isTrue();
@@ -902,6 +932,13 @@ public class App {
             return this;
         }
 
+        public PostPage assertVersionInMetadata(int version) {
+            var trigger = wait.until(visibilityOfElementLocated(cssSelector(".article-page__version")));
+            assertThat(trigger.getText()).containsIgnoringCase("version " + version);
+            assertThat(trigger.getText()).containsIgnoringCase("current");
+            return this;
+        }
+
         public PostPage clickFollowButton() {
             var follow = wait.until(elementToBeClickable(cssSelector(FOLLOW_BUTTON_SELECTOR)));
             reliableClick(follow);
@@ -910,6 +947,30 @@ public class App {
                 var buttons = driver.findElements(cssSelector(FOLLOW_BUTTON_SELECTOR));
                 return !buttons.isEmpty() && "Following".equals(buttons.get(0).getText().trim());
             });
+            return this;
+        }
+
+        public PostPage closeChangeHistoryModal() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
+            var closeBtn = modal.findElement(cssSelector(".modal__close"));
+            reliableClick(closeBtn);
+            wait.until(invisibilityOfElementLocated(By.id("postHistoryModal")));
+            return this;
+        }
+
+        public PostPage expandFirstChangeDetails() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
+            var details = modal.findElement(cssSelector(".post-history__details"));
+            if (details.getAttribute("open") == null) {
+                reliableClick(details.findElement(cssSelector("summary")));
+            }
+            return this;
+        }
+
+        public PostPage openChangeHistoryModal() {
+            var trigger = wait.until(elementToBeClickable(cssSelector(".article-page__version")));
+            reliableClick(trigger);
+            wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
             return this;
         }
 

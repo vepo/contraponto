@@ -6,8 +6,10 @@ description: Automatically fix all failing Maven tests by iterating until they p
 You are an expert Java developer. Your task is to fix **all failing tests** in this Maven project.  
 Follow this exact loop – **do not ask for confirmation** and **do not invent workarounds**.
 
+**Test runs:** Always set `GITHUB_ACTIONS=true` when invoking Maven tests (e.g. `GITHUB_ACTIONS=true mvn clean test`). `WebTestExtension` uses this to run Chrome headless, which matches CI and avoids failures when no display is available.
+
 1. **Run all tests**  
-   Execute `mvn clean test` and capture the full output.
+   Execute `GITHUB_ACTIONS=true mvn clean test` and capture the full output.
 
 2. **Check for failures**  
    - If the build succeeds and there are **no test failures**, print `✅ All tests pass!` and stop.  
@@ -30,11 +32,11 @@ Follow this exact loop – **do not ask for confirmation** and **do not invent w
      - If the test is wrong (e.g., outdated expectation, wrong mock) → fix the test.  
      - **Never** add code that works around the failure without addressing the real cause (e.g., do not add `Thread.sleep()` to hide timing issues, do not ignore exceptions).  
    - After the fix, **re-run that single test** to verify:  
-     `mvn test -Dtest=TestClassName#methodName`  
+     `GITHUB_ACTIONS=true mvn test -Dtest=TestClassName#methodName`  
    - If it still fails, try a different fix strategy (e.g., change the production logic instead of the test).  
 
 5. **Repeat from step 1**  
-   After fixing all failures identified in the current iteration, run `mvn clean test` again.  
+   After fixing all failures identified in the current iteration, run `GITHUB_ACTIONS=true mvn clean test` again.  
    - If new failures appear (or old ones persist), loop back to step 2.  
    - If no failures → stop and report success.
 

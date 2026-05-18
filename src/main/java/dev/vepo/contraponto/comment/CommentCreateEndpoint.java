@@ -59,10 +59,16 @@ public class CommentCreateEndpoint {
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                         .page(componentEndpoint.renderComments(post))
                         .build();
-        } catch (BadRequestException e) {
-            return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
-        } catch (NotFoundException e) {
-            return Toast.response(Status.NOT_FOUND).message("Post or comment not found.").type(Toast.Type.ERROR).build();
+        } catch (BadRequestException bre) {
+            return Toast.response(Status.BAD_REQUEST)
+                        .message(bre.getMessage())
+                        .type(Toast.Type.ERROR)
+                        .build();
+        } catch (NotFoundException _) {
+            return Toast.response(Status.NOT_FOUND)
+                        .message("Post or comment not found.")
+                        .type(Toast.Type.ERROR)
+                        .build();
         }
     }
 

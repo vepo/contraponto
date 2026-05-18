@@ -111,7 +111,9 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `featured`, `featured__*` | Home/blog featured hero | |
 | `posts-grid`, `load-more` | Grid partials | |
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
-| `post-history`, `post-history__*` | `PostEndpoint/history.html` | Version history |
+| `article-page__version`, `article-page__version-icon` | `PostEndpoint/post.html` | Version history trigger in metadata |
+| `post-history`, `post-history__*` | `PostEndpoint/history-list.html`, `historyModal.html` | Version history modal list |
+| `modal__container--history` | `PostEndpoint/historyModal.html` | Wider change-history dialog |
 | `post-tags`, `post-tags__*` | `components/post-tags*.html` | |
 | `comment`, `comment-list`, `comment-form`, `comment-replies` | Comment components | On-post only |
 | `blog-audience` | `BlogAudienceComponentEndpoint/audienceControls.html` | Follow / subscribe; no top margin inside `article-page__actions` (blog header keeps spacing below title) |
