@@ -108,15 +108,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Roles</label>
-                        <div class="user-roles">
+                        <span class="form-group__label" id="userRolesLabel">Roles</span>
+                        <p class="form-group__hint role-picker__hint">
+                            Choose every capability this account should have. At least the User role is typical for authors.
+                        </p>
+                        <div class="role-picker" role="group" aria-labelledby="userRolesLabel">
                             {#for role in assignableRoles}
-                            <label class="user-roles__item">
+                            <label class="role-picker__option">
                                 <input type="checkbox"
+                                       class="role-picker__input"
                                        name="roles"
                                        value="{role.name}"
                                        {#if account.roles.contains(role)}checked{/if}>
-                                {role.label}
+                                <span class="role-picker__card">
+                                    <span class="role-picker__name">{role.label}</span>
+                                    <span class="role-picker__description">{role.description}</span>
+                                </span>
                             </label>
                             {/for}
                         </div>

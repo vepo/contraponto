@@ -817,19 +817,247 @@
     cursor: pointer;
 }
 
-.user-roles {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.form-group__label {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text);
 }
 
-.user-roles__item {
+.role-picker__hint {
+    margin-top: -0.25rem;
+}
+
+.role-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.role-picker__option {
+    display: block;
+    cursor: pointer;
+}
+
+.role-picker__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.role-picker__card {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 4.75rem;
+    padding: 1rem 2.25rem 1rem 1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    transition:
+        border-color var(--duration-normal) var(--ease-out),
+        background-color var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.role-picker__option:hover .role-picker__card {
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-offset);
+}
+
+.role-picker__option:has(.role-picker__input:checked) .role-picker__card {
+    border-color: var(--color-primary);
+    background: var(--color-success-muted);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.role-picker__option:has(.role-picker__input:focus-visible) .role-picker__card {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.role-picker__option:has(.role-picker__input:checked) .role-picker__card::after {
+    content: "";
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.25L6.5 11.25L12.5 4.75' stroke='white' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 0.75rem;
+}
+
+.role-picker__name {
     font-family: var(--font-sans);
     font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.3;
+}
+
+.role-picker__description {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+    .role-picker {
+        grid-template-columns: 1fr;
+    }
+}
+
+.git-sync {
+    margin: 0 0 1.5rem;
+    padding: 1.25rem 1.35rem 1.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-offset);
+}
+
+.git-sync__legend {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding: 0 0.35rem;
+}
+
+.git-sync__intro {
+    margin: 0.35rem 0 1rem;
+    max-width: 42rem;
+    line-height: 1.5;
+}
+
+.git-sync__intro a {
+    color: var(--color-primary);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.git-sync__intro a:hover {
+    color: var(--color-primary-dark);
+}
+
+.git-sync__enable {
+    display: block;
     cursor: pointer;
+}
+
+.git-sync__enable-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.git-sync__enable-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 2.25rem 1rem 1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    transition:
+        border-color var(--duration-normal) var(--ease-out),
+        background-color var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.git-sync__enable:hover .git-sync__enable-card {
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-offset);
+}
+
+.git-sync:has(.git-sync__enable-input:checked) .git-sync__enable-card {
+    border-color: var(--color-primary);
+    background: var(--color-success-muted);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.git-sync__enable:has(.git-sync__enable-input:focus-visible) .git-sync__enable-card {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.git-sync:has(.git-sync__enable-input:checked) .git-sync__enable-card::after {
+    content: "";
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.25L6.5 11.25L12.5 4.75' stroke='white' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 0.75rem;
+}
+
+.git-sync__enable-title {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.3;
+}
+
+.git-sync__enable-desc {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+.git-sync__config {
+    display: none;
+    flex-direction: column;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.git-sync:has(.git-sync__enable-input:checked) .git-sync__config {
+    display: flex;
+}
+
+.git-sync__fields-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1rem;
+    width: 100%;
+}
+
+.git-sync__config .form-group:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+    .git-sync__fields-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 .btn--danger {

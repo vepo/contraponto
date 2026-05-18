@@ -64,45 +64,6 @@
                     <input type="hidden" name="id" value="{blog.get().id}">
                     {/if}
 
-                    {#if blog.isPresent}
-                    <fieldset class="form-group">
-                        <legend>Git (Jekyll repository)</legend>
-                        <p class="pages-form__slug-hint">
-                            Sync posts with a remote Git repository using the Jekyll-style layout described in
-                            <code>docs/git-jekyll-convention.md</code>.
-                        </p>
-                        <div class="form-group form-group--checkbox">
-                            <label>
-                                <input type="checkbox"
-                                       name="git_enabled"
-                                       {#if blog.get().gitEnabled}checked{/if}>
-                                Enable Git sync for this blog
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label for="gitRemoteUrl">Remote URL</label>
-                            <input type="url"
-                                   id="gitRemoteUrl"
-                                   name="git_remote_url"
-                                   placeholder="https://github.com/you/your-jekyll-site.git"
-                                   {#if blog.get().gitRemoteUrl}
-                                   value="{blog.get().gitRemoteUrl}"
-                                   {/if}
-                                   autocomplete="off"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="gitBranch">Branch</label>
-                            <input type="text"
-                                   id="gitBranch"
-                                   name="git_branch"
-                                   placeholder="main"
-                                   value="{blog.get().gitBranch}"
-                                   maxlength="255"
-                                   autocomplete="off"/>
-                        </div>
-                    </fieldset>
-                    {/if}
-
                     <div class="form-group">
                         <label for="blogName">Name</label>
                         <input type="text"
@@ -177,6 +138,62 @@
                         {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl='' initialId='' /}
                         {/if}
                     </div>
+
+                    {#if blog.isPresent}
+                    <fieldset class="git-sync">
+                        <legend class="git-sync__legend">GitHub sync</legend>
+                        <p class="git-sync__intro form-group__hint">
+                            Publish posts to a GitHub repository using Contraponto’s Jekyll-style layout
+                            (<code>_posts/</code>, <code>_drafts/</code>, YAML front matter).
+                            <a href="https://github.com/vepo/contraponto/blob/main/docs/git-jekyll-convention.md"
+                               target="_blank"
+                               rel="noopener noreferrer">Layout convention on GitHub</a>.
+                        </p>
+                        <label class="git-sync__enable">
+                            <input type="checkbox"
+                                   class="git-sync__enable-input"
+                                   name="git_enabled"
+                                   {#if blog.get().gitEnabled}checked{/if}>
+                            <span class="git-sync__enable-card">
+                                <span class="git-sync__enable-title">Enable GitHub sync for this blog</span>
+                                <span class="git-sync__enable-desc">
+                                    After each draft save or publish, push Markdown to your GitHub repository.
+                                </span>
+                            </span>
+                        </label>
+                        <div class="git-sync__config">
+                            <div class="git-sync__fields-row">
+                                <div class="form-group">
+                                    <label for="gitRemoteUrl">GitHub repository URL</label>
+                                    <input type="url"
+                                           id="gitRemoteUrl"
+                                           name="git_remote_url"
+                                           placeholder="https://github.com/you/your-site.git"
+                                           {#if blog.get().gitRemoteUrl}
+                                           value="{blog.get().gitRemoteUrl}"
+                                           {/if}
+                                           autocomplete="off"/>
+                                    <p class="form-group__hint">
+                                        HTTPS URL only. Private repos need a token in server configuration.
+                                    </p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="gitBranch">Branch</label>
+                                    <input type="text"
+                                           id="gitBranch"
+                                           name="git_branch"
+                                           placeholder="main"
+                                           value="{blog.get().gitBranch}"
+                                           maxlength="255"
+                                           autocomplete="off"/>
+                                    <p class="form-group__hint">
+                                        Use a dedicated branch if GitHub Pages builds from <code>main</code>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    {/if}
 
                     <div class="pages-form__actions">
                         {#include components/htmx-spinner id='blogs-form-htmx-indicator' /}

@@ -1787,6 +1787,11 @@ public class App {
         return this;
     }
 
+    public App assertSingleMainElement() {
+        assertThat(driver.findElements(By.tagName("main"))).hasSize(1);
+        return this;
+    }
+
     public App assertUrl(String url) {
         wait.until(urlToBe(this.rootUri + url));
         return this;
@@ -1811,6 +1816,12 @@ public class App {
     public BlogPage clickFirstPostTitle() {
         _clickFirstPostTitle();
         return new BlogPage();
+    }
+
+    public App clickNotificationBell() {
+        reliableClick(wait.until(elementToBeClickable(By.id("notification-bell"))));
+        waitForReady();
+        return this;
     }
 
     public CommentManagePage comments() {
@@ -1921,6 +1932,14 @@ public class App {
     public UserManagePage newUser() {
         _goTo("/users/new");
         return new UserManagePage();
+    }
+
+    public App openNotificationsFromMenu() {
+        reliableClick(wait.until(elementToBeClickable(By.id("userMenuBtn"))));
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector(".user-menu__dropdown a[data-hx-get='/notifications']"))));
+        waitForReady();
+        return this;
     }
 
     public ProfilePage profile() {
