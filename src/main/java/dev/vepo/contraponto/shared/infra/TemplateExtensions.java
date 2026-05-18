@@ -17,9 +17,8 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
-import dev.vepo.contraponto.image.ImageAltEnricher;
+import dev.vepo.contraponto.image.RenderedHtmlEnricher;
 import dev.vepo.contraponto.renderer.Renderer;
-import io.quarkus.arc.Arc;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.tag.Tag;
@@ -27,6 +26,7 @@ import dev.vepo.contraponto.tag.TagPageEndpoint;
 import java.util.List;
 
 import io.quarkus.qute.TemplateExtension;
+import jakarta.enterprise.inject.spi.CDI;
 
 @TemplateExtension
 public class TemplateExtensions {
@@ -184,8 +184,8 @@ public class TemplateExtensions {
         if (html == null || html.isBlank()) {
             return html == null ? "" : html;
         }
-        var enricher = Arc.container().instance(ImageAltEnricher.class);
-        if (!enricher.isAvailable()) {
+        var enricher = CDI.current().select(RenderedHtmlEnricher.class);
+        if (!enricher.isResolvable()) {
             return html;
         }
         return enricher.get().enrichHtml(html);

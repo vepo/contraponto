@@ -36,7 +36,6 @@ import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.tag.TagSlug;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -413,23 +412,16 @@ public interface Given {
 
     public static void transaction(Runnable code) {
         try {
-            QuarkusTransaction.begin();
-            code.run();
-            QuarkusTransaction.commit();
+            inject(TestTransactionRunner.class).run(code);
         } catch (Exception e) {
-            QuarkusTransaction.rollback();
             fail("Fail to create transaction!", e);
         }
     }
 
     public static <T> T transaction(Supplier<T> code) {
         try {
-            QuarkusTransaction.begin();
-            T value = code.get();
-            QuarkusTransaction.commit();
-            return value;
+            return inject(TestTransactionRunner.class).run(code);
         } catch (Exception e) {
-            QuarkusTransaction.rollback();
             fail("Fail to create transaction!", e);
             return null;
         }

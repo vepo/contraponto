@@ -28,7 +28,6 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostRepository;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -60,19 +59,23 @@ public class BlogGitIntegrationService {
 
     private final GitImageSyncService gitImageSyncService;
 
+    private final BlogGitIntegrationTransaction integrationTransaction;
+
     @Inject
     public BlogGitIntegrationService(ContrapontoGitConfig config,
                                      BlogRepository blogRepository,
                                      PostRepository postRepository,
                                      BlogGitImportService blogGitImportService,
                                      PostGitMarkdownCodec markdownCodec,
-                                     GitImageSyncService gitImageSyncService) {
+                                     GitImageSyncService gitImageSyncService,
+                                     BlogGitIntegrationTransaction integrationTransaction) {
         this.config = config;
         this.blogRepository = blogRepository;
         this.postRepository = postRepository;
         this.blogGitImportService = blogGitImportService;
         this.markdownCodec = markdownCodec;
         this.gitImageSyncService = gitImageSyncService;
+        this.integrationTransaction = integrationTransaction;
     }
 
     private CredentialsProvider credentialsOrNull() {
@@ -84,7 +87,7 @@ public class BlogGitIntegrationService {
         return new UsernamePasswordCredentialsProvider(user, pass);
     }
 
-    private void exportPostTransactional(long postId) throws Exception {
+    void exportPostTransactional(long postId) throws Exception {
         Optional<Post> opt = postRepository.findByIdWithTags(postId);
         if (opt.isEmpty()) {
             return;
@@ -164,13 +167,7 @@ public class BlogGitIntegrationService {
 
     private void exportPostWithNewTransaction(long postId) {
         try {
-            QuarkusTransaction.requiringNew().run(() -> {
-                try {
-                    exportPostTransactional(postId);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Git push/export failed postId=%d".formatted(postId), e);
-                }
-            });
+            integrationTransaction.exportPost(postId);
         } catch (RuntimeException e) {
             LOG.error("Git export failed postId={}", postId, e);
         }
@@ -279,19 +276,13 @@ public class BlogGitIntegrationService {
 
     private void syncBlogFromGit(long blogId) {
         try {
-            QuarkusTransaction.requiringNew().run(() -> {
-                try {
-                    syncBlogFromGitTransactional(blogId);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Git pull/import failed blogId=%d".formatted(blogId), e);
-                }
-            });
+            integrationTransaction.syncBlogFromGit(blogId);
         } catch (RuntimeException e) {
             LOG.error("Git import failed blogId={}", blogId, e);
         }
     }
 
-    private void syncBlogFromGitTransactional(long blogId) throws Exception {
+    void syncBlogFromGitTransactional(long blogId) throws Exception {
         Optional<Blog> blogOpt = blogRepository.findById(blogId);
         if (blogOpt.isEmpty()) {
             return;

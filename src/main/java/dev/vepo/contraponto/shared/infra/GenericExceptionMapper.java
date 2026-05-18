@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import io.quarkus.qute.Template;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
@@ -21,17 +22,21 @@ import jakarta.ws.rs.ext.Provider;
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
-    private static final boolean IS_DEV = "dev".equals(System.getProperty("quarkus.profile"));
 
     private final Template error;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final boolean showErrorDetails;
 
     @Inject
-    public GenericExceptionMapper(Template error, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public GenericExceptionMapper(Template error,
+                                  CustomPageRepository customPageRepository,
+                                  LoggedUser loggedUser,
+                                  @ConfigProperty(name = "app.show-error-details", defaultValue = "false") boolean showErrorDetails) {
         this.error = error;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.showErrorDetails = showErrorDetails;
     }
 
     private int getStatus(Throwable exception) {
@@ -68,7 +73,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         // Determine HTTP status
         int status = getStatus(exception);
         String userMessage = getUserMessage(status);
-        String technicalMessage = IS_DEV ? exception.getMessage() : null;
+        String technicalMessage = showErrorDetails ? exception.getMessage() : null;
 
         // Log the error with stack trace for server-side debugging
         if (status >= 500) {
@@ -83,7 +88,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                            .data("message", technicalMessage)
                            .data("description", userMessage)
                            .data("links", customPageRepository.loadLinks())
-                           .data("dev", IS_DEV)
+                           .data("dev", showErrorDetails)
                            .render();
 
         return Response.status(status)

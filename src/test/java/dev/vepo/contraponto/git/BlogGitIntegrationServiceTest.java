@@ -2,8 +2,6 @@ package dev.vepo.contraponto.git;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,8 +19,6 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.arc.ClientProxy;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -94,42 +90,12 @@ class BlogGitIntegrationServiceTest {
         }
     }
 
-    private static void invokeExportTransactional(BlogGitIntegrationService svc, long postId) throws Exception {
-        QuarkusTransaction.requiringNew().run(() -> {
-            try {
-                Method m = BlogGitIntegrationService.class.getDeclaredMethod("exportPostTransactional", long.class);
-                m.setAccessible(true);
-                m.invoke(svc, postId);
-            } catch (InvocationTargetException e) {
-                Throwable c = e.getCause() != null ? e.getCause() : e;
-                throw new IllegalStateException(c);
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(e);
-            }
-        });
-    }
-
-    private static void invokeSyncTransactional(BlogGitIntegrationService svc, long blogId) throws Exception {
-        QuarkusTransaction.requiringNew().run(() -> {
-            try {
-                Method m = BlogGitIntegrationService.class.getDeclaredMethod("syncBlogFromGitTransactional", long.class);
-                m.setAccessible(true);
-                m.invoke(svc, blogId);
-            } catch (InvocationTargetException e) {
-                Throwable c = e.getCause() != null ? e.getCause() : e;
-                throw new IllegalStateException(c);
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(e);
-            }
-        });
-    }
-
     private static Blog reloadBlog(Long blogId) {
         return Given.transaction(() -> Given.inject(EntityManager.class).find(Blog.class, blogId));
     }
 
     @Inject
-    BlogGitIntegrationService integrationService;
+    BlogGitIntegrationTransaction integrationTransaction;
 
     @Inject
     PostRepository postRepository;
@@ -190,7 +156,7 @@ class BlogGitIntegrationServiceTest {
 
         User user = persistUserLinkedToUpstream(upstream, branch);
 
-        invokeSyncTransactional(unwrapIntegration(), blogId(user));
+        integrationTransaction.syncBlogFromGit(blogId(user));
 
         Path workspace = workspaceDir(blogId(user));
         assertThat(workspace.resolve(".git")).exists();
@@ -211,7 +177,7 @@ class BlogGitIntegrationServiceTest {
                             ---
                             Second wave body""");
 
-        invokeSyncTransactional(unwrapIntegration(), blogId(user));
+        integrationTransaction.syncBlogFromGit(blogId(user));
 
         Optional<Post> second = postRepository.findByBlogIdAndSlugWithTags(blogId(user), "secondary");
         assertThat(second).isPresent();
@@ -221,7 +187,7 @@ class BlogGitIntegrationServiceTest {
 
         Optional<Post> draft = postRepository.findByBlogIdAndSlugWithTags(blogId(user), "exported-one");
         assertThat(draft).isPresent();
-        invokeExportTransactional(unwrapIntegration(), draft.get().getId());
+        integrationTransaction.exportPost(draft.get().getId());
 
         Path draftFile = workspace.resolve("custom/_drafts/exported-one.md");
         assertThat(draftFile).exists();
@@ -231,7 +197,7 @@ class BlogGitIntegrationServiceTest {
 
         Optional<Post> pub = postRepository.findByBlogIdAndSlugWithTags(blogId(user), "pub-post");
         assertThat(pub).isPresent();
-        invokeExportTransactional(unwrapIntegration(), pub.get().getId());
+        integrationTransaction.exportPost(pub.get().getId());
 
         LocalDate exportDay =
                 Optional.ofNullable(pub.get().getPublishedAt()).map(java.time.LocalDateTime::toLocalDate).orElse(LocalDate.now());
@@ -244,14 +210,6 @@ class BlogGitIntegrationServiceTest {
         Blog managed = reloadBlog(blogId(user));
         assertThat(managed.getGitLastKnownCommit()).isNotNull();
         assertThat(managed.isGitEnabled()).isTrue();
-    }
-
-    /**
-     * {@link BlogGitIntegrationService} fields are uninitialized on Arc client
-     * proxies – unwrap before reflective calls.
-     */
-    private BlogGitIntegrationService unwrapIntegration() {
-        return ClientProxy.unwrap(integrationService);
     }
 
     private Path workspaceDir(long blogId) {

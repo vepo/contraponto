@@ -6,12 +6,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-@Unremovable
 public class ImageAltEnricher {
 
     private static final Pattern IMG_TAG = Pattern.compile(

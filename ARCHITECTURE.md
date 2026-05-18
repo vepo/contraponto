@@ -232,6 +232,35 @@ image.storage.path=/tmp/contraponto-images
 contraponto.git.poll-enabled=true
 contraponto.git.poll-interval=2m
 %dev.quarkus.mailer.mock=true
+app.show-error-details=false
+%dev.app.show-error-details=true
+app.dev-import.enabled=false
+%dev.app.dev-import.enabled=true
 ```
 
 See `application.properties` and [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md).
+
+## 19. Jakarta EE vs Quarkus-specific APIs
+
+**Prefer Jakarta / MicroProfile in application code** where a portable API exists:
+
+| Concern | Portable approach | Used in |
+|---------|-------------------|---------|
+| JTA `REQUIRES_NEW` (async git) | `@Transactional(TxType.REQUIRES_NEW)` on `BlogGitIntegrationTransaction` | `git/` |
+| Test transactions | `TestTransactionRunner` + `jakarta.transaction.Transactional` | `Given.transaction` |
+| CDI lookup from Qute extensions | `CDI.current().select(...)` + injected `RenderedHtmlEnricher` | `TemplateExtensions` |
+| Dev error details | `app.show-error-details` via `@ConfigProperty` | `GenericExceptionMapper` |
+| Dev SQL seed | `app.dev-import.enabled` + `@Initialized(ApplicationScoped.class)` | `DatabaseDevSetup` |
+
+**Intentionally Quarkus-bound (no Jakarta EE equivalent)** — do not replace without a stack change:
+
+| API | Role |
+|-----|------|
+| **Qute** (`io.quarkus.qute.*`, `@CheckedTemplate`) | Server-rendered HTML for all endpoints |
+| **Quarkus Scheduler** (`@Scheduled`) | `GitRemotePollScheduler` |
+| **Quarkus Mailer** (`Mailer`, `Mail`) | `PostNotificationEmailService` |
+| **`@RegisterForReflection`** | Native-image metadata on `Page`, `SubscriptionRow`, `BlogAudienceView` |
+| **Quarkus test** (`@QuarkusTest`, `TestHTTPResource`, `MockMailbox`) | Integration and browser tests |
+| **SmallRye `@ConfigMapping`** | `ContrapontoGitConfig` (MicroProfile Config ecosystem) |
+
+REST, JPA, CDI, Bean Validation, and JTA elsewhere already use `jakarta.*` types.
