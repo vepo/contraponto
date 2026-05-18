@@ -3,7 +3,7 @@
 --
 -- Highlights: multi-blog URLs, version history, comments (/comments moderation),
 -- custom pages (/page/..., /{user}/page/..., /{user}/{blog}/page/...), git on alice's blog,
--- follow/subscribe, notifications, email log, featured/review, drafts, series, tags, RSS/search.
+-- follow/subscribe, notifications, email log, featured/review, drafts, series (home → post → serie), tags, RSS/search.
 
 -- ============================================
 -- 1. Reset content (keep schema seed: admin user + blog + footer pages)
@@ -618,28 +618,32 @@ Extract services only when team boundaries and scaling needs are clear — not b
     CROSS JOIN tb_tags t
     WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_dist
       AND p.id NOT IN (v_post_intro, v_post_obs, v_post_loom)
-      AND t.slug IN ('java', 'distributed-systems');
+      AND t.slug IN ('java', 'distributed-systems')
+    ON CONFLICT (post_id, tag_id) DO NOTHING;
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p
     CROSS JOIN tb_tags t
-    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_events AND t.slug IN ('java', 'kafka', 'spring-boot');
+    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_events AND t.slug IN ('java', 'kafka', 'spring-boot')
+    ON CONFLICT (post_id, tag_id) DO NOTHING;
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p
     CROSS JOIN tb_tags t
-    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_spring AND t.slug IN ('java', 'spring-boot', 'microservices');
+    WHERE p.blog_id = v_alice_blog AND p.serie_id = v_serie_spring AND t.slug IN ('java', 'spring-boot', 'microservices')
+    ON CONFLICT (post_id, tag_id) DO NOTHING;
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p
     CROSS JOIN tb_tags t
-    WHERE p.blog_id = v_bob_arch AND p.serie_id = v_serie_ddd
-      AND p.id NOT IN (v_post_ddd, v_post_events) AND t.slug IN ('ddd', 'distributed-systems');
+    WHERE p.blog_id = v_bob_arch AND p.serie_id = v_serie_ddd AND t.slug IN ('ddd', 'distributed-systems')
+    ON CONFLICT (post_id, tag_id) DO NOTHING;
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p
     CROSS JOIN tb_tags t
-    WHERE p.blog_id = v_carol_blog AND p.serie_id = v_serie_api AND t.slug IN ('graphql', 'java');
+    WHERE p.blog_id = v_carol_blog AND p.serie_id = v_serie_api AND t.slug IN ('graphql', 'java')
+    ON CONFLICT (post_id, tag_id) DO NOTHING;
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p JOIN tb_tags t ON t.slug = 'kubernetes'
@@ -649,25 +653,6 @@ Extract services only when team boundaries and scaling needs are clear — not b
     SELECT p.id, t.id FROM tb_posts p
     CROSS JOIN tb_tags t
     WHERE p.slug = 'contract-testing-pact' AND t.slug IN ('java', 'testing', 'microservices');
-
-    INSERT INTO tb_post_tags (post_id, tag_id)
-    SELECT p.id, t.id FROM tb_posts p
-    CROSS JOIN tb_tags t
-    WHERE p.id = v_post_micro AND t.slug IN ('java', 'spring-boot', 'microservices');
-
-    INSERT INTO tb_post_tags (post_id, tag_id)
-    SELECT p.id, t.id FROM tb_posts p
-    CROSS JOIN tb_tags t
-    WHERE p.id = v_post_kafka AND t.slug IN ('java', 'kafka', 'spring-boot');
-
-    INSERT INTO tb_post_tags (post_id, tag_id)
-    SELECT p.id, t.id FROM tb_posts p
-    CROSS JOIN tb_tags t
-    WHERE p.id IN (v_post_ddd, v_post_events) AND t.slug IN ('ddd', 'distributed-systems');
-
-    INSERT INTO tb_post_tags (post_id, tag_id)
-    SELECT p.id, t.id FROM tb_posts p JOIN tb_tags t ON t.slug = 'graphql'
-    WHERE p.id = v_post_graphql;
 
     INSERT INTO tb_post_tags (post_id, tag_id)
     SELECT p.id, t.id FROM tb_posts p

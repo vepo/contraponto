@@ -6,8 +6,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Initialized;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -29,13 +29,17 @@ public class DatabaseDevSetup {
     }
 
     @Transactional
-    public void onStart(@Observes @Initialized(ApplicationScoped.class) Object event) throws IOException {
+    public void onStart(@Observes StartupEvent event) throws IOException {
         if (!devImportEnabled) {
             return;
         }
-        logger.info("Execuing /dev-import.sql script...");
-        this.entityManager.createNativeQuery(new String(DatabaseDevSetup.class.getResourceAsStream("/dev-import.sql").readAllBytes()))
-                          .executeUpdate();
-        logger.info("/dev-import.sql script executed!!");
+        logger.info("Executing /dev-import.sql script...");
+        try (var script = DatabaseDevSetup.class.getResourceAsStream("/dev-import.sql")) {
+            if (script == null) {
+                throw new IllegalStateException("Missing classpath resource /dev-import.sql");
+            }
+            this.entityManager.createNativeQuery(new String(script.readAllBytes())).executeUpdate();
+        }
+        logger.info("/dev-import.sql script executed");
     }
 }
