@@ -1776,6 +1776,23 @@ public class App {
         return this;
     }
 
+    public App assertBreadcrumb(String... labels) {
+        var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".breadcrumb__item")));
+        assertThat(items).hasSize(labels.length);
+        for (int i = 0; i < labels.length; i++) {
+            String text;
+            if (i == labels.length - 1) {
+                text = items.get(i).findElement(cssSelector(".breadcrumb__current")).getText().trim();
+            } else if (!items.get(i).findElements(cssSelector(".breadcrumb__link")).isEmpty()) {
+                text = items.get(i).findElement(cssSelector(".breadcrumb__link")).getText().trim();
+            } else {
+                text = items.get(i).findElement(cssSelector(".breadcrumb__text")).getText().trim();
+            }
+            assertThat(text).isEqualTo(labels[i]);
+        }
+        return this;
+    }
+
     public App assertCookieIsPresent(String key) {
         assertThat(driver.manage()
                          .getCookieNamed(key)).isNotNull()
@@ -1882,6 +1899,20 @@ public class App {
         return new BlogPage();
     }
 
+    public App clickHubCard(String path) {
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector("a.nav-hub__card[data-hx-get='%s']".formatted(path)))));
+        waitForReady();
+        return this;
+    }
+
+    public App clickMenuLink(String path) {
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector(".user-menu__dropdown a[data-hx-get='%s']".formatted(path)))));
+        waitForReady();
+        return this;
+    }
+
     public App clickNotificationBell() {
         reliableClick(wait.until(elementToBeClickable(By.id("notification-bell"))));
         waitForReady();
@@ -1945,6 +1976,12 @@ public class App {
     public GitSyncHistoryPage goToGitSyncRun(long blogId, long runId) {
         _goTo("/blogs/" + blogId + "/git-sync/" + runId);
         return new GitSyncHistoryPage();
+    }
+
+    public App goToPath(String path) {
+        _goTo(path);
+        waitForReady();
+        return this;
     }
 
     public PostPage goToPost(User user, String slug) {
@@ -2011,10 +2048,15 @@ public class App {
     }
 
     public App openNotificationsFromMenu() {
+        openUserMenu()
+                      .clickMenuLink("/account")
+                      .clickHubCard("/notifications");
+        return this;
+    }
+
+    public App openUserMenu() {
         reliableClick(wait.until(elementToBeClickable(By.id("userMenuBtn"))));
-        reliableClick(wait.until(elementToBeClickable(
-                                                      cssSelector(".user-menu__dropdown a[data-hx-get='/notifications']"))));
-        waitForReady();
+        wait.until(visibilityOfElementLocated(cssSelector(".user-menu__dropdown")));
         return this;
     }
 
@@ -2091,11 +2133,23 @@ public class App {
                });
     }
 
-    // Inside App class, after LibraryPage
-
     public UserManagePage users() {
         _goTo("/users");
         return new UserManagePage();
+    }
+
+    public App visitBlog(String username) {
+        _goTo("/" + username);
+        waitForReady();
+        return this;
+    }
+
+    // Inside App class, after LibraryPage
+
+    public App visitPost(String username, String slug) {
+        _goTo("/" + username + "/post/" + slug);
+        waitForReady();
+        return this;
     }
 
     public App waitForReady() {

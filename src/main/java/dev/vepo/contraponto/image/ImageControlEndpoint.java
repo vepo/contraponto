@@ -7,6 +7,8 @@ import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -32,7 +34,11 @@ public class ImageControlEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance list(Blog blog, Page<ImageControlRow> images, Links links, LoggedUser user);
+        static native TemplateInstance list(Blog blog,
+                                            Page<ImageControlRow> images,
+                                            Links links,
+                                            LoggedUser user,
+                                            BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -44,18 +50,21 @@ public class ImageControlEndpoint {
     private final ImageControlService imageControlService;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public ImageControlEndpoint(BlogRepository blogRepository,
                                 BlogAccess blogAccess,
                                 ImageControlService imageControlService,
                                 CustomPageRepository customPageRepository,
-                                LoggedUser loggedUser) {
+                                LoggedUser loggedUser,
+                                BreadcrumbService breadcrumbService) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.imageControlService = imageControlService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     public Response forbidden() {
@@ -72,6 +81,6 @@ public class ImageControlEndpoint {
         }
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
         Page<ImageControlRow> images = imageControlService.listForBlog(blog, PageQuery.forGrid(20, page));
-        return Templates.list(blog, images, links, loggedUser);
+        return Templates.list(blog, images, links, loggedUser, breadcrumbService.manageBlogImages(blog));
     }
 }

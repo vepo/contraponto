@@ -120,6 +120,7 @@ Use when logic spans entities or fires events: `PostPublicationService`, `TagSer
 ```
 dev.vepo.contraponto/
 ├── admin/          # Editor review (featured posts) — /review
+├── navigation/     # Menu hubs (/writing, /manage, /account, /editor, /administration) + BreadcrumbService
 ├── auth/           # Password hashing
 ├── blog/           # Blog CRUD, public blog pages
 ├── components/     # Header, menu, forms (login, publish, draft)
@@ -150,7 +151,19 @@ dev.vepo.contraponto/
 | Test (browser) | `XxxTest` with `@WebTest` |
 | Template file | `kebab-case.html` |
 
-## 12. HTMX conventions
+## 12. Navigation hubs and breadcrumbs
+
+| Hub | Path | Role |
+|-----|------|------|
+| Writing | `GET /writing` | `@Logged` |
+| Manage | `GET /manage` | `@Logged` |
+| Account | `GET /account` | `@Logged` |
+| Review | `GET /editor` | `EDITOR` / `ADMIN` |
+| Administration | `GET /administration` | `USER_ADMINISTRATOR` / `ADMIN` |
+
+`BreadcrumbService` builds `BreadcrumbTrail` for full-page templates; render via `components/breadcrumb.html`. Public blog/post pages use **Home** as root; manage pages use the hub name.
+
+## 13. HTMX conventions
 
 - `data-hx-get` on links for progressive enhancement; `hx-post` on forms.
 - Target `main` for full page swaps; `#modal-container` for modals.
@@ -158,7 +171,7 @@ dev.vepo.contraponto/
 - `hx-push-url="true"` when the URL should change.
 - Form validation errors: `hx-target-error` / `hx-swap-error` where used.
 
-## 13. Authentication & roles
+## 14. Authentication & roles
 
 - Session cookie `__session`; `LoggedUser` request-scoped bean.
 - `@Logged` interceptor — redirect or deny when not authenticated.
@@ -172,7 +185,7 @@ dev.vepo.contraponto/
 | Manage users `/users` | `USER_ADMINISTRATOR` or `ADMIN` |
 | Assign `ADMIN` role | `ADMIN` only |
 
-## 14. Database (main tables)
+## 15. Database (main tables)
 
 - `tb_users`, `tb_user_roles`
 - `tb_blogs` (+ git columns)
@@ -184,7 +197,7 @@ dev.vepo.contraponto/
 
 Full DDL: `src/main/resources/db/migration/V0.0.1__Initial_schema.sql`
 
-## 15. Adding a feature (checklist)
+## 16. Adding a feature (checklist)
 
 1. Flyway migration if schema changes.
 2. Entity + repository (+ service if non-trivial).
@@ -196,7 +209,7 @@ Full DDL: `src/main/resources/db/migration/V0.0.1__Initial_schema.sql`
 8. Update [docs/application-guidelines.md](docs/application-guidelines.md) for new routes.
 9. Update [docs/feature-catalog.md](docs/feature-catalog.md) if user-facing navigation or routes changed (step counts and menu paths).
 
-## 16. Testing example
+## 17. Testing example
 
 ```java
 @WebTest
@@ -214,7 +227,7 @@ class ExampleTest {
 }
 ```
 
-## 17. Common pitfalls
+## 18. Common pitfalls
 
 - **Custom pages** — always fire `CustomPageChangedEvent` after save/delete; slugs stored with leading `/` (`CustomPagePaths.storedSlug`).
 - **Post URLs** — use `PostEndpoint.extractUrl`, especially for secondary blogs.
@@ -223,7 +236,7 @@ class ExampleTest {
 - **Git tests** — `%test.contraponto.git.poll-enabled=false` (scheduler off in tests).
 - **Own blog** — cannot follow/subscribe to your own blog (`BlogAudienceService`).
 
-## 18. Configuration (selected)
+## 19. Configuration (selected)
 
 ```properties
 quarkus.datasource.db-kind=postgresql
@@ -240,7 +253,7 @@ app.dev-import.enabled=false
 
 See `application.properties` and [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md).
 
-## 19. Jakarta EE vs Quarkus-specific APIs
+## 20. Jakarta EE vs Quarkus-specific APIs
 
 **Prefer Jakarta / MicroProfile in application code** where a portable API exists:
 

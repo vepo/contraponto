@@ -2,6 +2,8 @@ package dev.vepo.contraponto.library;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -33,7 +35,7 @@ public class LibraryEndpoint {
     @CheckedTemplate
     public static class Templates {
 
-        public static native TemplateInstance library(LoggedUser user, Links links);
+        public static native TemplateInstance library(LoggedUser user, Links links, BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance tab(Page<Post> posts, String type);
 
@@ -45,12 +47,17 @@ public class LibraryEndpoint {
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public LibraryEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public LibraryEndpoint(PostRepository postRepository,
+                           CustomPageRepository customPageRepository,
+                           LoggedUser loggedUser,
+                           BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @DELETE
@@ -84,7 +91,7 @@ public class LibraryEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance library() {
-        return Templates.library(loggedUser, customPageRepository.loadLinks());
+        return Templates.library(loggedUser, customPageRepository.loadLinks(), breadcrumbService.writingLibrary());
     }
 
     @GET

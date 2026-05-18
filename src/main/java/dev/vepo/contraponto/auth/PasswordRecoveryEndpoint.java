@@ -2,6 +2,8 @@ package dev.vepo.contraponto.auth;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,9 +21,17 @@ public class PasswordRecoveryEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance request(Links links, String message, boolean success);
+        public static native TemplateInstance request(Links links,
+                                                      String message,
+                                                      boolean success,
+                                                      BreadcrumbTrail breadcrumb);
 
-        public static native TemplateInstance reset(Links links, String token, boolean invalidToken, String message, boolean success);
+        public static native TemplateInstance reset(Links links,
+                                                    String token,
+                                                    boolean invalidToken,
+                                                    String message,
+                                                    boolean success,
+                                                    BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -30,19 +40,25 @@ public class PasswordRecoveryEndpoint {
 
     private final CustomPageRepository customPageRepository;
     private final UserAccountTokenService tokenService;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public PasswordRecoveryEndpoint(CustomPageRepository customPageRepository,
-                                    UserAccountTokenService tokenService) {
+                                    UserAccountTokenService tokenService,
+                                    BreadcrumbService breadcrumbService) {
         this.customPageRepository = customPageRepository;
         this.tokenService = tokenService;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance request(@QueryParam("message") String message,
                                     @DefaultValue("false") @QueryParam("success") boolean success) {
-        return Templates.request(customPageRepository.loadLinks(), message, success);
+        return Templates.request(customPageRepository.loadLinks(),
+                                 message,
+                                 success,
+                                 breadcrumbService.forPasswordRecovery());
     }
 
     @GET
@@ -56,6 +72,11 @@ public class PasswordRecoveryEndpoint {
         if (success) {
             invalidToken = false;
         }
-        return Templates.reset(customPageRepository.loadLinks(), token, invalidToken, message, success);
+        return Templates.reset(customPageRepository.loadLinks(),
+                               token,
+                               invalidToken,
+                               message,
+                               success,
+                               breadcrumbService.forPasswordReset());
     }
 }

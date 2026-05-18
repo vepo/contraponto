@@ -11,6 +11,7 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.PostImageDependencyService;
@@ -69,6 +70,7 @@ public class PublishEndpoint {
     private final LoggedUser loggedUser;
     private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -81,7 +83,8 @@ public class PublishEndpoint {
                            SerieService serieService,
                            Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                            BlogAudienceComponentEndpoint audienceComponentEndpoint,
-                           LoggedUser loggedUser) {
+                           LoggedUser loggedUser,
+                           BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -93,6 +96,7 @@ public class PublishEndpoint {
         this.postGitSyncEvents = postGitSyncEvents;
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -130,7 +134,8 @@ public class PublishEndpoint {
                                                       links,
                                                       loggedUser,
                                                       0L,
-                                                      audienceComponentEndpoint.buildView(blog)))
+                                                      audienceComponentEndpoint.buildView(blog),
+                                                      breadcrumbService.forPost(view)))
                     .build();
     }
 

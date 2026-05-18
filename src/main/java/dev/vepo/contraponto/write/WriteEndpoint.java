@@ -11,6 +11,8 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.image.ContentImageMarkerService;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
@@ -34,7 +36,7 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance write(WritePage writePage, Links links, LoggedUser user);
+        public static native TemplateInstance write(WritePage writePage, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -48,6 +50,7 @@ public class WriteEndpoint {
     private final TagService tagService;
     private final ContentImageMarkerService contentImageMarkerService;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public WriteEndpoint(PostRepository postRepository,
@@ -56,7 +59,8 @@ public class WriteEndpoint {
                          BlogRepository blogRepository,
                          TagService tagService,
                          ContentImageMarkerService contentImageMarkerService,
-                         LoggedUser loggedUser) {
+                         LoggedUser loggedUser,
+                         BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.customPageRepository = customPageRepository;
@@ -64,6 +68,7 @@ public class WriteEndpoint {
         this.tagService = tagService;
         this.contentImageMarkerService = contentImageMarkerService;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     private Long findDefaultBlogId(List<Blog> blogs) {
@@ -89,7 +94,8 @@ public class WriteEndpoint {
                                              "",
                                              false),
                                links,
-                               loggedUser);
+                               loggedUser,
+                               breadcrumbService.writingWrite());
     }
 
     @GET
@@ -119,6 +125,7 @@ public class WriteEndpoint {
                                              initialSerieTitle,
                                              hasUnpublishedChanges),
                                links,
-                               loggedUser);
+                               loggedUser,
+                               breadcrumbService.writingDraft(post.getTitle()));
     }
 }

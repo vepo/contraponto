@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.auth.AccountEmailService;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
@@ -39,6 +40,7 @@ public class UserSaveEndpoint {
     private final LoggedUser loggedUser;
     private final LoggedUserProvider loggedUserProvider;
     private final AccountEmailService accountEmailService;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public UserSaveEndpoint(UserRepository userRepository,
@@ -49,7 +51,8 @@ public class UserSaveEndpoint {
                             UserManageEndpoint userManageEndpoint,
                             LoggedUser loggedUser,
                             LoggedUserProvider loggedUserProvider,
-                            AccountEmailService accountEmailService) {
+                            AccountEmailService accountEmailService,
+                            BreadcrumbService breadcrumbService) {
         this.userRepository = userRepository;
         this.userAccess = userAccess;
         this.userService = userService;
@@ -59,6 +62,7 @@ public class UserSaveEndpoint {
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
         this.accountEmailService = accountEmailService;
+        this.breadcrumbService = breadcrumbService;
     }
 
     private boolean applyPasswordChange(User user, UserManageForm form) {
@@ -99,7 +103,8 @@ public class UserSaveEndpoint {
                     .url("/users")
                     .page(UserManageEndpoint.Templates.list(userManageEndpoint.listPage(1),
                                                             customPageRepository.loadLinks(),
-                                                            loggedUser))
+                                                            loggedUser,
+                                                            breadcrumbService.administrationUsers()))
                     .build();
     }
 
@@ -185,7 +190,8 @@ public class UserSaveEndpoint {
                     .url("/users")
                     .page(UserManageEndpoint.Templates.list(userManageEndpoint.listPage(1),
                                                             customPageRepository.loadLinks(),
-                                                            loggedUser))
+                                                            loggedUser,
+                                                            breadcrumbService.administrationUsers()))
                     .build();
     }
 

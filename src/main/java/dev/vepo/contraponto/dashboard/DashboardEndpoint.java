@@ -5,6 +5,8 @@ import java.util.Map;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -30,7 +32,10 @@ public class DashboardEndpoint {
     public static class Templates {
         public static native TemplateInstance analytics(DashboardAnalytics analytics);
 
-        public static native TemplateInstance dashboard(DashboardPage page, Links links, LoggedUser user);
+        public static native TemplateInstance dashboard(DashboardPage page,
+                                                        Links links,
+                                                        LoggedUser user,
+                                                        BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -42,18 +47,21 @@ public class DashboardEndpoint {
     private final CustomPageRepository customPageRepository;
     private final DashboardAnalyticsService analyticsService;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public DashboardEndpoint(PostRepository postRepository,
                              ViewRepository viewRepository,
                              CustomPageRepository customPageRepository,
                              DashboardAnalyticsService analyticsService,
-                             LoggedUser loggedUser) {
+                             LoggedUser loggedUser,
+                             BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.viewRepository = viewRepository;
         this.customPageRepository = customPageRepository;
         this.analyticsService = analyticsService;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -88,6 +96,7 @@ public class DashboardEndpoint {
                                                      viewCounts,
                                                      selectedBlogId),
                                    links,
-                                   loggedUser);
+                                   loggedUser,
+                                   breadcrumbService.manageDashboard());
     }
 }

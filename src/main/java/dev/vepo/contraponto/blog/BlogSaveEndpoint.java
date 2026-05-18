@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.git.BlogGitIntegrationService;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.GitRemoteUrlValidator;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -68,6 +69,7 @@ public class BlogSaveEndpoint {
     private final BlogBannerService blogBannerService;
 
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public BlogSaveEndpoint(BlogRepository blogRepository,
@@ -78,7 +80,8 @@ public class BlogSaveEndpoint {
                             GitRemoteUrlValidator gitRemoteUrlValidator,
                             BlogManageEndpoint blogManageEndpoint,
                             BlogBannerService blogBannerService,
-                            LoggedUser loggedUser) {
+                            LoggedUser loggedUser,
+                            BreadcrumbService breadcrumbService) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
@@ -88,6 +91,7 @@ public class BlogSaveEndpoint {
         this.blogManageEndpoint = blogManageEndpoint;
         this.blogBannerService = blogBannerService;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     private Optional<String> applyGitIntegrationFields(Blog blog, BlogForm form) {
@@ -220,7 +224,8 @@ public class BlogSaveEndpoint {
                     .page(BlogManageEndpoint.Templates.list(blogManageEndpoint.listPage(1, editorView),
                                                             editorView,
                                                             customPageRepository.loadLinks(),
-                                                            loggedUser))
+                                                            loggedUser,
+                                                            breadcrumbService.manageBlogs()))
                     .build();
     }
 

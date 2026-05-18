@@ -96,6 +96,17 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `.load-more` | Public “Load more” | main |
 | `.manage-pagination` | Logged-in numbered pages | manage |
 
+### Breadcrumb (main.css)
+
+| Block | Purpose |
+|-------|---------|
+| `.breadcrumb` | Page trail container |
+| `.breadcrumb__list` | Ordered list |
+| `.breadcrumb__item` | One segment |
+| `.breadcrumb__link` | Linked ancestor (HTMX nav) |
+| `.breadcrumb__text` | Non-linked middle segment |
+| `.breadcrumb__current` | Current page (`aria-current="page"`) |
+
 ---
 
 ## main.css — reading & shell
@@ -146,6 +157,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `notifications-page`, `notification-list` | `NotificationEndpoint/notifications.html` | |
 | `subscriptions-page`, `subscription-list` | `SubscriptionEndpoint/subscriptions.html` | |
 | `manage-pagination` | `components/manage-pagination.html` | |
+| `nav-hub-page`, `nav-hub__*` | `*HubEndpoint/hub.html`, `components/navigation-hub.html` | Navigation hub cards |
 
 ---
 

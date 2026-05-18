@@ -4,6 +4,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -33,7 +35,7 @@ public class ReviewEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance review(Page<Post> posts, Links links, LoggedUser user);
+        public static native TemplateInstance review(Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance row(Post post); // for HTMX swap
 
@@ -45,12 +47,17 @@ public class ReviewEndpoint {
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public ReviewEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public ReviewEndpoint(PostRepository postRepository,
+                          CustomPageRepository customPageRepository,
+                          LoggedUser loggedUser,
+                          BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @PUT
@@ -106,7 +113,8 @@ public class ReviewEndpoint {
         return Response.ok()
                        .entity(Templates.review(postRepository.findPublished(PageQuery.forGrid(20, page)),
                                                 customPageRepository.loadLinks(),
-                                                loggedUser))
+                                                loggedUser,
+                                                breadcrumbService.reviewFeaturedPosts()))
                        .build();
     }
 }

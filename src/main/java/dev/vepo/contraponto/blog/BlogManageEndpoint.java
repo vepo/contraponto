@@ -6,6 +6,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -39,9 +41,14 @@ public class BlogManageEndpoint {
                                             boolean canDelete,
                                             long uploadBlogId,
                                             Links links,
-                                            LoggedUser user);
+                                            LoggedUser user,
+                                            BreadcrumbTrail breadcrumb);
 
-        static native TemplateInstance list(Page<BlogRow> blogs, boolean editorView, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<BlogRow> blogs,
+                                            boolean editorView,
+                                            Links links,
+                                            LoggedUser user,
+                                            BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -52,16 +59,19 @@ public class BlogManageEndpoint {
     private final BlogAccess blogAccess;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public BlogManageEndpoint(BlogRepository blogRepository,
                               BlogAccess blogAccess,
                               CustomPageRepository customPageRepository,
-                              LoggedUser loggedUser) {
+                              LoggedUser loggedUser,
+                              BreadcrumbService breadcrumbService) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -85,7 +95,8 @@ public class BlogManageEndpoint {
                                           blogAccess.canDelete(blog, loggedUser),
                                           blog.getId(),
                                           customPageRepository.loadLinks(blog.getId()),
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.manageBlogEdit(blog)))
                        .build();
     }
 
@@ -108,7 +119,8 @@ public class BlogManageEndpoint {
         return Response.ok(Templates.list(listPage(page, editorView),
                                           editorView,
                                           customPageRepository.loadLinks(),
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.manageBlogs()))
                        .build();
     }
 
@@ -137,7 +149,8 @@ public class BlogManageEndpoint {
                                           false,
                                           mainBlogId,
                                           customPageRepository.loadLinks(),
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.manageBlogNew()))
                        .build();
     }
 }

@@ -170,6 +170,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Profile settings** | Update name, email (with verification), password, profile picture, default blog banner. | `components.ProfileEndpoint`, `ProfileUpdateEndpoint` |
 | **User management** | Administrators create and edit users, roles, and passwords. | `UserManageEndpoint`, `UserSaveEndpoint` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
+| **Navigation hub** | Logged-in index page grouping related routes (Writing, Manage, Account, Review, Administration). | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` |
+| **Breadcrumb trail** | Ordered navigation labels from Home or a hub to the current page; last item is not linked. | `BreadcrumbService`, `components/breadcrumb.html` |
 
 ### UI labels (user-visible copy)
 
@@ -179,7 +181,13 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 |------------|-------|---------|
 | Auth — login | Sign in | Modal, comment gate |
 | Auth — register | Sign up | Modal |
-| Auth — logout | Log out | Menu |
+| Auth — logout | Sign out | Menu |
+| Menu — writing hub | Writing | User menu → `/writing` |
+| Menu — manage hub | Manage | User menu → `/manage` |
+| Menu — account hub | Account | User menu → `/account` |
+| Menu — review hub | Review | User menu (editor) → `/editor` |
+| Menu — administration hub | Administration | User menu (admin) → `/administration` |
+| Breadcrumb — home | Home | Public pages root segment |
 | Auth — forgot password link | Forgot password? | Login modal |
 | Password recovery — title | Reset your password | `/password-recovery` |
 | Password recovery — submit | Send reset link | Request form |

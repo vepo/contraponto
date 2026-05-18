@@ -2,6 +2,8 @@ package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -27,7 +29,8 @@ public class NotificationEndpoint {
         public static native TemplateInstance notifications(LoggedUser user,
                                                             Links links,
                                                             Page<Notification> notifications,
-                                                            long unreadCount);
+                                                            long unreadCount,
+                                                            BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -37,14 +40,17 @@ public class NotificationEndpoint {
     private final NotificationRepository notificationRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public NotificationEndpoint(NotificationRepository notificationRepository,
                                 CustomPageRepository customPageRepository,
-                                LoggedUser loggedUser) {
+                                LoggedUser loggedUser,
+                                BreadcrumbService breadcrumbService) {
         this.notificationRepository = notificationRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -53,6 +59,10 @@ public class NotificationEndpoint {
         long userId = loggedUser.getId();
         Page<Notification> notifications = notificationRepository.findPage(userId, PageQuery.forGrid(20, page));
         long unreadCount = notificationRepository.countUnread(userId);
-        return Templates.notifications(loggedUser, customPageRepository.loadLinks(), notifications, unreadCount);
+        return Templates.notifications(loggedUser,
+                                       customPageRepository.loadLinks(),
+                                       notifications,
+                                       unreadCount,
+                                       breadcrumbService.accountNotifications());
     }
 }

@@ -1,0 +1,22 @@
+{#if !trail.isEmpty}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol class="breadcrumb__list">
+        {#for item in trail.items}
+        <li class="breadcrumb__item">
+            {#if item.href == null}
+            <span class="breadcrumb__current" aria-current="page">{item.label}</span>
+            {#else if item.href.isEmpty}
+            <span class="breadcrumb__text">{item.label}</span>
+            {#else}
+            <a data-hx-get="{item.href}"
+               hx-select="main"
+               hx-target="main"
+               hx-push-url="{item.href}"
+               class="breadcrumb__link"
+               data-nav>{item.label}</a>
+            {/if}
+        </li>
+        {/for}
+    </ol>
+</nav>
+{/if}

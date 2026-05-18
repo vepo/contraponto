@@ -6,6 +6,9 @@
     <body hx-history-elt>
         {#include components/header /}
         <main id="main-content" class="user-blog-page">
+            <div class="container">
+                {#include components/breadcrumb trail=breadcrumb /}
+            </div>
             <header class="tag-page-header container">
                 <h1 class="tag-page__title"><span class="tag-page__hash" aria-hidden="true">#</span>{tag.name}</h1>
                 {#if tag.description}

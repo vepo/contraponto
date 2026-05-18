@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-18 · commit `cd0c683`
+**Last verified:** 2026-05-18 · menu hub redesign
 
 ---
 
@@ -36,9 +36,9 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 | Header: Search, Sign In/Up | yes | — | — | — |
 | Header: Write, Publish, Save draft | — | on `/write` only | on `/write` only | on `/write` only |
 | Header: Notifications bell | — | yes | yes | yes |
-| My Blog, Writing, Manage, Profile | — | yes | yes | yes |
-| Review (Featured Posts, Tags) | — | — | yes | yes |
-| Administration (Users) | — | — | — | yes |
+| My Blog, Writing, Manage, Account | — | yes | yes | yes |
+| Review hub (editor) | — | — | yes | yes |
+| Administration hub | — | — | — | yes |
 
 ---
 
@@ -81,12 +81,13 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
-| New post | `USER` | `GET /write` | 2 | Open user menu → **Write**. |
+| Writing hub | `USER` | `GET /writing` | 2 | Open user menu → **Writing**. |
+| New post | `USER` | `GET /write` | 3 | Open user menu → **Writing** → **Write** card. |
 | New post (header) | `USER` | `GET /write` | 1 | Header **Escrever** (Write) button. |
-| Edit draft/post | `USER` | `GET /write/draft/{id}` | 3 | Open user menu → **Library** → **Edit** on row (or title link). |
+| Edit draft/post | `USER` | `GET /write/draft/{id}` | 4 | Open user menu → **Writing** → **Library** → **Edit** on row. |
 | Edit own published post | `USER` | `GET /write/draft/{id}` | 4 | Home → blog → post → **Edit** (author only). |
-| Library (drafts tab) | `USER` | `GET /library` | 2 | Open user menu → **Library** (Drafts tab loads by default). |
-| Library (published tab) | `USER` | `GET /library` + tab | 3 | Open user menu → **Library** → **Published**. |
+| Library (drafts tab) | `USER` | `GET /library` | 3 | Open user menu → **Writing** → **Library** (Drafts tab default). |
+| Library (published tab) | `USER` | `GET /library` + tab | 3 | **Library** → **Published** tab (+0). |
 | Delete draft | `USER` | HTMX delete on library | 3 | **Library** → **Delete** on draft row. |
 | Save draft | `USER` | `POST /forms/write/draft` | — | On `/write` → header **Salvar Rascunho** (no extra navigation). |
 | Publish post | `USER` | `POST /forms/write/publish` | — | On `/write` → header **Publicar**. |
@@ -97,22 +98,25 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
-| Dashboard | `USER` | `GET /dashboard` | 2 | Open user menu → **Dashboard**. |
-| Dashboard analytics | `USER` | `GET /dashboard/components/analytics` | 2 | **Dashboard** (month controls on same page). |
+| Manage hub | `USER` | `GET /manage` | 2 | Open user menu → **Manage**. |
+| Dashboard | `USER` | `GET /dashboard` | 3 | Open user menu → **Manage** → **Dashboard** card. |
+| Dashboard analytics | `USER` | `GET /dashboard/components/analytics` | 3 | **Dashboard** (month controls on same page). |
 | My Blog shortcut | `USER` | `GET /{username}` | 2 | Open user menu → **My Blog**. |
-| Blog list | `USER` | `GET /blogs` | 2 | Open user menu → **Blogs**. |
-| New blog | `USER` | `GET /blogs/new` | 3 | **Blogs** → **New Blog**. |
-| Edit blog | `USER` | `GET /blogs/{id}/edit` | 3 | **Blogs** → **Edit** on row. |
-| Blog image library | `USER` | `GET /blogs/{blogId}/images` | 4 | **Blogs** → **Edit** → **Images**. |
-| Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 4 | **Blogs** → **Edit** → **View sync history**. |
-| Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 5 | Sync history → run link. |
-| Custom pages list | `USER` | `GET /pages` | 2 | Open user menu → **Custom Pages**. |
-| New custom page | `USER` | `GET /pages/new` | 3 | **Custom Pages** → **New Page**. |
-| Edit custom page | `USER` | `GET /pages/{id}/edit` | 3 | **Custom Pages** → **Edit** on row. |
-| Comment moderation inbox | `USER` | `GET /comments` | 2 | Open user menu → **Comments**. |
-| Profile settings | `USER` | `GET /profile` | 2 | Open user menu → **Settings**. |
-| Notifications inbox | `USER` | `GET /notifications` | 2 | Open user menu → **Notifications** **or** header bell. |
-| Subscriptions | `USER` | `GET /subscriptions` | 2 | Open user menu → **Subscriptions**. |
+| Blog list | `USER` | `GET /blogs` | 3 | Open user menu → **Manage** → **Blogs** card. |
+| New blog | `USER` | `GET /blogs/new` | 4 | **Blogs** → **New Blog**. |
+| Edit blog | `USER` | `GET /blogs/{id}/edit` | 4 | **Blogs** → **Edit** on row. |
+| Blog image library | `USER` | `GET /blogs/{blogId}/images` | 5 | **Blogs** → **Edit** → **Images**. |
+| Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 5 | **Blogs** → **Edit** → **View sync history**. |
+| Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 6 | Sync history → run link. |
+| Custom pages list | `USER` | `GET /pages` | 3 | Open user menu → **Manage** → **Custom Pages** card. |
+| New custom page | `USER` | `GET /pages/new` | 4 | **Custom Pages** → **New Page**. |
+| Edit custom page | `USER` | `GET /pages/{id}/edit` | 4 | **Custom Pages** → **Edit** on row. |
+| Comment moderation inbox | `USER` | `GET /comments` | 3 | Open user menu → **Manage** → **Comments** card. |
+| Account hub | `USER` | `GET /account` | 2 | Open user menu → **Account**. |
+| Profile settings | `USER` | `GET /profile` | 3 | Open user menu → **Account** → **Settings** card. |
+| Notifications inbox | `USER` | `GET /notifications` | 2 | Header bell **or** **Account** → **Notifications** card. |
+| Notifications (menu path) | `USER` | `GET /notifications` | 3 | Open user menu → **Account** → **Notifications** card. |
+| Subscriptions | `USER` | `GET /subscriptions` | 3 | Open user menu → **Account** → **Subscriptions** card. |
 
 ---
 
@@ -136,11 +140,12 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`, signed in) |
 |---------|----------|-----|------:|-------------------------------|
-| Featured review list | `EDITOR` | `GET /review` | 2 | Open user menu → **Featured Posts**. |
-| Toggle featured (review) | `EDITOR` | `PUT /review/components/{postId}/featured/toggle` | 3 | **Featured Posts** → star on row. |
+| Review hub | `EDITOR` | `GET /editor` | 2 | Open user menu → **Review**. |
+| Featured review list | `EDITOR` | `GET /review` | 3 | Open user menu → **Review** → **Featured Posts** card. |
+| Toggle featured (review) | `EDITOR` | `PUT /review/components/{postId}/featured/toggle` | 4 | **Featured Posts** → star on row. |
 | Toggle featured (on post) | `EDITOR` | `PUT …/component/featured/toggle` | 3–4 | Open post → star control in action bar. |
-| Tag admin list | `EDITOR` | `GET /tags/manage` | 2 | Open user menu → **Tags**. |
-| Edit tag metadata | `EDITOR` | `GET /tags/{slug}/edit` | 3 | **Tags** → **Edit** on row. |
+| Tag admin list | `EDITOR` | `GET /tags/manage` | 3 | Open user menu → **Review** → **Tags** card. |
+| Edit tag metadata | `EDITOR` | `GET /tags/{slug}/edit` | 4 | **Tags** → **Edit** on row. |
 | Edit tag (from public tag page) | `EDITOR` | `GET /tags/{slug}/edit` | 4 | Home → post → tag → **Edit** (editor-only link on tag page). |
 | Platform-wide blog list | `EDITOR` | `GET /blogs` | 2 | Open user menu → **Blogs** (lists all blogs). |
 
@@ -150,9 +155,10 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 
 | Feature | Audience | URL | Steps | UI path (from `/`, signed in) |
 |---------|----------|-----|------:|-------------------------------|
-| User list | admin | `GET /users` | 2 | Open user menu → **Users**. |
-| New user | admin | `GET /users/new` | 3 | **Users** → **New User**. |
-| Edit user | admin | `GET /users/{id}/edit` | 3 | **Users** → **Edit** on row. |
+| Administration hub | admin | `GET /administration` | 2 | Open user menu → **Administration**. |
+| User list | admin | `GET /users` | 3 | Open user menu → **Administration** → **Users** card. |
+| New user | admin | `GET /users/new` | 4 | **Users** → **New User**. |
+| Edit user | admin | `GET /users/{id}/edit` | 4 | **Users** → **Edit** on row. |
 
 ---
 
@@ -184,26 +190,28 @@ flowchart TD
     Badge[Notifications bell]
     Menu[User menu]
   end
-  subgraph writing [Writing section]
-    Write["/write"]
-    Library["/library"]
-  end
-  subgraph manage [Manage section]
-    Dashboard["/dashboard"]
-    Blogs["/blogs"]
-    Pages["/pages"]
-    Comments["/comments"]
-  end
-  subgraph editor [Editor section]
-    Review["/review"]
-    TagsManage["/tags/manage"]
-  end
-  Menu --> writing
-  Menu --> manage
-  Menu --> editor
+  Menu --> MyBlog["My Blog"]
+  Menu --> WritingHub["/writing"]
+  Menu --> ManageHub["/manage"]
+  Menu --> AccountHub["/account"]
+  Menu --> EditorHub["/editor"]
+  Menu --> AdminHub["/administration"]
+  WritingHub --> Write["/write"]
+  WritingHub --> Library["/library"]
+  ManageHub --> Dashboard["/dashboard"]
+  ManageHub --> Blogs["/blogs"]
+  ManageHub --> Pages["/pages"]
+  ManageHub --> Comments["/comments"]
+  AccountHub --> Notifications["/notifications"]
+  AccountHub --> Profile["/profile"]
+  EditorHub --> Review["/review"]
+  EditorHub --> TagsManage["/tags/manage"]
+  AdminHub --> Users["/users"]
   Blogs --> BlogEdit["/blogs/id/edit"]
   BlogEdit --> Images["/blogs/id/images"]
   BlogEdit --> GitSync["/blogs/id/git-sync"]
 ```
+
+Full-page surfaces show a **breadcrumb trail** (Home or hub root → current page). Breadcrumbs add zero navigation steps.
 
 **Sources:** [MenuEndpoint/menu.html](../src/main/resources/templates/MenuEndpoint/menu.html), [components/header.html](../src/main/resources/templates/components/header.html), [ARCHITECTURE.md](../ARCHITECTURE.md).

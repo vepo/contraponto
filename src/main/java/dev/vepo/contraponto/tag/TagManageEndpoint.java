@@ -4,6 +4,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -28,7 +30,7 @@ public class TagManageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance list(Page<TagRow> tags, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<TagRow> tags, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -38,14 +40,17 @@ public class TagManageEndpoint {
     private final TagRepository tagRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public TagManageEndpoint(TagRepository tagRepository,
                              CustomPageRepository customPageRepository,
-                             LoggedUser loggedUser) {
+                             LoggedUser loggedUser,
+                             BreadcrumbService breadcrumbService) {
         this.tagRepository = tagRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     private Response forbidden() {
@@ -64,7 +69,11 @@ public class TagManageEndpoint {
             return forbidden();
         }
 
-        return Response.ok(Templates.list(listPage(page), customPageRepository.loadLinks(), loggedUser)).build();
+        return Response.ok(Templates.list(listPage(page),
+                                          customPageRepository.loadLinks(),
+                                          loggedUser,
+                                          breadcrumbService.reviewTags()))
+                       .build();
     }
 
     public Page<TagRow> listPage(int page) {
@@ -72,6 +81,6 @@ public class TagManageEndpoint {
     }
 
     TemplateInstance renderList() {
-        return Templates.list(listPage(1), customPageRepository.loadLinks(), loggedUser);
+        return Templates.list(listPage(1), customPageRepository.loadLinks(), loggedUser, breadcrumbService.reviewTags());
     }
 }

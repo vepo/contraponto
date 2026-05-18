@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}
+    {pageTitle} - contraponto
+    {/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="pages-manage nav-hub-page" id="main-content">
+            <div class="container-narrow">
+                {#include components/navigation-hub title=title subtitle=subtitle breadcrumb=breadcrumb sections=sections /}
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

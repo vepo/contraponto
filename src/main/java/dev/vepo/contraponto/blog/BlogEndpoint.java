@@ -4,6 +4,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.post.Post;
@@ -41,7 +43,8 @@ public class BlogEndpoint {
                                                    Page<Post> posts,
                                                    Links links,
                                                    LoggedUser user,
-                                                   BlogAudienceView audience);
+                                                   BlogAudienceView audience,
+                                                   BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -62,6 +65,7 @@ public class BlogEndpoint {
     private final BlogRepository blogRepository;
     private final LoggedUser loggedUser;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public BlogEndpoint(UserRepository userRepository,
@@ -69,12 +73,14 @@ public class BlogEndpoint {
                         CustomPageRepository customPageRepository,
                         BlogRepository blogRepository,
                         BlogAudienceComponentEndpoint audienceComponentEndpoint,
+                        BreadcrumbService breadcrumbService,
                         LoggedUser loggedUser) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.blogRepository = blogRepository;
         this.audienceComponentEndpoint = audienceComponentEndpoint;
+        this.breadcrumbService = breadcrumbService;
         this.loggedUser = loggedUser;
     }
 
@@ -90,7 +96,8 @@ public class BlogEndpoint {
                               postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, 1)),
                               customPageRepository.loadLinks(mainBlog.getId()),
                               loggedUser,
-                              audienceComponentEndpoint.buildView(mainBlog));
+                              audienceComponentEndpoint.buildView(mainBlog),
+                              breadcrumbService.forMainBlog(user));
     }
 
     @GET

@@ -4,6 +4,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -32,18 +33,21 @@ public class ImageAltSaveEndpoint {
     private final ImageControlService imageControlService;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public ImageAltSaveEndpoint(BlogRepository blogRepository,
                                 BlogAccess blogAccess,
                                 ImageControlService imageControlService,
                                 CustomPageRepository customPageRepository,
-                                LoggedUser loggedUser) {
+                                LoggedUser loggedUser,
+                                BreadcrumbService breadcrumbService) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.imageControlService = imageControlService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @PUT
@@ -69,7 +73,11 @@ public class ImageAltSaveEndpoint {
                     .message(SUCCESS_MSG)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .page(ImageControlEndpoint.Templates.list(blog, images, links, loggedUser))
+                    .page(ImageControlEndpoint.Templates.list(blog,
+                                                              images,
+                                                              links,
+                                                              loggedUser,
+                                                              breadcrumbService.manageBlogImages(blog)))
                     .build();
     }
 }

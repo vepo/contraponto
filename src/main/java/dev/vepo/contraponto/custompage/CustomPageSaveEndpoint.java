@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.image.CustomPageImageDependencyService;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -34,6 +35,7 @@ public class CustomPageSaveEndpoint {
     private final CustomPageManageEndpoint customPageManageEndpoint;
     private final CustomPageImageDependencyService customPageImageDependencyService;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public CustomPageSaveEndpoint(CustomPageRepository customPageRepository,
@@ -41,13 +43,15 @@ public class CustomPageSaveEndpoint {
                                   BlogRepository blogRepository,
                                   CustomPageManageEndpoint customPageManageEndpoint,
                                   CustomPageImageDependencyService customPageImageDependencyService,
-                                  LoggedUser loggedUser) {
+                                  LoggedUser loggedUser,
+                                  BreadcrumbService breadcrumbService) {
         this.customPageRepository = customPageRepository;
         this.customPageAccess = customPageAccess;
         this.blogRepository = blogRepository;
         this.customPageManageEndpoint = customPageManageEndpoint;
         this.customPageImageDependencyService = customPageImageDependencyService;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     private boolean applyScope(CustomPage page, CustomPageForm form, Long blogIdForSlug) {
@@ -100,7 +104,8 @@ public class CustomPageSaveEndpoint {
                                                                                                                                 loggedUser)),
                                                                   customPageAccess.canListAll(loggedUser),
                                                                   customPageRepository.loadLinks(),
-                                                                  loggedUser))
+                                                                  loggedUser,
+                                                                  breadcrumbService.manageCustomPages()))
                     .build();
     }
 
@@ -184,7 +189,8 @@ public class CustomPageSaveEndpoint {
                                                                                                                                 loggedUser)),
                                                                   customPageAccess.canListAll(loggedUser),
                                                                   customPageRepository.loadLinks(),
-                                                                  loggedUser))
+                                                                  loggedUser,
+                                                                  breadcrumbService.manageCustomPages()))
                     .build();
     }
 

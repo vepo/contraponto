@@ -9,6 +9,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -46,7 +48,8 @@ public class PostEndpoint {
                                                    Links links,
                                                    LoggedUser user,
                                                    long viewCount,
-                                                   BlogAudienceView audience);
+                                                   BlogAudienceView audience,
+                                                   BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
 
@@ -73,6 +76,7 @@ public class PostEndpoint {
 
     private final SessionIdProvider sessionIdProvider;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -82,7 +86,8 @@ public class PostEndpoint {
                         LoggedUser loggedUser,
                         ViewRepository viewRepository,
                         SessionIdProvider sessionIdProvider,
-                        BlogAudienceComponentEndpoint audienceComponentEndpoint) {
+                        BlogAudienceComponentEndpoint audienceComponentEndpoint,
+                        BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -91,6 +96,7 @@ public class PostEndpoint {
         this.viewRepository = viewRepository;
         this.sessionIdProvider = sessionIdProvider;
         this.audienceComponentEndpoint = audienceComponentEndpoint;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -192,7 +198,8 @@ public class PostEndpoint {
                                                    loadLinks(post),
                                                    loggedUser,
                                                    viewCount,
-                                                   audience);
+                                                   audience,
+                                                   breadcrumbService.forPost(view));
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));

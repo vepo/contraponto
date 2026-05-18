@@ -1,0 +1,26 @@
+{#include components/breadcrumb trail=breadcrumb /}
+<h1 class="nav-hub__title">{title}</h1>
+<p class="nav-hub__subtitle">{subtitle}</p>
+
+{#for section in sections}
+<section class="nav-hub__section">
+    <h2 class="nav-hub__section-title">{section.title}</h2>
+    <ul class="nav-hub__cards">
+        {#for link in section.links}
+        <li>
+            <a data-hx-get="{link.path}"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="{link.path}"
+               class="nav-hub__card"
+               data-nav>
+                <span class="nav-hub__card-title">{link.label}</span>
+                <span class="nav-hub__card-description">{link.description}</span>
+                <span class="nav-hub__card-chevron" aria-hidden="true">→</span>
+            </a>
+        </li>
+        {/for}
+    </ul>
+</section>
+{/for}

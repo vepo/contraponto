@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.user.User;
@@ -29,8 +31,13 @@ public class ProfileEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance profile(Links links, User user, long mainBlogId, LoggedUser loggedUser,
-                                                      boolean emailVerified, boolean invalidToken);
+        public static native TemplateInstance profile(Links links,
+                                                      User user,
+                                                      long mainBlogId,
+                                                      LoggedUser loggedUser,
+                                                      boolean emailVerified,
+                                                      boolean invalidToken,
+                                                      BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -43,16 +50,19 @@ public class ProfileEndpoint {
     private final CustomPageRepository customPageRepository;
     private final UserRepository userRepository;
     private final BlogRepository blogRepository;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public ProfileEndpoint(CustomPageRepository customPageRepository,
                            UserRepository userRepository,
                            BlogRepository blogRepository,
-                           LoggedUser loggedUser) {
+                           LoggedUser loggedUser,
+                           BreadcrumbService breadcrumbService) {
         this.customPageRepository = customPageRepository;
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -64,7 +74,12 @@ public class ProfileEndpoint {
         var user = userRepository.findById(loggedUser.getId()).orElseThrow();
         var mainBlogId = blogRepository.findMainByOwnerId(user.getId()).map(b -> b.getId()).orElse(0L);
         boolean invalidToken = "invalid-token".equals(error);
-        return Templates.profile(customPageRepository.loadLinks(), user, mainBlogId, loggedUser,
-                                 emailVerified, invalidToken);
+        return Templates.profile(customPageRepository.loadLinks(),
+                                 user,
+                                 mainBlogId,
+                                 loggedUser,
+                                 emailVerified,
+                                 invalidToken,
+                                 breadcrumbService.accountSettings());
     }
 }

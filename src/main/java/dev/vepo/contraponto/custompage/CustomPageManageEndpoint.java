@@ -6,6 +6,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -32,9 +34,16 @@ public class CustomPageManageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance form(CustomPageFormView formView, Links links, LoggedUser user);
+        static native TemplateInstance form(CustomPageFormView formView,
+                                            Links links,
+                                            LoggedUser user,
+                                            BreadcrumbTrail breadcrumb);
 
-        static native TemplateInstance list(Page<CustomPageRow> pages, boolean editorView, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<CustomPageRow> pages,
+                                            boolean editorView,
+                                            Links links,
+                                            LoggedUser user,
+                                            BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -45,16 +54,19 @@ public class CustomPageManageEndpoint {
     private final CustomPageAccess customPageAccess;
     private final BlogRepository blogRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public CustomPageManageEndpoint(CustomPageRepository customPageRepository,
                                     CustomPageAccess customPageAccess,
                                     BlogRepository blogRepository,
-                                    LoggedUser loggedUser) {
+                                    LoggedUser loggedUser,
+                                    BreadcrumbService breadcrumbService) {
         this.customPageRepository = customPageRepository;
         this.customPageAccess = customPageAccess;
         this.blogRepository = blogRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     private List<Blog> availableBlogs(boolean editorView) {
@@ -87,7 +99,8 @@ public class CustomPageManageEndpoint {
                                                                  editorView,
                                                                  page.getBlog() == null),
                                           links,
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.manageCustomPageForm("Edit Page")))
                        .build();
     }
 
@@ -117,7 +130,8 @@ public class CustomPageManageEndpoint {
         return Response.ok(Templates.list(listPage(page, editorView),
                                           editorView,
                                           customPageRepository.loadLinks(),
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.manageCustomPages()))
                        .build();
     }
 
@@ -148,7 +162,8 @@ public class CustomPageManageEndpoint {
                                                                  editorView,
                                                                  editorView),
                                           links,
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.manageCustomPageForm("New Page")))
                        .build();
     }
 }

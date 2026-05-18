@@ -62,10 +62,19 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 
 ### 3.5 User Menu
 - Dropdown showing avatar, name, email.
-- Items: My Blog, Profile, Write, Library, Dashboard, Review (editor only), Sign Out.
+- Items: **My Blog**, **Writing**, **Manage**, **Account**, **Review** (editor only), **Administration** (user administrator only), **Sign out**.
+- Each hub link opens an index page with section cards linking to features (Write, Library, Dashboard, Blogs, etc.).
+- Header shortcuts unchanged: **Write** button and notifications bell reach `/write` and `/notifications` in one step.
 - The dropdown closes on escape or when clicking outside.
 
-### 3.6 Toast Notifications
+### 3.6 Breadcrumbs
+- Shown at the top of every full-page surface (inside `main`, above the page title).
+- Public reading: root segment **Home** (`/`), then author/blog/post segments as applicable.
+- Logged-in manage: root is the **hub name** (Writing, Manage, Account, Review, Administration), not Home.
+- The current page is the last segment (not linked); ancestors use HTMX navigation.
+- HTMX partials (grids, tabs, modals) do not include breadcrumbs.
+
+### 3.7 Toast Notifications
 - Non‑blocking, positioned bottom‑right.
 - Success (green) and error (red) variants.
 - Appear on publish, draft save, or critical errors.

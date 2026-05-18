@@ -11,6 +11,7 @@
         {#include components/header /}
         <main class="write-main">
             <div class="write-container">
+                {#include components/breadcrumb trail=breadcrumb /}
                 {#if writePage.hasUnpublishedChanges}
                 <div class="write-form__banner write-form__banner--warning" role="status">
                     You have unpublished changes. Readers still see the last published version until you publish again.

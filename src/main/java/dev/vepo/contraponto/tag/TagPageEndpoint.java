@@ -4,6 +4,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.rss.RssFeedRenderer;
@@ -33,11 +35,11 @@ public class TagPageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance edit(Tag tag, Links links, LoggedUser user);
+        public static native TemplateInstance edit(Tag tag, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance grid(String tagSlug, Page<Post> posts);
 
-        public static native TemplateInstance tag(Tag tag, Page<Post> posts, Links links, LoggedUser user);
+        public static native TemplateInstance tag(Tag tag, Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -56,16 +58,19 @@ public class TagPageEndpoint {
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public TagPageEndpoint(TagRepository tagRepository,
                            PostRepository postRepository,
                            CustomPageRepository customPageRepository,
-                           LoggedUser loggedUser) {
+                           LoggedUser loggedUser,
+                           BreadcrumbService breadcrumbService) {
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -77,7 +82,11 @@ public class TagPageEndpoint {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
-        return Response.ok(Templates.edit(tag, customPageRepository.loadLinks(), loggedUser)).build();
+        return Response.ok(Templates.edit(tag,
+                                          customPageRepository.loadLinks(),
+                                          loggedUser,
+                                          breadcrumbService.reviewTagEdit(tag)))
+                       .build();
     }
 
     @GET
@@ -101,7 +110,8 @@ public class TagPageEndpoint {
         return Templates.tag(tag,
                              postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, 1)),
                              customPageRepository.loadLinks(),
-                             loggedUser);
+                             loggedUser,
+                             breadcrumbService.forTag(tag));
     }
 
     @GET

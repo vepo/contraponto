@@ -6,6 +6,9 @@
     <body hx-history-elt>
         {#include components/header /}
         <main id="main-content" class="user-blog-page">
+            <div class="container">
+                {#include components/breadcrumb trail=breadcrumb /}
+            </div>
             <header class="serie-page-header container">
                 <p class="serie-page__label">Serie</p>
                 <h1 class="serie-page__title">{serie.title}</h1>

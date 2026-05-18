@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -31,7 +33,11 @@ public class SearchEndpoint {
 
         public static native TemplateInstance results(LoggedUser user, Page<Post> results, String query);
 
-        public static native TemplateInstance search(String query, Page<Post> results, Links links, LoggedUser user);
+        public static native TemplateInstance search(String query,
+                                                     Page<Post> results,
+                                                     Links links,
+                                                     LoggedUser user,
+                                                     BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -41,12 +47,17 @@ public class SearchEndpoint {
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public SearchEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public SearchEndpoint(PostRepository postRepository,
+                          CustomPageRepository customPageRepository,
+                          LoggedUser loggedUser,
+                          BreadcrumbService breadcrumbService) {
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     // Fragment endpoint for HTMX infinite scroll / load more
@@ -74,10 +85,15 @@ public class SearchEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance searchPage(@QueryParam("q") String query) {
+        var breadcrumb = breadcrumbService.forSearch();
         if (Objects.nonNull(query) && !query.isBlank()) {
-            return Templates.search(query, postRepository.search(query, PageQuery.forGrid(20, 1)), customPageRepository.loadLinks(), loggedUser);
+            return Templates.search(query,
+                                    postRepository.search(query, PageQuery.forGrid(20, 1)),
+                                    customPageRepository.loadLinks(),
+                                    loggedUser,
+                                    breadcrumb);
         } else {
-            return Templates.search(query, null, customPageRepository.loadLinks(), loggedUser);
+            return Templates.search(query, null, customPageRepository.loadLinks(), loggedUser, breadcrumb);
         }
     }
 }

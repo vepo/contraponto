@@ -7,6 +7,7 @@
         {#include components/header /}
         <main class="notifications-page" id="main-content">
             <div class="container-narrow">
+                {#include components/breadcrumb trail=breadcrumb /}
                 <div class="notifications-page__header">
                     <h1 class="notifications-page__title">Notifications</h1>
                     {#if unreadCount > 0}

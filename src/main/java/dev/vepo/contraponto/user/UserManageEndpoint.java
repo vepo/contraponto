@@ -6,6 +6,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -36,9 +38,10 @@ public class UserManageEndpoint {
                                             boolean creating,
                                             List<Role> assignableRoles,
                                             Links links,
-                                            LoggedUser user);
+                                            LoggedUser user,
+                                            BreadcrumbTrail breadcrumb);
 
-        static native TemplateInstance list(Page<UserRow> users, Links links, LoggedUser user);
+        static native TemplateInstance list(Page<UserRow> users, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -49,16 +52,19 @@ public class UserManageEndpoint {
     private final UserAccess userAccess;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public UserManageEndpoint(UserRepository userRepository,
                               UserAccess userAccess,
                               CustomPageRepository customPageRepository,
-                              LoggedUser loggedUser) {
+                              LoggedUser loggedUser,
+                              BreadcrumbService breadcrumbService) {
         this.userRepository = userRepository;
         this.userAccess = userAccess;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
@@ -75,7 +81,8 @@ public class UserManageEndpoint {
                                           false,
                                           userAccess.assignableRoles(loggedUser),
                                           customPageRepository.loadLinks(),
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.administrationUserForm(user.getName())))
                        .build();
     }
 
@@ -94,7 +101,11 @@ public class UserManageEndpoint {
             return forbidden();
         }
 
-        return Response.ok(Templates.list(listPage(page), customPageRepository.loadLinks(), loggedUser)).build();
+        return Response.ok(Templates.list(listPage(page),
+                                          customPageRepository.loadLinks(),
+                                          loggedUser,
+                                          breadcrumbService.administrationUsers()))
+                       .build();
     }
 
     Page<UserRow> listPage(int page) {
@@ -116,7 +127,8 @@ public class UserManageEndpoint {
                                           true,
                                           userAccess.assignableRoles(loggedUser),
                                           customPageRepository.loadLinks(),
-                                          loggedUser))
+                                          loggedUser,
+                                          breadcrumbService.administrationUserForm("New User")))
                        .build();
     }
 }
