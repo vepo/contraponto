@@ -32,5 +32,5 @@ Classify the UI before choosing a control.
 1. Add paginated repository method returning `Page<T>`.
 2. Endpoint: `@QueryParam("page") @DefaultValue("1") int page`.
 3. Template: iterate `page.data`; include the correct partial.
-4. Update [docs/UI-Guidelines.md](../../docs/UI-Guidelines.md) when adding a user-facing list.
+4. Update [docs/ui-guidelines.md](../../docs/ui-guidelines.md) when adding a user-facing list.
 5. Tests: reading → `loadMore()`; managing → `assertManagePaginationSummary(...)`.

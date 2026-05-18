@@ -1,6 +1,6 @@
 # UI Elements catalog
 
-Canonical reference for **CSS class names** and **stylesheet bundles**. For UX flows and page narratives, see [UI-Guidelines.md](UI-Guidelines.md). For user-visible copy, see [domain-specification.md](domain-specification.md) § UI labels.
+Canonical reference for **CSS class names** and **stylesheet bundles**. For UX flows and page narratives, see [ui-guidelines.md](ui-guidelines.md). For user-visible copy, see [domain-specification.md](domain-specification.md) § UI labels.
 
 ---
 
@@ -111,6 +111,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `featured`, `featured__*` | Home/blog featured hero | |
 | `posts-grid`, `load-more` | Grid partials | |
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
+| `post-serie-nav`, `post-serie-nav__*` | `PostEndpoint/serie-nav.html` | Serie parts list on post page |
 | `article-page__version`, `article-page__version-icon` | `PostEndpoint/post.html` | Version history trigger in metadata |
 | `post-history`, `post-history__*` | `PostEndpoint/history-list.html`, `historyModal.html` | Version history modal list |
 | `modal__container--history` | `PostEndpoint/historyModal.html` | Wider change-history dialog |
@@ -160,7 +161,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 1. Read [domain-specification.md](domain-specification.md) — labels and domain terms.
 2. Reuse a block from this catalog or add a row here first.
 3. Add CSS to the correct bundle (`main`, `manage`, or `write`).
-4. Update [UI-Guidelines.md](UI-Guidelines.md) if the change introduces a new page type or flow.
+4. Update [ui-guidelines.md](ui-guidelines.md) if the change introduces a new page type or flow.
 5. For lists, follow [contraponto-pagination.mdc](../.cursor/rules/contraponto-pagination.mdc).
 
 ---

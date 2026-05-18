@@ -1,6 +1,6 @@
 # Architecture & Conventions
 
-Canonical reference for developers and AI agents. For route-level UX detail see [docs/Application-Guidelines.md](docs/Application-Guidelines.md). For visual design see [docs/UI-Guidelines.md](docs/UI-Guidelines.md).
+Canonical reference for developers and AI agents. For route-level UX detail see [docs/application-guidelines.md](docs/application-guidelines.md). For visual design see [docs/ui-guidelines.md](docs/ui-guidelines.md).
 
 ## 1. Core principles
 
@@ -18,7 +18,7 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 4. Qute `TemplateInstance` or `Response` (with optional `X-Toast-Message`).
 5. HTMX swaps `#main` or a partial target.
 
-**Scoped refresh:** Form mutations return the smallest HTML (target fragment + optional `hx-swap-oob`), not a full page. Auth login/signup/logout OOB-update `#menu-container` and broadcast `loggedIn` / `loggedOut` on `body` so only declared chrome subscribers refetch themselves; `#main` stays unchanged. See [docs/HTMX-Events.md](docs/HTMX-Events.md).
+**Scoped refresh:** Form mutations return the smallest HTML (target fragment + optional `hx-swap-oob`), not a full page. Auth login/signup/logout OOB-update `#menu-container` and broadcast `loggedIn` / `loggedOut` on `body` so only declared chrome subscribers refetch themselves; `#main` stays unchanged. See [docs/htmx-events.md](docs/htmx-events.md).
 
 ## 3. Multi-blog model
 
@@ -193,7 +193,7 @@ Full DDL: `src/main/resources/db/migration/V0.0.1__Initial_schema.sql`
 5. Fire CDI events if caches or async reactions exist.
 6. `@WebTest` + `App` DSL updates.
 7. Header/footer/navigation links if user-visible.
-8. Update [docs/Application-Guidelines.md](docs/Application-Guidelines.md) for new routes.
+8. Update [docs/application-guidelines.md](docs/application-guidelines.md) for new routes.
 
 ## 16. Testing example
 

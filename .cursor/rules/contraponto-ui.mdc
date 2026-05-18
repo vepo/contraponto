@@ -6,7 +6,7 @@ alwaysApply: false
 
 # UI elements and CSS
 
-Before changing templates or stylesheets, read [docs/UI-Elements.md](../../docs/UI-Elements.md).
+Before changing templates or stylesheets, read [docs/ui-elements.md](../../docs/ui-elements.md).
 
 ## Stylesheet bundles
 
@@ -22,7 +22,7 @@ Load order in `components/head.html`: fonts → main → manage → write → th
 ## Class names
 
 - BEM: `block`, `block__element`, `block--modifier`; utilities `u-*`.
-- **Do not** add new CSS classes without registering the block in UI-Elements.md.
+- **Do not** add new CSS classes without registering the block in ui-elements.md.
 - User-visible strings: [domain-specification.md](../../docs/domain-specification.md) UI labels table.
 
 ## Buttons
@@ -35,6 +35,6 @@ Reading → Load more (`contraponto-pagination.mdc`). Managing → `manage-pagin
 
 ## New surfaces
 
-1. Register block in UI-Elements.md.
+1. Register block in ui-elements.md.
 2. Add CSS to the correct bundle.
-3. Update UI-Guidelines.md for UX narrative if it is a new page type.
+3. Update ui-guidelines.md for UX narrative if it is a new page type.

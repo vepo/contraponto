@@ -36,16 +36,6 @@
                 </div>
                 {/if}
 
-                {#if view.post.serie}
-                <p class="article-page__serie">
-                    <a data-hx-get="{view.post.serie.url}"
-                       hx-select="main"
-                       hx-target="main"
-                       hx-push-url="{view.post.serie.url}"
-                       class="article-page__serie-link">{view.post.serie.title}</a>
-                </p>
-                {/if}
-
                 <h1 class="article-page__title">{view.liveTitle}</h1>
 
                 {#include components/post-tags-live tags=view.liveTags /}
@@ -82,6 +72,8 @@
                     </button>
                     {/if}
                 </div>
+
+                {#include PostEndpoint/serie-nav serie=view.post.serie seriePosts=seriePosts currentPost=view.post /}
 
                 <article class="article-page__content">
                     {view.render.raw}

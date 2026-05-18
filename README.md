@@ -29,9 +29,9 @@ Default admin (from migration): `admin` / password hash in `V0.0.1__Initial_sche
 |-----|----------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Patterns, URL map, schema overview, how to add features |
 | [AGENTS.md](AGENTS.md) | Index for AI / Cursor agents |
-| [docs/CONVENTIONS_CHECKLIST.md](docs/CONVENTIONS_CHECKLIST.md) | Doc gaps and conventions still to formalize |
-| [docs/Application-Guidelines.md](docs/Application-Guidelines.md) | Route and flow descriptions |
-| [docs/UI-Guidelines.md](docs/UI-Guidelines.md) | Typography, colors, components |
+| [docs/conventions-checklist.md](docs/conventions-checklist.md) | Doc gaps and conventions still to formalize |
+| [docs/application-guidelines.md](docs/application-guidelines.md) | Route and flow descriptions |
+| [docs/ui-guidelines.md](docs/ui-guidelines.md) | Typography, colors, components |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git repository layout for sync |
 | [.cursor/rules/](.cursor/rules/) | Cursor project rules |
 

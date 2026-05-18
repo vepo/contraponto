@@ -1,11 +1,11 @@
 package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
-
-import java.util.List;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
@@ -42,6 +42,7 @@ public class PostEndpoint {
         public static native TemplateInstance historyModal(List<PostChangeDiffService.VersionDiff> versions);
 
         public static native TemplateInstance post(PublishedPostView view,
+                                                   List<Post> seriePosts,
                                                    Links links,
                                                    LoggedUser user,
                                                    long viewCount,
@@ -186,12 +187,24 @@ public class PostEndpoint {
         PostPublication live = post.getLivePublication();
         PublishedPostView view = new PublishedPostView(post, live);
         BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
-        TemplateInstance template = Templates.post(view, loadLinks(post), loggedUser, viewCount, audience);
+        TemplateInstance template = Templates.post(view,
+                                                   seriePostsFor(post),
+                                                   loadLinks(post),
+                                                   loggedUser,
+                                                   viewCount,
+                                                   audience);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));
         }
         return response.build();
+    }
+
+    private List<Post> seriePostsFor(Post post) {
+        if (post.getSerie() == null) {
+            return Collections.emptyList();
+        }
+        return postRepository.findPublishedBySerieOrdered(post.getSerie().getId());
     }
 
     @PUT

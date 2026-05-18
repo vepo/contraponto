@@ -5,11 +5,11 @@ Read these before changing code or tests:
 | Document | Purpose |
 |----------|---------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Stack, patterns, URL map, schema, feature workflows |
-| [docs/HTMX-Events.md](docs/HTMX-Events.md) | HTMX lifecycle, custom events, scoped refresh, auth allowlist |
-| [docs/CONVENTIONS_CHECKLIST.md](docs/CONVENTIONS_CHECKLIST.md) | Gaps between docs and code; doc debt to close |
-| [docs/Application-Guidelines.md](docs/Application-Guidelines.md) | Route-level UX flows (update when routes change) |
-| [docs/UI-Guidelines.md](docs/UI-Guidelines.md) | Visual design system (UX, page flows) |
-| [docs/UI-Elements.md](docs/UI-Elements.md) | CSS class catalog and main/manage/write bundles |
+| [docs/htmx-events.md](docs/htmx-events.md) | HTMX lifecycle, custom events, scoped refresh, auth allowlist |
+| [docs/conventions-checklist.md](docs/conventions-checklist.md) | Gaps between docs and code; doc debt to close |
+| [docs/application-guidelines.md](docs/application-guidelines.md) | Route-level UX flows (update when routes change) |
+| [docs/ui-guidelines.md](docs/ui-guidelines.md) | Visual design system (UX, page flows) |
+| [docs/ui-elements.md](docs/ui-elements.md) | CSS class catalog and main/manage/write bundles |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git ↔ Jekyll sync layout |
 | [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped); list UIs → `contraponto-pagination.mdc` |
 

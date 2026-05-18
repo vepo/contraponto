@@ -5,7 +5,7 @@ package dev.vepo.contraponto.shared.htmx;
  * <p>
  * {@code LOGGED_IN_ON_BODY} / {@code LOGGED_OUT_ON_BODY} dispatch on
  * {@code body} so subscribers with {@code loggedIn from:body} can refetch their
- * own fragment — not a full-page reload. See {@code docs/HTMX-Events.md}.
+ * own fragment — not a full-page reload. See {@code docs/htmx-events.md}.
  */
 public final class HtmxTriggers {
 

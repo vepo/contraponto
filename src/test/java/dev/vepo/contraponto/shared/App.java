@@ -985,8 +985,48 @@ public class App {
             return this;
         }
 
-        public PostPage assertSeriesLinkVisible(String seriesTitle) {
-            var link = wait.until(visibilityOfElementLocated(cssSelector(".article-page__serie-link")));
+        public PostPage assertSerieNavCurrentPart(String title) {
+            var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
+            var current = nav.findElement(cssSelector(".post-serie-nav__item--current"));
+            assertThat(current.getText()).isEqualTo(title);
+            assertThat(current.findElements(By.tagName("a"))).isEmpty();
+            return this;
+        }
+
+        public PostPage assertSerieNavLinkedPart(String title) {
+            var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
+            var link = nav.findElements(cssSelector(".post-serie-nav__post-link")).stream()
+                          .filter(a -> title.equals(a.getText()))
+                          .findFirst()
+                          .orElseThrow(() -> new AssertionError("No linked serie part titled: " + title));
+            assertThat(link.getAttribute("href")).isNull();
+            assertThat(link.getAttribute("data-hx-get")).isNotBlank();
+            return this;
+        }
+
+        public PostPage assertSerieNavListsPart(String title) {
+            var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
+            assertThat(nav.getText()).contains(title);
+            return this;
+        }
+
+        public PostPage assertSerieNavPartCount(int parts) {
+            var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
+            var partCount = nav.findElement(cssSelector(".post-serie-nav__part-count"));
+            assertThat(partCount.getText()).isEqualTo("Series of " + parts + " parts");
+            return this;
+        }
+
+        public PostPage assertSerieNavPartListedBefore(String earlierTitle, String laterTitle) {
+            var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
+            String text = nav.getText();
+            assertThat(text.indexOf(earlierTitle)).isLessThan(text.indexOf(laterTitle));
+            return this;
+        }
+
+        public PostPage assertSerieNavVisible(String seriesTitle) {
+            var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
+            var link = nav.findElement(cssSelector(".post-serie-nav__serie-link"));
             assertThat(link.getText()).isEqualTo(seriesTitle);
             return this;
         }

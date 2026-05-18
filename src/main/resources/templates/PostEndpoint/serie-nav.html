@@ -1,0 +1,29 @@
+{#if serie}
+<nav class="post-serie-nav" aria-label="Series navigation">
+    <h2 class="post-serie-nav__heading">
+        <a data-hx-get="{serie.url}"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="{serie.url}"
+           class="post-serie-nav__serie-link">{serie.title}</a>
+    </h2>
+    <p class="post-serie-nav__part-count">Series of {seriePosts.size} parts</p>
+    <ol class="post-serie-nav__list">
+        {#for seriePost in seriePosts}
+            {#if seriePost.id == currentPost.id}
+            <li class="post-serie-nav__item post-serie-nav__item--current" aria-current="page">
+                {seriePost.liveTitle}
+            </li>
+            {#else}
+            <li class="post-serie-nav__item">
+                <a data-hx-get="{seriePost.url}"
+                   hx-select="main"
+                   hx-target="main"
+                   hx-push-url="{seriePost.url}"
+                   class="post-serie-nav__post-link">{seriePost.liveTitle}</a>
+            </li>
+            {/if}
+        {/for}
+    </ol>
+</nav>
+{/if}

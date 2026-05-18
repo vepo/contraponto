@@ -2,7 +2,7 @@
 
 Canonical domain language for Contraponto, a multi-blog publishing platform. Developers, reviewers, and AI agents must align code, tests, and UI copy with this document.
 
-**Related references:** [ARCHITECTURE.md](../ARCHITECTURE.md) (technical patterns), [Application-Guidelines.md](Application-Guidelines.md) (routes and flows).
+**Related references:** [ARCHITECTURE.md](../ARCHITECTURE.md) (technical patterns), [application-guidelines.md](application-guidelines.md) (routes and flows).
 
 **Maintenance:** When a change introduces or alters domain concepts, UI labels, or business rules, update this file **before** merging (see [.cursor/rules/domain-model.mdc](../.cursor/rules/domain-model.mdc)).
 
@@ -193,6 +193,8 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Post — version badge | current | Metadata and modal list (latest snapshot) |
 | Post — change history modal | Change history | Modal title |
 | Post — change details | Changes from version {n} | Expandable diff summary in modal |
+| Post — serie nav aria | Series navigation | On-post serie parts list |
+| Post — serie part count | Series of {n} parts | Subtitle under serie title on post page |
 
 Toast messages and validation errors should describe the domain action (e.g. "Cannot follow or subscribe to your own blog") in plain language consistent with the terms above.
 

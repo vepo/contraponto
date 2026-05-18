@@ -14,9 +14,23 @@ import dev.vepo.contraponto.user.User;
 class SeriePageTest {
 
     private User author;
+    private Post partTwo;
 
     @Test
-    void postPageShowsSeriesLink(App app) {
+    void postPageSerieNavListsPartsInOrder(App app) {
+        app.access()
+           .goTo(partTwo)
+           .assertSerieNavVisible("My Tutorial")
+           .assertSerieNavPartCount(2)
+           .assertSerieNavListsPart("Part One")
+           .assertSerieNavListsPart("Part Two")
+           .assertSerieNavCurrentPart("Part Two")
+           .assertSerieNavLinkedPart("Part One")
+           .assertSerieNavPartListedBefore("Part One", "Part Two");
+    }
+
+    @Test
+    void postPageShowsSerieNav(App app) {
         Post partThree = Given.post()
                               .withTitle("Part Three")
                               .withSlug("part-three")
@@ -27,7 +41,9 @@ class SeriePageTest {
                               .persist();
         app.access()
            .goTo(partThree)
-           .assertSeriesLinkVisible("Another Arc");
+           .assertSerieNavVisible("Another Arc")
+           .assertSerieNavPartCount(1)
+           .assertSerieNavCurrentPart("Part Three");
     }
 
     @Test
@@ -59,13 +75,13 @@ class SeriePageTest {
              .withAuthor(author)
              .withSerieTitle("My Tutorial")
              .persist();
-        Given.post()
-             .withTitle("Part Two")
-             .withSlug("part-two")
-             .withDescription("Second")
-             .withContent(body)
-             .withAuthor(author)
-             .withSerieTitle("My Tutorial")
-             .persist();
+        partTwo = Given.post()
+                       .withTitle("Part Two")
+                       .withSlug("part-two")
+                       .withDescription("Second")
+                       .withContent(body)
+                       .withAuthor(author)
+                       .withSerieTitle("My Tutorial")
+                       .persist();
     }
 }

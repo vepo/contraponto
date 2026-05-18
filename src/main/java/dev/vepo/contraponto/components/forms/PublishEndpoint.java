@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.components.forms;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -123,6 +125,7 @@ public class PublishEndpoint {
                     .duration(TOAST_DURATION_LONG)
                     .url(postUrl)
                     .page(PostEndpoint.Templates.post(view,
+                                                      seriePostsFor(post),
                                                       links,
                                                       loggedUser,
                                                       0L,
@@ -179,6 +182,13 @@ public class PublishEndpoint {
 
         Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
         return buildSuccessResponse(new PublishedPostView(rendered, published));
+    }
+
+    private List<Post> seriePostsFor(Post post) {
+        if (post.getSerie() == null) {
+            return Collections.emptyList();
+        }
+        return postRepository.findPublishedBySerieOrdered(post.getSerie().getId());
     }
 
     private void setFormatIfProvided(Post post, SaveDraftRequest request) {

@@ -226,7 +226,7 @@ Analytics load via HTMX (`GET /dashboard/components/analytics`) on page load and
 
 ## 16. CSS and class names
 
-Implementation details (BEM blocks, `main.css` / `manage.css` / `write.css` bundles, button modifiers) live in **[UI-Elements.md](UI-Elements.md)**. This document describes UX only.
+Implementation details (BEM blocks, `main.css` / `manage.css` / `write.css` bundles, button modifiers) live in **[ui-elements.md](ui-elements.md)**. This document describes UX only.
 
 ---
 
@@ -270,6 +270,7 @@ Compact outline buttons; active state uses primary border colour.
 
 - **Tag page** (`/tags/{slug}`): `#` prefix on title, optional description, editor “Edit tag” when permitted; post grid matches blog styling.
 - **Serie page** (`/serie/{slug}`): “Serie” label, title, post grid.
+- **Post in a serie**: after metadata, a **Series navigation** block lists all published parts (oldest first); the current part is highlighted and not linked; other parts link via HTMX.
 - **Manage tags** (`/tags/manage`): same `pages-manage` list shell as other CRUD indexes.
 
 ---
