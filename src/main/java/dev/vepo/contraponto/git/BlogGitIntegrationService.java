@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -196,7 +197,7 @@ public class BlogGitIntegrationService {
         Path cfg = workspace.resolve(JekyllLayoutConvention.CONFIG_FILENAME);
         try {
             if (Files.isReadable(cfg)) {
-                LinkedHashMap<String, Object> map = markdownCodec.readYamlObjectMap(cfg);
+                Map<String, Object> map = markdownCodec.readYamlObjectMap(cfg);
                 return JekyllLayoutConvention.fromYaml(Optional.ofNullable(map).orElseGet(LinkedHashMap::new));
             }
         } catch (IOException e) {
