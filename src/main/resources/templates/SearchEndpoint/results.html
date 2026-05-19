@@ -35,8 +35,8 @@
                     <span class="search-result__author">{post.author.name}</span>
                     <span class="search-result__date">{post.publishedAt.formatDate}</span>
                 </div>
-                {#if post.description}
-                <p class="search-result__excerpt">{post.description}</p>
+                {#if post.renderedDescription}
+                <div class="search-result__excerpt">{post.renderedDescription.raw}</div>
                 {/if}
                 {#include components/post-tags post=post /}
             </article>

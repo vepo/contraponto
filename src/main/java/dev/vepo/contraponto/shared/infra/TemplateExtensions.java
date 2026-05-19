@@ -177,15 +177,40 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String liveDescription(Post post) {
+        if (post == null) {
+            return "";
+        }
+        PostPublication live = liveOf(post);
+        if (live != null && live.getDescription() != null && !live.getDescription().isBlank()) {
+            return live.getDescription();
+        }
+        return post.getDescription() != null ? post.getDescription() : "";
+    }
+
+    @TemplateExtension
     public static String renderedDescription(Blog blog) {
         if (blog == null || blog.getDescription() == null || blog.getDescription().isBlank()) {
             return "";
         }
+        return renderMarkdownDescription(blog.getDescription());
+    }
+
+    @TemplateExtension
+    public static String renderedDescription(Post post) {
+        String description = liveDescription(post);
+        if (description.isBlank()) {
+            return "";
+        }
+        return renderMarkdownDescription(description);
+    }
+
+    private static String renderMarkdownDescription(String description) {
         var renderer = CDI.current().select(BlogDescriptionRenderer.class);
         if (!renderer.isResolvable()) {
-            return blog.getDescription();
+            return description;
         }
-        return renderer.get().render(blog.getDescription());
+        return renderer.get().render(description);
     }
 
     @TemplateExtension

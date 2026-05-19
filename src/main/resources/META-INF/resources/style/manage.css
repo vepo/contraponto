@@ -149,6 +149,15 @@
   font-size: 0.9rem;
 }
 
+.draft-card__excerpt p {
+  margin: 0;
+}
+
+.draft-card__excerpt strong {
+  font-weight: 600;
+  color: #333;
+}
+
 .draft-card__meta {
   font-size: 0.8rem;
   color: #999;

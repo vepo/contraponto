@@ -24,8 +24,8 @@
                     {post.title ?: "Untitled"}
                 </a>
             </h2>
-            {#if post.description}
-            <p class="draft-card__excerpt">{post.description}</p>
+            {#if post.renderedDescription}
+            <div class="draft-card__excerpt">{post.renderedDescription.raw}</div>
             {/if}
             <div class="draft-card__meta">
                 <span>Last edited: {post.updatedAt.formatDate}</span>

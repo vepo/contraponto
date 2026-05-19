@@ -533,6 +533,44 @@ a {
   line-height: 1.5;
 }
 
+.article-card__excerpt p {
+  margin: 0;
+}
+
+.article-card__excerpt p + p {
+  margin-top: 0.5rem;
+}
+
+.article-card__excerpt strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.article-card__excerpt a {
+  color: var(--color-primary);
+}
+
+.featured__excerpt p {
+  margin: 0;
+}
+
+.featured__excerpt strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.featured__excerpt a {
+  color: var(--color-primary);
+}
+
+.search-result__excerpt p {
+  margin: 0;
+}
+
+.search-result__excerpt strong {
+  font-weight: 600;
+}
+
 /* ========== ARTICLE META ========== */
 .article-meta {
   font-family: var(--font-sans);

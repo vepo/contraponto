@@ -141,6 +141,17 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void liveDescriptionPrefersPublicationSnapshot() {
+        var post = new Post();
+        post.setDescription("Draft **summary**");
+        var live = new PostPublication();
+        live.setDescription("Published **summary**");
+        assertThat(TemplateExtensions.liveDescription(post)).isEqualTo("Draft **summary**");
+        post.setLivePublication(live);
+        assertThat(TemplateExtensions.liveDescription(post)).isEqualTo("Published **summary**");
+    }
+
+    @Test
     void liveTagsPreferPublicationTags() {
         var tag = new Tag();
         tag.setSlug("news");

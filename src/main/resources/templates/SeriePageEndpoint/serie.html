@@ -41,7 +41,9 @@
                                     hx-target="main"
                                     hx-push-url="{post.url}">{post.liveTitle}</a>
                             </h2>
-                            <p class="article-card__excerpt">{post.description}</p>
+                            {#if post.renderedDescription}
+                            <div class="article-card__excerpt">{post.renderedDescription.raw}</div>
+                            {/if}
                             {#include components/post-tags post=post /}
                             <div class="article-meta">
                                 <a data-hx-get="/{post.author.username}"
