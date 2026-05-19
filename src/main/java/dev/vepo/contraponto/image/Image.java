@@ -50,6 +50,13 @@ public class Image {
     @Column(name = "alt_text")
     private String altText;
 
+    /**
+     * Path under the blog Git assets directory, without extension (e.g.
+     * capas/photo).
+     */
+    @Column(name = "git_asset_relative_path")
+    private String gitAssetRelativePath;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by_user_id")
     private User uploadedBy;
@@ -97,6 +104,10 @@ public class Image {
 
     public String getFilename() {
         return filename;
+    }
+
+    public String getGitAssetRelativePath() {
+        return gitAssetRelativePath;
     }
 
     public Long getId() {
@@ -150,6 +161,10 @@ public class Image {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public void setGitAssetRelativePath(String gitAssetRelativePath) {
+        this.gitAssetRelativePath = gitAssetRelativePath;
     }
 
     public void setId(Long id) {

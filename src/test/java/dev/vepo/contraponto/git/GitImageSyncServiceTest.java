@@ -118,6 +118,27 @@ class GitImageSyncServiceTest {
     }
 
     @Test
+    void prepareBodyForExportUsesStoredGitAssetPath() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-export-path");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("capas");
+        Files.createDirectories(nested);
+        String jekyllName = "nested-cover";
+        Files.write(nested.resolve(jekyllName + ".webp"), new byte[] { 7, 8, 9 });
+
+        String markdown = "![cap](assets/images/capas/" + jekyllName + ".webp)";
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention, Format.MARKDOWN);
+
+        String uuid = GitImportedAssetId.normalize(jekyllName, ".webp");
+        var imported = Given.inject(dev.vepo.contraponto.image.ImageRepository.class).findByUuid(uuid).orElseThrow();
+        assertThat(imported.getGitAssetRelativePath()).isEqualTo("capas/" + jekyllName);
+
+        String exported = gitImageSyncService.prepareBodyForExport(stored, convention);
+        assertThat(exported).contains("assets/images/capas/" + jekyllName + ".webp");
+        assertThat(exported).doesNotContain(uuid + ".webp");
+    }
+
+    @Test
     void prepareBodyForImportPreservesAsciiDocBlockTitleBeforeImage() throws IOException {
         Path workspace = Files.createTempDirectory("git-image-adoc-block-title");
         var convention = JekyllLayoutConvention.defaults();

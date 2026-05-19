@@ -1078,6 +1078,12 @@ public class App {
             return this;
         }
 
+        public PostPage assertImageLightboxCaption(String text) {
+            var caption = wait.until(visibilityOfElementLocated(cssSelector(".image-lightbox__caption")));
+            assertThat(caption.getText()).contains(text);
+            return this;
+        }
+
         public PostPage assertImageLightboxClosed() {
             await().atMost(Duration.ofSeconds(5)).until(() -> {
                 var lightbox = driver.findElement(By.id("image-lightbox"));

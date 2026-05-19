@@ -33,6 +33,34 @@ class ImageLightboxManager {
         }
     }
 
+    static isLikelyFilename(caption, src) {
+        if (!caption) {
+            return false;
+        }
+        try {
+            const urlName = decodeURIComponent(new URL(src, window.location.origin).pathname.split('/').pop() || '');
+            if (caption === urlName) {
+                return true;
+            }
+            const base = urlName.replace(/\.[^.]+$/, '');
+            if (caption === base) {
+                return true;
+            }
+        } catch (_) {
+            /* ignore malformed URL */
+        }
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\.[a-z0-9]+)?$/i.test(caption);
+    }
+
+    resolveCaption(trigger, src) {
+        const blockTitle = trigger.closest('.imageblock')?.querySelector('.title')?.textContent?.trim();
+        let caption = blockTitle || (trigger.alt || '').trim();
+        if (!blockTitle && caption && ImageLightboxManager.isLikelyFilename(caption, src)) {
+            caption = '';
+        }
+        return caption;
+    }
+
     open(trigger) {
         const src = trigger.currentSrc || trigger.src;
         if (!src) {
@@ -41,7 +69,7 @@ class ImageLightboxManager {
         this.lastTrigger = trigger;
         this.imageEl.src = src;
         this.imageEl.alt = trigger.alt || '';
-        const caption = (trigger.alt || '').trim();
+        const caption = this.resolveCaption(trigger, src);
         this.captionEl.textContent = caption;
         this.lightbox.hidden = false;
         this.lightbox.setAttribute('aria-hidden', 'false');

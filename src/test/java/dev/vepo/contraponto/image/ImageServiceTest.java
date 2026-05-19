@@ -70,7 +70,8 @@ class ImageServiceTest {
                                                     "b2c3d4e5-f6a7-8901-bcde-f12345678901",
                                                     ".svg",
                                                     svg,
-                                                    "image/png");
+                                                    "image/png",
+                                                    null);
         assertThat(imageService.getImage(image.getFilename()).contentType()).isEqualTo("image/svg+xml");
     }
 
@@ -106,7 +107,8 @@ class ImageServiceTest {
                                                     "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
                                                     ".svg",
                                                     svg,
-                                                    "image/svg+xml");
+                                                    "image/svg+xml",
+                                                    null);
         var data = imageService.getImage(image.getFilename());
         assertThat(data.contentType()).isEqualTo("image/svg+xml");
     }

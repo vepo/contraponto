@@ -17,9 +17,20 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ImageControlService {
 
+    private static String displayFilename(Image image) {
+        String gitPath = image.getGitAssetRelativePath();
+        if (gitPath != null && !gitPath.isBlank()) {
+            int dot = image.getUrl().lastIndexOf('.');
+            String ext = dot >= 0 ? image.getUrl().substring(dot) : "";
+            return gitPath + ext;
+        }
+        return image.getFilename();
+    }
+
     private final ImageRepository imageRepository;
     private final ImageDependencyRepository dependencyRepository;
     private final PostRepository postRepository;
+
     private final CustomPageRepository customPageRepository;
 
     @Inject
@@ -44,18 +55,13 @@ public class ImageControlService {
         for (ImageUsageRow usage : dependencyRepository.findUsagesForImage(image.getId(), blogId)) {
             usages.add(toUsageView(usage));
         }
-        if (image.getAltText() == null) {
-            return new ImageControlRow(image.getUuid(),
-                                       image.getUrl(),
-                                       image.getFilename(),
-                                       "",
-                                       image.getCreatedAt(),
-                                       usages);
-        }
+        String displayFilename = displayFilename(image);
+        String altText = image.getAltText() == null ? "" : image.getAltText();
         return new ImageControlRow(image.getUuid(),
                                    image.getUrl(),
                                    image.getFilename(),
-                                   image.getAltText(),
+                                   displayFilename,
+                                   altText,
                                    image.getCreatedAt(),
                                    usages);
     }

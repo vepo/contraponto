@@ -211,7 +211,7 @@ class WriteEditor {
                     body: formData
                 });
                 const img = await res.json();
-                const markdownImage = `![${file.name}](${img.url})`;
+                const markdownImage = `![](${img.url})`;
                 const start = editor.selectionStart;
                 const end = editor.selectionEnd;
                 editor.value = editor.value.substring(0, start) + markdownImage + editor.value.substring(end);
@@ -241,7 +241,7 @@ class WriteEditor {
                     body: formData
                 });
                 const img = await res.json();
-                const asciidocImage = `image::${img.url}[${file.name}]`;
+                const asciidocImage = `image::${img.url}[]`;
                 const start = editor.selectionStart;
                 const end = editor.selectionEnd;
                 editor.value = editor.value.substring(0, start) + asciidocImage + editor.value.substring(end);

@@ -55,8 +55,13 @@ public class GitImageSyncService {
         };
     }
 
-    private static String relativeAssetPath(JekyllLayoutConvention convention, String uuid, String ext) {
-        return convention.assetsRelative() + "/" + uuid + ext;
+    private static String relativeAssetPath(JekyllLayoutConvention convention, Image image) {
+        String ext = extensionFromUrl(image.getUrl());
+        String gitPath = image.getGitAssetRelativePath();
+        if (gitPath != null && !gitPath.isBlank()) {
+            return convention.assetsRelative() + "/" + gitPath + ext;
+        }
+        return convention.assetsRelative() + "/" + image.getUuid() + ext;
     }
 
     public static Pattern relativeAssetPattern(JekyllLayoutConvention convention) {
@@ -124,7 +129,7 @@ public class GitImageSyncService {
             cover = post.getLivePublication().getCover();
         }
         if (cover != null) {
-            fm.put("cover", relativeAssetPath(convention, cover.getUuid(), extensionFromUrl(cover.getUrl())));
+            fm.put("cover", relativeAssetPath(convention, cover));
         }
     }
 
@@ -137,7 +142,12 @@ public class GitImageSyncService {
             imageRepository.findByUuid(uuid).ifPresent(image -> {
                 try {
                     String ext = extensionFromUrl(image.getUrl());
-                    Path dest = assetsDir.resolve(uuid + ext);
+                    String destKey = image.getGitAssetRelativePath() != null && !image.getGitAssetRelativePath().isBlank()
+                                                                                                                           ? image.getGitAssetRelativePath()
+                                                                                                                                   + ext
+                                                                                                                           : uuid + ext;
+                    Path dest = assetsDir.resolve(destKey);
+                    Files.createDirectories(dest.getParent() != null ? dest.getParent() : assetsDir);
                     var imageData = imageService.getImage(image.getFilename());
                     Files.write(dest, imageData.data());
                     String rel = repoRoot.relativize(dest.toAbsolutePath().normalize()).toString().replace('\\', '/');
@@ -149,16 +159,27 @@ public class GitImageSyncService {
         }
     }
 
-    private void ensureImageInDb(Blog blog, String uuid, String ext, Path source) {
+    private void ensureImageInDb(Blog blog,
+                                 String uuid,
+                                 String ext,
+                                 Path source,
+                                 String gitAssetRelativePath) {
         if (!Files.exists(source)) {
             return;
         }
-        if (imageRepository.findByUuid(uuid).isPresent()) {
+        var existing = imageRepository.findByUuid(uuid);
+        if (existing.isPresent()) {
+            Image image = existing.get();
+            if ((image.getGitAssetRelativePath() == null || image.getGitAssetRelativePath().isBlank())
+                    && gitAssetRelativePath != null && !gitAssetRelativePath.isBlank()) {
+                image.setGitAssetRelativePath(gitAssetRelativePath);
+                imageRepository.update(image);
+            }
             return;
         }
         try {
             byte[] content = Files.readAllBytes(source);
-            imageService.storeImportedImage(blog, uuid, ext, content, contentTypeForExt(ext));
+            imageService.storeImportedImage(blog, uuid, ext, content, contentTypeForExt(ext), gitAssetRelativePath);
         } catch (IOException e) {
             LOG.warn("Failed to import image uuid={}", uuid, e);
         }
@@ -189,7 +210,7 @@ public class GitImageSyncService {
         }
         String basename = GitFrontMatterResolver.assetBasename(assetRelativePath);
         String uuid = GitImportedAssetId.normalize(basename, ext);
-        ensureImageInDb(blog, uuid, ext, source);
+        ensureImageInDb(blog, uuid, ext, source, assetRelativePath);
     }
 
     @Transactional
@@ -217,7 +238,7 @@ public class GitImageSyncService {
                 }
                 String assetKey = assetRel.substring(0, extDot);
                 String uuid = GitImportedAssetId.normalize(GitFrontMatterResolver.assetBasename(assetKey), fileExt);
-                ensureImageInDb(blog, uuid, fileExt, file);
+                ensureImageInDb(blog, uuid, fileExt, file, assetKey);
             }
         }
     }
@@ -250,7 +271,7 @@ public class GitImageSyncService {
         while (matcher.find()) {
             String uuid = matcher.group(1);
             String ext = extensionFromUrl(matcher.group(0));
-            matcher.appendReplacement(sb, Matcher.quoteReplacement(relativeAssetPath(convention, uuid, ext)));
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(relativeAssetPathForUuid(convention, uuid, ext)));
         }
         matcher.appendTail(sb);
         return rewriteMarkdownAlts(sb.toString());
@@ -269,6 +290,12 @@ public class GitImageSyncService {
             rewritten = rewriteAsciiDocAssetUrls(rewritten, blog, workspace, convention);
         }
         return markerService.toStoredContent(rewritten);
+    }
+
+    private String relativeAssetPathForUuid(JekyllLayoutConvention convention, String uuid, String ext) {
+        return imageRepository.findByUuid(uuid)
+                              .map(img -> relativeAssetPath(convention, img))
+                              .orElse(convention.assetsRelative() + "/" + uuid + ext);
     }
 
     private String resolveAsciiDocImageReplacement(String rawPath,

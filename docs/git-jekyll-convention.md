@@ -79,7 +79,7 @@ assets_directory: "assets/images"
 
 ```
 
-Exported post bodies reference images under `assets_directory` (e.g. `assets/images/{uuid}.png`). Alt text is stored in Contraponto and written into Markdown `![alt](path)` on export. Optional front matter `cover` uses the same path style. Legacy Jekyll asset file names longer than a UUID are mapped to a deterministic id on import (markdown paths keep the original basename; Contraponto serves them under `/api/images/{id}.ext`).
+Exported post bodies reference images under `assets_directory`. When an image was imported from Git, Contraponto stores its **Git asset path** (e.g. `capas/photo.webp` under `assets/images/`) and uses that path on export; editor-uploaded images without a Git path export as `assets/images/{uuid}.ext`. Alt text is stored in Contraponto and written into Markdown `![alt](path)` on export. Optional front matter `cover` uses the same path style. Legacy Jekyll asset file names longer than a UUID are mapped to a deterministic UUID on import; Contraponto post content still references `/api/images/{uuid}.ext`.
 
 Changes apply immediately on the next import or export after a `git pull` / scheduler run.
 

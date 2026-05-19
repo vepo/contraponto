@@ -120,7 +120,12 @@ public class ImageService {
     }
 
     @Transactional
-    public Image storeImportedImage(Blog blog, String uuid, String ext, byte[] content, String contentType) {
+    public Image storeImportedImage(Blog blog,
+                                    String uuid,
+                                    String ext,
+                                    byte[] content,
+                                    String contentType,
+                                    String gitAssetRelativePath) {
         validateImage(contentType, content.length);
         String filename = uuid + ext;
         var image = new Image(uuid,
@@ -129,6 +134,9 @@ public class ImageService {
                               (long) content.length,
                               "/api/images/" + filename,
                               blog);
+        if (gitAssetRelativePath != null && !gitAssetRelativePath.isBlank()) {
+            image.setGitAssetRelativePath(gitAssetRelativePath);
+        }
         imageRepository.save(image);
         imageContentRepository.save(image, content);
         return image;
