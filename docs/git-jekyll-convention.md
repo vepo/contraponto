@@ -40,6 +40,10 @@ On **import**, Contraponto also accepts common Jekyll keys. Native keys above ta
 | `published` | published vs draft | `false` in `_posts/` still imports as a draft |
 | `series` | serie (series title) | Same as `serie`; posts with the same title share one serie, ordered by publish date |
 
+**Description length** — post excerpts are stored in `VARCHAR(512)` on both the working copy and each **published snapshot**. On import and publish, longer `description` values are truncated; Git sync logs a warning when truncation happens. Shorten the excerpt in Git or in Contraponto to stay within 512 characters.
+
+**Jekyll datetime filenames** — files named `YYYY-MM-DD-HH-MM-SS-slug.md` are common. Contraponto only parses `YYYY-MM-DD` from the filename; set `slug` or `permalink` in front matter so the URL slug is correct.
+
 **Format** — front matter `format` if valid; otherwise inferred from the file extension (`.md` → `MARKDOWN`, `.adoc` / `.asciidoc` → `ASCIIDOC`).
 
 **Assets** — image paths may include subdirectories under `assets_directory` (e.g. `assets/images/capas/photo.webp`).

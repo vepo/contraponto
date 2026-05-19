@@ -19,6 +19,15 @@ public record GitSyncRunEntryDraft(GitSyncPhase phase,
                                         GitSyncEntryOutcome.SKIPPED, message, remediation, null);
     }
 
+    public static GitSyncRunEntryDraft warnPost(GitSyncPhase phase,
+                                                Long postId,
+                                                String markdownPath,
+                                                String message,
+                                                String remediation) {
+        return new GitSyncRunEntryDraft(phase, GitSyncEntryLevel.WARN, postId, markdownPath,
+                                        GitSyncEntryOutcome.SUCCESS, message, remediation, null);
+    }
+
     public static GitSyncRunEntryDraft error(GitSyncPhase phase,
                                              String message,
                                              String remediation,

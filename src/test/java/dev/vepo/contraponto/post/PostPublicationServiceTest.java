@@ -52,6 +52,31 @@ class PostPublicationServiceTest {
     }
 
     @Test
+    void publish_truncates_long_description_on_snapshot() {
+        User author = Given.user()
+                           .withUsername("pubauthor3")
+                           .withEmail("pubauthor3@example.com")
+                           .withPassword("pw123456789")
+                           .withName("Pub Author Three")
+                           .persist();
+        String longDescription = "z".repeat(600);
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Long desc")
+                        .withDescription(longDescription)
+                        .withContent("Body")
+                        .withSlug("long-desc-test")
+                        .withPublished(false)
+                        .persist();
+
+        publicationService.publish(post);
+
+        assertThat(post.getDescription()).hasSize(PostPublicationDescriptions.MAX_LENGTH);
+        assertThat(post.getLivePublication().getDescription()).isEqualTo(post.getDescription());
+        assertThat(publicationService.hasUnpublishedChanges(post)).isFalse();
+    }
+
+    @Test
     void second_publish_creates_version_two_and_skips_identical_republish() {
         User author = Given.user()
                            .withUsername("pubauthor2")

@@ -80,6 +80,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Post** | A piece of content belonging to one blog: title, slug (unique per author), description, body, format, cover, tags, optional serie, published flag, featured flag, timestamps. Working copy for the author. | `Post` |
+| **Post description** | Optional short excerpt on the working copy (`Post.description`); capped at **512 characters** in storage. Shown on post cards and metadata when published. | `Post.description`, `PostPublicationDescriptions` |
+| **Published snapshot description** | Excerpt copied into each `PostPublication` when publishing; same **512-character** cap as the working copy. Git import truncates longer Jekyll excerpts and may log a sync warning. | `PostPublication.description` |
 | **Draft** | Post with `published = false`; visible only to the author (and editors where applicable). | Library tab: "Drafts" |
 | **Published post** | Post with `published = true`; visible to readers (subject to blog active). | Library tab: "Published" |
 | **Slug** | URL-safe identifier for a post, blog, tag, serie, or custom page. | Field on entities |

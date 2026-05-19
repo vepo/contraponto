@@ -278,7 +278,7 @@ public class Post {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = PostPublicationDescriptions.truncateForPublication(description);
     }
 
     public void setFeatured(boolean featured) {

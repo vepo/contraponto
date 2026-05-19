@@ -96,7 +96,15 @@
                                     {#if entry.markdownPath}<br/><code>{entry.markdownPath}</code>{/if}
                                     {#if entry.post}<br/>Post: {entry.post.slug}{/if}
                                 </td>
-                                <td>{entry.remediation ?: '—'}</td>
+                                <td>
+                                    {entry.remediation ?: '—'}
+                                    {#if entry.outcome.name() == 'FAILED' && entry.technicalDetail}
+                                    <details class="git-sync-history__technical">
+                                        <summary>Technical detail</summary>
+                                        <pre class="git-sync-history__error-detail">{entry.technicalDetail}</pre>
+                                    </details>
+                                    {/if}
+                                </td>
                             </tr>
                             {/for}
                         </tbody>

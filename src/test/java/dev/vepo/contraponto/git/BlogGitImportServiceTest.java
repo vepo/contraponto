@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.git.BlogGitImportService.SourceKind;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublicationDescriptions;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
@@ -236,6 +237,42 @@ class BlogGitImportServiceTest {
         assertThat(found).isPresent();
         assertThat(found.get().isPublished()).isFalse();
         assertThat(found.get().getPublishedAt()).isNull();
+    }
+
+    @Test
+    void ingestPublishedPostWithLongJekyllDescriptionTruncatesPublicationSnapshot() throws Exception {
+        Blog blog = baselineUser().getDefaultBlog();
+        String longDescription =
+                """
+                Esse é o quarto post da série **Conversas sobre Arquitetura**. Nele, exploramos a diferença entre padrões e estilos arquiteturais, mostrando como cada um se aplica na construção de sistemas. Enquanto os padrões, como MVC e Hexagonal, focam em resolver problemas específicos de organização interna, os estilos, como REST e Event-Driven, definem como os componentes interagem entre si para alcançar atributos de qualidade. Descubra como combinar essas abordagens pode resultar em soluções mais flexíveis, testáveis e alinhadas aos objetivos do negócio.
+                """.strip();
+        assertThat(longDescription.length()).isGreaterThan(PostPublicationDescriptions.MAX_LENGTH);
+
+        Path dated = ingestDir().resolve("2025-11-05-08-33-00-padroes-e-estilos-arquiteturais.md");
+        String frontMatter = """
+                             ---
+                             title: Padrões e Estilos Arquiteturais
+                             published: true
+                             description: |
+                               %s
+                             permalink: /posts/padroes-e-estilos-arquiteturais
+                             series: Conversas sobre Arquitetura
+                             publish_date: 2025-11-05 08:33:00 +0300
+                             ---
+                             """.formatted(longDescription.replace("\n", "\n  "));
+        Files.writeString(dated,
+                          frontMatter + "\n\n{% youtube Ub-RUQ_aQ8Q %}\n\nBody\n",
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), dated, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "padroes-e-estilos-arquiteturais");
+        assertThat(found).isPresent();
+        Post post = found.get();
+        assertThat(post.isPublished()).isTrue();
+        assertThat(post.getDescription()).hasSize(PostPublicationDescriptions.MAX_LENGTH);
+        assertThat(post.getLivePublication()).isNotNull();
+        assertThat(post.getLivePublication().getDescription()).isEqualTo(post.getDescription());
     }
 
     @Test

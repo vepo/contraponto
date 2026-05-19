@@ -23,6 +23,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublicationDescriptions;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
@@ -59,6 +60,10 @@ public class BlogGitImportService {
 
     private final PostImageDependencyService postImageDependencyService;
 
+    private final GitSyncRunService gitSyncRunService;
+
+    private final GitImportFailureMapper gitImportFailureMapper;
+
     @Inject
     public BlogGitImportService(PostRepository postRepository,
                                 PostPublicationService publicationService,
@@ -69,7 +74,9 @@ public class BlogGitImportService {
                                 PostGitMarkdownCodec markdownCodec,
                                 GitImageSyncService gitImageSyncService,
                                 ImageRepository imageRepository,
-                                PostImageDependencyService postImageDependencyService) {
+                                PostImageDependencyService postImageDependencyService,
+                                GitSyncRunService gitSyncRunService,
+                                GitImportFailureMapper gitImportFailureMapper) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.tagService = tagService;
@@ -80,6 +87,8 @@ public class BlogGitImportService {
         this.gitImageSyncService = gitImageSyncService;
         this.imageRepository = imageRepository;
         this.postImageDependencyService = postImageDependencyService;
+        this.gitSyncRunService = gitSyncRunService;
+        this.gitImportFailureMapper = gitImportFailureMapper;
     }
 
     @Transactional(value = TxType.REQUIRES_NEW)
@@ -113,14 +122,15 @@ public class BlogGitImportService {
 
             IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog, slug);
             applyPostFields(draft, doc, blog, workspace, convention, markdownPath);
-            finalizeIngestion(draft, doc);
+            finalizeIngestion(draft, doc, pathLabel);
             return GitSyncPostResult.success(draft.post().getId(), pathLabel,
                                              "Imported post \"" + draft.slug() + "\".");
         } catch (Exception ex) {
             LOG.warn("Import failed markdown={}: {}", markdownPath, ex.toString());
+            GitImportFailureMapper.ClassifiedImportFailure classified = gitImportFailureMapper.classify(ex);
             return GitSyncPostResult.failed(pathLabel,
-                                            "Could not import this post from Git.",
-                                            "Check YAML front matter, slug, and contraponto_post_id. See the layout convention.",
+                                            classified.message(),
+                                            classified.remediation(),
                                             ex.toString());
         }
     }
@@ -166,7 +176,7 @@ public class BlogGitImportService {
 
         post.setSlug(draft.slug());
         post.setTitle(draft.title());
-        post.setDescription(description);
+        post.setDescription(PostPublicationDescriptions.truncateForPublication(description));
         post.setContent(body);
         applyCoverFromFrontMatter(post, coverPath, convention, workspace, blog);
         post.setFormat(format);
@@ -203,7 +213,9 @@ public class BlogGitImportService {
         }
     }
 
-    private void finalizeIngestion(IngestedPostDraft draft, PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc)
+    private void finalizeIngestion(IngestedPostDraft draft,
+                                   PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
+                                   String markdownPath)
             throws IOException {
         Post post = draft.post();
         if (!draft.existedBefore()) {
@@ -215,6 +227,18 @@ public class BlogGitImportService {
             publicationService.publish(post);
         }
         entityManager.flush();
+        String rawDescription = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");
+        if (draft.published() && PostPublicationDescriptions.exceedsPublicationLimit(rawDescription)) {
+            gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.warnPost(
+                                                                               GitSyncPhase.POST_IMPORT,
+                                                                               post.getId(),
+                                                                               markdownPath,
+                                                                               "Description was longer than " + PostPublicationDescriptions.MAX_LENGTH
+                                                                                       + " characters; the excerpt was truncated for storage and publishing.",
+                                                                               "Shorten the excerpt in Git or in Contraponto to fit the "
+                                                                                       + PostPublicationDescriptions.MAX_LENGTH
+                                                                                       + "-character limit."));
+        }
     }
 
     private record IngestedPostDraft(Post post,

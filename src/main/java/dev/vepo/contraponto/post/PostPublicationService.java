@@ -60,7 +60,8 @@ public class PostPublicationService {
         if (!Objects.equals(nullToEmpty(post.getTitle()), nullToEmpty(live.getTitle()))) {
             return false;
         }
-        if (!Objects.equals(nullToEmpty(post.getDescription()), nullToEmpty(live.getDescription()))) {
+        if (!Objects.equals(PostPublicationDescriptions.truncateForPublication(post.getDescription()),
+                            nullToEmpty(live.getDescription()))) {
             return false;
         }
         if (!Objects.equals(nullToEmpty(post.getContent()), nullToEmpty(live.getContent()))) {
@@ -110,7 +111,7 @@ public class PostPublicationService {
         publication.setPost(post);
         publication.setSlug(post.getSlug());
         publication.setTitle(post.getTitle());
-        publication.setDescription(post.getDescription());
+        publication.setDescription(PostPublicationDescriptions.truncateForPublication(post.getDescription()));
         publication.setContent(post.getContent());
         publication.setFormat(post.getFormat());
         publication.setCover(post.getCover());
