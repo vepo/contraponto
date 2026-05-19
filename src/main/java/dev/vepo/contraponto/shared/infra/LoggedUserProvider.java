@@ -1,8 +1,5 @@
 package dev.vepo.contraponto.shared.infra;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,7 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionStore;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.user.UserRepository;
 import io.vertx.core.http.HttpServerRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
@@ -24,21 +23,26 @@ public class LoggedUserProvider {
     private static final Logger logger = LoggerFactory.getLogger(LoggedUserProvider.class);
 
     private final HttpServerRequest request;
-    private final Map<String, User> sessions;
+    private final SessionStore sessionStore;
+    private final UserRepository userRepository;
 
     @Inject
-    public LoggedUserProvider(@Context HttpServerRequest request) {
+    public LoggedUserProvider(@Context HttpServerRequest request,
+                              SessionStore sessionStore,
+                              UserRepository userRepository) {
         this.request = request;
-        this.sessions = Collections.synchronizedMap(new HashMap<>());
+        this.sessionStore = sessionStore;
+        this.userRepository = userRepository;
     }
 
     public Optional<LoggedUser> find(String sessionId) {
-        return Optional.ofNullable(this.sessions.get(sessionId))
-                       .map(user -> new LoggedUser(user, sessionId));
+        return sessionStore.findUserId(sessionId)
+                           .flatMap(userRepository::findById)
+                           .map(user -> new LoggedUser(user, sessionId));
     }
 
     public void invalidateAllSessionsForUser(long userId) {
-        sessions.entrySet().removeIf(entry -> entry.getValue().getId().equals(userId));
+        sessionStore.removeAllForUser(userId);
     }
 
     @Produces
@@ -47,10 +51,10 @@ public class LoggedUserProvider {
         var cookie = request.getCookie(LoginEndpoint.SESSION_COOKIE_NAME);
         if (Objects.nonNull(cookie)) {
             var sessionId = cookie.getValue();
-            var user = sessions.get(sessionId);
-            if (Objects.nonNull(user)) {
-                logger.info("Logged cookie={} user={}", sessionId, user);
-                return new LoggedUser(user, sessionId);
+            var loggedUser = find(sessionId);
+            if (loggedUser.isPresent()) {
+                logger.info("Logged cookie={} user={}", sessionId, loggedUser.get());
+                return loggedUser.get();
             }
         }
 
@@ -59,15 +63,15 @@ public class LoggedUserProvider {
 
     public LoggedUser login(User user) {
         var sessionId = UUID.randomUUID().toString();
-        this.sessions.put(sessionId, user);
+        sessionStore.put(sessionId, user.getId());
         return new LoggedUser(user, sessionId);
     }
 
     public void logout(LoggedUser user) {
-        this.sessions.remove(user.getSessionId());
+        sessionStore.remove(user.getSessionId());
     }
 
     public void update(String sessionId, User user) {
-        this.sessions.put(sessionId, user);
+        sessionStore.put(sessionId, user.getId());
     }
 }

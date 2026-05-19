@@ -11,6 +11,7 @@ import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
@@ -36,6 +37,7 @@ public class CustomPageSaveEndpoint {
     private final CustomPageImageDependencyService customPageImageDependencyService;
     private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
+    private final Event<CustomPageChangedEvent> customPageChangedEvents;
 
     @Inject
     public CustomPageSaveEndpoint(CustomPageRepository customPageRepository,
@@ -43,13 +45,15 @@ public class CustomPageSaveEndpoint {
                                   BlogRepository blogRepository,
                                   CustomPageImageDependencyService customPageImageDependencyService,
                                   NavigationHubService navigationHubService,
-                                  LoggedUser loggedUser) {
+                                  LoggedUser loggedUser,
+                                  Event<CustomPageChangedEvent> customPageChangedEvents) {
         this.customPageRepository = customPageRepository;
         this.customPageAccess = customPageAccess;
         this.blogRepository = blogRepository;
         this.customPageImageDependencyService = customPageImageDependencyService;
         this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
+        this.customPageChangedEvents = customPageChangedEvents;
     }
 
     private boolean applyScope(CustomPage page, CustomPageForm form, Long blogIdForSlug) {
@@ -90,7 +94,9 @@ public class CustomPageSaveEndpoint {
             return forbidden();
         }
 
+        long pageId = page.getId();
         customPageRepository.delete(id);
+        customPageChangedEvents.fire(new CustomPageChangedEvent(pageId));
 
         return Toast.ok()
                     .message("Page deleted.")
@@ -169,6 +175,7 @@ public class CustomPageSaveEndpoint {
 
         customPageRepository.save(page);
         customPageImageDependencyService.syncDependencies(page);
+        customPageChangedEvents.fire(new CustomPageChangedEvent(page.getId()));
         logger.info("Saved custom page id={} slug={}", page.getId(), page.getSlug());
 
         return Toast.ok()

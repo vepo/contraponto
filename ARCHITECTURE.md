@@ -39,7 +39,7 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 
 Use `PostEndpoint.extractUrl(post)` and `CustomPagePaths.publicUrl(page)` in code — do not duplicate path logic.
 
-`CustomPageFilter` serves published pages from `CustomPageCache` (no DB hit). Internal preview routes live under `/_custom_page/...`.
+`CustomPageFilter` rewrites public custom-page URLs to `/_custom_page/...`; `CustomPageEndpoint` loads published pages via `CustomPageCache` (in-memory, invalidated on `CustomPageChangedEvent`).
 
 ## 4. Post publications (versioning)
 
@@ -64,7 +64,7 @@ Republishing increments version and triggers notifications again.
 - **Subscribe** — `POST /forms/blogs/{blogId}/subscribe` (email on publish, deduped via `tb_email_notification_log`).
 - **`PostPublishedNotificationObserver`** — on `PostPublishedEvent`, notifies followers and emails subscribers.
 - **In-app** — `GET /notifications`, badge at `/components/notifications/badge`, mark read via `/forms/notifications/read`.
-- **Deferred follow after login** — session stores pending blog id; `LoginEndpoint` completes follow on success.
+- **Follow after login** — guest opens login modal from Follow; after login, client clicks Follow again (no server-side pending intent).
 
 ## 7. Git / Jekyll sync
 
@@ -105,7 +105,7 @@ Use when logic spans entities or fires events: `PostPublicationService`, `TagSer
 
 | Event | Typical consumer |
 |-------|------------------|
-| `PostPublishedEvent` | `PostPublishedNotificationObserver` |
+| `PostPublishedEvent` | `PostPublishedNotificationObserver`; `RssFeedCacheInvalidator` (clears `rss-feeds` cache) |
 | `PostGitSyncRequestedEvent` | Git export |
 | `CustomPageChangedEvent` | `CustomPageCache` refresh |
 
@@ -236,12 +236,31 @@ class ExampleTest {
 - **Git tests** — `%test.contraponto.git.poll-enabled=false` (scheduler off in tests).
 - **Own blog** — cannot follow/subscribe to your own blog (`BlogAudienceService`).
 
-## 19. Configuration (selected)
+## 19. Caching and session storage
+
+### Deployment model
+
+| Deployment | Auth sessions (`__session`) | Custom pages | RSS XML |
+|------------|----------------------------|--------------|---------|
+| **Single instance** (default dev/small prod) | `app.session.store=memory` — JVM map in `InMemorySessionStore` | `CustomPageCache` per process | Caffeine via `quarkus-cache` (`rss-feeds`) |
+| **Multiple instances** | `app.session.store=redis` + `quarkus.redis.hosts` — shared `RedisSessionStore` | Same (per-instance cache; invalidate on all nodes via DB read on miss, or accept brief staleness) | Shared invalidation still per-node Caffeine; TTL 5m bounds staleness |
+
+Login sessions store **user id only** (`SessionStore`); `LoggedUserProvider` reloads `User` from PostgreSQL on each request so role/profile changes apply without stale entities.
+
+Anonymous **view** / **reading** sessions remain in PostgreSQL (`__view_session` cookie → `tb_views`, `tb_reading_sessions`) — not Redis.
+
+### Configuration (selected)
 
 ```properties
 quarkus.datasource.db-kind=postgresql
 quarkus.flyway.migrate-at-start=true
 %dev.quarkus.flyway.clean-at-start=true
+app.session.store=memory
+app.session.ttl-seconds=2592000
+# Multi-instance production example:
+# app.session.store=redis
+# quarkus.redis.hosts=redis://redis:6379
+quarkus.cache.caffeine."rss-feeds".expire-after-write=5M
 contraponto.git.poll-enabled=true
 contraponto.git.poll-interval=2m
 %dev.quarkus.mailer.mock=true

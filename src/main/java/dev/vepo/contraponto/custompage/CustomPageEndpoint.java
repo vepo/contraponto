@@ -29,14 +29,17 @@ public class CustomPageEndpoint {
         }
     }
 
+    private final CustomPageCache customPageCache;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public CustomPageEndpoint(CustomPageRepository customPageRepository,
+    public CustomPageEndpoint(CustomPageCache customPageCache,
+                              CustomPageRepository customPageRepository,
                               LoggedUser loggedUser,
                               BreadcrumbService breadcrumbService) {
+        this.customPageCache = customPageCache;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
@@ -49,8 +52,8 @@ public class CustomPageEndpoint {
     public TemplateInstance blogPage(@PathParam("username") String username,
                                      @PathParam("blogSlug") String blogSlug,
                                      @PathParam("slug") String slug) {
-        var page = customPageRepository.findByUsernameBlogSlugAndSlug(username, blogSlug, slug)
-                                       .orElseThrow(NotFoundException::new);
+        var page = customPageCache.findByUsernameBlogSlugAndSlug(username, blogSlug, slug)
+                                  .orElseThrow(NotFoundException::new);
         return Templates.page(page,
                               customPageRepository.loadLinks(CustomPagePaths.linksBlogId(page)),
                               loggedUser,
@@ -62,7 +65,7 @@ public class CustomPageEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance globalPage(@PathParam("slug") String slug) {
-        var page = customPageRepository.findGlobalBySlug(slug).orElseThrow(NotFoundException::new);
+        var page = customPageCache.findGlobalBySlug(slug).orElseThrow(NotFoundException::new);
         return Templates.page(page, customPageRepository.loadLinks(), loggedUser, breadcrumbService.forCustomPage(page));
     }
 
@@ -71,7 +74,7 @@ public class CustomPageEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance userPage(@PathParam("username") String username, @PathParam("slug") String slug) {
-        var page = customPageRepository.findByUsernameAndSlug(username, slug).orElseThrow(NotFoundException::new);
+        var page = customPageCache.findByUsernameAndSlug(username, slug).orElseThrow(NotFoundException::new);
         return Templates.page(page,
                               customPageRepository.loadLinks(CustomPagePaths.linksBlogId(page)),
                               loggedUser,

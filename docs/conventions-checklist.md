@@ -55,7 +55,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 - [ ] **Slug rules** — central list: post, blog, tag (`TagSlug`), custom page (`CustomPagePaths`), reserved segments.
 - [ ] **i18n** — not implemented; note if planned.
 - [ ] **Security headers / CSRF** — document current approach (session cookie, HTMX same-origin).
-- [ ] **Performance** — guidelines for `JOIN FETCH`, cache (`CustomPageCache`), feed query limits.
+- [x] **Performance** — `CustomPageCache`, `RssFeedService` (`rss-feeds` cache); see ARCHITECTURE §19.
 - [ ] **Jacoco / coverage** — no documented threshold or exclusions.
 
 ## Cursor / agent setup

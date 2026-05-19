@@ -8,7 +8,7 @@ import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
-import dev.vepo.contraponto.rss.RssFeedRenderer;
+import dev.vepo.contraponto.rss.RssFeedService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -48,8 +48,6 @@ public class TagPageEndpoint {
 
     private static final String TAG_NOT_FOUND_PREFIX = "Tag not found: ";
 
-    private static final int FEED_LIMIT = 50;
-
     public static String url(Tag tag) {
         return "/tags/%s".formatted(tag.getSlug());
     }
@@ -59,18 +57,21 @@ public class TagPageEndpoint {
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
+    private final RssFeedService rssFeedService;
 
     @Inject
     public TagPageEndpoint(TagRepository tagRepository,
                            PostRepository postRepository,
                            CustomPageRepository customPageRepository,
                            LoggedUser loggedUser,
-                           BreadcrumbService breadcrumbService) {
+                           BreadcrumbService breadcrumbService,
+                           RssFeedService rssFeedService) {
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.rssFeedService = rssFeedService;
     }
 
     @GET
@@ -119,13 +120,7 @@ public class TagPageEndpoint {
     @Operation(hidden = true)
     @Produces("application/rss+xml;charset=UTF-8")
     public Response tagFeed(@PathParam("slug") String slug, @Context UriInfo uriInfo) {
-        Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
-        var posts = postRepository.findPublishedFeedByTagSlug(tag.getSlug(), FEED_LIMIT);
-        String desc = tag.getDescription();
-        if (desc == null || desc.isBlank()) {
-            desc = "Posts tagged %s".formatted(tag.getName());
-        }
-        var channel = new RssFeedRenderer.Channel(tag.getName(), url(tag), desc);
-        return Response.ok(RssFeedRenderer.render(channel, posts, uriInfo.getBaseUri())).build();
+        tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
+        return Response.ok(rssFeedService.tagFeed(slug, uriInfo.getBaseUri().toString())).build();
     }
 }

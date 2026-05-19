@@ -45,7 +45,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **User** | Registered account (`tb_users`): username, email, display name, password, roles, active flag; optional **profile picture** and **default blog banner**. | `User` |
 | **Author** | User who owns at least one blog and writes posts. Implied by blog ownership, not a separate role. | `Post.getAuthor()` → blog owner |
 | **Reader** | Any user or guest consuming published content. | — |
-| **Session** | Authenticated browser state (`__session` cookie). | `LoggedUser` |
+| **Session** | Authenticated browser state (`__session` cookie → `SessionStore` → user id, then `User` from DB). | `LoggedUser`, `SessionStore` |
+| **Session store** | Backing store for login sessions: in-memory (single instance) or Redis (multi-instance). | `SessionStore`, `SessionStoreProducer` |
 | **Password recovery** | Self-service flow to reset a forgotten password via email link. | `PasswordRecoveryEndpoint` |
 | **Password reset token** | Single-use, time-limited secret sent by email; stored hashed in `tb_user_account_tokens`. | `UserAccountToken` |
 | **Pending email** | New email address awaiting verification; login and notifications use the confirmed email until verified. | `User.pendingEmail` |
@@ -110,7 +111,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Global custom page** | Page not tied to a blog (`blog = null`); URL `GET /page/{slug}`. | `PageType.GLOBAL` |
 | **Blog custom page** | Page scoped to a blog; URL includes owner username and `/page/` segment. | `CustomPagePaths.publicUrl` |
 | **Page placement** | Where navigation surfaces the page: **Footer**, **Sidebar**, or **None** (direct URL only). | `PagePlacement` |
-| **Custom page cache** | In-memory published pages served by `CustomPageFilter`; invalidated on `CustomPageChangedEvent`. | `CustomPageCache` |
+| **Custom page cache** | In-memory published pages read by `CustomPageEndpoint`; invalidated on `CustomPageChangedEvent`. | `CustomPageCache` |
+| **RSS feed cache** | Caffeine cache of rendered RSS XML; invalidated on `PostPublishedEvent`. | `RssFeedService`, `rss-feeds` |
 
 ### Audience & notifications
 
@@ -123,7 +125,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Subscribed** | Active email subscription (button label when on). | UI: "Subscribed" |
 | **Notification** | In-app item for a recipient: type, blog, optional post/publication/actor/comment, read flag. | `Notification` |
 | **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`. | `NotificationType` |
-| **Deferred follow** | Guest clicks Follow; after login, pending blog id completes the follow. | `LoginEndpoint` session |
+| **Follow after login** | Guest clicks Follow, signs in via modal, then clicks Follow again. | Post page / audience widget |
 | **Subscriptions page** | Authenticated list of blogs the user follows/subscribes to. | `SubscriptionEndpoint` |
 
 ### Comments
