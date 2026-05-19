@@ -11,7 +11,9 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class ContentRenderTagProcessor {
 
-    private static final Pattern RENDER_TAG = Pattern.compile("\\{%\\s*([a-zA-Z][a-zA-Z0-9]*)\\s+([^%]+?)\\s*%\\}");
+    /** Possessive quantifiers avoid catastrophic backtracking on malformed tags. */
+    private static final Pattern RENDER_TAG =
+            Pattern.compile("\\{%\\s*+([a-zA-Z][a-zA-Z0-9]*)\\s++([^%]++)\\s*+%\\}");
 
     private final ContentRenderPluginRegistry registry;
 
