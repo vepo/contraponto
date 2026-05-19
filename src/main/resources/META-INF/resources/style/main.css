@@ -453,6 +453,13 @@ a {
   color: var(--color-primary);
 }
 
+.icon-btn img,
+.icon-btn svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
 .icon-btn span {
   font-size: 14px;
   font-weight: 500;
