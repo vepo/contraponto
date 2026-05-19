@@ -7,7 +7,8 @@
         {#include components/header /}
         <main class="article-page" id="main-content">
             <div class="container-narrow">
-                {#include components/page-top trail=breadcrumb}
+                {#include components/breadcrumb trail=breadcrumb /}
+                {#include components/page-top}
                 {#actions}
                     {#if user.isAuthenticated}
                         {#if user.id == view.post.author.id}

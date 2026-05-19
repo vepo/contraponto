@@ -52,10 +52,40 @@ class GitImageSyncServiceTest {
     }
 
     @Test
+    void importAssetsFromWorkspaceMapsLongJekyllFilenames() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-long-name");
+        var convention = JekyllLayoutConvention.defaults();
+        Path assetsDir = convention.resolveAssets(workspace);
+        Files.createDirectories(assetsDir);
+        String jekyllName = "kafka-distributed-systems-architecture-diagram";
+        Files.write(assetsDir.resolve(jekyllName + ".png"), new byte[] { 9, 8, 7 });
+
+        gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
+
+        String uuid = GitImportedAssetId.normalize(jekyllName, ".png");
+        assertThat(Given.inject(dev.vepo.contraponto.image.ImageRepository.class).findByUuid(uuid)).isPresent();
+    }
+
+    @Test
     void importAssetsFromWorkspaceSkipsMissingDirectory() throws IOException {
         Path workspace = Files.createTempDirectory("git-image-no-assets");
         gitImageSyncService.importAssetsFromWorkspace(blog, workspace, JekyllLayoutConvention.defaults());
         assertThat(Given.inject(dev.vepo.contraponto.image.ImageRepository.class).findByUuid(UUID)).isEmpty();
+    }
+
+    @Test
+    void importAssetsFromWorkspaceWalksNestedDirectories() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-nested-walk");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("capas");
+        Files.createDirectories(nested);
+        String jekyllName = "walk-nested";
+        Files.write(nested.resolve(jekyllName + ".png"), new byte[] { 3, 4 });
+
+        gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
+
+        String uuid = GitImportedAssetId.normalize(jekyllName, ".png");
+        assertThat(Given.inject(dev.vepo.contraponto.image.ImageRepository.class).findByUuid(uuid)).isPresent();
     }
 
     @Test
@@ -92,6 +122,38 @@ class GitImageSyncServiceTest {
         Path workspace = Files.createTempDirectory("git-image-null");
         assertThat(gitImageSyncService.prepareBodyForImport(null, blog, workspace, JekyllLayoutConvention.defaults()))
                                                                                                                       .isEmpty();
+    }
+
+    @Test
+    void prepareBodyForImportRewritesLongJekyllAssetPaths() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-long-md");
+        var convention = JekyllLayoutConvention.defaults();
+        Path assetsDir = convention.resolveAssets(workspace);
+        Files.createDirectories(assetsDir);
+        String jekyllName = "legacy-screenshot-from-vepo-github-io";
+        Files.write(assetsDir.resolve(jekyllName + ".jpg"), new byte[] { 4, 5, 6 });
+
+        String markdown = "![diagram](assets/images/" + jekyllName + ".jpg)";
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention);
+
+        String uuid = GitImportedAssetId.normalize(jekyllName, ".jpg");
+        assertThat(stored).contains("/api/images/" + uuid + ".jpg");
+    }
+
+    @Test
+    void prepareBodyForImportRewritesNestedAssetPaths() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-nested");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("capas");
+        Files.createDirectories(nested);
+        String jekyllName = "nested-cover";
+        Files.write(nested.resolve(jekyllName + ".webp"), new byte[] { 7, 8, 9 });
+
+        String markdown = "![cap](assets/images/capas/" + jekyllName + ".webp)";
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention);
+
+        String uuid = GitImportedAssetId.normalize(jekyllName, ".webp");
+        assertThat(stored).contains("/api/images/" + uuid + ".webp");
     }
 
     @Test

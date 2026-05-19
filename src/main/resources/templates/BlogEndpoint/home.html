@@ -13,9 +13,9 @@
                 {#if mainBlog.bannerUrl}
                 <img src="{mainBlog.bannerUrl}" alt="" class="user-blog-header__banner"/>
                 {/if}
-                <h1 class="user-blog__name">{author.name}</h1>
+                <h1 class="user-blog__name">{#if mainBlog.main}{author.name}{#else}{mainBlog.name}{/if}</h1>
                 {#if mainBlog.description}
-                <p class="user-blog__bio">{mainBlog.description}</p>
+                <div class="user-blog__bio">{mainBlog.renderedDescription.raw}</div>
                 {/if}
                 {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
             </header>
@@ -26,7 +26,7 @@
 
             <div class="container">
                 <div class="posts-grid">
-                    {#include BlogEndpoint/grid ignoreFirst=true username=author.username /}
+                    {#include BlogEndpoint/grid ignoreFirst=true username=author.username blog=mainBlog /}
                 </div>
             </div>
         </main>

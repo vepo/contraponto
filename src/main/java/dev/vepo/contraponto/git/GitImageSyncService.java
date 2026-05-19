@@ -49,13 +49,20 @@ public class GitImageSyncService {
         return dot >= 0 ? url.substring(dot) : ".png";
     }
 
+    private static boolean isImageExtension(String ext) {
+        return switch (ext.toLowerCase(Locale.ROOT)) {
+            case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg" -> true;
+            default -> false;
+        };
+    }
+
     private static String relativeAssetPath(JekyllLayoutConvention convention, String uuid, String ext) {
         return convention.assetsRelative() + "/" + uuid + ext;
     }
 
     public static Pattern relativeAssetPattern(JekyllLayoutConvention convention) {
         String dir = Pattern.quote(convention.assetsRelative());
-        return Pattern.compile("(?:\\.\\./)*" + dir + "/([0-9a-fA-F\\-]{36})(\\.[a-zA-Z0-9]+)");
+        return Pattern.compile("(?:\\.\\./)*" + dir + "/((?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+)(\\.[A-Za-z0-9]{2,8})");
     }
 
     private static String uuidFromUrl(String url) {
@@ -140,21 +147,36 @@ public class GitImageSyncService {
         copyImagesToRepo(git, workspace, convention, uuids);
     }
 
+    void importAssetFromRelativePath(Blog blog,
+                                     Path workspace,
+                                     JekyllLayoutConvention convention,
+                                     String assetRelativePath,
+                                     String ext) {
+        Path source = convention.resolveAssets(workspace).resolve(assetRelativePath + ext);
+        String basename = GitFrontMatterResolver.assetBasename(assetRelativePath);
+        String uuid = GitImportedAssetId.normalize(basename, ext);
+        ensureImageInDb(blog, uuid, ext, source);
+    }
+
     @Transactional
     public void importAssetsFromWorkspace(Blog blog, Path workspace, JekyllLayoutConvention convention) throws IOException {
         Path assetsDir = convention.resolveAssets(workspace);
         if (!Files.isDirectory(assetsDir)) {
             return;
         }
-        try (Stream<Path> files = Files.list(assetsDir)) {
+        try (Stream<Path> files = Files.walk(assetsDir)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
                 String name = file.getFileName().toString();
                 int dot = name.lastIndexOf('.');
                 if (dot <= 0) {
                     continue;
                 }
-                String uuid = name.substring(0, dot);
                 String ext = name.substring(dot);
+                if (!isImageExtension(ext)) {
+                    continue;
+                }
+                String assetKey = name.substring(0, dot);
+                String uuid = GitImportedAssetId.normalize(assetKey, ext);
                 ensureImageInDb(blog, uuid, ext, file);
             }
         }
@@ -184,9 +206,11 @@ public class GitImageSyncService {
         Matcher m = relativeAssetPattern(convention).matcher(body);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            String uuid = m.group(1);
+            String assetRel = m.group(1);
             String ext = m.group(2);
-            ensureImageInDb(blog, uuid, ext, convention.resolveAssets(workspace).resolve(uuid + ext));
+            String basename = GitFrontMatterResolver.assetBasename(assetRel);
+            String uuid = GitImportedAssetId.normalize(basename, ext);
+            importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
             m.appendReplacement(sb, Matcher.quoteReplacement("/api/images/" + uuid + ext));
         }
         m.appendTail(sb);

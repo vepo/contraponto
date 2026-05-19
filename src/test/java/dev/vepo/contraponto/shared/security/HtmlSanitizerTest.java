@@ -14,9 +14,31 @@ class HtmlSanitizerTest {
     HtmlSanitizer htmlSanitizer;
 
     @Test
+    void blogDescriptionAllowsBoldNotIframe() {
+        String input = "<p><strong>Bold</strong></p><iframe src=\"https://www.youtube.com/embed/x\"></iframe>";
+        String cleaned = htmlSanitizer.sanitizeBlogDescriptionHtml(input);
+        assertThat(cleaned).contains("<strong>Bold</strong>").doesNotContain("iframe");
+    }
+
+    @Test
+    void keepsGistScriptSrc() {
+        String input = "<script src=\"https://gist.github.com/vepo/abc123.js\"></script>";
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).contains("gist.github.com/vepo/abc123.js");
+    }
+
+    @Test
     void keepsSafeMarkup() {
         String input = "<h1>Title</h1><p>Text with <strong>bold</strong></p>";
         assertThat(htmlSanitizer.sanitizePostHtml(input)).contains("<h1>", "<strong>");
+    }
+
+    @Test
+    void keepsYoutubeEmbedIframe() {
+        String input =
+                """
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/hPoHp0WhglA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                """;
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).contains("youtube.com/embed/hPoHp0WhglA");
     }
 
     @Test
@@ -29,6 +51,12 @@ class HtmlSanitizerTest {
     void removesOnerrorHandlers() {
         String input = "<img src=\"/x.png\" onerror=\"alert(1)\" alt=\"x\">";
         assertThat(htmlSanitizer.sanitizePostHtml(input)).doesNotContain("onerror");
+    }
+
+    @Test
+    void stripsArbitraryInlineScript() {
+        String input = "<script>alert(1)</script><script src=\"https://evil.example/x.js\"></script>";
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).isEmpty();
     }
 
     @Test

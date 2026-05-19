@@ -86,6 +86,17 @@ public class PostRepository {
                             .getSingleResult();
     }
 
+    private long countPublishedByBlog(long blogId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.blog.id = :blogId AND
+                                               p.published = true
+                                         """, Long.class)
+                            .setParameter("blogId", blogId)
+                            .getSingleResult();
+    }
+
     private long countPublishedByTagSlug(String tagSlug) {
         return entityManager.createQuery("""
                                          SELECT COUNT(DISTINCT p.id)
@@ -322,6 +333,25 @@ public class PostRepository {
                           query.page(),
                           query.limit(),
                           countPublishedByAuthor(authorId));
+    }
+
+    public Page<Post> findPublishedByBlog(long blogId, PageQuery query) {
+        return new Page<>(attachLatestPublications(entityManager.createQuery("""
+                                                                             SELECT DISTINCT p FROM Post p
+                                                                             JOIN FETCH p.blog b
+                                                                             JOIN FETCH b.owner o
+                                                                             LEFT JOIN FETCH p.tags
+                                                                             WHERE b.id = :blogId AND
+                                                                                   p.published = true
+                                                                             ORDER BY p.publishedAt DESC
+                                                                             """, Post.class)
+                                                                .setParameter("blogId", blogId)
+                                                                .setMaxResults(query.maxResults())
+                                                                .setFirstResult(query.skip())
+                                                                .getResultList()),
+                          query.page(),
+                          query.limit(),
+                          countPublishedByBlog(blogId));
     }
 
     public List<Post> findPublishedBySerieOrdered(long serieId) {

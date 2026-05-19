@@ -30,7 +30,7 @@ public class GitSyncRunTransaction {
     private final BlogRepository blogRepository;
     private final PostRepository postRepository;
     private final GitSyncRunRepository gitSyncRunRepository;
-    private final ContrapontoGitConfig gitConfig;
+    private final ContrapontoGitSettings gitSettings;
     private final NotificationService notificationService;
 
     private final ObjectMapper objectMapper;
@@ -39,13 +39,13 @@ public class GitSyncRunTransaction {
     public GitSyncRunTransaction(BlogRepository blogRepository,
                                  PostRepository postRepository,
                                  GitSyncRunRepository gitSyncRunRepository,
-                                 ContrapontoGitConfig gitConfig,
+                                 ContrapontoGitSettings gitSettings,
                                  NotificationService notificationService,
                                  ObjectMapper objectMapper) {
         this.blogRepository = blogRepository;
         this.postRepository = postRepository;
         this.gitSyncRunRepository = gitSyncRunRepository;
-        this.gitConfig = gitConfig;
+        this.gitSettings = gitSettings;
         this.notificationService = notificationService;
         this.objectMapper = objectMapper;
     }
@@ -114,8 +114,8 @@ public class GitSyncRunTransaction {
 
     private String buildSettingsSnapshot() {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("poll_enabled", gitConfig.pollEnabled());
-        map.put("poll_interval", gitConfig.pollInterval());
+        map.put("poll_enabled", gitSettings.pollEnabled());
+        map.put("poll_interval", gitSettings.pollInterval());
         return toJson(map);
     }
 

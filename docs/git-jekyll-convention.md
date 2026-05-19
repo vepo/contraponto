@@ -26,6 +26,23 @@ Contraponto mirrors each configured blog against a Git repository shaped like a 
 - `published` — boolean; overrides folder inference (`_posts/` defaults to published, `_drafts/` to draft).
 - `published_at` — ISO-8601 instant or local date/time.
 
+### Legacy Jekyll aliases (import only)
+
+On **import**, Contraponto also accepts common Jekyll keys. Native keys above take precedence when both are set.
+
+| Legacy key | Maps to | Notes |
+|------------|---------|--------|
+| `permalink` | slug | Last URL segment (e.g. `/posts/my-post` → `my-post`) |
+| `image` | cover | Same path rules as `cover` |
+| `publish_date` | `published_at` | Supports Jekyll datetimes such as `2023-09-26 15:39:23 +0300` |
+| `published` | published vs draft | `false` in `_posts/` still imports as a draft |
+
+**Format** — front matter `format` if valid; otherwise inferred from the file extension (`.md` → `MARKDOWN`, `.adoc` / `.asciidoc` → `ASCIIDOC`).
+
+**Assets** — image paths may include subdirectories under `assets_directory` (e.g. `assets/images/capas/photo.webp`).
+
+Export still writes Contraponto-native keys (`slug`, `cover`, `published_at`, `contraponto_post_id`).
+
 ## Overrides in `_contraponto.yml`
 
 All keys optional; unspecified keys fall back to the defaults above.
@@ -50,7 +67,7 @@ assets_directory: "assets/images"
 
 ```
 
-Exported post bodies reference images under `assets_directory` (e.g. `assets/images/{uuid}.png`). Alt text is stored in Contraponto and written into Markdown `![alt](path)` on export. Optional front matter `cover` uses the same path style.
+Exported post bodies reference images under `assets_directory` (e.g. `assets/images/{uuid}.png`). Alt text is stored in Contraponto and written into Markdown `![alt](path)` on export. Optional front matter `cover` uses the same path style. Legacy Jekyll asset file names longer than a UUID are mapped to a deterministic id on import (markdown paths keep the original basename; Contraponto serves them under `/api/images/{id}.ext`).
 
 Changes apply immediately on the next import or export after a `git pull` / scheduler run.
 

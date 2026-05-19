@@ -1883,7 +1883,7 @@ public class App {
 
     public App assertPageTopPresent() {
         wait.until(visibilityOfElementLocated(cssSelector(".page-top")));
-        wait.until(visibilityOfElementLocated(cssSelector(".page-top .breadcrumb")));
+        wait.until(visibilityOfElementLocated(cssSelector(".container-narrow .breadcrumb")));
         wait.until(visibilityOfElementLocated(cssSelector(".page-top__actions")));
         return this;
     }

@@ -62,6 +62,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Blog** | A publication channel owned by exactly one user. Has name, slug (unique per owner), description, optional **blog banner**, active flag. | `Blog` |
+| **Blog description** | Optional short bio on **blog home**; authors may use **Markdown** (bold, links, lists). Rendered to safe HTML on the public blog home only; does not support **content render plugins**. | `Blog.description`, `BlogDescriptionRenderer` |
 | **Main blog** | The blog auto-created for a user (`main = true`); slug typically matches username. | `Blog.main` |
 | **Secondary blog** | Additional blog owned by the same user (`main = false`). | `Blog` |
 | **Blog owner** | User who owns the blog; sole writer for that blog's posts and the only role that may edit blog settings. | `Blog.owner` |
@@ -83,6 +84,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Slug** | URL-safe identifier for a post, blog, tag, serie, or custom page. | Field on entities |
 | **Cover** | Optional hero image for a post (`Image`). | `Post.cover` |
 | **Format** | Markup dialect: **Markdown** or **AsciiDoc**. | `Format` enum |
+| **Content render plugin** | Pluggable handler registered via `ServiceLoader` that turns a **render tag** in post body into HTML (e.g. YouTube embed). | `ContentRenderPlugin` |
+| **Render tag** | Author syntax in post body: `{% renderIdentifier param1 param2 %}`. Built-in identifiers: `youtube`, `gist`, `github`. Unknown identifiers remain literal in output. | `ContentRenderTagProcessor` |
 | **Publish** | Action that marks the post published, creates a **publication snapshot**, sets **live publication**, fires `PostPublishedEvent`, and may trigger Git export and notifications. | `PostPublicationService.publish` |
 | **Republish** | Publish again when content differs from live snapshot; increments version, re-notifies audience. | Same service |
 | **Publication snapshot** | Immutable `PostPublication` row: version, content/tags/cover at publish time. | `PostPublication` |
@@ -147,6 +150,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Repository readable** | Contraponto prepared the workspace and resolved layout (`_contraponto.yml` or defaults). | Flag on `GitSyncRun` |
 | **Data loadable** | Remote was reachable and clone/fetch/pull succeeded. | Flag on `GitSyncRun` |
 | **Git sync log entry** | One step or per-post result within a run (phase, message, remediation). | `GitSyncRunEntry` |
+| **Legacy Jekyll front matter** | Import-only YAML aliases (`permalink`, `image`, `publish_date`) mapped to slug, cover, and publish time; native keys win when both are set. | `GitFrontMatterResolver` |
 
 ### Discovery & feeds
 
@@ -202,6 +206,7 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Account — pending email | Verification pending for {email}. | Account security |
 | Account — security saved toast | Account updated. | After account security save |
 | Author appearance — saved toast | Appearance updated. | After appearance save |
+| Blog settings — description hint | Markdown supported (bold, links, lists). | Blog settings form description field |
 | Profile — email verification sent | Check your new email to confirm the address change. | After email change request |
 | Profile — email verified | Email address updated. | After verification |
 | Account email — password changed subject | Your contraponto password was changed | Security notice |

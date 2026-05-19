@@ -39,6 +39,17 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void blogGridLoadMorePathFormatsSecondaryBlog() {
+        var owner = new dev.vepo.contraponto.user.User();
+        owner.setUsername("bob");
+        var blog = new dev.vepo.contraponto.blog.Blog();
+        blog.setOwner(owner);
+        blog.setSlug("architecture-notes");
+        blog.setMain(false);
+        assertThat(TemplateExtensions.blogGridLoadMorePath(blog)).isEqualTo("/bob/architecture-notes/components/grid");
+    }
+
+    @Test
     void blogGridLoadMorePathFormatsUsername() {
         assertThat(TemplateExtensions.blogGridLoadMorePath("alice")).isEqualTo("/alice/components/grid");
     }

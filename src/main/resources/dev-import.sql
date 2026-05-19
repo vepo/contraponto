@@ -107,7 +107,7 @@ WHERE b.owner_id = u.id AND u.username = 'alice' AND b.main;
 
 UPDATE tb_blogs b
 SET git_enabled = TRUE,
-    git_remote_url = 'https://github.com/vepo/vepo.github.io',
+    git_remote_url = 'https://github.com/vepo/vepo.github.io.git',
     git_branch = 'source'
 FROM tb_users u
 WHERE b.owner_id = u.id AND u.username = 'vepo' AND b.slug = 'notas';

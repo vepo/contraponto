@@ -59,6 +59,29 @@ class BlogGitImportServiceTest {
     }
 
     @Test
+    void ingestAdocWithoutFormatFrontMatterUsesAsciiDoc() throws Exception {
+        Blog blog = baselineUser().getDefaultBlog();
+        Path adoc = ingestDir().resolve("2026-06-02-asciidoc-note.adoc");
+        Files.writeString(adoc,
+                          """
+                          ---
+                          title: Ascii Note
+                          permalink: /posts/asciidoc-note
+                          published: true
+                          ---
+
+                          = Heading
+                          """,
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), adoc, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "asciidoc-note");
+        assertThat(found).isPresent();
+        assertThat(found.get().getFormat()).isEqualTo(Format.ASCIIDOC);
+    }
+
+    @Test
     void ingestCreatesPublishedPostFromPostsFolderWithCommaTagsAndFormatFallback() throws Exception {
         Blog blog = baselineUser().getDefaultBlog();
         Path dated = ingestDir().resolve("2026-05-01-imported-slug.md");
@@ -110,6 +133,65 @@ class BlogGitImportServiceTest {
         ingest(blogGitImportService, Long.MAX_VALUE, md, SourceKind.POSTS_FOLDER);
         assertThat(postRepository.count()).isEqualTo(before);
         assertThat(Files.readString(md)).contains("title: X");
+    }
+
+    @Test
+    void ingestLegacyJekyllFrontMatterWithPermalinkImageAndPublishDate() throws Exception {
+        Blog blog = baselineUser().getDefaultBlog();
+        Path dir = ingestDir();
+        Path capas = dir.resolve("assets/images/capas");
+        Files.createDirectories(capas);
+        Files.write(capas.resolve("cover-note.webp"), new byte[] { 1, 2, 3 });
+
+        Path dated = dir.resolve("2023-09-26-15-39-23-sobre-design-de-codigo.md");
+        Files.writeString(dated,
+                          """
+                          ---
+                          title: "Sobre Design de Código"
+                          published: true
+                          description: Intro
+                          tags: [Design de Código]
+                          image: /assets/images/capas/cover-note.webp
+                          permalink: /posts/sobre-design-de-codigo
+                          publish_date: 2023-09-26 15:39:23 +0300
+                          ---
+
+                          Body text
+                          """,
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), dated, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "sobre-design-de-codigo");
+        assertThat(found).isPresent();
+        Post p = found.get();
+        assertThat(p.isPublished()).isTrue();
+        assertThat(p.getPublishedAt()).isEqualTo(java.time.LocalDateTime.of(2023, 9, 26, 15, 39, 23));
+        assertThat(p.getCover()).isNotNull();
+        assertThat(p.getFormat()).isEqualTo(Format.MARKDOWN);
+    }
+
+    @Test
+    void ingestPublishedFalseInPostsFolderStaysDraft() throws Exception {
+        Blog blog = baselineUser().getDefaultBlog();
+        Path dated = ingestDir().resolve("2026-06-01-draft-in-posts.md");
+        Files.writeString(dated,
+                          """
+                          ---
+                          title: Draft In Posts
+                          published: false
+                          permalink: /posts/draft-in-posts
+                          ---
+
+                          x""",
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), dated, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "draft-in-posts");
+        assertThat(found).isPresent();
+        assertThat(found.get().isPublished()).isFalse();
+        assertThat(found.get().getPublishedAt()).isNull();
     }
 
     @Test

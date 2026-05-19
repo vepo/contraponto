@@ -27,6 +27,19 @@ class TemplateExtensionsRenderTest {
         assertThat(TemplateExtensions.render(post)).contains("<h1");
     }
 
+    @Test
+    void renderPublishedMarkdownWithYoutubeEmbed() {
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withBlog(author.getDefaultBlog())
+                        .withTitle("With embed")
+                        .withSlug("with-embed")
+                        .withContent("{% youtube hPoHp0WhglA %}")
+                        .withPublished(true)
+                        .persist();
+        assertThat(TemplateExtensions.render(post)).contains("youtube.com/embed/hPoHp0WhglA");
+    }
+
     @BeforeEach
     void setUp() {
         Given.cleanup();

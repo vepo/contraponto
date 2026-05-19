@@ -133,6 +133,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header |
 | `search-page`, `search-form`, `search-result`, `search-modal__*` | Search endpoints | |
 | `user-blog-page`, `user-blog__*` | `BlogEndpoint/home.html` | Author blog |
+| `content-render`, `content-render--youtube`, `content-render--gist`, `content-render--github`, `content-render--error` | Post body render plugins | YouTube, Gist, GitHub embeds |
 | `tag-page-*`, `serie-page-*` | Tag/serie pages | |
 | `custom-page`, `custom-page__*` | `CustomPageEndpoint/page.html` | Static pages |
 | `error-page`, `error-*` | `error.html` | |
@@ -160,7 +161,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `hub-shell-page` | `NavigationHubService/shellPage.html`, `components/hub-shell-page.html` | Hub page chrome |
 | `hub-layout`, `hub-layout--single`, `hub-nav__sticky`, `hub-nav`, `hub-nav__link`, `hub-nav__link--active`, `hub-panel` | `components/hub-shell.html`, `manage.css` | Sticky left nav + section panel |
 | `hub-panel__header`, `hub-panel__title`, `hub-panel__subtitle` | `components/hub-panel-header.html`, hub panel templates, `manage.css` | Panel section title + compact CTA |
-| `page-top`, `page-top__breadcrumb`, `page-top__actions` | `components/page-top.html`, `PostEndpoint/post.html`, `main.css` | Post page breadcrumb + actions row |
+| `page-top`, `page-top__actions` | `components/page-top.html`, `PostEndpoint/post.html`, `main.css` | Post page actions row (breadcrumb above, same as manage) |
 | `nav-hub-page`, `nav-hub__*` | (deprecated) | Replaced by hub shell; remove when card templates are deleted |
 
 ---

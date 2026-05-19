@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -101,18 +100,19 @@ public class BlogGitImportService {
             }
 
             ParsedPathStem stem = ParsedPathStem.from(fileNamePath.toString(), sourceKind);
-            if (stem.slug().isBlank()) {
+            PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
+            String slug = GitFrontMatterResolver.resolveSlug(doc.frontMatter(), stem.slug());
+            if (slug.isBlank()) {
                 String remediation = sourceKind == SourceKind.POSTS_FOLDER
-                                                                           ? "Rename published files to yyyy-MM-dd-slug.md under _posts/."
-                                                                           : "Rename draft files to slug.md under _drafts/.";
+                                                                           ? "Add slug or permalink in front matter, or rename to yyyy-MM-dd-slug.md under _posts/."
+                                                                           : "Add slug or permalink in front matter, or rename to slug.md under _drafts/.";
                 return GitSyncPostResult.skipped(pathLabel,
-                                                 "Could not read a slug from the file name.",
+                                                 "Could not read a slug from front matter or the file name.",
                                                  remediation);
             }
 
-            PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
-            IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog);
-            applyPostFields(draft, doc, blog, workspace, convention);
+            IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog, slug);
+            applyPostFields(draft, doc, blog, workspace, convention, markdownPath);
             finalizeIngestion(draft, doc);
             return GitSyncPostResult.success(draft.post().getId(), pathLabel,
                                              "Imported post \"" + draft.slug() + "\".");
@@ -132,16 +132,16 @@ public class BlogGitImportService {
     private IngestedPostDraft resolvePostDraft(PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
                                                ParsedPathStem stem,
                                                SourceKind sourceKind,
-                                               Blog blog) {
-        String slugYaml = trimToNull(doc.frontMatter().get("slug"));
-        String slug = slugYaml != null ? slugYaml.toLowerCase(Locale.ROOT) : stem.slug().toLowerCase(Locale.ROOT);
-
+                                               Blog blog,
+                                               String slug) {
         String title = trimToNull(doc.frontMatter().get("title"));
         if (title == null || title.isBlank()) {
-            title = stem.slug().replace('-', ' ');
+            String titleStem = stem.slug().isBlank() ? slug : stem.slug();
+            title = titleStem.replace('-', ' ');
         }
 
-        boolean published = parseBoolean(doc.frontMatter().get("published")).orElse(sourceKind == SourceKind.POSTS_FOLDER);
+        boolean folderDefault = sourceKind == SourceKind.POSTS_FOLDER;
+        boolean published = GitFrontMatterResolver.resolvePublished(doc.frontMatter(), folderDefault);
         Optional<Post> existing = locateExisting(doc, slug, blog);
         Post post = existing.orElseGet(() -> wireNewDraftPostStub(blog));
         return new IngestedPostDraft(post, existing.isPresent(), slug, title, published, stem);
@@ -151,7 +151,8 @@ public class BlogGitImportService {
                                  PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
                                  Blog blog,
                                  Path workspace,
-                                 JekyllLayoutConvention convention)
+                                 JekyllLayoutConvention convention,
+                                 Path postFile)
             throws IOException {
         Post post = draft.post();
         String description = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");
@@ -164,8 +165,8 @@ public class BlogGitImportService {
         post.setTitle(draft.title());
         post.setDescription(description);
         post.setContent(body);
-        applyCoverFromFrontMatter(post, trimToNull(doc.frontMatter().get("cover")), convention, workspace, blog);
-        post.setFormat(parseFormat(trimToNull(doc.frontMatter().get("format"))));
+        applyCoverFromFrontMatter(post, GitFrontMatterResolver.resolveCoverPath(doc.frontMatter()), convention, workspace, blog);
+        post.setFormat(GitFrontMatterResolver.resolveFormat(doc.frontMatter(), postFile));
 
         Optional<Boolean> featuredFlag = parseBoolean(doc.frontMatter().get("featured"));
         if (featuredFlag.isPresent()) {
@@ -190,10 +191,9 @@ public class BlogGitImportService {
             post.setPublishedAt(null);
             return;
         }
-        LocalDateTime inferred = draft.stem().optionalPublishedDay().map(LocalDate::atStartOfDay).orElse(null);
-        LocalDateTime fmTime = parseDateTime(trimToNull(doc.frontMatter().get("published_at")));
-        LocalDateTime effective = fmTime != null ? fmTime : Objects.requireNonNullElse(inferred, now);
-        if (!draft.existedBefore() || fmTime != null || inferred != null) {
+        LocalDateTime fmTime = GitFrontMatterResolver.resolvePublishedAt(doc.frontMatter(), draft.stem().optionalPublishedDay());
+        LocalDateTime effective = fmTime != null ? fmTime : now;
+        if (!draft.existedBefore() || fmTime != null) {
             post.setPublishedAt(effective);
         } else if (post.getPublishedAt() == null) {
             post.setPublishedAt(now);
@@ -233,9 +233,13 @@ public class BlogGitImportService {
         if (!m.find()) {
             return;
         }
-        String uuid = m.group(1);
+        String assetRel = m.group(1);
+        String ext = m.group(2);
+        String basename = GitFrontMatterResolver.assetBasename(assetRel);
+        String uuid = GitImportedAssetId.normalize(basename, ext);
         try {
             gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
+            gitImageSyncService.importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
         } catch (IOException e) {
             LOG.warn("Could not import assets for cover: {}", coverPath, e);
         }
@@ -263,17 +267,6 @@ public class BlogGitImportService {
         List<String> tags = readYamlTags(rawYamlTags);
         String json = tags.isEmpty() ? "[]" : objectMapper.writeValueAsString(tags);
         tagService.syncPostTags(post, json);
-    }
-
-    private static Format parseFormat(String fm) {
-        if (fm == null || fm.isBlank()) {
-            return Format.MARKDOWN;
-        }
-        try {
-            return Format.valueOf(fm.strip().replace(' ', '_').toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException _) {
-            return Format.MARKDOWN;
-        }
     }
 
     private static Optional<Boolean> parseBoolean(Object raw) {
@@ -306,26 +299,6 @@ public class BlogGitImportService {
             return Long.parseLong(s);
         } catch (NumberFormatException _) {
             return null;
-        }
-    }
-
-    private static LocalDateTime parseDateTime(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return null;
-        }
-        try {
-            return OffsetDateTime.parse(raw).toLocalDateTime();
-        } catch (DateTimeParseException _) {
-            try {
-                return LocalDateTime.parse(raw);
-            } catch (DateTimeParseException _) {
-                try {
-                    LocalDate dateOnly = LocalDate.parse(raw, DateTimeFormatter.ISO_LOCAL_DATE);
-                    return dateOnly.atStartOfDay();
-                } catch (DateTimeParseException _) {
-                    return null;
-                }
-            }
         }
     }
 

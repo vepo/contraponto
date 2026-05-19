@@ -31,6 +31,7 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.renderer.Format;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -54,7 +55,7 @@ public class BlogGitIntegrationService {
         return relative.toString().replace('\\', '/');
     }
 
-    private final ContrapontoGitConfig config;
+    private final ContrapontoGitSettings gitSettings;
     private final BlogRepository blogRepository;
     private final PostRepository postRepository;
     private final BlogGitImportService blogGitImportService;
@@ -65,7 +66,7 @@ public class BlogGitIntegrationService {
     private final GitSyncErrorClassifier errorClassifier;
 
     @Inject
-    public BlogGitIntegrationService(ContrapontoGitConfig config,
+    public BlogGitIntegrationService(ContrapontoGitSettings gitSettings,
                                      BlogRepository blogRepository,
                                      PostRepository postRepository,
                                      BlogGitImportService blogGitImportService,
@@ -74,7 +75,7 @@ public class BlogGitIntegrationService {
                                      BlogGitIntegrationTransaction integrationTransaction,
                                      GitSyncRunService gitSyncRunService,
                                      GitSyncErrorClassifier errorClassifier) {
-        this.config = config;
+        this.gitSettings = gitSettings;
         this.blogRepository = blogRepository;
         this.postRepository = postRepository;
         this.blogGitImportService = blogGitImportService;
@@ -86,8 +87,8 @@ public class BlogGitIntegrationService {
     }
 
     private CredentialsProvider credentialsOrNull() {
-        String user = config.username().orElse("").strip();
-        String pass = config.password().orElse("").strip();
+        String user = gitSettings.username().orElse("").strip();
+        String pass = gitSettings.password().orElse("").strip();
         if (user.isEmpty() && pass.isEmpty()) {
             return null;
         }
@@ -211,27 +212,6 @@ public class BlogGitIntegrationService {
         }
     }
 
-    private void exportPostWithNewTransaction(long postId, GitSyncTrigger trigger) {
-        long runId = 0;
-        try {
-            Optional<Post> opt = postRepository.findById(postId);
-            if (opt.isEmpty()) {
-                return;
-            }
-            Blog blog = opt.get().getBlog();
-            if (!(blog.isActive() && isConfiguredForGit(blog))) {
-                return;
-            }
-            runId = gitSyncRunService.beginRunForBlog(blog.getId(), GitSyncOperation.EXPORT, trigger, postId);
-            GitSyncRunContext.setRunId(runId);
-            integrationTransaction.exportPost(postId);
-        } catch (RuntimeException e) {
-            LOG.error("Git export failed postId={}", postId, e);
-        } finally {
-            GitSyncRunContext.clear();
-        }
-    }
-
     private void fetchAndPull(Git git, CredentialsProvider credentials) throws GitAPIException {
         var fetchCmd = git.fetch();
         if (credentials != null) {
@@ -290,13 +270,16 @@ public class BlogGitIntegrationService {
                 && !blog.getGitRemoteUrl().isBlank();
     }
 
-    private boolean isMarkdown(Path p) {
+    private boolean isImportablePostFile(Path p) {
         Path fname = p.getFileName();
         if (fname == null) {
             return false;
         }
         String n = fname.toString().toLowerCase(java.util.Locale.ROOT);
-        return n.endsWith(".md") || n.endsWith(".markdown");
+        return n.endsWith(".md")
+                || n.endsWith(".markdown")
+                || n.endsWith(".adoc")
+                || n.endsWith(".asciidoc");
     }
 
     private ConventionLoad loadConvention(Path workspace) {
@@ -317,13 +300,18 @@ public class BlogGitIntegrationService {
     }
 
     private Path markdownPathForPost(Post post, JekyllLayoutConvention convention, Path repoRoot) {
+        String ext = postExtension(post);
         if (!post.isPublished()) {
-            return convention.resolveDrafts(repoRoot).resolve(post.getSlug() + ".md");
+            return convention.resolveDrafts(repoRoot).resolve(post.getSlug() + ext);
         }
         LocalDate pub =
                 post.getPublishedAt() != null ? post.getPublishedAt().toLocalDate() : LocalDate.now(java.time.ZoneId.systemDefault());
-        String name = "%s-%s.md".formatted(pub.format(DateTimeFormatter.ISO_LOCAL_DATE), post.getSlug());
+        String name = "%s-%s%s".formatted(pub.format(DateTimeFormatter.ISO_LOCAL_DATE), post.getSlug(), ext);
         return convention.resolvePosts(repoRoot).resolve(name);
+    }
+
+    private static String postExtension(Post post) {
+        return post.getFormat() == Format.ASCIIDOC ? ".adoc" : ".md";
     }
 
     private boolean prepareWorkspace(Blog blog, Path workspace) throws GitAPIException, IOException {
@@ -372,7 +360,7 @@ public class BlogGitIntegrationService {
     }
 
     public void scheduleBlogRemoteSync(long blogId, GitSyncTrigger trigger) {
-        CompletableFuture.runAsync(() -> syncBlogFromGit(blogId, trigger));
+        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledImport(blogId, trigger));
     }
 
     public void scheduleBlogRemoteSync(long blogId) {
@@ -380,28 +368,11 @@ public class BlogGitIntegrationService {
     }
 
     public void scheduleExportPost(long postId, GitSyncTrigger trigger) {
-        CompletableFuture.runAsync(() -> exportPostWithNewTransaction(postId, trigger));
+        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledExport(postId, trigger));
     }
 
     public void scheduleExportPost(long postId) {
         scheduleExportPost(postId, GitSyncTrigger.PUBLISH);
-    }
-
-    private void syncBlogFromGit(long blogId, GitSyncTrigger trigger) {
-        long runId = 0;
-        try {
-            Optional<Blog> blogOpt = blogRepository.findById(blogId);
-            if (blogOpt.isEmpty() || !blogOpt.get().isActive() || !isConfiguredForGit(blogOpt.get())) {
-                return;
-            }
-            runId = gitSyncRunService.beginRunForBlog(blogId, GitSyncOperation.IMPORT, trigger, null);
-            GitSyncRunContext.setRunId(runId);
-            integrationTransaction.syncBlogFromGit(blogId);
-        } catch (RuntimeException e) {
-            LOG.error("Git import failed blogId={}", blogId, e);
-        } finally {
-            GitSyncRunContext.clear();
-        }
     }
 
     void syncBlogFromGitTransactional(long blogId) throws IOException, GitAPIException {
@@ -503,8 +474,8 @@ public class BlogGitIntegrationService {
         }
         JekyllLayoutConvention convention = loadConvention(workspace).convention();
         try (Stream<Path> walk = Files.walk(root)) {
-            walk.filter(p -> Files.isRegularFile(p) && isMarkdown(p)).forEach(markdown -> {
-                GitSyncPostResult result = blogGitImportService.ingest(blogId, workspace, convention, markdown, kind);
+            walk.filter(p -> Files.isRegularFile(p) && isImportablePostFile(p)).forEach(postFile -> {
+                GitSyncPostResult result = blogGitImportService.ingest(blogId, workspace, convention, postFile, kind);
                 gitSyncRunService.appendPostResult(GitSyncPhase.POST_IMPORT, result);
                 results.add(result);
             });
@@ -517,7 +488,7 @@ public class BlogGitIntegrationService {
     }
 
     private Path workspaceRoot() {
-        Optional<String> root = config.workspaceRoot();
+        Optional<String> root = gitSettings.workspaceRoot();
         if (root.isEmpty() || root.get().strip().isEmpty()) {
             return Path.of(System.getProperty("java.io.tmpdir")).resolve("contraponto-git");
         }

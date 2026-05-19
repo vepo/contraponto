@@ -27,6 +27,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Path("/{username}")
 @ApplicationScoped
@@ -36,7 +38,7 @@ public class BlogEndpoint {
     public static class Templates {
         static native TemplateInstance featured(Post post);
 
-        static native TemplateInstance grid(String username, Page<Post> posts, boolean ignoreFirst);
+        static native TemplateInstance grid(String username, Blog blog, Page<Post> posts, boolean ignoreFirst);
 
         public static native TemplateInstance home(User author,
                                                    Blog mainBlog,
@@ -87,16 +89,12 @@ public class BlogEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance blog(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit) {
-        // Check if user exists
         var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
 
         var mainBlog = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
-        return Templates.home(user,
+        return renderBlogHome(user,
                               mainBlog,
                               postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, 1)),
-                              customPageRepository.loadLinks(mainBlog.getId()),
-                              loggedUser,
-                              audienceComponentEndpoint.buildView(mainBlog),
                               breadcrumbService.forMainBlog(user));
     }
 
@@ -109,6 +107,57 @@ public class BlogEndpoint {
 
         var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
         return Templates.grid(username,
-                              this.postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, page)), false);
+                              null,
+                              this.postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, page)),
+                              false);
+    }
+
+    private TemplateInstance renderBlogHome(User user,
+                                            Blog blog,
+                                            Page<Post> posts,
+                                            BreadcrumbTrail breadcrumb) {
+        return Templates.home(user,
+                              blog,
+                              posts,
+                              customPageRepository.loadLinks(blog.getId()),
+                              loggedUser,
+                              audienceComponentEndpoint.buildView(blog),
+                              breadcrumb);
+    }
+
+    @GET
+    @Path("{blogSlug}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response secondaryBlog(@PathParam("username") String username,
+                                  @PathParam("blogSlug") String blogSlug,
+                                  @QueryParam("limit") @DefaultValue("12") int limit) {
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
+        var blog = blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug).orElseThrow(NotFoundException::new);
+        if (blog.isMain()) {
+            return Response.seeOther(UriBuilder.fromPath("/").path(username).build()).build();
+        }
+        var body = renderBlogHome(user,
+                                  blog,
+                                  postRepository.findPublishedByBlog(blog.getId(), PageQuery.forFeaturedGrid(limit, 1)),
+                                  breadcrumbService.forSecondaryBlog(user, blog));
+        return Response.ok(body).build();
+    }
+
+    @GET
+    @Path("{blogSlug}/components/grid")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance secondaryBlogMorePosts(@PathParam("username") String username,
+                                                   @PathParam("blogSlug") String blogSlug,
+                                                   @QueryParam("limit") @DefaultValue("12") int limit,
+                                                   @QueryParam("page") int page) {
+        var blog = blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug).orElseThrow(NotFoundException::new);
+        if (blog.isMain()) {
+            throw new NotFoundException();
+        }
+        return Templates.grid(username,
+                              blog,
+                              postRepository.findPublishedByBlog(blog.getId(), PageQuery.forFeaturedGrid(limit, page)),
+                              false);
     }
 }

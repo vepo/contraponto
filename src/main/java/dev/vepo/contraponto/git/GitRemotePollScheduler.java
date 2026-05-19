@@ -9,22 +9,22 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class GitRemotePollScheduler {
 
-    private final ContrapontoGitConfig config;
+    private final ContrapontoGitSettings gitSettings;
     private final BlogRepository blogRepository;
     private final BlogGitIntegrationService blogGitIntegrationService;
 
     @Inject
-    public GitRemotePollScheduler(ContrapontoGitConfig config,
+    public GitRemotePollScheduler(ContrapontoGitSettings gitSettings,
                                   BlogRepository blogRepository,
                                   BlogGitIntegrationService blogGitIntegrationService) {
-        this.config = config;
+        this.gitSettings = gitSettings;
         this.blogRepository = blogRepository;
         this.blogGitIntegrationService = blogGitIntegrationService;
     }
 
     @Scheduled(every = "${contraponto.git.poll-interval}", concurrentExecution = ConcurrentExecution.SKIP)
     void synchronizeEnabledBlogsFromGit() {
-        if (!config.pollEnabled()) {
+        if (!gitSettings.pollEnabled()) {
             return;
         }
         for (Long id : blogRepository.findActiveBlogIdsForGitPoll()) {

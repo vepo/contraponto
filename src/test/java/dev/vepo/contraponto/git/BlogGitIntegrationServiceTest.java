@@ -103,7 +103,7 @@ class BlogGitIntegrationServiceTest {
     PostRepository postRepository;
 
     @Inject
-    ContrapontoGitConfig contrapontoGitConfig;
+    ContrapontoGitSettings contrapontoGitSettings;
 
     private User persistUserLinkedToUpstream(Path upstream, String branch) {
         int token = java.util.concurrent.ThreadLocalRandom.current().nextInt();
@@ -144,11 +144,11 @@ class BlogGitIntegrationServiceTest {
     }
 
     private Path resolvedGitWorkspaceRoot() {
-        return contrapontoGitConfig.workspaceRoot()
-                                   .filter(s -> !s.strip().isEmpty())
-                                   .map(s -> Path.of(s.strip()).toAbsolutePath())
-                                   .orElseGet(() -> Path.of(System.getProperty("java.io.tmpdir")).resolve("contraponto-git")
-                                                        .toAbsolutePath());
+        return contrapontoGitSettings.workspaceRoot()
+                                     .filter(s -> !s.strip().isEmpty())
+                                     .map(s -> Path.of(s.strip()).toAbsolutePath())
+                                     .orElseGet(() -> Path.of(System.getProperty("java.io.tmpdir")).resolve("contraponto-git")
+                                                          .toAbsolutePath());
     }
 
     @Test

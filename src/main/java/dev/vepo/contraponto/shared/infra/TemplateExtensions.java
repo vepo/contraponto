@@ -18,9 +18,8 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
-import dev.vepo.contraponto.image.RenderedHtmlEnricher;
-import dev.vepo.contraponto.renderer.Renderer;
-import dev.vepo.contraponto.shared.security.HtmlSanitizer;
+import dev.vepo.contraponto.blog.BlogDescriptionRenderer;
+import dev.vepo.contraponto.content.render.PostContentRenderer;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.tag.Tag;
@@ -178,6 +177,18 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String renderedDescription(Blog blog) {
+        if (blog == null || blog.getDescription() == null || blog.getDescription().isBlank()) {
+            return "";
+        }
+        var renderer = CDI.current().select(BlogDescriptionRenderer.class);
+        if (!renderer.isResolvable()) {
+            return blog.getDescription();
+        }
+        return renderer.get().render(blog.getDescription());
+    }
+
+    @TemplateExtension
     public static String render(Post post) {
         PostPublication live = post != null ? post.getLivePublication() : null;
         if (live != null) {
@@ -186,7 +197,7 @@ public class TemplateExtensions {
         if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
             return "";
         }
-        return enrichRendered(Renderer.get(post.getFormat()).render(post.getContent()));
+        return postContentRenderer().render(post.getContent(), post.getFormat());
     }
 
     @TemplateExtension
@@ -194,22 +205,11 @@ public class TemplateExtensions {
         if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
             return "";
         }
-        return enrichRendered(Renderer.get(publication.getFormat()).render(publication.getContent()));
+        return postContentRenderer().render(publication.getContent(), publication.getFormat());
     }
 
-    private static String enrichRendered(String html) {
-        if (html == null || html.isBlank()) {
-            return html == null ? "" : html;
-        }
-        var sanitizer = CDI.current().select(HtmlSanitizer.class);
-        if (sanitizer.isResolvable()) {
-            html = sanitizer.get().sanitizePostHtml(html);
-        }
-        var enricher = CDI.current().select(RenderedHtmlEnricher.class);
-        if (!enricher.isResolvable()) {
-            return html;
-        }
-        return enricher.get().enrichHtml(html);
+    private static PostContentRenderer postContentRenderer() {
+        return CDI.current().select(PostContentRenderer.class).get();
     }
 
     @TemplateExtension
@@ -235,6 +235,14 @@ public class TemplateExtensions {
     @TemplateExtension
     public static String blogGridLoadMorePath(String username) {
         return "/%s/components/grid".formatted(username);
+    }
+
+    @TemplateExtension
+    public static String blogGridLoadMorePath(Blog blog) {
+        if (blog.isMain()) {
+            return blogGridLoadMorePath(blog.getOwner().getUsername());
+        }
+        return "/%s/%s/components/grid".formatted(blog.getOwner().getUsername(), blog.getSlug());
     }
 
     @TemplateExtension
