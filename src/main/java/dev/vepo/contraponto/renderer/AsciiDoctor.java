@@ -54,7 +54,10 @@ public final class AsciiDoctor implements Renderer {
                         function renderAsciiDocAsHTML(content) {
                             return asciidoctor.convert(content, {
                                 safe: 'safe',
-                                attributes: { showtitle: true }
+                                attributes: {
+                                    showtitle: true,
+                                    'figure-caption!': ''
+                                }
                             });
                         }
                         """);

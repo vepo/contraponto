@@ -4,13 +4,18 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
+import dev.vepo.contraponto.git.GitImageSyncService;
+import dev.vepo.contraponto.git.JekyllLayoutConvention;
 import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
@@ -23,11 +28,16 @@ import jakarta.inject.Inject;
 @QuarkusTest
 class InlineContentImageTest {
 
+    private static final String BLOCK_TITLE_CAPTION = "Tipos de armazenamentos possíveis para bases de dados";
+
     @TestHTTPResource("/")
     URL baseUrl;
 
     @Inject
     CustomPageImageDependencyService customPageImageDependencyService;
+
+    @Inject
+    GitImageSyncService gitImageSyncService;
 
     private User author;
     private Blog blog;
@@ -59,6 +69,47 @@ class InlineContentImageTest {
                .then()
                .statusCode(200)
                .body(containsString("src=\"" + image.getUrl() + "\""));
+    }
+
+    @Test
+    void publishedAsciiDocBlockTitleImageRendersWithCaption() throws IOException {
+        Path workspace = Files.createTempDirectory("inline-adoc-block-title");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("databases");
+        Files.createDirectories(nested);
+        Files.write(nested.resolve("storage-types.png"), new byte[] { 1, 2, 3 });
+
+        String body = """
+                      .%s
+                      image::databases/storage-types.png[]
+                      """.formatted(BLOCK_TITLE_CAPTION);
+        String stored = gitImageSyncService.prepareBodyForImport(body, blog, workspace, convention, Format.ASCIIDOC);
+
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withBlog(blog)
+                        .withTitle("AsciiDoc block title image")
+                        .withSlug("asciidoc-block-title-image")
+                        .withFormat(Format.ASCIIDOC)
+                        .withContent(stored)
+                        .withPublished(true)
+                        .persist();
+
+        String html = TemplateExtensions.render(post);
+        assertThat(html).contains(BLOCK_TITLE_CAPTION);
+        assertThat(html).doesNotContain("contraponto:image");
+        assertThat(html).doesNotContain("image::");
+        String imageUrl = stored.lines()
+                                .filter(line -> line.startsWith("image::/api/images/"))
+                                .findFirst()
+                                .orElseThrow()
+                                .replace("image::", "")
+                                .replace("[]", "");
+        given().get(imageUrl)
+               .then()
+               .statusCode(200)
+               .contentType(containsString("image/"));
+        assertThat(html).contains("src=\"" + imageUrl + "\"");
     }
 
     @Test

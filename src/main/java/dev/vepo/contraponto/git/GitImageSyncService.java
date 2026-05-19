@@ -66,7 +66,9 @@ public class GitImageSyncService {
 
     public static Pattern relativeAssetPattern(JekyllLayoutConvention convention) {
         String dir = Pattern.quote(convention.assetsRelative());
-        return Pattern.compile("(?:\\.\\./)*" + dir + "/((?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+)(\\.[A-Za-z0-9]{2,8})");
+        // Optional slash after ../ so "(/assets/images/…)" is matched as a whole, not
+        // "(/" + "/api/images/…".
+        return Pattern.compile("(?:\\.\\./)*/?" + dir + "/((?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+)(\\.[A-Za-z0-9]{2,8})");
     }
 
     private static Path resolveAssetFile(Path assetsDir, String assetRelativePath, String ext) {

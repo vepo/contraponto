@@ -42,6 +42,13 @@ class HtmlSanitizerTest {
     }
 
     @Test
+    void normalizesDoubleSlashApiImageSrc() {
+        String input = "<p><img src=\"//api/images/550e8400-e29b-41d4-a716-446655440000.png\" alt=\"caption\"></p>";
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).contains("src=\"/api/images/550e8400-e29b-41d4-a716-446655440000.png\"");
+        assertThat(htmlSanitizer.sanitizePostHtml(input)).doesNotContain("//api/images/");
+    }
+
+    @Test
     void preservesApiImageSrc() {
         String input = "<p><img src=\"/api/images/550e8400-e29b-41d4-a716-446655440000.png\" alt=\"caption\"></p>";
         assertThat(htmlSanitizer.sanitizePostHtml(input)).contains("src=\"/api/images/550e8400-e29b-41d4-a716-446655440000.png\"");

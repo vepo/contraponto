@@ -294,7 +294,10 @@ class WriteEditor {
         else { // AsciiDoc
             if (typeof Asciidoctor !== 'undefined') {
                 const asciidoctor = Asciidoctor();
-                const html = asciidoctor.convert(rawText, { safe: 'safe', attributes: { showtitle: true } });
+                const html = asciidoctor.convert(rawText, {
+                    safe: 'safe',
+                    attributes: { showtitle: true, 'figure-caption!': '' }
+                });
                 previewDiv.innerHTML = html;
                 if (typeof hljs !== 'undefined') {
                     hljs.highlightAll();

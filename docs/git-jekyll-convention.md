@@ -42,6 +42,15 @@ On **import**, Contraponto also accepts common Jekyll keys. Native keys above ta
 
 **Assets** — image paths may include subdirectories under `assets_directory` (e.g. `assets/images/capas/photo.webp`).
 
+**AsciiDoc block images** — import and export preserve the Jekyll/AsciiDoc block-title form when used:
+
+```asciidoc
+.Image caption shown below the figure
+image::relative/path.png[]
+```
+
+An optional attribute list may appear between the title and the macro (e.g. `[#img-id,link=…]`). The first positional attribute inside `image::path[…]` is **alt text**, not the block title; do not replace `.Caption` lines with bracket captions on import. Contraponto stores `<!-- contraponto:image uuid="…" -->` immediately before each `image::` line and strips those markers when rendering published posts.
+
 Export still writes Contraponto-native keys (`slug`, `cover`, `published_at`, `contraponto_post_id`).
 
 ## Overrides in `_contraponto.yml`

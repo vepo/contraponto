@@ -118,6 +118,43 @@ class GitImageSyncServiceTest {
     }
 
     @Test
+    void prepareBodyForImportPreservesAsciiDocBlockTitleBeforeImage() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-adoc-block-title");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("databases");
+        Files.createDirectories(nested);
+        Files.write(nested.resolve("storage-types.png"), new byte[] { 1, 2, 3 });
+
+        String caption = "Tipos de armazenamentos possíveis para bases de dados";
+        String body = """
+                      .%s
+                      image::databases/storage-types.png[]
+                      """.formatted(caption);
+        String stored = gitImageSyncService.prepareBodyForImport(body, blog, workspace, convention, Format.ASCIIDOC);
+
+        String uuid = GitImportedAssetId.normalize("storage-types", ".png");
+        assertThat(stored).contains("." + caption);
+        assertThat(stored).contains("image::/api/images/" + uuid + ".png[]");
+        assertThat(stored).contains("<!-- contraponto:image uuid=\"" + uuid + "\" -->");
+
+        String[] lines = stored.split("\n");
+        int markerIndex = -1;
+        int imageIndex = -1;
+        for (int i = 0; i < lines.length; i++) {
+            if (lines[i].contains("contraponto:image")) {
+                markerIndex = i;
+            }
+            if (lines[i].startsWith("image::/api/images/")) {
+                imageIndex = i;
+            }
+        }
+        assertThat(markerIndex).isGreaterThanOrEqualTo(0);
+        assertThat(imageIndex).isEqualTo(markerIndex + 1);
+
+        assertThat(Given.inject(dev.vepo.contraponto.image.ImageRepository.class).findByUuid(uuid)).isPresent();
+    }
+
+    @Test
     void prepareBodyForImportRegistersAssetsAndRewritesMarkdown() throws IOException {
         Path workspace = Files.createTempDirectory("git-image-import");
         var convention = JekyllLayoutConvention.defaults();
@@ -169,6 +206,22 @@ class GitImageSyncServiceTest {
 
         String uuid = GitImportedAssetId.normalize(jekyllName, ".jpg");
         assertThat(stored).contains("/api/images/" + uuid + ".jpg");
+    }
+
+    @Test
+    void prepareBodyForImportRewritesMarkdownWithLeadingSlashBeforeAssets() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-md-leading-slash");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("conversas-sobre-arquitetura");
+        Files.createDirectories(nested);
+        Files.write(nested.resolve("fig-05-atam-steps.png"), new byte[] { 1, 2, 3 });
+
+        String markdown = "![Etapas do ATAM](/assets/images/conversas-sobre-arquitetura/fig-05-atam-steps.png)";
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention, Format.MARKDOWN);
+
+        String uuid = GitImportedAssetId.normalize("fig-05-atam-steps", ".png");
+        assertThat(stored).contains("(/api/images/" + uuid + ".png)");
+        assertThat(stored).doesNotContain("//api/images/");
     }
 
     @Test

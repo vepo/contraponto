@@ -1154,6 +1154,91 @@ a {
   font-style: italic;
 }
 
+/* AsciiDoc block images (Asciidoctor .imageblock) */
+.article-page__content .imageblock {
+  margin: var(--spacing-xl) auto;
+  max-width: 42rem;
+  text-align: center;
+}
+
+.article-page__content .imageblock .content {
+  display: block;
+}
+
+.article-page__content .imageblock img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background: var(--color-bg);
+}
+
+.article-page__content .imageblock .title {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid var(--color-border);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-text-light);
+  text-align: center;
+}
+
+/* Markdown standalone figures (single image paragraph) */
+.article-page__content p:has(> img:only-child) {
+  margin: var(--spacing-xl) auto;
+  max-width: 42rem;
+  text-align: center;
+}
+
+.article-page__content p > img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* AsciiDoc verse blocks (Asciidoctor .verseblock) */
+.article-page__content .verseblock {
+  margin: var(--spacing-xl) auto;
+  max-width: 36rem;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-bg-offset);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.article-page__content .verseblock pre.content {
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  white-space: pre-wrap;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+}
+
+.article-page__content .verseblock .attribution {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-xs);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-style: normal;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
 /* Pull quote */
 .pull-quote {
   font-family: var(--font-serif-display);

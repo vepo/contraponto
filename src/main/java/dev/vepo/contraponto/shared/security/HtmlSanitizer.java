@@ -69,6 +69,8 @@ public class HtmlSanitizer {
         }
         Document.OutputSettings settings = new Document.OutputSettings().prettyPrint(false);
         String cleaned = Jsoup.clean(html, baseUrl, POST_CONTENT, settings);
+        cleaned = cleaned.replace("src=\"//api/images/", "src=\"/api/images/")
+                         .replace("src='//api/images/", "src='/api/images/");
         return stripDisallowedEmbeds(cleaned);
     }
 }
