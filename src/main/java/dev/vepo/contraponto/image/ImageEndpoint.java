@@ -87,7 +87,7 @@ public class ImageEndpoint {
 
     @GET
     @Path("/{filename}")
-    @Produces({ "image/jpeg", "image/png", "image/gif", "image/webp" })
+    @Produces({ "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml" })
     public Response getImage(@PathParam("filename") String filename) {
         try {
             ImageData imageData = imageService.getImage(filename);

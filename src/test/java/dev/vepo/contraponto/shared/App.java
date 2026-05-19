@@ -1064,6 +1064,23 @@ public class App {
             return this;
         }
 
+        public PostPage assertImageLightboxClosed() {
+            await().atMost(Duration.ofSeconds(5)).until(() -> {
+                var lightbox = driver.findElement(By.id("image-lightbox"));
+                return lightbox.getDomAttribute("hidden") != null;
+            });
+            return this;
+        }
+
+        public PostPage assertImageLightboxOpen() {
+            var lightbox = wait.until(visibilityOfElementLocated(By.id("image-lightbox")));
+            assertThat(lightbox.getDomAttribute("aria-hidden")).isEqualTo("false");
+            var enlarged = lightbox.findElement(cssSelector(".image-lightbox__image"));
+            assertThat(enlarged.isDisplayed()).isTrue();
+            assertThat(enlarged.getAttribute("src")).isNotBlank();
+            return this;
+        }
+
         public PostPage assertPostTitle(String title) {
             var postTitle = wait.until(visibilityOfElementLocated(cssSelector(".article-page__title")));
             assertThat(postTitle.getText()).isNotBlank().isEqualTo(title);
@@ -1123,6 +1140,12 @@ public class App {
             return this;
         }
 
+        public PostPage clickFirstContentImage() {
+            var image = wait.until(visibilityOfElementLocated(cssSelector(".article-page__content img")));
+            reliableClick(image);
+            return this;
+        }
+
         public PostPage clickFollowButton() {
             var follow = wait.until(elementToBeClickable(cssSelector(FOLLOW_BUTTON_SELECTOR)));
             reliableClick(follow);
@@ -1140,6 +1163,11 @@ public class App {
             reliableClick(closeBtn);
             wait.until(invisibilityOfElementLocated(By.id("postHistoryModal")));
             return this;
+        }
+
+        public PostPage closeImageLightboxWithEscape() {
+            driver.findElement(By.tagName("body")).sendKeys(Keys.ESCAPE);
+            return assertImageLightboxClosed();
         }
 
         public PostPage expandFirstChangeDetails() {

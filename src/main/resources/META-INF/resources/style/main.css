@@ -1211,6 +1211,11 @@ a {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   background: var(--color-bg);
+  cursor: zoom-in;
+}
+
+.article-page__content img {
+  cursor: zoom-in;
 }
 
 .article-page__content .imageblock .title {
@@ -1642,6 +1647,94 @@ hr:after {
 
 .user-menu__dropdown .user-menu__divider {
   margin: 4px 0;
+}
+
+/* Post image lightbox */
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  box-sizing: border-box;
+}
+
+.image-lightbox[hidden] {
+  display: none !important;
+}
+
+.image-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  cursor: zoom-out;
+}
+
+.image-lightbox__figure {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: min(90vw, 56rem);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  pointer-events: none;
+}
+
+.image-lightbox__image {
+  display: block;
+  max-width: min(90vw, 56rem);
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.image-lightbox__caption {
+  margin: 0;
+  padding: 0 var(--spacing-sm);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.image-lightbox__caption:empty {
+  display: none;
+}
+
+.image-lightbox__close {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  z-index: 2;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.image-lightbox__close:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* Modal overlay */

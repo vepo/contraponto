@@ -68,6 +68,7 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
   - Cover image (if present).  
   - Title, byline (author → link to blog), publication date, view count.  
   - Rendered content (Markdown/AsciiDoc).  
+  - **Image lightbox:** clicking an inline image in the post body opens a larger view in an overlay (same URL); dismiss with ESC, the close control, or a click on the dark backdrop.  
 - **Action bar** (only for authenticated users):  
   - **Author:** Edit button (pencil) → `/write/draft/{id}`  
   - **Editor:** Star toggle to mark/clear the **featured** flag. Clicking toggles via PUT, and the button updates without full page reload.

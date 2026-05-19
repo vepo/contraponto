@@ -97,6 +97,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Tag** | Global taxonomy label; posts link via join table; snapshots copy tags at publish. | `Tag` |
 | **Uploaded image** | Blog-scoped image: metadata in `tb_images`, bytes in `tb_image_content` (PostgreSQL `BYTEA`), optional **alt text**. Served at `/api/images/{filename}`. | `Image`, `ImageContent` |
 | **Image marker** | HTML comment in stored body: `<!-- contraponto:image uuid="…" -->` immediately before an image reference; hidden in the Write editor and stripped when rendering published post content (markers remain in stored content). | `ContentImageMarkerService` |
+| **Image lightbox** | Reader expands an inline post-body image in an on-page overlay (larger view, same image URL); closed with ESC, close control, or backdrop click. | `#image-lightbox`, `ImageLightboxManager` in `main.js` |
 | **Image dependency** | Record that a post, publication snapshot, or custom page uses an uploaded image (`INLINE` or `COVER`). | `PostImageDependency`, `CustomPageImageDependency` |
 | **Image control** | Manage screen listing a blog's uploaded images, where each is used, and alt text editing. | `ImageControlEndpoint` |
 

@@ -125,6 +125,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
 | `.imageblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor block images | Centered figure, caption in `.title`; styles in main.css / write.css |
 | `.verseblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor verse / poetry | Lines in `pre.content`, attribution in `.attribution`; styles in main.css / write.css |
+| `image-lightbox`, `image-lightbox__*` | `#image-lightbox` in `components/head.html` | Post body image expand overlay; `main.js` + main.css |
 | `post-serie-nav`, `post-serie-nav__*` | `PostEndpoint/serie-nav.html` | Serie parts list on post page |
 | `article-page__version`, `article-page__version-icon` | `PostEndpoint/post.html` | Version history trigger in metadata |
 | `post-history`, `post-history__*` | `PostEndpoint/history-list.html`, `historyModal.html` | Version history modal list |

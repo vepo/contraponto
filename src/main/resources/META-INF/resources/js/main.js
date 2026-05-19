@@ -1,3 +1,78 @@
+class ImageLightboxManager {
+    constructor() {
+        this.lightbox = document.getElementById('image-lightbox');
+        if (!this.lightbox) {
+            return;
+        }
+        this.imageEl = this.lightbox.querySelector('.image-lightbox__image');
+        this.captionEl = this.lightbox.querySelector('.image-lightbox__caption');
+        this.closeBtn = this.lightbox.querySelector('.image-lightbox__close');
+        this.lastTrigger = null;
+        this.onDocumentClick = this.onDocumentClick.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+        document.addEventListener('click', this.onDocumentClick);
+        this.closeBtn.addEventListener('click', () => this.close());
+        this.lightbox.querySelectorAll('[data-lightbox-close]').forEach((el) => {
+            el.addEventListener('click', () => this.close());
+        });
+    }
+
+    onDocumentClick(event) {
+        if (!this.lightbox || this.lightbox.hidden) {
+            const trigger = event.target.closest('article.article-page__content img');
+            if (!trigger) {
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            this.open(trigger);
+            return;
+        }
+        if (this.lightbox.contains(event.target)) {
+            return;
+        }
+    }
+
+    open(trigger) {
+        const src = trigger.currentSrc || trigger.src;
+        if (!src) {
+            return;
+        }
+        this.lastTrigger = trigger;
+        this.imageEl.src = src;
+        this.imageEl.alt = trigger.alt || '';
+        const caption = (trigger.alt || '').trim();
+        this.captionEl.textContent = caption;
+        this.lightbox.hidden = false;
+        this.lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', this.onKeyDown);
+        this.closeBtn.focus();
+    }
+
+    close() {
+        if (!this.lightbox || this.lightbox.hidden) {
+            return;
+        }
+        this.lightbox.hidden = true;
+        this.lightbox.setAttribute('aria-hidden', 'true');
+        this.imageEl.removeAttribute('src');
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', this.onKeyDown);
+        if (this.lastTrigger) {
+            this.lastTrigger.focus();
+            this.lastTrigger = null;
+        }
+    }
+
+    onKeyDown(event) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            this.close();
+        }
+    }
+}
+
 class MainManager {
     constructor() {
         this.protectedPaths = [
@@ -229,4 +304,5 @@ class MainManager {
 }
 document.addEventListener('DOMContentLoaded', () => {
     window.main = new MainManager();
+    window.imageLightbox = new ImageLightboxManager();
 });

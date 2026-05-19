@@ -36,12 +36,7 @@ public class GitImageSyncService {
             Pattern.compile("image::?([^\\s\\[]+)\\[", Pattern.CASE_INSENSITIVE);
 
     private static String contentTypeForExt(String ext) {
-        return switch (ext.toLowerCase(Locale.ROOT)) {
-            case ".jpg", ".jpeg" -> "image/jpeg";
-            case ".gif" -> "image/gif";
-            case ".webp" -> "image/webp";
-            default -> "image/png";
-        };
+        return ImageService.contentTypeForExtension(ext);
     }
 
     private static String escapeMarkdownAlt(String alt) {

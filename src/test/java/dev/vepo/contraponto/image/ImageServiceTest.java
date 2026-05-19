@@ -64,6 +64,17 @@ class ImageServiceTest {
     }
 
     @Test
+    void getImageCorrectsLegacySvgStoredAsPng() {
+        byte[] svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"/>".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        var image = imageService.storeImportedImage(blog,
+                                                    "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+                                                    ".svg",
+                                                    svg,
+                                                    "image/png");
+        assertThat(imageService.getImage(image.getFilename()).contentType()).isEqualTo("image/svg+xml");
+    }
+
+    @Test
     void getImageReturnsBytesFromDatabase() {
         var image = Given.randomCover(blog);
         var data = imageService.getImage(image.getFilename());
@@ -82,6 +93,22 @@ class ImageServiceTest {
                       .withPassword("Password123!")
                       .persist();
         blog = author.getDefaultBlog();
+    }
+
+    @Test
+    void storeImportedSvgServesWithSvgContentType() {
+        byte[] svg = """
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+                       <circle cx="5" cy="5" r="4"/>
+                     </svg>
+                     """.strip().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        var image = imageService.storeImportedImage(blog,
+                                                    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                                                    ".svg",
+                                                    svg,
+                                                    "image/svg+xml");
+        var data = imageService.getImage(image.getFilename());
+        assertThat(data.contentType()).isEqualTo("image/svg+xml");
     }
 
     @Test

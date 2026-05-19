@@ -2,6 +2,7 @@ package dev.vepo.contraponto.image;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -21,8 +22,51 @@ public class ImageService {
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
     private static final long MAX_SIZE_BYTES = 10L * 1024 * 1024;
 
+    public static String contentTypeForExtension(String extensionWithDot) {
+        if (extensionWithDot == null || extensionWithDot.isBlank()) {
+            return "image/png";
+        }
+        return switch (extensionWithDot.toLowerCase(Locale.ROOT)) {
+            case ".jpg", ".jpeg" -> "image/jpeg";
+            case ".gif" -> "image/gif";
+            case ".webp" -> "image/webp";
+            case ".svg" -> "image/svg+xml";
+            default -> "image/png";
+        };
+    }
+
+    private static String contentTypeForFilename(String filename, String storedContentType) {
+        String fromExtension = contentTypeForExtension(getFileExtensionStatic(filename));
+        if (filename != null && filename.toLowerCase(Locale.ROOT).endsWith(".svg")) {
+            return "image/svg+xml";
+        }
+        if (storedContentType != null && isKnownImageContentType(storedContentType)) {
+            return storedContentType;
+        }
+        return fromExtension;
+    }
+
+    private static String getFileExtensionStatic(String filename) {
+        int lastDot = filename.lastIndexOf('.');
+        if (lastDot > 0) {
+            return filename.substring(lastDot);
+        }
+        return "";
+    }
+
+    private static boolean isKnownImageContentType(String contentType) {
+        return contentType.equals("image/jpeg") ||
+                contentType.equals("image/jpg") ||
+                contentType.equals("image/png") ||
+                contentType.equals("image/gif") ||
+                contentType.equals("image/webp") ||
+                contentType.equals("image/svg+xml");
+    }
+
     private final ImageRepository imageRepository;
+
     private final ImageContentRepository imageContentRepository;
+
     private final ImageDependencyRepository dependencyRepository;
 
     @Inject
@@ -51,11 +95,7 @@ public class ImageService {
     }
 
     private String getFileExtension(String filename) {
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot > 0) {
-            return filename.substring(lastDot);
-        }
-        return "";
+        return getFileExtensionStatic(filename);
     }
 
     public ImageData getImage(String filename) {
@@ -72,15 +112,11 @@ public class ImageService {
         byte[] data = imageContentRepository.findContentByImageId(image.getId())
                                             .orElseThrow(() -> new WebApplicationException("Image content not found",
                                                                                            Response.Status.NOT_FOUND));
-        return new ImageData(data, image.getContentType(), image.getSize());
+        return new ImageData(data, contentTypeForFilename(filename, image.getContentType()), image.getSize());
     }
 
     private boolean isValidImageType(String contentType) {
-        return contentType != null && (contentType.equals("image/jpeg") ||
-                contentType.equals("image/jpg") ||
-                contentType.equals("image/png") ||
-                contentType.equals("image/gif") ||
-                contentType.equals("image/webp"));
+        return contentType != null && isKnownImageContentType(contentType);
     }
 
     @Transactional
@@ -145,7 +181,7 @@ public class ImageService {
 
     private void validateImage(String contentType, long size) {
         if (!isValidImageType(contentType)) {
-            throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP are allowed.",
+            throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP, and SVG are allowed.",
                                               Response.Status.BAD_REQUEST);
         }
         if (size > MAX_SIZE_BYTES) {
