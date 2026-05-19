@@ -34,7 +34,7 @@
             </div>
             <div id="notification-badge-container"
                  hx-get="/components/notifications/badge"
-                 hx-trigger="{authRefreshTrigger}">
+                 hx-trigger="{notificationBadgeTrigger}">
                 {#include NotificationBadgeEndpoint/badge unreadCount=0 authenticated=session.isAuthenticated /}
             </div>
             <div id="menu-container">

@@ -3,7 +3,9 @@
         <h2 class="hub-panel__title">Notifications</h2>
     </div>
     {#if unreadCount > 0}
-    <form hx-post="/forms/notifications/read" hx-swap="none">
+    <form hx-post="/forms/notifications/read"
+          hx-target="closest .hub-panel"
+          hx-swap="innerHTML">
         <button type="submit" class="btn btn--outline btn--small">Mark all read</button>
     </form>
     {/if}

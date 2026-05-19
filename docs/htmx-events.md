@@ -58,7 +58,8 @@ Update this table when adding auth-dependent UI.
 |------------------|----------|---------------------|-------------------------------------|
 | `#menu-container` | (included in page; OOB from `/forms/auth/*`) | Yes | No — menu comes from OOB only |
 | write-btn wrapper | `GET /components/write-btn` | No | Yes |
-| `#notification-badge-container` | `GET /components/notifications/badge` | No | Yes |
+| `#notification-badge-container` | `GET /components/notifications/badge` | No | `{notificationBadgeTrigger}` (`loggedIn`, `loggedOut`, `notificationsChanged`, poll) |
+| `#notificationOverlay` | `GET /components/notifications/overlay` | No | Loaded on bell open; refreshed on `notificationsChanged` when open |
 | `#blog-audience-{blogId}` | `GET /components/blogs/{id}/audience` | No | Yes, if on page |
 | `#comments` (post lazy-load shell) | `GET {post.url}/components/comments` | No | Yes, on post page |
 | `#main-content` (subscriptions) | `GET /subscriptions` (select `main`) | No | Yes, on subscriptions page |
@@ -72,7 +73,9 @@ Use the shared trigger value (same string as `HtmxTriggers.AUTH_REFRESH_TRIGGER`
 <div hx-get="/components/write-btn" hx-trigger="{authRefreshTrigger}">
 ```
 
-Constants: `dev.vepo.contraponto.shared.htmx.HtmxTriggers` (Java), `{authRefreshTrigger}` via `Globals` (`@TemplateGlobal`).
+Constants: `dev.vepo.contraponto.shared.htmx.HtmxTriggers` (Java), `{authRefreshTrigger}` and `{notificationBadgeTrigger}` via `Globals` (`@TemplateGlobal`).
+
+Notification bell (`header.js`): toggles `#notificationOverlay`, loads overlay on first open, closes on outside click / Escape / nav link.
 
 ---
 
@@ -83,6 +86,7 @@ Constants: `dev.vepo.contraponto.shared.htmx.HtmxTriggers` (Java), `{authRefresh
 | `toast:show` | `Toast.java` (`HX-Trigger` + `HX-Trigger-After-Settle`) | `toast.js` | `#toast` only |
 | `loggedIn` | Login, SignUp (`HX-Trigger-After-Settle`) | Templates with `{authRefreshTrigger}`; not `#menu-container` | Allowlist only |
 | `loggedOut` | Logout (`HX-Trigger-After-Settle`) | Same + `main.js` protected-path redirect | Chrome + optional nav to `/` |
+| `notificationsChanged` | `MarkNotificationsReadEndpoint`, `DismissNotificationEndpoint` | `#notification-badge-container`; `header.js` reloads open overlay | Badge + overlay only |
 
 ### Naming for new events
 

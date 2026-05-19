@@ -124,6 +124,11 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Subscribe by email** | Email on publish (`emailSubscribed = true`); deduped via email notification log. | `BlogAudienceSubscribeEndpoint` |
 | **Subscribed** | Active email subscription (button label when on). | UI: "Subscribed" |
 | **Notification** | In-app item for a recipient: type, blog, optional post/publication/actor/comment, read flag. | `Notification` |
+| **Notification bell** | Header control showing unread count; opens **notification overlay**. | `NotificationBadgeEndpoint`, `#notificationBellBtn` |
+| **Notification overlay** | Dropdown preview of latest unread notifications. | `NotificationOverlayEndpoint`, `#notificationOverlay` |
+| **Dismiss notification** | Mark one notification read from the overlay. | `DismissNotificationEndpoint` — button: "Dismiss" |
+| **Close notification overlay** | Hide the dropdown without changing read state. | Close control (`data-notification-close`) |
+| **Notifications changed** | HTMX event; refreshes badge and open overlay. | `HtmxTriggers.NOTIFICATIONS_CHANGED_ON_BODY` |
 | **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`. | `NotificationType` |
 | **Follow after login** | Guest clicks Follow, signs in via modal, then clicks Follow again. | Post page / audience widget |
 | **Subscriptions page** | Authenticated list of blogs the user follows/subscribes to. | `SubscriptionEndpoint` |
@@ -236,6 +241,10 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Library tab | Drafts | Library |
 | Library tab | Published | Library |
 | Notifications empty | No notifications yet. Follow blogs to see new posts here. | Notifications page |
+| Notifications overlay empty | No unread notifications. | Notification overlay |
+| Dismiss notification (button) | Dismiss | Notification overlay row |
+| Close notification overlay (button) | Close (×, aria-label) | Notification overlay header |
+| View all notifications (link) | View all notifications | Notification overlay footer |
 | Menu — editor | Featured Posts | Links to `/review` |
 | Dashboard stat | Published posts | Dashboard card |
 | Dashboard — blog selector | Blog | Analytics scope |
@@ -292,6 +301,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | `PostPublishedEvent` | After a new or changed publication snapshot is committed | Notify followers; email subscribers |
 | `PostGitSyncRequestedEvent` | After draft save or publish when blog has Git enabled | Export post to remote; record **Git sync run** |
 | `CustomPageChangedEvent` | After custom page create/update/delete | Refresh `CustomPageCache` |
+| `notificationsChanged` (HTMX) | After dismiss notification or mark all read | Refresh notification bell badge; reload open overlay |
 
 ---
 

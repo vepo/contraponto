@@ -135,7 +135,9 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `post-tags`, `post-tags__*` | `components/post-tags*.html` | |
 | `comment`, `comment-list`, `comment-form`, `comment-replies` | Comment components | On-post only |
 | `blog-audience` | `BlogAudienceComponentEndpoint/audienceControls.html` | Follow / subscribe; no top margin inside `article-page__actions` (blog header keeps spacing below title) |
-| `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header |
+| `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header bell + unread count |
+| `notification-menu`, `notification-menu__dropdown` | `NotificationBadgeEndpoint/badge.html` | Overlay shell |
+| `notification-overlay__*` | `NotificationOverlayService/overlay.html` | Overlay list, dismiss, footer |
 | `search-page`, `search-form`, `search-result`, `search-modal__*` | Search endpoints | |
 | `user-blog-page`, `user-blog__*` | `BlogEndpoint/home.html` | Author blog |
 | `content-render`, `content-render--youtube`, `content-render--gist`, `content-render--github`, `content-render--twitter`, `content-render--error` | Post body render plugins | YouTube, Gist, GitHub, Twitter embeds |

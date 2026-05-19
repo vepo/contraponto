@@ -3,6 +3,7 @@ package dev.vepo.contraponto.notification;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 import java.net.URL;
 
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.TestHttp;
+import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -35,21 +37,56 @@ class NotificationEndpointTest {
     private User recipient;
 
     @Test
-    void badge_shows_unread_count() {
+    void badge_shows_menu_chrome_and_unread_count() {
         session(recipient).get("/components/notifications/badge")
                           .then()
                           .statusCode(200)
-                          .body(containsString("notification-bell__badge"));
+                          .body(containsString("notificationBellBtn"))
+                          .body(containsString("notification-bell__badge"))
+                          .body(containsString("notificationOverlay"));
     }
 
     @Test
-    void mark_all_read_clears_unread() {
+    void dismiss_single_notification_updates_overlay_and_count() {
+        var notificationId = notificationRepository.findUnreadRecent(recipient.getId(), 1).getFirst().getId();
         assertThat(notificationRepository.countUnread(recipient.getId())).isPositive();
 
-        session(recipient).redirects().follow(false)
+        session(recipient).header("HX-Request", "true")
+                          .header("HX-Target", "notificationOverlay")
+                          .post("/forms/notifications/" + notificationId + "/dismiss")
+                          .then()
+                          .statusCode(200)
+                          .header(HtmxTriggers.HEADER_AFTER_SETTLE, containsString("notificationsChanged"));
+
+        assertThat(notificationRepository.countUnread(recipient.getId())).isZero();
+    }
+
+    @Test
+    void mark_all_read_from_inbox_returns_hub_panel() {
+        assertThat(notificationRepository.countUnread(recipient.getId())).isPositive();
+
+        session(recipient).header("HX-Request", "true")
+                          .header("HX-Target", "hub-panel")
                           .post("/forms/notifications/read")
                           .then()
-                          .statusCode(303);
+                          .statusCode(200)
+                          .header(HtmxTriggers.HEADER_AFTER_SETTLE, containsString("notificationsChanged"))
+                          .body(not(containsString("notification-list__item--unread")));
+
+        assertThat(notificationRepository.countUnread(recipient.getId())).isZero();
+    }
+
+    @Test
+    void mark_all_read_from_overlay_returns_html_and_trigger() {
+        assertThat(notificationRepository.countUnread(recipient.getId())).isPositive();
+
+        session(recipient).header("HX-Request", "true")
+                          .header("HX-Target", "notificationOverlay")
+                          .post("/forms/notifications/read")
+                          .then()
+                          .statusCode(200)
+                          .header(HtmxTriggers.HEADER_AFTER_SETTLE, containsString("notificationsChanged"))
+                          .body(containsString("No unread notifications"));
 
         assertThat(notificationRepository.countUnread(recipient.getId())).isZero();
     }
@@ -60,6 +97,16 @@ class NotificationEndpointTest {
                           .then()
                           .statusCode(200)
                           .body(containsString("started following"));
+    }
+
+    @Test
+    void overlay_lists_unread_with_dismiss_controls() {
+        session(recipient).get("/components/notifications/overlay")
+                          .then()
+                          .statusCode(200)
+                          .body(containsString("started following"))
+                          .body(containsString("Dismiss"))
+                          .body(containsString("Mark all read"));
     }
 
     private io.restassured.specification.RequestSpecification session(User user) {

@@ -25,5 +25,11 @@ public final class HtmxTriggers {
 
     public static final String LOGGED_OUT_ON_BODY = "{\"loggedOut\":{\"target\":\"body\"}}";
 
+    public static final String NOTIFICATIONS_CHANGED_ON_BODY = "{\"notificationsChanged\":{\"target\":\"body\"}}";
+
+    public static String notificationBadgeTrigger(String pollInterval) {
+        return AUTH_REFRESH_TRIGGER + ", notificationsChanged from:body, every " + pollInterval;
+    }
+
     private HtmxTriggers() {}
 }

@@ -269,9 +269,11 @@ Implementation details (BEM blocks, `main.css` / `manage.css` / `write.css` bund
 
 ## 18. Notifications
 
-- **Bell** in the header shows unread count; loads via HTMX (`NotificationBadgeEndpoint`).
-- **Inbox** at `/notifications`: list of in-app notifications with read/unread styling; “Mark all read” when unread exist.
-- **Empty state** copy per domain spec: invite users to follow blogs.
+- **Bell** in the header shows an unread count badge and opens a **notification overlay** (dropdown) with the latest unread items — not a direct navigation to the inbox.
+- **Overlay**: unread count in header, per-row **Dismiss**, panel **Close** (×), **Mark all read**, and **View all notifications** link to the full inbox.
+- Badge and open overlay refresh on `notificationsChanged` (after dismiss / mark-all-read) and on a configurable poll interval.
+- **Inbox** at `/account/notifications`: full list with read/unread styling; “Mark all read” when unread exist.
+- **Empty state** (inbox): invite users to follow blogs; overlay empty state: “No unread notifications.”
 - Pagination: manage style (Previous / Next, 20 per page).
 
 ---

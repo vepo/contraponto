@@ -2,6 +2,7 @@ package dev.vepo.contraponto.shared.infra;
 
 import java.time.LocalDateTime;
 
+import dev.vepo.contraponto.notification.NotificationHtmxConfig;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.security.CurrentCsrfToken;
 import io.quarkus.qute.TemplateGlobal;
@@ -27,6 +28,11 @@ public class Globals {
     @TemplateGlobal(name = "currentYear")
     public static int currentYear() {
         return LocalDateTime.now().getYear();
+    }
+
+    @TemplateGlobal(name = "notificationBadgeTrigger")
+    public static String notificationBadgeTrigger() {
+        return CDI.current().select(NotificationHtmxConfig.class).get().badgeTrigger();
     }
 
     @TemplateGlobal(name = "session")

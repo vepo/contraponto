@@ -100,6 +100,22 @@ public class NotificationRepository {
         return new Page<>(data, query.page(), query.limit(), total);
     }
 
+    public List<Notification> findUnreadRecent(long recipientUserId, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT n FROM Notification n
+                                         JOIN FETCH n.blog b
+                                         LEFT JOIN FETCH b.owner
+                                         LEFT JOIN FETCH n.post p
+                                         LEFT JOIN FETCH n.actor
+                                         LEFT JOIN FETCH n.gitSyncRun
+                                         WHERE n.recipient.id = :userId AND n.read = FALSE
+                                         ORDER BY n.createdAt DESC
+                                         """, Notification.class)
+                            .setParameter(PARAM_USER_ID, recipientUserId)
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
     @Transactional
     public int markAllRead(long recipientUserId) {
         return entityManager.createQuery("""
@@ -109,5 +125,20 @@ public class NotificationRepository {
                                          """)
                             .setParameter(PARAM_USER_ID, recipientUserId)
                             .executeUpdate();
+    }
+
+    @Transactional
+    public boolean markRead(long notificationId, long recipientUserId) {
+        int updated = entityManager.createQuery("""
+                                                UPDATE Notification n
+                                                SET n.read = TRUE
+                                                WHERE n.id = :id
+                                                  AND n.recipient.id = :userId
+                                                  AND n.read = FALSE
+                                                """)
+                                   .setParameter("id", notificationId)
+                                   .setParameter(PARAM_USER_ID, recipientUserId)
+                                   .executeUpdate();
+        return updated > 0;
     }
 }
