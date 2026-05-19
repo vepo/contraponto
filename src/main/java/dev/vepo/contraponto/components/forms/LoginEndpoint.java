@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.shared.security.SessionCookieSupport;
 import dev.vepo.contraponto.user.UserRepository;
@@ -34,7 +35,7 @@ public class LoginEndpoint {
     // Constants for better maintainability
     public static final String SESSION_COOKIE_NAME = "__session";
     private static final String SESSION_COOKIE_PATH = "/";
-    private static final String ERROR_MESSAGE_HTML = "<div class='error-message'>%s</div>";
+    private static final String ERROR_MESSAGE_HTML = "<div class='error-message' data-i18n='%s'>%s</div>";
     private static final String MODAL_CLEAR_OOB =
             "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
 
@@ -63,9 +64,9 @@ public class LoginEndpoint {
     /**
      * Returns a consistent error response for authentication failures.
      */
-    private Response buildErrorResponse(String errorMessage) {
+    private Response buildErrorResponse(String i18nKey, String ptBrMessage) {
         return Response.status(Status.BAD_REQUEST)
-                       .entity(ERROR_MESSAGE_HTML.formatted(errorMessage))
+                       .entity(ERROR_MESSAGE_HTML.formatted(i18nKey, ptBrMessage))
                        .build();
     }
 
@@ -104,7 +105,8 @@ public class LoginEndpoint {
         // Input validation
         if (isBlank(login) || isBlank(password)) {
             logger.warn("Login attempt with empty email or password");
-            return buildErrorResponse("Login and password are required.");
+            return buildErrorResponse(I18nKeys.AUTH_ERROR_LOGIN_REQUIRED,
+                                      "Login e senha são obrigatórios.");
         }
 
         return userRepository.findByUsernameOrEmail(login)
@@ -115,7 +117,8 @@ public class LoginEndpoint {
                                  if (!passwordValid || !isActive) {
                                      logger.warn("Login failed for user {}: passwordValid={}, active={}",
                                                  login, passwordValid, isActive);
-                                     return buildErrorResponse("Invalid username/email or password.");
+                                     return buildErrorResponse(I18nKeys.AUTH_ERROR_INVALID_CREDENTIALS,
+                                                               "Usuário/e-mail ou senha inválidos.");
                                  }
 
                                  // get anonymous session ID from cookie before login
@@ -141,6 +144,7 @@ public class LoginEndpoint {
                                                 .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_IN_ON_BODY)
                                                 .build();
                              })
-                             .orElseGet(() -> buildErrorResponse("Invalid username/email or password."));
+                             .orElseGet(() -> buildErrorResponse(I18nKeys.AUTH_ERROR_INVALID_CREDENTIALS,
+                                                                 "Usuário/e-mail ou senha inválidos."));
     }
 }

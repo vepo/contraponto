@@ -318,6 +318,15 @@ On the post page (all readers): **Version {n}** with a history icon in `article-
 
 ---
 
-## 24. Summary
+## 24. Interface language (i18n)
+
+- **Default:** Brazilian Portuguese (`pt-BR`) in templates; each interface string has a `data-i18n` key.
+- **Secondary:** English and Spanish via header/footer **PT / EN / ES** switcher (`POST /forms/locale`, cookie `contraponto_locale`).
+- **Account hub:** same switcher plus short hint that only chrome is translated (author content stays as written).
+- **Do not translate:** post bodies, comments, blog descriptions, custom page content from the database, transactional emails.
+
+---
+
+## 25. Summary
 
 Contraponto’s UI marries classic editorial design with modern interactivity. Every component – from the sticky header to the inline featured toggle – is built to feel responsive, intentional, and calm. The platform treats content as the star, while providing writers and editors with just enough functional power to shape the reading experience without ever overwhelming them.

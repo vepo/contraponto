@@ -10,7 +10,7 @@
                 {#include components/breadcrumb trail=breadcrumb /}
                 <div class="pages-manage__header">
                     <div>
-                        <h1 class="pages-manage__title">Git sync history</h1>
+                        <h1 class="pages-manage__title" data-i18n="git.historyTitle">Histórico de sincronização Git</h1>
                         <p class="pages-manage__subtitle">{blog.name}</p>
                     </div>
                     <a data-hx-get="/blogs/{blog.id}/edit"
@@ -19,12 +19,12 @@
                        hx-swap="outerHTML"
                        hx-push-url="/blogs/{blog.id}/edit"
                        class="btn btn--secondary"
-                       data-nav>Back to blog</a>
+                       data-nav data-i18n="git.backToBlog">Voltar ao blog</a>
                 </div>
 
                 {#if runs.isEmpty()}
                 <div class="pages-manage__empty">
-                    <p>No Git sync runs recorded yet.</p>
+                    <p data-i18n="git.historyEmpty">Nenhuma sincronização Git registrada ainda.</p>
                 </div>
                 {#else}
                 <div class="pages-manage__list">

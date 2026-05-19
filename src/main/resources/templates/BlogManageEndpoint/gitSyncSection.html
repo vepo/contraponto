@@ -9,7 +9,7 @@
 
 {#if blog.isPresent}
 <fieldset class="git-sync">
-    <legend class="git-sync__legend">Git sync</legend>
+    <legend class="git-sync__legend" data-i18n="git.sectionTitle">Sincronização Git</legend>
     <p class="git-sync__intro form-group__hint">
         Publish posts to a remote Git repository using Contraponto’s Jekyll-style layout
         (<code>_posts/</code>, <code>_drafts/</code>, YAML front matter).
@@ -32,7 +32,7 @@
     <div class="git-sync__config">
         <div class="git-sync__fields-row">
             <div class="form-group">
-                <label for="gitRemoteUrl">Git remote URL</label>
+                <label for="gitRemoteUrl" data-i18n="git.remoteUrl">URL do repositório Git</label>
                 <input type="url"
                        id="gitRemoteUrl"
                        name="git_remote_url"
@@ -65,7 +65,7 @@
                hx-target="main"
                hx-swap="outerHTML"
                hx-push-url="/blogs/{blog.get().id}/git-sync"
-               data-nav>View sync history</a>
+               data-nav data-i18n="git.viewHistory">Ver histórico de sincronização</a>
         </p>
     </div>
 </fieldset>

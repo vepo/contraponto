@@ -1,6 +1,6 @@
 {#if images.isEmpty()}
 <div class="pages-manage__empty">
-    <p>No images uploaded for this blog yet.</p>
+    <p data-i18n="image.empty">Nenhuma imagem enviada para este blog ainda.</p>
 </div>
 {#else}
 <div class="pages-manage__list">
@@ -25,7 +25,7 @@
                       hx-target="#main-content"
                       hx-swap="outerHTML">
                 {/if}
-                    <label class="write-form__label" for="alt-{row.uuid}">Alt text</label>
+                    <label class="write-form__label" for="alt-{row.uuid}" data-i18n="image.altText">Texto alternativo</label>
                     <div class="image-control__alt-row">
                         <input type="text"
                                id="alt-{row.uuid}"

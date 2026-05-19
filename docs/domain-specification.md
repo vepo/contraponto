@@ -196,23 +196,38 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
 | **Navigation hub** | Logged-in shell with sticky left sidebar sections and distinct URLs per feature (Writing → Library, Images, Blogs, Appearance; Manage; Account; Review; Administration). Writing hub does not duplicate the header Write action. Manage **Blogs** nav is visible only to `EDITOR`+. Menu opens the hub default section. | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` and `/{hub}/{section}` |
 | **Breadcrumb trail** | Ordered navigation labels from Home or a hub to the current page; last item is not linked. | `BreadcrumbService`, `components/breadcrumb.html` |
+| **Locale** | User-facing language for interface chrome (`pt-BR`, `en`, `es`). Default is **pt-BR** (text in HTML). | `LocalePreference`, cookie `contraponto_locale` |
+| **Language preference** | Persisted locale choice; applied client-side via `data-i18n` markers. | `LocaleSwitchEndpoint`, `i18n.js` |
+| **Language switcher** | Compact PT / EN / ES control in header and footer; full control with hint on Account hub. | `components/locale-switcher.html` |
+
+### Interface internationalization (i18n)
+
+- **Default locale:** `pt-BR` — canonical copy lives in Qute templates (visible without JavaScript).
+- **Secondary locales:** `en`, `es` — JSON bundles at `GET /i18n/messages/{locale}.json`; the browser applies them to elements with `data-i18n` keys.
+- **Scope:** menus, forms, validation messages, toasts, pagination, hub chrome — **not** post/comment/blog body, custom page content from DB, or account emails.
+- **Keys:** dot-separated identifiers (e.g. `auth.signIn`, `menu.writing`). Full catalog: `src/main/resources/i18n/messages_en.json` and `messages_es.json`.
 
 ### UI labels (user-visible copy)
 
-Use these exact strings in templates, toasts, and tests unless this table is updated.
+Templates use **PT-BR** as default text with `data-i18n` keys. English and Spanish are in the JSON bundles. Email subjects below are **not** translated by the interface i18n layer.
 
-| UI element | Label | Context |
-|------------|-------|---------|
-| Auth — login | Sign in | Modal, comment gate |
-| Auth — register | Sign up | Modal |
-| Auth — logout | Sign out | Menu |
-| Menu — writing hub | Writing | User menu → `/writing` |
-| Menu — manage hub | Manage | User menu → `/manage` |
-| Menu — account hub | Account | User menu → `/account` |
-| Menu — review hub | Review | User menu (editor) → `/editor` |
-| Menu — administration hub | Administration | User menu (admin) → `/administration` |
-| Breadcrumb — home | Home | Public pages root segment |
-| Auth — forgot password link | Forgot password? | Login modal |
+| UI element | i18n key | PT-BR (default) | EN | Context |
+|------------|----------|-----------------|-----|---------|
+| Auth — login | `auth.signIn` | Entrar | Sign in | Modal, comment gate |
+| Auth — register | `auth.signUp` | Cadastrar-se | Sign up | Modal |
+| Auth — logout | `auth.signOut` | Sair | Sign out | Menu |
+| Menu — writing hub | `menu.writing` | Escrita | Writing | User menu → `/writing` |
+| Menu — manage hub | `menu.manage` | Gerenciar | Manage | User menu → `/manage` |
+| Menu — account hub | `menu.account` | Conta | Account | User menu → `/account` |
+| Menu — review hub | `menu.review` | Revisão | Review | User menu (editor) → `/editor` |
+| Menu — administration hub | `menu.administration` | Administração | Administration | User menu (admin) → `/administration` |
+| Breadcrumb — home | `breadcrumb.home` | Início | Home | Public pages root segment |
+| Auth — forgot password link | `auth.forgotPassword` | Esqueceu a senha? | Forgot password? | Login modal |
+
+Further interface labels use the same four-column shape; canonical keys and EN/ES strings live in `src/main/resources/i18n/messages_en.json` and `messages_es.json`. Legacy rows below retain English reference text — prefer the JSON catalog when adding or changing copy.
+
+| UI element | Label (EN reference) | Context |
+|------------|----------------------|---------|
 | Password recovery — title | Reset your password | `/password-recovery` |
 | Password recovery — submit | Send reset link | Request form |
 | Password recovery — success | If an account exists for that email, we sent reset instructions. | After request |

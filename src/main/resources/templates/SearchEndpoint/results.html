@@ -5,19 +5,19 @@
             hx-target="main"
             hx-push-url="/search?q={query}"
             hx-swap="outerHTML"
-            class="u-hidden">Go to advanced</button>
+            class="u-hidden" data-i18n="search.goToAdvanced">Ir para busca avançada</button>
     {#if results == null}
     <div class="search-empty">
         <p>Search....</p>
     </div>
     {#else if results.isEmpty}
     <div class="search-empty">
-        <p>No results found for "{query}".</p>
+        <p data-i18n="search.noResultsFor" data-i18n-params='{"query": "{query}"}'>Nenhum resultado para "{query}".</p>
     </div>
     {#else}
     <div class="search-results">
         <div class="search-results__header">
-            Found {results.total} result{#if results.total > 1}s{/if} for "{query}"
+            <span data-i18n="search.foundResults" data-i18n-params='{"count": {results.total}, "query": "{query}"}'>{results.total} resultado(s) para "{query}"</span>
         </div>
         <div class="search-results__list">
             {#for post in results.data}
@@ -49,9 +49,7 @@
                             hx-target="#search-more-results"
                             hx-select="#searchResults .search-results__list"
                             hx-swap="outerHTML"
-                            class="btn btn--small">
-                        Load more
-                    </button>
+                            class="btn btn--small" data-i18n="pagination.loadMore">Carregar mais</button>
                     {/if}
                 </div>
                 {/if}

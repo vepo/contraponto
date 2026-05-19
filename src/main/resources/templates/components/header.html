@@ -1,11 +1,11 @@
 {#let sections = links.sections("SIDEBAR")}
-<div id="global-indicator" class="page-progress htmx-indicator" role="status" aria-live="polite" aria-label="Loading page"></div>
+<div id="global-indicator" class="page-progress htmx-indicator" role="status" aria-live="polite" aria-label="Carregando página" data-i18n="header.loading" data-i18n-attr="aria-label"></div>
 <header class="site-header">
     <div class="header-container">
         {#if !sections.isEmpty}
         <div class="nav-left">
-            <button class="icon-btn" aria-label="Menu" id="menuBtn">
-                <img src="/images/sidebar.svg" alt="icone do menu lateral" />
+            <button class="icon-btn" aria-label="Menu" id="menuBtn" data-i18n="header.menu" data-i18n-attr="aria-label">
+                <img src="/images/sidebar.svg" alt="ícone do menu lateral" data-i18n="header.menuIconAlt" data-i18n-attr="alt" />
             </button>
         </div>
         {/if}
@@ -20,14 +20,16 @@
         </div>
 
         <div class="nav-right">
-            <button class="icon-btn" 
-                    aria-label="Search" 
+            <button class="icon-btn"
+                    aria-label="Buscar"
                     id="searchBtn"
+                    data-i18n="header.search"
+                    data-i18n-attr="aria-label"
                     hx-get="/search/modal"
                     hx-target="#modal-container"
                     hx-swap="innerHTML"
                     data-disable-pattern="/search">
-                <img src="/images/search.svg" />
+                <img src="/images/search.svg" alt="" />
             </button>
             <div hx-get="/components/write-btn" hx-trigger="{authRefreshTrigger}">
                 {#include WriteButtonEndpoint/writeBtn user=session /}
@@ -37,6 +39,7 @@
                  hx-trigger="{notificationBadgeTrigger}">
                 {#include NotificationBadgeEndpoint/badge unreadCount=0 authenticated=session.isAuthenticated /}
             </div>
+            {#include components/locale-switcher /}
             <div id="menu-container">
                 {#include MenuEndpoint/menu user=session /}
             </div>
@@ -49,7 +52,7 @@
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
 <aside id="sidebar" class="sidebar">
     <div class="sidebar__header">
-        <button class="sidebar__close" aria-label="Close menu">&times;</button>
+        <button class="sidebar__close" aria-label="Fechar menu" data-i18n="header.closeMenu" data-i18n-attr="aria-label">&times;</button>
     </div>
     <nav class="sidebar__nav">
         {#for section in sections}
@@ -58,10 +61,10 @@
                     <ul class="sidebar__links">
                         {#for link in section.itens}
                             <li>
-                                <a data-hx-get="{link.href}" 
-                                   hx-select="main" 
-                                   hx-target="main" 
-                                   hx-push-url="{link.href}" 
+                                <a data-hx-get="{link.href}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-push-url="{link.href}"
                                    class="sidebar__link">
                                     {link.title}
                                 </a>

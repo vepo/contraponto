@@ -35,7 +35,8 @@
             {/if}
         </div>
         <div class="footer__bottom">
-            <p>&copy; {currentYear} contraponto. All rights reserved.</p>
+            <p>&copy; {currentYear} contraponto. <span data-i18n="footer.rights">Todos os direitos reservados.</span></p>
+            {#include components/locale-switcher /}
             {#include components/rss-feed-link feedUrl=siteRssFeedUrl /}
         </div>
     </div>

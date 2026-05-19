@@ -1,6 +1,6 @@
 <header class="notification-overlay__header">
     <div class="notification-overlay__header-text">
-        <h2 class="notification-overlay__title">Notifications</h2>
+        <h2 class="notification-overlay__title" data-i18n="notifications.title">Notificações</h2>
         {#if unreadCount > 0}
         <p class="notification-overlay__unread-count">{unreadCount} unread</p>
         {/if}
@@ -8,22 +8,20 @@
     <button type="button"
             class="notification-overlay__close"
             data-notification-close
-            aria-label="Close notifications">
+            aria-label="Fechar notificações" data-i18n="notifications.close" data-i18n-attr="aria-label">
         &times;
     </button>
 </header>
 
 {#if notifications.isEmpty()}
-<p class="notification-overlay__empty">No notification</p>
+<p class="notification-overlay__empty" data-i18n="notifications.overlay.empty">Nenhuma notificação</p>
 <p class="notification-overlay__footer-link">
     <a data-hx-get="/account/notifications"
        hx-select="main"
        hx-target="main"
        hx-swap="outerHTML"
        hx-push-url="/account/notifications"
-       class="notification-overlay__view-all">
-        View all notifications
-    </a>
+       class="notification-overlay__view-all" data-i18n="notifications.viewAll">Ver todas as notificações</a>
 </p>
 {#else}
 <ul class="notification-overlay__list">
@@ -42,7 +40,7 @@
               hx-post="/forms/notifications/{n.id}/dismiss"
               hx-target="#notificationOverlay"
               hx-swap="innerHTML">
-            <button type="submit" class="btn btn--outline btn--small">Dismiss</button>
+            <button type="submit" class="btn btn--outline btn--small" data-i18n="notifications.dismiss">Dispensar</button>
         </form>
     </li>
     {/for}
@@ -52,7 +50,7 @@
     <form hx-post="/forms/notifications/read"
           hx-target="#notificationOverlay"
           hx-swap="innerHTML">
-        <button type="submit" class="btn btn--outline btn--small">Mark all read</button>
+        <button type="submit" class="btn btn--outline btn--small" data-i18n="notifications.markAllRead">Marcar tudo como lido</button>
     </form>
     {/if}
     <a data-hx-get="/account/notifications"
@@ -60,8 +58,6 @@
        hx-target="main"
        hx-swap="outerHTML"
        hx-push-url="/account/notifications"
-       class="notification-overlay__view-all">
-        View all notifications
-    </a>
+       class="notification-overlay__view-all" data-i18n="notifications.viewAll">Ver todas as notificações</a>
 </footer>
 {/if}

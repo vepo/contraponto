@@ -34,6 +34,7 @@ import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.shared.security.CsrfTokenService;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.shared.i18n.LocalePreference;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
@@ -1841,6 +1842,9 @@ public class App {
 
     public App access() {
         driver.get(this.rootUri);
+        setLocaleCookie("en");
+        driver.navigate().refresh();
+        waitForReady();
         return this;
     }
 
@@ -2248,6 +2252,12 @@ public class App {
         return new ProfilePage();
     }
 
+    public App refresh() {
+        driver.navigate().refresh();
+        waitForReady();
+        return this;
+    }
+
     /**
      * Scrolls the element into view and clicks; falls back to a JS click when
      * another layer intercepts the native click (fixed chrome, overlapping grid
@@ -2272,6 +2282,11 @@ public class App {
     public SearchPage searchPage() {
         _goTo("/search");
         return new SearchPage();
+    }
+
+    public App setLocaleCookie(String locale) {
+        driver.manage().addCookie(new Cookie(LocalePreference.COOKIE_NAME, locale, "/", null));
+        return this;
     }
 
     private void syncCsrfCookieFromPage() {
@@ -2311,6 +2326,12 @@ public class App {
                });
     }
 
+    public String userMenuLinkText(String hxGetPath) {
+        var link = wait.until(visibilityOfElementLocated(
+                                                         cssSelector("a.user-menu__item[data-hx-get='%s']".formatted(hxGetPath))));
+        return link.getText();
+    }
+
     public UserManagePage users() {
         _goTo("/administration/users");
         return new UserManagePage();
@@ -2328,13 +2349,21 @@ public class App {
         return this;
     }
 
+    private void waitForI18n() {
+        wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript("""
+                                                                                   return document.documentElement.dataset.i18nReady === 'true'
+                                                                                       || (window.i18n && window.i18n.locale === 'pt-BR');
+                                                                                   """)));
+    }
+    // Inside App class, after SearchPage
+
     public App waitForReady() {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
                                                                                    "return typeof htmx === 'undefined' || !document.querySelector('.htmx-request');")));
+        waitForI18n();
         return this;
     }
-    // Inside App class, after SearchPage
 
     // Inside App class, after LibraryPage
 

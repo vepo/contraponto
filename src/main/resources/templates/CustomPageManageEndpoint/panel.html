@@ -6,7 +6,7 @@
 
 {#if pages.isEmpty()}
 <div class="pages-manage__empty">
-    <p>No custom pages yet.</p>
+    <p data-i18n="customPage.manageEmpty">Nenhuma página personalizada ainda.</p>
     <a data-hx-get="/pages/new"
        hx-select="main"
        hx-target="main"
@@ -30,7 +30,7 @@
                 {/if}
                 <span>{row.placement}</span>
                 {#if row.published}
-                <span class="pages-manage__badge pages-manage__badge--published">Published</span>
+                <span class="pages-manage__badge pages-manage__badge--published" data-i18n="library.tab.published">Publicados</span>
                 {#else}
                 <span class="pages-manage__badge pages-manage__badge--draft">Draft</span>
                 {/if}
@@ -44,9 +44,7 @@
                hx-swap="outerHTML"
                hx-push-url="/pages/{row.id}/edit"
                class="btn btn--secondary btn--small"
-               data-nav>
-                Edit
-            </a>
+               data-nav data-i18n="common.edit">Editar</a>
             <button type="button"
                     class="btn btn--small btn--danger"
                     hx-delete="/forms/pages/{row.id}"

@@ -102,9 +102,17 @@ class ImageLightboxManager {
 }
 
 class CodeCopyManager {
-    static COPY_LABEL = 'Copy';
-    static COPIED_LABEL = 'Copied';
+    static COPY_KEY = 'post.codeBlock.copy';
+    static COPIED_KEY = 'post.codeBlock.copied';
     static ENHANCED_ATTR = 'data-code-copy-enhanced';
+
+    static copyLabel() {
+        return window.i18n?.t(CodeCopyManager.COPY_KEY) || 'Copiar';
+    }
+
+    static copiedLabel() {
+        return window.i18n?.t(CodeCopyManager.COPIED_KEY) || 'Copiado';
+    }
 
     constructor() {
         this.scopes = ['article.article-page__content', '.write-preview'];
@@ -130,8 +138,10 @@ class CodeCopyManager {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'code-block__copy';
-            button.setAttribute('aria-label', CodeCopyManager.COPY_LABEL);
-            button.textContent = CodeCopyManager.COPY_LABEL;
+            button.setAttribute('aria-label', CodeCopyManager.copyLabel());
+            button.textContent = CodeCopyManager.copyLabel();
+            button.dataset.i18n = CodeCopyManager.COPY_KEY;
+            button.dataset.i18nAttr = 'aria-label';
             button.addEventListener('click', (event) => {
                 event.preventDefault();
                 this.copy(code, button);
@@ -162,14 +172,14 @@ class CodeCopyManager {
             return;
         }
         this.writeClipboard(text);
-        button.textContent = CodeCopyManager.COPIED_LABEL;
+        button.textContent = CodeCopyManager.copiedLabel();
         button.classList.add('code-block__copy--copied');
-        button.setAttribute('aria-label', CodeCopyManager.COPIED_LABEL);
+        button.setAttribute('aria-label', CodeCopyManager.copiedLabel());
         window.clearTimeout(button._copyResetTimer);
         button._copyResetTimer = window.setTimeout(() => {
-            button.textContent = CodeCopyManager.COPY_LABEL;
+            button.textContent = CodeCopyManager.copyLabel();
             button.classList.remove('code-block__copy--copied');
-            button.setAttribute('aria-label', CodeCopyManager.COPY_LABEL);
+            button.setAttribute('aria-label', CodeCopyManager.copyLabel());
         }, 2000);
     }
 
@@ -297,7 +307,8 @@ class MainManager {
         const errorElmSelector = evt.target.attributes.getNamedItem('hx-target-error')
         if (errorElmSelector) {
             if (evt.detail.failed) {
-                let msg = "Something bad happened. Please contact site admin";
+                let msg = window.i18n?.t('error.generic.contactAdmin')
+                    || 'Algo deu errado. Entre em contato com o administrador do site';
                 if (evt.detail.xhr.responseText) {
                     msg = evt.detail.xhr.responseText;
                 }

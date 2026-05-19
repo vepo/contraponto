@@ -1,0 +1,20 @@
+<div class="locale-switcher" role="group" aria-label="Idioma" data-i18n="locale.label" data-i18n-attr="aria-label">
+    <button type="button"
+            class="locale-switcher__btn {#if locale == 'pt-BR'}locale-switcher__btn--active{/if}"
+            data-locale="pt-BR"
+            onclick="window.i18n && window.i18n.setLocale('pt-BR')"
+            aria-pressed="{locale == 'pt-BR'}"
+            data-i18n="locale.pt">PT</button>
+    <button type="button"
+            class="locale-switcher__btn {#if locale == 'en'}locale-switcher__btn--active{/if}"
+            data-locale="en"
+            onclick="window.i18n && window.i18n.setLocale('en')"
+            aria-pressed="{locale == 'en'}"
+            data-i18n="locale.en">EN</button>
+    <button type="button"
+            class="locale-switcher__btn {#if locale == 'es'}locale-switcher__btn--active{/if}"
+            data-locale="es"
+            onclick="window.i18n && window.i18n.setLocale('es')"
+            aria-pressed="{locale == 'es'}"
+            data-i18n="locale.es">ES</button>
+</div>

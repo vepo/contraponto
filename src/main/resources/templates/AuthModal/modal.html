@@ -1,8 +1,8 @@
 <div id="authModal" class="modal modal--open">
   <div class="modal__container">
     <div class="modal__header">
-      <h2 class="modal__title">{#if mode == 'signup'}Create Account{#else}Sign In{/if}</h2>
-      <button class="modal__close" onclick="this.closest('.modal').remove()">✕</button>
+      <h2 class="modal__title">{#if mode == 'signup'}<span data-i18n="auth.createAccount">Criar conta</span>{#else}<span data-i18n="auth.signIn">Entrar</span>{/if}</h2>
+      <button class="modal__close" onclick="this.closest('.modal').remove()" aria-label="Fechar" data-i18n="common.close" data-i18n-attr="aria-label">✕</button>
     </div>
     <div class="modal__body">
       <div id="authError"></div>
@@ -15,49 +15,49 @@
             autocomplete="off">
         {#if mode == 'signup'}
         <div class="form-group">
-          <label>Username</label>
+          <label data-i18n="auth.username">Nome de usuário</label>
           <input type="text" name="username" required min-size="3" max-size="20" pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*">
-          <div class="error-message required">Username is required.</div>
-          <div class="error-message min-value">Username must be at least 3 characters.</div>
-          <div class="error-message max-value">Username must be no more than 20 characters.</div>
-          <div class="error-message pattern">Use only letters, numbers, hyphens and underscores.</div>
+          <div class="error-message required" data-i18n="auth.validation.usernameRequired">Nome de usuário é obrigatório.</div>
+          <div class="error-message min-value" data-i18n="auth.validation.usernameMin">O nome de usuário deve ter pelo menos 3 caracteres.</div>
+          <div class="error-message max-value" data-i18n="auth.validation.usernameMax">O nome de usuário deve ter no máximo 20 caracteres.</div>
+          <div class="error-message pattern" data-i18n="auth.validation.usernamePattern">Use apenas letras, números, hífens e sublinhados.</div>
         </div>
         <div class="form-group">
-          <label>Full Name</label>
+          <label data-i18n="auth.fullName">Nome completo</label>
           <input type="text" name="name" required>
-          <div class="error-message required">Name is required.</div>
+          <div class="error-message required" data-i18n="auth.validation.nameRequired">Nome é obrigatório.</div>
         </div>
         <div class="form-group">
-          <label>Email</label>
+          <label data-i18n="auth.email">E-mail</label>
           <input type="email" name="email" required email>
-          <div class="error-message required">Email is required.</div>
-          <div class="error-message email">Please enter a valid email address.</div>
+          <div class="error-message required" data-i18n="auth.validation.emailRequired">E-mail é obrigatório.</div>
+          <div class="error-message email" data-i18n="auth.validation.emailInvalid">Informe um endereço de e-mail válido.</div>
         </div>
         {#else}
         <div class="form-group">
-          <label>Email or Username</label>
+          <label data-i18n="auth.emailOrUsername">E-mail ou nome de usuário</label>
           <input type="text" name="login" required>
-          <div class="error-message required">Please enter your email or username.</div>
+          <div class="error-message required" data-i18n="auth.validation.loginRequired">Informe seu e-mail ou nome de usuário.</div>
         </div>
         {/if}
         <div class="form-group">
-          <label>Password</label>
+          <label data-i18n="auth.password">Senha</label>
           <input type="password" name="password" required>
-          <div class="error-message required">Password is required.</div>
+          <div class="error-message required" data-i18n="auth.validation.passwordRequired">Senha é obrigatória.</div>
         </div>
         <div class="response error"></div>
         {#include components/htmx-spinner id='auth-htmx-indicator' /}
         <button type="submit" disabled class="btn btn--primary btn--block">
-          {#if mode == 'signup'}Sign Up{#else}Sign In{/if}
+          {#if mode == 'signup'}<span data-i18n="auth.signUp">Cadastrar-se</span>{#else}<span data-i18n="auth.signIn">Entrar</span>{/if}
         </button>
       </form>
       <div class="auth-form__switch">
         {#if mode == 'signup'}
-        Already have an account? <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a>
+        <span data-i18n="auth.alreadyHaveAccount">Já tem uma conta?</span> <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container" data-i18n="auth.signIn">Entrar</a>
         {#else}
-        Don't have an account? <a href="#" hx-get="/auth/modal?mode=signup" hx-target="#modal-container">Sign Up</a>
+        <span data-i18n="auth.noAccount">Não tem uma conta?</span> <a href="#" hx-get="/auth/modal?mode=signup" hx-target="#modal-container" data-i18n="auth.signUp">Cadastrar-se</a>
         <br>
-        <a href="/password-recovery">Forgot password?</a>
+        <a href="/password-recovery" data-i18n="auth.forgotPassword">Esqueceu a senha?</a>
         {/if}
       </div>
     </div>

@@ -10,6 +10,8 @@ import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -91,7 +93,7 @@ public class UserSaveEndpoint {
         logger.info("Created user id={} username={}", user.getId(), user.getUsername());
 
         return Toast.ok()
-                    .message("User created successfully.")
+                    .i18nKey(I18nKeys.TOAST_USER_CREATED, I18nDefaults.USER_CREATED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/administration/users")
@@ -101,7 +103,7 @@ public class UserSaveEndpoint {
 
     private Response forbidden() {
         return Toast.response(Response.Status.FORBIDDEN)
-                    .message("You do not have permission to manage users.")
+                    .i18nKey(I18nKeys.TOAST_USER_FORBIDDEN, I18nDefaults.USER_FORBIDDEN)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -109,7 +111,7 @@ public class UserSaveEndpoint {
 
     private Response notFound() {
         return Toast.response(Response.Status.NOT_FOUND)
-                    .message("User not found.")
+                    .i18nKey(I18nKeys.TOAST_USER_NOT_FOUND, I18nDefaults.USER_NOT_FOUND)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -175,7 +177,7 @@ public class UserSaveEndpoint {
         logger.info("Updated user id={} username={}", user.getId(), user.getUsername());
 
         return Toast.ok()
-                    .message("User saved successfully.")
+                    .i18nKey(I18nKeys.TOAST_USER_SAVED, I18nDefaults.USER_SAVED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/administration/users")

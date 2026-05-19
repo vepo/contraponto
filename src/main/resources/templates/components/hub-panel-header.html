@@ -1,8 +1,8 @@
 <header class="hub-panel__header">
     <div class="hub-panel__header-text">
-        <h2 class="hub-panel__title">{title}</h2>
+        <h2 class="hub-panel__title" {#if titleKey?? && titleKey}data-i18n="{titleKey}"{/if}>{title}</h2>
         {#if subtitle}
-        <p class="hub-panel__subtitle">{subtitle}</p>
+        <p class="hub-panel__subtitle" {#if subtitleKey?? && subtitleKey}data-i18n="{subtitleKey}"{/if}>{subtitle}</p>
         {/if}
     </div>
     {#if actionHref?? && actionHref}
@@ -12,7 +12,8 @@
        hx-swap="outerHTML"
        hx-push-url="{actionHref}"
        class="btn btn--primary btn--small"
-       data-nav>
+       data-nav
+       {#if actionLabelKey?? && actionLabelKey}data-i18n="{actionLabelKey}"{/if}>
         {actionLabel}
     </a>
     {/if}

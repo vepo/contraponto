@@ -2,9 +2,9 @@
 <html>
     {#include components/head}
     {#if writePage.post.isPresent}
-        Edit Post
+        data-i18n="write.editPageTitle">Editar publicação
     {#else}
-        Write a Story
+        data-i18n="write.newPageTitle">Escrever uma história
     {/if} - contraponto
     {/include}
     <body hx-history-elt class="write-page">
@@ -14,7 +14,7 @@
                 {#include components/breadcrumb trail=breadcrumb /}
                 {#if writePage.hasUnpublishedChanges}
                 <div class="write-form__banner write-form__banner--warning" role="status">
-                    You have unpublished changes. Readers still see the last published version until you publish again.
+                    data-i18n="write.unpublishedBanner">Há alterações não publicadas. Os leitores ainda veem a última versão publicada até você publicar novamente.
                 </div>
                 {/if}
                 <form id="postForm" class="write-form">
@@ -22,16 +22,16 @@
 
                         <!-- Title field - vintage style -->
                         <div class="write-form__group write-form__group--title">
-                            <label for="title" class="write-form__label">Title</label>
+                            <label for="title" class="write-form__label" data-i18n="write.label.title">Título</label>
                             <input type="text" id="title" name="title" class="write-form__title"
-                                   placeholder="Story title..."
+                                   placeholder="Título da história..." data-i18n="write.placeholder.title" data-i18n-attr="placeholder"
                                    value="{#if writePage.post.isPresent}{writePage.post.get().title}{/if}"
                                    autocomplete="off"/>
                         </div>
 
                         <!-- Blog selector (always sends blogId, even when disabled) -->
                         <div class="write-form__group">
-                            <label for="blogSelect" class="write-form__label">Blog</label>
+                            <label for="blogSelect" class="write-form__label" data-i18n="dashboard.blogSelector">Blog</label>
                             
                             <!-- Fallback hidden field when only one blog (select disabled) -->
                             {#if writePage.blogs.size() <= 1}
@@ -46,14 +46,14 @@
                                     <option value="{blog.id}"
                                             {#if blog.id == writePage.selectedBlogId}selected{/if}>
                                         {blog.name}
-                                        {#if blog.main}(default){/if}
-                                        {#if !blog.active}(inactive){/if}
+                                        {#if blog.main}(padrão){/if}
+                                        {#if !blog.active}(inativo){/if}
                                     </option>
                                 {/for}
                             </select>
                             
                             {#if writePage.blogs.size() > 1}
-                                <div class="write-form__hint">Choose which blog to publish in.</div>
+                                <div class="write-form__hint">Escolha em qual blog publicar.</div>
                             {/if}
                             <div class="write-form__hint">
                                 <a data-hx-get="/blogs/{writePage.selectedBlogId}/images"
@@ -61,13 +61,13 @@
                                    hx-target="main"
                                    hx-swap="outerHTML"
                                    hx-push-url="/blogs/{writePage.selectedBlogId}/images"
-                                   data-nav>Images</a>
+                                   data-nav data-i18n="image.pageTitle">Imagens</a>
                             </div>
                         </div>
 
                         <!-- Cover Image upload -->
                         <div class="write-form__group">
-                            <label class="write-form__label">Cover image</label>
+                            <label class="write-form__label" data-i18n="write.label.cover">Imagem de capa</label>
                             <div id="coverUploadArea" class="write-form__cover">
                                 <div class="write-form__cover-placeholder{#if writePage.post.isPresent && writePage.post.get().getCover() != null} u-hidden{/if}" id="coverPlaceholder">
                                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -75,11 +75,11 @@
                                         <circle cx="8.5" cy="8.5" r="2.5" />
                                         <path d="M21 15L16 10L5 21" />
                                     </svg>
-                                    <span>Click or drag to upload cover image</span>
-                                    <small>JPG, PNG, GIF, WebP up to 10MB</small>
+                                    <span>Clique ou arraste para enviar a capa</span>
+                                    <small>JPG, PNG, GIF, WebP até 10 MB</small>
                                 </div>
                                 <div id="coverPreview" class="write-form__cover-preview{#if !writePage.post.isPresent || writePage.post.get().getCover() == null} u-hidden{/if}">
-                                    <img id="coverPreviewImg" src="{#if writePage.post.isPresent}{writePage.post.get().coverUrl}{/if}" alt="Cover preview"/>
+                                    <img id="coverPreviewImg" src="{#if writePage.post.isPresent}{writePage.post.get().coverUrl}{/if}" alt="Pré-visualização da capa"/>
                                     <button type="button" id="removeCoverBtn" class="write-form__cover-remove">✕</button>
                                 </div>
                                 <input type="file" id="coverInput" class="u-hidden" accept="image/jpeg,image/png,image/gif,image/webp">
@@ -89,48 +89,48 @@
 
                         <!-- Slug field -->
                         <div class="write-form__group">
-                            <label for="slug" class="write-form__label">Permalink slug</label>
+                            <label for="slug" class="write-form__label" data-i18n="write.label.slug">Slug do link</label>
                             <input type="text" id="slug" name="slug" class="write-form__slug"
-                                   placeholder="url-friendly-identifier"
+                                   placeholder="identificador-amigavel-url"
                                    value="{#if writePage.post.isPresent}{writePage.post.get().slug}{/if}"
                                    autocomplete="off"/>
-                            <div class="write-form__hint">Used in the post URL (e.g., /&lt;your-username&gt;/post/&lt;your-slug&gt;)</div>
+                            <div class="write-form__hint">Usado na URL da publicação (e.g., /&lt;your-username&gt;/post/&lt;your-slug&gt;)</div>
                         </div>
 
                         <!-- Description field -->
                         <div class="write-form__group">
-                            <label for="description" class="write-form__label">Short description</label>
+                            <label for="description" class="write-form__label" data-i18n="write.label.description">Descrição curta</label>
                             <input type="text" id="description" name="description" class="write-form__description"
-                                   placeholder="A brief excerpt (optional)"
+                                   placeholder="Um breve resumo (opcional)"
                                    value="{#if writePage.post.isPresent}{writePage.post.get().description}{/if}"
                                    autocomplete="off"/>
                         </div>
 
                         <!-- Tags -->
                         <div class="write-form__group" id="tagsPicker">
-                            <label for="tagInput" class="write-form__label">Tags</label>
+                            <label for="tagInput" class="write-form__label" data-i18n="tag.manageTitle">Tags</label>
                             <div class="write-tags">
                                 <div class="write-tags__chips" id="tagsChips" aria-live="polite"></div>
                                 <input type="text" id="tagInput" class="write-tags__input" autocomplete="off"
-                                       placeholder="Add a tag and press Enter…" list="tagSuggestionsList"/>
+                                       placeholder="Adicione uma tag e pressione Enter…" list="tagSuggestionsList"/>
                                 <datalist id="tagSuggestionsList"></datalist>
                                 <input type="hidden" name="tagsJson" id="tagsJson" value="{writePage.initialTagsJson}"/>
                             </div>
-                            <div class="write-form__hint">Suggestions match existing tags (case-insensitive). Any new name is created when you save the draft or publish.</div>
+                            <div class="write-form__hint">As sugestões correspondem às tags existentes (case-insensitive). Any new name is created when you save the draft or publish.</div>
                         </div>
 
                         <div class="write-form__group">
-                            <label for="serieTitle" class="write-form__label">Series <span class="write-form__optional">(optional)</span></label>
+                            <label for="serieTitle" class="write-form__label"><span data-i18n="write.label.series">Série</span> <span class="write-form__optional" data-i18n="write.optional">(opcional)</span></label>
                             <input type="text" id="serieTitle" name="serieTitle" class="write-form__title write-form__serie"
-                                   placeholder="Series title — same text groups posts into one series page"
+                                   placeholder="Título da série — same text groups posts into one series page"
                                    value="{writePage.initialSerieTitle}"
                                    autocomplete="off"/>
-                            <div class="write-form__hint">Leave empty for a standalone post. Matching series names share one public listing, ordered by publish date.</div>
+                            <div class="write-form__hint">Deixe vazio para uma publicação avulsa. Matching series names share one public listing, ordered by publish date.</div>
                         </div>
 
                         <!-- Editor area with toolbar and textarea -->
                         <div class="write-form__group write-form__group--editor">
-                            <label class="write-form__label">Your story</label>
+                            <label class="write-form__label" data-i18n="write.label.content">Sua história</label>
                             <div class="write-editor-toolbar" id="editorToolbar">
                                 <!-- Mode selector -->
                                 <div class="editor-mode-wrapper">
@@ -176,10 +176,10 @@
                                 <button type="button" data-command="togglePreview" id="previewToggleBtn" title="Preview">👁️ Preview</button>
                             </div>
                             <textarea id="content" name="content" class="write-form__editor"
-                                      placeholder="Write your story here... Use the toolbar above for formatting.">{writePage.editorContent}</textarea>
+                                      placeholder="Escreva sua história aqui... Use a barra de ferramentas acima para formatar.">{writePage.editorContent}</textarea>
                             <!-- Preview container (hidden by default) -->
                             <div id="previewContainer" class="write-preview u-hidden"></div>
-                            <div class="write-form__hint" id="editorHint">Markdown formatting supported • Use the toolbar for shortcuts</div>
+                            <div class="write-form__hint" id="editorHint">Formatação Markdown • Use a barra de ferramentas para atalhos</div>
                         </div>
                     </form>
                 </div>

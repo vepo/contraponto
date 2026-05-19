@@ -14,12 +14,12 @@
                 class="btn btn--outline btn--small"
                 hx-post="/forms/posts/{post.id}/comments/{comment.id}/approve"
                 hx-target="#comments"
-                hx-swap="innerHTML">Approve</button>
+                hx-swap="innerHTML" data-i18n="comment.approve">Aprovar</button>
         <button type="button"
                 class="btn btn--outline btn--small"
                 hx-post="/forms/posts/{post.id}/comments/{comment.id}/reject"
                 hx-target="#comments"
-                hx-swap="innerHTML">Reject</button>
+                hx-swap="innerHTML" data-i18n="comment.reject">Rejeitar</button>
     </div>
     {/if}
 
@@ -32,12 +32,12 @@
                 class="comment__view-replies"
                 hx-get="{commentsUrl}/{comment.id}/replies"
                 hx-target="#replies-{comment.id}"
-                hx-swap="innerHTML">View replies</button>
+                hx-swap="innerHTML" data-i18n="comment.viewReplies">Ver respostas</button>
     </footer>
     {#else if authenticated}
     <footer class="comment__footer">
         <details class="comment__reply-details">
-            <summary class="comment__view-replies">Reply</summary>
+            <summary class="comment__view-replies" data-i18n="comment.replyBadge">Resposta</summary>
             {#include CommentComponentEndpoint/commentForm postId=post.id parentId=comment.id commentsUrl=commentsUrl /}
         </details>
     </footer>

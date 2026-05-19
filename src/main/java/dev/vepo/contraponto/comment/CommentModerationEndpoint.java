@@ -6,6 +6,8 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -75,7 +77,7 @@ public class CommentModerationEndpoint {
         } catch (ForbiddenException e) {
             return Toast.response(Status.FORBIDDEN).message(e.getMessage()).type(Toast.Type.ERROR).build();
         } catch (NotFoundException _) {
-            return Toast.response(Status.NOT_FOUND).message("Comment not found.").type(Toast.Type.ERROR).build();
+            return Toast.response(Status.NOT_FOUND).i18nKey(I18nKeys.TOAST_COMMENT_NOT_FOUND, I18nDefaults.COMMENT_NOT_FOUND).type(Toast.Type.ERROR).build();
         }
     }
 

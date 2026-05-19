@@ -1,5 +1,5 @@
 {#if serie}
-<nav class="post-serie-nav" aria-label="Series navigation">
+<nav class="post-serie-nav" aria-label="Navegação da série" data-i18n="post.serieNavAria" data-i18n-attr="aria-label">
     <h2 class="post-serie-nav__heading">
         <a data-hx-get="{serie.url}"
            hx-select="main"
@@ -7,7 +7,7 @@
            hx-push-url="{serie.url}"
            class="post-serie-nav__serie-link">{serie.title}</a>
     </h2>
-    <p class="post-serie-nav__part-count">Series of {seriePosts.size} parts</p>
+    <p class="post-serie-nav__part-count" data-i18n="post.seriePartCount" data-i18n-params='{"n": {seriePosts.size}}'>Série de {seriePosts.size} partes</p>
     <ol class="post-serie-nav__list">
         {#for seriePost in seriePosts}
             {#if seriePost.id == currentPost.id}

@@ -8,8 +8,8 @@
         <main class="search-page" id="main-content">
             <div class="container-narrow">
                 {#include components/breadcrumb trail=breadcrumb /}
-                <h1 class="search-page__title">Search</h1>
-                <p class="search-page__subtitle">Find stories across the platform.</p>
+                <h1 class="search-page__title" data-i18n="search.title">Buscar</h1>
+                <p class="search-page__subtitle" data-i18n="search.subtitle">Encontre histórias na plataforma.</p>
                 
                 <form class="search-form" 
                       hx-get="/search/results" 
@@ -23,11 +23,13 @@
                         <input type="search" 
                                name="q" 
                                class="search-form__input" 
-                               placeholder="Search articles..." 
+                               placeholder="Buscar artigos..."
                                value="{query}"
-                               aria-label="Search articles"
+                               aria-label="Buscar artigos"
+                               data-i18n="search.placeholderArticles"
+                               data-i18n-attr="placeholder:aria-label"
                                autocomplete="off"/>
-                        <button type="submit" class="search-form__button">Search</button>
+                        <button type="submit" class="search-form__button" data-i18n="search.title">Buscar</button>
                         {#include components/htmx-spinner id='search-page-htmx-indicator' /}
                     </div>
                 </form>
@@ -38,8 +40,8 @@
                             <circle cx="11" cy="11" r="7"/>
                             <path d="M21 21l-4.35-4.35"/>
                         </svg>
-                        <p class="search-initial-title">Find the perfect story</p>
-                        <p class="search-initial-hint">Start typing to search across all articles</p>
+                        <p class="search-initial-title" data-i18n="search.initialTitle">Encontre a história ideal</p>
+                        <p class="search-initial-hint" data-i18n="search.initialHint">Comece a digitar para buscar em todos os artigos</p>
                     </div>
                 </div>
                 {#else}

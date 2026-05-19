@@ -2,6 +2,8 @@ package dev.vepo.contraponto.tag;
 
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -48,24 +50,24 @@ public class UpdateTagEndpoint {
             return Response.status(Status.FORBIDDEN).build();
         }
         if (form.tagId() == null) {
-            return Toast.response(Status.BAD_REQUEST).message("Missing tag.").type(Toast.Type.ERROR).build();
+            return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_MISSING, I18nDefaults.TAG_MISSING).type(Toast.Type.ERROR).build();
         }
         Tag tag = tagRepository.findById(form.tagId()).orElseThrow(() -> new NotFoundException("Tag not found"));
         if (isBlank(form.name())) {
-            return Toast.response(Status.BAD_REQUEST).message(ERROR_NAME).type(Toast.Type.ERROR).build();
+            return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_NAME_REQUIRED, I18nDefaults.TAG_NAME_REQUIRED).type(Toast.Type.ERROR).build();
         }
         if (isBlank(form.slug())) {
-            return Toast.response(Status.BAD_REQUEST).message(ERROR_SLUG).type(Toast.Type.ERROR).build();
+            return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_INVALID, I18nDefaults.TAG_SLUG_INVALID).type(Toast.Type.ERROR).build();
         }
         if (TagSlug.hasInvalidSlugCharacters(form.slug().trim())) {
-            return Toast.response(Status.BAD_REQUEST).message(ERROR_SLUG).type(Toast.Type.ERROR).build();
+            return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_INVALID, I18nDefaults.TAG_SLUG_INVALID).type(Toast.Type.ERROR).build();
         }
         String newSlug = TagSlug.slugify(form.slug().trim());
         if (newSlug.isEmpty()) {
-            return Toast.response(Status.BAD_REQUEST).message(ERROR_SLUG).type(Toast.Type.ERROR).build();
+            return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_INVALID, I18nDefaults.TAG_SLUG_INVALID).type(Toast.Type.ERROR).build();
         }
         if (tagRepository.existsOtherWithSlug(tag.getId(), newSlug)) {
-            return Toast.response(Status.BAD_REQUEST).message(ERROR_SLUG_TAKEN).type(Toast.Type.ERROR).build();
+            return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_TAKEN, I18nDefaults.TAG_SLUG_TAKEN).type(Toast.Type.ERROR).build();
         }
         tag.setSlug(newSlug);
         tag.setName(form.name().trim());
@@ -76,7 +78,7 @@ public class UpdateTagEndpoint {
         }
         tagRepository.save(tag);
         return Toast.ok()
-                    .message(SUCCESS)
+                    .i18nKey(I18nKeys.TOAST_TAG_UPDATED, I18nDefaults.TAG_UPDATED)
                     .type(Toast.Type.SUCCESS)
                     .url(TagPageEndpoint.url(tag))
                     .build();

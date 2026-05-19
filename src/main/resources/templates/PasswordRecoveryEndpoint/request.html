@@ -8,7 +8,7 @@
         <main class="profile-page" id="main-content">
             <div class="container-narrow">
                 {#include components/breadcrumb trail=breadcrumb /}
-                <h1 class="profile-page__title">Reset your password</h1>
+                <h1 class="profile-page__title" data-i18n="passwordRecovery.title">Redefinir sua senha</h1>
                 <p class="profile-page__subtitle">Enter your account email and we will send reset instructions.</p>
 
                 <div id="recoveryMessage">
@@ -27,18 +27,18 @@
                       hx-indicator="#recovery-htmx-indicator"
                       autocomplete="off">
                     <div class="form-group">
-                        <label>Email Address</label>
+                        <label data-i18n="account.emailAddress">Endereço de e-mail</label>
                         <input type="email" name="email" required>
                         <div class="error-message required">Email is required.</div>
                     </div>
                     {#include components/htmx-spinner id='recovery-htmx-indicator' /}
-                    <button type="submit" class="btn btn--primary">Send reset link</button>
+                    <button type="submit" class="btn btn--primary" data-i18n="passwordRecovery.submit">Enviar link de redefinição</button>
                 </form>
                 {/if}
 
                 <p class="auth-form__switch">
-                    <a href="/">Back to home</a>
-                    · <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a>
+                    <a href="/" data-i18n="common.backToHome">Voltar ao início</a>
+                    · <a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container" data-i18n="auth.signIn">Entrar</a>
                 </p>
             </div>
         </main>

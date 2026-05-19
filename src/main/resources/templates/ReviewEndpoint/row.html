@@ -5,15 +5,14 @@
         <span class="review-row__date">{post.publishedAt.formatDate}</span>
     </div>
     <div class="review-row__actions">
-        <!-- Toggle button: sends PUT to the endpoint, swaps the whole row -->
         <button class="btn btn--small {#if post.featured}btn--featured{/if}"
                 hx-put="/editor/review/components/{post.id}/featured/toggle"
                 hx-target="#post-row-{post.id}"
                 hx-swap="outerHTML">
             {#if post.featured}
-                ★ Featured
+                <span data-i18n="post.featuredStar">★ Destaque</span>
             {#else}
-                ☆ Not Featured
+                <span data-i18n="post.notFeaturedStar">☆ Sem destaque</span>
             {/if}
         </button>
     </div>

@@ -44,7 +44,7 @@
 {/if}
 
 <div class="form-group">
-    <label>Blog banner</label>
+    <label data-i18n="blog.banner">Banner do blog</label>
     {#if blog.isPresent}
     {#if blog.get().banner}
     {#include components/image-upload-area label='Blog banner' areaId='blogBannerUpload' hiddenFieldId='bannerId' blogId=uploadBlogId initialUrl=blog.get().banner.url initialId=blog.get().banner.uuid /}

@@ -2,6 +2,8 @@ package dev.vepo.contraponto.navigation;
 
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -31,7 +33,7 @@ public class EditorHubEndpoint {
 
     private Response forbidden() {
         return Toast.response(Response.Status.FORBIDDEN)
-                    .message("Usuário não possui permissões de editor!")
+                    .i18nKey(I18nKeys.TOAST_EDITOR_FORBIDDEN, I18nDefaults.EDITOR_FORBIDDEN)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();

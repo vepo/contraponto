@@ -6,7 +6,7 @@
 
 {#if blogs.isEmpty()}
 <div class="pages-manage__empty">
-    <p>No blogs found.</p>
+    <p data-i18n="blog.manageEmpty">Nenhum blog encontrado.</p>
 </div>
 {#else}
 <div class="pages-manage__list">
@@ -42,9 +42,7 @@
                hx-swap="outerHTML"
                hx-push-url="/blogs/{row.id}/edit?hub=writing"
                class="btn btn--secondary btn--small"
-               data-nav>
-                Edit
-            </a>
+               data-nav data-i18n="common.edit">Editar</a>
             <a data-hx-get="/blogs/{row.id}/settings"
                hx-select="main"
                hx-target="main"

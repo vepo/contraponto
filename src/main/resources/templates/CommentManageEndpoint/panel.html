@@ -1,11 +1,11 @@
-<h2 class="hub-panel__title">Manage Comments</h2>
-<p class="hub-panel__subtitle pages-manage__subtitle">
-    Approve or reject comments awaiting moderation on your published posts.
+<h2 class="hub-panel__title" data-i18n="comment.manageTitle">Gerenciar comentários</h2>
+<p class="hub-panel__subtitle pages-manage__subtitle" data-i18n="comment.manageSubtitle">
+    Aprove ou rejeite comentários aguardando moderação em suas publicações.
 </p>
 
 {#if comments.isEmpty()}
 <div class="pages-manage__empty">
-    <p>No comments waiting for approval.</p>
+    <p data-i18n="comment.manageEmpty">Nenhum comentário aguardando aprovação.</p>
 </div>
 {#else}
 <div class="pages-manage__list">
@@ -23,7 +23,7 @@
                 <span class="pages-manage__badge">@{row.authorUsername}</span>
                 <span>{row.authorName}</span>
                 {#if row.reply}
-                <span class="pages-manage__badge">Reply</span>
+                <span class="pages-manage__badge" data-i18n="comment.replyBadge">Resposta</span>
                 {/if}
                 <span>{row.createdAt.format('dd/MM/yyyy HH:mm')}</span>
             </div>
@@ -35,17 +35,13 @@
                     hx-post="/forms/posts/{row.postId}/comments/{row.commentId}/approve?from=manage"
                     hx-select="main"
                     hx-target="main"
-                    hx-swap="outerHTML">
-                Approve
-            </button>
+                    hx-swap="outerHTML" data-i18n="comment.approve">Aprovar</button>
             <button type="button"
                     class="btn btn--small btn--danger"
                     hx-post="/forms/posts/{row.postId}/comments/{row.commentId}/reject?from=manage"
                     hx-select="main"
                     hx-target="main"
-                    hx-swap="outerHTML">
-                Reject
-            </button>
+                    hx-swap="outerHTML" data-i18n="comment.reject">Rejeitar</button>
         </div>
     </article>
     {/for}

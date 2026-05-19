@@ -1,15 +1,21 @@
-{#include components/hub-panel-header title='Security' subtitle='Update your email address and password.' /}
+{#include components/hub-panel-header title='Segurança' subtitle='Atualize seu e-mail e senha.' titleKey='account.securityTitle' subtitleKey='account.securitySubtitle' /}
+
+<section class="profile-form__section profile-form__section--locale">
+    <h3 class="profile-form__section-title" data-i18n="locale.label">Idioma</h3>
+    <p class="form-group__hint" data-i18n="locale.accountHint">Escolha o idioma dos menus, botões e mensagens do sistema. O conteúdo das publicações permanece como o autor escreveu.</p>
+    {#include components/locale-switcher /}
+</section>
 
 <div id="securityMessage">
     {#if emailVerified}
-    <div class="success-message">Email address updated.</div>
+    <div class="success-message" data-i18n="account.emailUpdated">Endereço de e-mail atualizado.</div>
     {#else if invalidToken}
-    <div class="error-message visible">This verification link is invalid or has expired.</div>
+    <div class="error-message visible" data-i18n="account.invalidVerification">Este link de verificação é inválido ou expirou.</div>
     {/if}
 </div>
 
 {#if user.pendingEmail}
-<p class="profile-page__subtitle">Verification pending for {user.pendingEmail}.</p>
+<p class="profile-page__subtitle" data-i18n="account.pendingEmail" data-i18n-params='{"email": "{user.pendingEmail}"}'>Verificação pendente para {user.pendingEmail}.</p>
 {/if}
 
 <form class="profile-form"
@@ -20,30 +26,30 @@
       autocomplete="off">
 
     <div class="form-group">
-        <label>Email Address</label>
+        <label data-i18n="account.emailAddress">Endereço de e-mail</label>
         <input type="email" name="email" value="{user.email}" required>
-        <div class="error-message required">Valid email is required.</div>
-        <div class="error-message email-taken">Email already taken.</div>
+        <div class="error-message required" data-i18n="account.validation.emailRequired">Informe um e-mail válido.</div>
+        <div class="error-message email-taken" data-i18n="account.validation.emailTaken">E-mail já em uso.</div>
     </div>
 
     <div class="form-group">
-        <label>Current Password</label>
+        <label data-i18n="account.currentPassword">Senha atual</label>
         <input type="password" name="currentPassword" required>
-        <div class="error-message required">Current password is required.</div>
+        <div class="error-message required" data-i18n="account.validation.currentPasswordRequired">Senha atual é obrigatória.</div>
     </div>
 
     <div class="form-group">
-        <label>New Password (optional)</label>
+        <label data-i18n="account.newPasswordOptional">Nova senha (opcional)</label>
         <input type="password" name="newPassword">
-        <div class="error-message min-length">Password must be at least 8 characters.</div>
+        <div class="error-message min-length" data-i18n="account.validation.passwordMin">A senha deve ter pelo menos 8 caracteres.</div>
     </div>
 
     <div class="form-group">
-        <label>Confirm New Password</label>
+        <label data-i18n="account.confirmPassword">Confirmar nova senha</label>
         <input type="password" name="confirmPassword" match="input[name='newPassword']">
-        <div class="error-message match">Passwords do not match.</div>
+        <div class="error-message match" data-i18n="account.validation.passwordsMismatch">As senhas não coincidem.</div>
     </div>
 
     {#include components/htmx-spinner id='security-htmx-indicator' /}
-    <button type="submit" class="btn btn--primary">Save Changes</button>
+    <button type="submit" class="btn btn--primary" data-i18n="account.saveChanges">Salvar alterações</button>
 </form>

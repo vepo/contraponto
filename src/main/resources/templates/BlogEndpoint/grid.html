@@ -1,6 +1,6 @@
 {#if posts.isFirstPage && posts.isEmpty}
 <div class="user-blog__empty">
-    No posts published yet
+    <span data-i18n="grid.emptyPosts">Nenhuma publicação ainda</span>
 </div>
 {/if}
 
@@ -18,7 +18,7 @@
         </div>
         {/if}
         <div class="article-card__content">
-            <div class="article-card__category">Article</div>
+            <div class="article-card__category" data-i18n="grid.articleCategory">Artigo</div>
             <h2 class="article-card__title">
                 <a data-hx-get="{post.url}"
                     hx-select="main"

@@ -19,7 +19,7 @@
                        hx-swap="outerHTML"
                        hx-push-url="/blogs/{blog.id}/git-sync"
                        class="btn btn--secondary"
-                       data-nav>Back to history</a>
+                       data-nav data-i18n="git.backToHistory">Voltar ao histórico</a>
                 </div>
 
                 <section class="git-sync-history__summary-panel">
@@ -71,7 +71,7 @@
                 <section class="git-sync-history__entries">
                     <h2 class="git-sync-history__section-title">Log entries</h2>
                     {#if entries.isEmpty()}
-                    <p class="pages-manage__empty">No log entries recorded.</p>
+                    <p class="pages-manage__empty" data-i18n="git.noLogEntries">Nenhuma entrada de log registrada.</p>
                     {#else}
                     <table class="git-sync-history__table">
                         <thead>

@@ -89,6 +89,14 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `.loading-spinner` | Inline loading text (library tab) |
 | `.spinner` | Animated spinner (optional) |
 
+### Locale switcher (main.css)
+
+| Block | Purpose |
+|-------|---------|
+| `.locale-switcher` | Inline PT / EN / ES control (header, footer, Account hub) |
+| `.locale-switcher__btn` | Locale button |
+| `.locale-switcher__btn--active` | Selected locale |
+
 ### Pagination
 
 | Block | Context | Bundle |

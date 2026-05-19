@@ -16,16 +16,12 @@
             hx-include="#postForm"
             hx-target="main"
             hx-select="main"
-            data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
-        Publicar
-    </button>
+            data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*" data-i18n="write.publish">Publicar</button>
     <button id="saveDraft" 
             type="button" 
             class="btn btn--header"
             hx-post="/forms/write/draft"
             hx-include="#postForm"
             hx-swap="none"
-            data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*">
-        Salvar Rascunho
-    </button>
+            data-disable-pattern="^(?!(\/write$|\/write\/draft\/\d+$)).*" data-i18n="write.saveDraft">Salvar rascunho</button>
 {/if}

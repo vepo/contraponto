@@ -1,9 +1,9 @@
 <section id="comments" class="comments-section">
-    <h2 class="comments-section__title">Comments</h2>
+    <h2 class="comments-section__title" data-i18n="comment.sectionTitle">Comentários</h2>
 
     {#if section.postOwner && !section.pending.isEmpty}
     <div class="comments-section__pending">
-        <h3 class="comments-section__subtitle">Pending moderation</h3>
+        <h3 class="comments-section__subtitle" data-i18n="comment.pendingModeration">Moderação pendente</h3>
         <ul class="comment-list">
             {#for c in section.pending}
             <li class="comment-list__item">
@@ -22,13 +22,13 @@
                 class="btn btn--outline btn--small"
                 hx-get="/auth/modal?mode=login"
                 hx-target="#modal-container"
-                hx-swap="innerHTML">Sign in</button>
-        to leave a comment.
+                hx-swap="innerHTML" data-i18n="auth.signIn">Entrar</button>
+        <span data-i18n="comment.loginHintSuffix">para comentar.</span>
     </p>
     {/if}
 
     {#if section.roots.isEmpty}
-    <p class="comments-section__empty">No comments yet.</p>
+    <p class="comments-section__empty" data-i18n="comment.empty">Nenhum comentário ainda.</p>
     {#else}
     <ul class="comment-list">
         {#for c in section.roots}

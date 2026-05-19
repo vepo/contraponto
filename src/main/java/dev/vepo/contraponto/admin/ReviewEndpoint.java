@@ -8,6 +8,8 @@ import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -48,7 +50,7 @@ public class ReviewEndpoint {
 
     private Response forbidden() {
         return Toast.response(Response.Status.FORBIDDEN)
-                    .message("Usuário não possui permissões de editor!")
+                    .i18nKey(I18nKeys.TOAST_EDITOR_FORBIDDEN, I18nDefaults.EDITOR_FORBIDDEN)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -67,7 +69,7 @@ public class ReviewEndpoint {
         // ADMIN and EDITOR can select featured posts
         if (!loggedUser.isEditor()) {
             return Toast.response(Response.Status.FORBIDDEN)
-                        .message("Usuário não possui permissões de editor!")
+                        .i18nKey(I18nKeys.TOAST_EDITOR_FORBIDDEN, I18nDefaults.EDITOR_FORBIDDEN)
                         .type(Toast.Type.ERROR)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                         .build();
@@ -77,7 +79,7 @@ public class ReviewEndpoint {
         if (maybePost.isEmpty()) {
             return Toast.response(Response.Status.NOT_FOUND)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .message("Post not found!")
+                        .i18nKey(I18nKeys.TOAST_POST_NOT_FOUND, I18nDefaults.POST_NOT_FOUND)
                         .build();
         }
         var post = maybePost.get();
@@ -85,7 +87,7 @@ public class ReviewEndpoint {
         if (!post.isPublished()) {
             return Toast.response(Response.Status.BAD_REQUEST)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .message("Cannot feature a draft post")
+                        .i18nKey(I18nKeys.TOAST_CANNOT_FEATURE_DRAFT, I18nDefaults.CANNOT_FEATURE_DRAFT)
                         .build();
         }
         post.setFeatured(!post.isFeatured());

@@ -10,6 +10,8 @@ import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -75,7 +77,7 @@ public class ImageAltSaveEndpoint {
         }
         if ("writing".equals(hub)) {
             return Toast.ok()
-                        .message(SUCCESS_MSG)
+                        .i18nKey(I18nKeys.TOAST_IMAGE_UPDATED, I18nDefaults.IMAGE_UPDATED)
                         .type(Toast.Type.SUCCESS)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                         .page(navigationHubService.shell(NavigationHub.WRITING, "images", page, false, null, blogId))
@@ -84,7 +86,7 @@ public class ImageAltSaveEndpoint {
         var links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
         var images = imageControlService.listForBlog(blog, PageQuery.forGrid(20, page));
         return Toast.ok()
-                    .message(SUCCESS_MSG)
+                    .i18nKey(I18nKeys.TOAST_IMAGE_UPDATED, I18nDefaults.IMAGE_UPDATED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .page(ImageControlEndpoint.Templates.list(blog,

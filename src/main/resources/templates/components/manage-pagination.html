@@ -1,9 +1,13 @@
 {#if page.total > 0}
-<nav class="manage-pagination" aria-label="Pagination">
+<nav class="manage-pagination" aria-label="Paginação" data-i18n="pagination.aria" data-i18n-attr="aria-label">
     <p class="manage-pagination__summary">
-        {page.total} item{#if page.total != 1}s{/if}
-        · Showing {page.rangeStart}–{page.rangeEnd}
-        · Page {page.page} of {page.totalPages}
+        {#if page.total == 1}
+        <span data-i18n="pagination.items" data-i18n-params='{"count": {page.total}}'>{page.total} item</span>
+        {#else}
+        <span data-i18n="pagination.itemsPlural" data-i18n-params='{"count": {page.total}}'>{page.total} itens</span>
+        {/if}
+        · <span data-i18n="pagination.showing" data-i18n-params='{"start": {page.rangeStart}, "end": {page.rangeEnd}}'>Exibindo {page.rangeStart}–{page.rangeEnd}</span>
+        · <span data-i18n="pagination.pageOf" data-i18n-params='{"page": {page.page}, "total": {page.totalPages}}'>Página {page.page} de {page.totalPages}</span>
     </p>
     <div class="manage-pagination__controls">
         {#if page.hasPrevious}
@@ -11,7 +15,7 @@
         <a hx-get="{basePath}?page={page.previousPage}{extraQuery}"
            hx-target="{fragmentTarget}"
            hx-swap="innerHTML"
-           class="manage-pagination__link">Previous</a>
+           class="manage-pagination__link" data-i18n="pagination.previous">Anterior</a>
         {#else}
         <a data-hx-get="{basePath}?page={page.previousPage}{extraQuery}"
            hx-select="main"
@@ -19,17 +23,18 @@
            hx-push-url="{basePath}?page={page.previousPage}{extraQuery}"
            hx-swap="outerHTML"
            class="manage-pagination__link"
-           data-nav>Previous</a>
+           data-nav
+           data-i18n="pagination.previous">Anterior</a>
         {/if}
         {#else}
-        <span class="manage-pagination__link manage-pagination__link--disabled" aria-disabled="true">Previous</span>
+        <span class="manage-pagination__link manage-pagination__link--disabled" aria-disabled="true" data-i18n="pagination.previous">Anterior</span>
         {/if}
         {#if page.hasNext}
         {#if fragmentTarget}
         <a hx-get="{basePath}?page={page.nextPage}{extraQuery}"
            hx-target="{fragmentTarget}"
            hx-swap="innerHTML"
-           class="manage-pagination__link">Next</a>
+           class="manage-pagination__link" data-i18n="pagination.next">Próximo</a>
         {#else}
         <a data-hx-get="{basePath}?page={page.nextPage}{extraQuery}"
            hx-select="main"
@@ -37,10 +42,11 @@
            hx-push-url="{basePath}?page={page.nextPage}{extraQuery}"
            hx-swap="outerHTML"
            class="manage-pagination__link"
-           data-nav>Next</a>
+           data-nav
+           data-i18n="pagination.next">Próximo</a>
         {/if}
         {#else}
-        <span class="manage-pagination__link manage-pagination__link--disabled" aria-disabled="true">Next</span>
+        <span class="manage-pagination__link manage-pagination__link--disabled" aria-disabled="true" data-i18n="pagination.next">Próximo</span>
         {/if}
     </div>
 </nav>

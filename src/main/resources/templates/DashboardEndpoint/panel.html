@@ -1,5 +1,5 @@
-<h2 class="hub-panel__title">Dashboard</h2>
-<p class="hub-panel__subtitle">Overview of your writing activity.</p>
+<h2 class="hub-panel__title" data-i18n="dashboard.title">Painel</h2>
+<p class="hub-panel__subtitle" data-i18n="dashboard.subtitle">Visão geral da sua atividade de escrita.</p>
 
 <div id="dashboardAnalytics"
      hx-trigger="load"
@@ -10,27 +10,27 @@
 <div class="dashboard-stats">
     <div class="stat-card">
         <div class="stat-card__value">{page.draftsCount}</div>
-        <div class="stat-card__label">Drafts</div>
+        <div class="stat-card__label" data-i18n="library.tab.drafts">Rascunhos</div>
         <a data-hx-get="/writing/library"
            hx-select="main"
            hx-target="main"
            hx-push-url="/writing/library"
-           class="stat-card__link">View all →</a>
+           class="stat-card__link" data-i18n="common.viewAll">Ver tudo →</a>
     </div>
     <div class="stat-card">
         <div class="stat-card__value">{page.publishedCount}</div>
-        <div class="stat-card__label">Published posts</div>
+        <div class="stat-card__label" data-i18n="dashboard.publishedPosts">Publicações</div>
         <a data-hx-get="/writing/library"
            hx-select="main"
            hx-target="main"
            hx-push-url="/writing/library"
-           class="stat-card__link">View all →</a>
+           class="stat-card__link" data-i18n="common.viewAll">Ver tudo →</a>
     </div>
 </div>
 
 <div class="dashboard-recent">
     <div class="recent-section drafts">
-        <h3>Recent drafts</h3>
+        <h3 data-i18n="dashboard.recentDrafts">Rascunhos recentes</h3>
         {#if page.recentDrafts.isEmpty()}
         <p class="recent-section__empty">No drafts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first story</a>.</p>
         {#else}
@@ -52,7 +52,7 @@
     </div>
 
     <div class="recent-section published">
-        <h3>Recent published</h3>
+        <h3 data-i18n="dashboard.recentPublished">Publicações recentes</h3>
         {#if page.recentPublished.isEmpty()}
         <p class="recent-section__empty">No published posts yet. <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write">Write your first post</a>.</p>
         {#else}

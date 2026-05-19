@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-19 · RSS links, Writing Images hub, notification overlay
+**Last verified:** 2026-05-19 · Interface i18n (PT default, EN/ES), language switcher
 
 ---
 
@@ -76,6 +76,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 |---------|----------|-----|------:|---------------------|
 | Sign up | guest | `GET /auth/modal?mode=signup` | 1 | Header → **Sign Up**. |
 | Sign in | guest | `GET /auth/modal?mode=login` | 1 | Header → **Sign In**. |
+| Language preference | anyone | `POST /forms/locale` | 1 | Header or footer **PT / EN / ES** switcher (also on Account hub). |
 | Password recovery request | guest | `GET /password-recovery` | 2 | **Sign In** modal → **Forgot password?** |
 | Sign out | signed in | `POST /forms/auth/logout` | 2 | Open user menu → **Sign out**. |
 

@@ -1,18 +1,18 @@
 <header class="hub-panel__header">
     <div class="hub-panel__header-text">
-        <h2 class="hub-panel__title">Notifications</h2>
+        <h2 class="hub-panel__title" data-i18n="notifications.title">Notificações</h2>
     </div>
     {#if unreadCount > 0}
     <form hx-post="/forms/notifications/read"
           hx-target="closest .hub-panel"
           hx-swap="innerHTML">
-        <button type="submit" class="btn btn--outline btn--small">Mark all read</button>
+        <button type="submit" class="btn btn--outline btn--small" data-i18n="notifications.markAllRead">Marcar tudo como lido</button>
     </form>
     {/if}
 </header>
 
 {#if notifications.isEmpty()}
-<p class="notifications-page__empty">No notifications yet. Follow blogs to see new posts here.</p>
+<p class="notifications-page__empty" data-i18n="notifications.empty">Ainda não há notificações. Siga blogs para ver novas publicações aqui.</p>
 {#else}
 <ul class="notification-list">
     {#for n in notifications.data}

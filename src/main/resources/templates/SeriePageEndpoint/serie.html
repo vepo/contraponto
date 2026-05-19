@@ -10,7 +10,7 @@
                 {#include components/breadcrumb trail=breadcrumb /}
             </div>
             <header class="serie-page-header container">
-                <p class="serie-page__label">Serie</p>
+                <p class="serie-page__label" data-i18n="serie.label">Série</p>
                 <h1 class="serie-page__title">{serie.title}</h1>
                 <p class="serie-page__actions">
                     {#include components/rss-feed-link feedUrl=serie.rssFeedUrl /}
@@ -21,7 +21,7 @@
                 <div class="posts-grid">
                     {#if posts.size == 0}
                     <div class="user-blog__empty">
-                        No published posts in this series yet.
+                        <span data-i18n="serie.empty">Nenhuma publicação nesta série ainda.</span>
                     </div>
                     {/if}
                     {#for post in posts}
@@ -37,7 +37,7 @@
                         </div>
                         {/if}
                         <div class="article-card__content">
-                            <div class="article-card__category">Article</div>
+                            <div class="article-card__category" data-i18n="grid.articleCategory">Artigo</div>
                             <h2 class="article-card__title">
                                 <a data-hx-get="{post.url}"
                                     hx-select="main"

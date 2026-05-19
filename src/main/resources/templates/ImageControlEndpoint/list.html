@@ -10,7 +10,7 @@
                 {#include components/breadcrumb trail=breadcrumb /}
                 <div class="pages-manage__header">
                     <div>
-                        <h1 class="pages-manage__title">Images</h1>
+                        <h1 class="pages-manage__title" data-i18n="image.pageTitle">Imagens</h1>
                         <p class="pages-manage__subtitle">{blog.name}</p>
                     </div>
                     <a data-hx-get="/writing/images?blogId={blog.id}"
@@ -19,7 +19,7 @@
                        hx-swap="outerHTML"
                        hx-push-url="/writing/images?blogId={blog.id}"
                        class="btn btn--secondary"
-                       data-nav>Back to Images</a>
+                       data-nav data-i18n="image.backToList">Voltar para imagens</a>
                 </div>
 
                 {#include ImageControlEndpoint/image-list blog=blog images=images hubMode=false basePath='/blogs/{blog.id}/images' extraQuery='' fragmentTarget='' /}

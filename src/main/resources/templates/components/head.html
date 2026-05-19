@@ -1,5 +1,6 @@
 <head>
     <meta name="csrf-token" content="{csrfToken}">
+    <meta name="app-locale" content="{locale}">
     <meta name="htmx-config" content='{"historyCacheSize": 0, "indicator": "#global-indicator"}'>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/style/fonts.css"/>
@@ -11,6 +12,7 @@
     <link rel="alternate" type="application/rss+xml" href="{rssAlternateUrl}" title="{rssAlternateTitle.or('RSS')}">
     {/if}
     <script src="/js/third-party/htmx.js"></script>
+    <script src="/js/i18n.js"></script>
     <script>
         document.addEventListener('htmx:configRequest', function (evt) {
             var meta = document.querySelector('meta[name="csrf-token"]');
@@ -45,7 +47,7 @@
 </head>
 <div id="modal-container"></div>
 <div id="image-lightbox" class="image-lightbox" hidden aria-hidden="true">
-    <button type="button" class="image-lightbox__close" aria-label="Close">&times;</button>
+    <button type="button" class="image-lightbox__close" aria-label="Fechar" data-i18n="lightbox.close" data-i18n-attr="aria-label">&times;</button>
     <div class="image-lightbox__backdrop" data-lightbox-close></div>
     <figure class="image-lightbox__figure">
         <img class="image-lightbox__image" alt="" decoding="async">

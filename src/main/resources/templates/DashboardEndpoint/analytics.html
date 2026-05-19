@@ -21,14 +21,14 @@
                data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.previousYear}&month={analytics.previousMonth}{#if analytics.compareViews}&compare=true{/if}"
                hx-target="#dashboardAnalytics"
                hx-swap="outerHTML"
-               hx-push-url="false">Previous month</a>
+               hx-push-url="false" data-i18n="dashboard.previousMonth">Mês anterior</a>
             <span class="dashboard-analytics__month-label">{analytics.monthLabel}</span>
             {#if analytics.canGoNextMonth}
             <a class="dashboard-analytics__month-link"
                data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.nextYear}&month={analytics.nextMonth}{#if analytics.compareViews}&compare=true{/if}"
                hx-target="#dashboardAnalytics"
                hx-swap="outerHTML"
-               hx-push-url="false">Next month</a>
+               hx-push-url="false" data-i18n="dashboard.nextMonth">Próximo mês</a>
             {/if}
         </div>
 
@@ -37,13 +37,13 @@
            data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}"
            hx-target="#dashboardAnalytics"
            hx-swap="outerHTML"
-           hx-push-url="false">Hide comparison</a>
+           hx-push-url="false" data-i18n="dashboard.hideComparison">Ocultar comparação</a>
         {#else}
         <a class="dashboard-analytics__compare-link"
            data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}&compare=true"
            hx-target="#dashboardAnalytics"
            hx-swap="outerHTML"
-           hx-push-url="false">Compare with previous month</a>
+           hx-push-url="false" data-i18n="dashboard.compareViews">Comparar com o mês anterior</a>
         {/if}
 
         <input type="hidden" name="year" value="{analytics.year}">
@@ -51,7 +51,7 @@
     </div>
 
     <section class="dashboard-chart" aria-labelledby="dashboardViewsTitle">
-        <h3 id="dashboardViewsTitle" class="dashboard-chart__title">Daily views</h3>
+        <h3 id="dashboardViewsTitle" class="dashboard-chart__title" data-i18n="dashboard.dailyViews">Visualizações diárias</h3>
         <p class="dashboard-chart__summary">
             {analytics.views.total} views this month
             {#if analytics.viewsComparison}
@@ -85,7 +85,7 @@
     </section>
 
     <section class="dashboard-chart" aria-labelledby="dashboardReadingTimeTitle">
-        <h3 id="dashboardReadingTimeTitle" class="dashboard-chart__title">Daily reading time</h3>
+        <h3 id="dashboardReadingTimeTitle" class="dashboard-chart__title" data-i18n="dashboard.dailyReadingTime">Tempo de leitura diário</h3>
         <p class="dashboard-chart__summary">
             {analytics.readingTime.total.formatReadingTimeTotal} reading time this month
         </p>
@@ -105,7 +105,7 @@
     </section>
 
     <section class="dashboard-chart" aria-labelledby="dashboardFollowersTitle">
-        <h3 id="dashboardFollowersTitle" class="dashboard-chart__title">New followers</h3>
+        <h3 id="dashboardFollowersTitle" class="dashboard-chart__title" data-i18n="dashboard.newFollowers">Novos seguidores</h3>
         <p class="dashboard-chart__summary">
             +{analytics.newFollowers.total} new this month · {analytics.totalFollowers} followers total
         </p>
@@ -124,7 +124,7 @@
     </section>
 
     <section class="dashboard-chart" aria-labelledby="dashboardSubscribersTitle">
-        <h3 id="dashboardSubscribersTitle" class="dashboard-chart__title">New email subscribers</h3>
+        <h3 id="dashboardSubscribersTitle" class="dashboard-chart__title" data-i18n="dashboard.newSubscribers">Novos assinantes por e-mail</h3>
         <p class="dashboard-chart__summary">
             +{analytics.newSubscribers.total} new this month · {analytics.totalSubscribers} subscribers total
         </p>

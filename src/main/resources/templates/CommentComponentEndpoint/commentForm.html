@@ -2,15 +2,16 @@
       hx-post="{#if parentId}/forms/posts/{postId}/comments/{parentId}/replies{#else}/forms/posts/{postId}/comments{/if}"
       hx-target="#comments"
       hx-swap="innerHTML">
-    <label class="sr-only" for="comment-body-{postId}-{parentId ?: 'root'}">Comment</label>
+    <label class="sr-only" for="comment-body-{postId}-{parentId ?: 'root'}" data-i18n="comment.formLabel">Comentário</label>
     <textarea id="comment-body-{postId}-{parentId ?: 'root'}"
               name="body"
               class="comment-form__input"
               rows="3"
               maxlength="2000"
-              placeholder="{#if parentId}Write a reply…{#else}Write a comment…{/if}"
+              placeholder="{#if parentId}Escreva uma resposta…{#else}Escreva um comentário…{/if}"
+              {#if parentId}data-i18n="comment.replyPlaceholder" data-i18n-attr="placeholder"{#else}data-i18n="comment.commentPlaceholder" data-i18n-attr="placeholder"{/if}
               required></textarea>
     <button type="submit" class="btn btn--outline btn--small comment-form__submit">
-        {#if parentId}Reply{#else}Comment{/if}
+        {#if parentId}<span data-i18n="comment.replySubmit">Responder</span>{#else}<span data-i18n="comment.commentSubmit">Comentar</span>{/if}
     </button>
 </form>

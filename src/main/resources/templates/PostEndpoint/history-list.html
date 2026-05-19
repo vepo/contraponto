@@ -1,6 +1,6 @@
 <div class="post-history">
     {#if versions.isEmpty}
-    <p class="post-history__empty">No published versions yet.</p>
+    <p class="post-history__empty" data-i18n="post.historyEmpty">Nenhuma versão publicada ainda.</p>
     {#else}
     <ol class="post-history__list">
         {#for version in versions}
@@ -9,7 +9,7 @@
                 <span class="post-history__version-label">
                     Version {version.publication.version}
                     {#if version_index == 0}
-                    <span class="post-history__badge">current</span>
+                    <span class="post-history__badge" data-i18n="post.versionCurrent">atual</span>
                     {/if}
                 </span>
                 <time class="post-history__date">{version.publication.publishedAt.formatDate}</time>

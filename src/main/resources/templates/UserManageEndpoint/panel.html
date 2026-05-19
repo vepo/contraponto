@@ -2,7 +2,7 @@
 
 {#if users.isEmpty()}
 <div class="pages-manage__empty">
-    <p>No users found.</p>
+    <p data-i18n="user.manageEmpty">Nenhum usuário encontrado.</p>
 </div>
 {#else}
 <div class="pages-manage__list">
@@ -28,9 +28,7 @@
                hx-swap="outerHTML"
                hx-push-url="/users/{row.id}/edit"
                class="btn btn--secondary btn--small"
-               data-nav>
-                Edit
-            </a>
+               data-nav data-i18n="common.edit">Editar</a>
         </div>
     </article>
     {/for}

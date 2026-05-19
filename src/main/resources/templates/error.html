@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
     {#include components/head}
-    Error – contraponto
+    Erro – contraponto
     {/include}
     <body hx-history-elt>
         {#include components/header /}
@@ -21,30 +21,29 @@
                     </div>
                     <h1 class="error-title">
                         {#if status == 404}
-                            Page not found
+                            <span data-i18n="error.notFound.title">Página não encontrada</span>
                         {#else if status == 403}
-                            Access denied
+                            <span data-i18n="error.forbidden.title">Acesso negado</span>
                         {#else if status == 400}
-                            Bad request
+                            <span data-i18n="error.badRequest.title">Requisição inválida</span>
                         {#else}
-                            Something went wrong
+                            <span data-i18n="error.server.titleAlt">Algo deu errado</span>
                         {/if}
                     </h1>
                     <p class="error-description">
                         {#if status == 404}
-                            The page you are looking for doesn't exist or has been moved.
+                            <span data-i18n="error.notFound.messageMoved">A página que você procura não existe ou foi movida.</span>
                         {#else if status == 403}
-                            You don't have permission to access this resource.
+                            <span data-i18n="error.forbidden.message">Você não tem permissão para acessar este recurso.</span>
                         {#else if status == 400}
-                            The request could not be understood by the server.
+                            <span data-i18n="error.badRequest.message">O servidor não entendeu a requisição.</span>
                         {#else}
-                            An unexpected error occurred. Our team has been notified.
+                            <span data-i18n="error.server.messageNotified">Ocorreu um erro inesperado. Nossa equipe foi notificada.</span>
                         {/if}
                     </p>
                     {#if status == 500 && dev}
-                    <!-- Only show technical details in development mode -->
                     <details class="error-details">
-                        <summary>Technical details (development only)</summary>
+                        <summary data-i18n="error.technicalDetails">Detalhes técnicos (somente desenvolvimento)</summary>
                         <pre>{message}</pre>
                     </details>
                     {/if}
@@ -54,11 +53,12 @@
                            hx-target="main"
                            hx-swap="outerHTML"
                            hx-push-url="/"
-                           class="btn btn--primary">
-                            &larr; Back to home
+                           class="btn btn--primary"
+                           data-i18n="error.backToHome">
+                            ← Voltar ao início
                         </a>
-                        <button onclick="window.location.reload()" class="btn">
-                            &#8635; Try again
+                        <button onclick="window.location.reload()" class="btn" data-i18n="error.tryAgain">
+                            ↻ Tentar novamente
                         </button>
                     </div>
                 </div>

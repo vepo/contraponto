@@ -9,7 +9,7 @@
             <div class="write-container">
                 {#include components/breadcrumb trail=breadcrumb /}
                 <div class="tag-edit-panel">
-                    <h1 class="tag-edit-panel__title">Edit tag</h1>
+                    <h1 class="tag-edit-panel__title" data-i18n="tag.editTitle">Editar tag</h1>
                     <form id="tagEditForm" class="write-form"
                           hx-post="/forms/tags/update"
                           hx-swap="none"
@@ -17,7 +17,7 @@
                         <input type="hidden" name="tagId" value="{tag.id}"/>
 
                         <div class="write-form__group">
-                            <label for="tagDisplayName" class="write-form__label">Display name</label>
+                            <label for="tagDisplayName" class="write-form__label" data-i18n="appearance.displayName">Nome de exibição</label>
                             <input type="text" id="tagDisplayName" name="name" class="write-form__title" required
                                    value="{tag.name}" autocomplete="off"/>
                         </div>

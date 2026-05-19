@@ -4,6 +4,8 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -56,7 +58,8 @@ public class BlogAudienceSubscribeEndpoint {
         } catch (BadRequestException e) {
             return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
         } catch (NotFoundException _) {
-            return Toast.response(Status.NOT_FOUND).message("Blog not found.").type(Toast.Type.ERROR).build();
+            return Toast.response(Status.NOT_FOUND).i18nKey(I18nKeys.TOAST_BLOG_NOT_FOUND_AUDIENCE, I18nDefaults.BLOG_NOT_FOUND_AUDIENCE).type(Toast.Type.ERROR)
+                        .build();
         }
     }
 }

@@ -14,6 +14,8 @@ import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.GitRemoteUrlValidator;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -179,7 +181,7 @@ public class BlogSaveEndpoint {
 
     private Response forbidden() {
         return Toast.response(Response.Status.FORBIDDEN)
-                    .message("You do not have permission to manage blogs.")
+                    .i18nKey(I18nKeys.TOAST_BLOG_FORBIDDEN, I18nDefaults.BLOG_FORBIDDEN)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -198,7 +200,7 @@ public class BlogSaveEndpoint {
 
     private Response notFound() {
         return Toast.response(Response.Status.NOT_FOUND)
-                    .message("Blog not found.")
+                    .i18nKey(I18nKeys.TOAST_BLOG_NOT_FOUND, I18nDefaults.BLOG_NOT_FOUND)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -238,7 +240,7 @@ public class BlogSaveEndpoint {
         var navigationHub = platform ? NavigationHub.MANAGE : NavigationHub.WRITING;
         var hubPath = platform ? "/manage/blogs" : "/writing/blogs";
         return Toast.ok()
-                    .message("Blog saved successfully.")
+                    .i18nKey(I18nKeys.TOAST_BLOG_SAVED, I18nDefaults.BLOG_SAVED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url(hubPath)

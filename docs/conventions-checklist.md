@@ -53,7 +53,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 - [ ] **Error response shapes** — standard HTMX error swap HTML vs JSON for `/api/*`.
 - [x] **Pagination** — reading = Load more; managing = numbered footer (`shared/pagination`, `components/load-more-posts.html`, `components/manage-pagination.html`). See `.cursor/rules/contraponto-pagination.mdc`.
 - [ ] **Slug rules** — central list: post, blog, tag (`TagSlug`), custom page (`CustomPagePaths`), reserved segments.
-- [ ] **i18n** — not implemented; note if planned.
+- [x] **i18n** — client-side `data-i18n`; default `pt-BR` in templates; `en`/`es` JSON at `/i18n/messages/{locale}.json`.
 - [ ] **Security headers / CSRF** — document current approach (session cookie, HTMX same-origin).
 - [x] **Performance** — `CustomPageCache`, `RssFeedService` (`rss-feeds` cache); see ARCHITECTURE §19.
 - [ ] **Jacoco / coverage** — no documented threshold or exclusions.

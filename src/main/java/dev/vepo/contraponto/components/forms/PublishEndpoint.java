@@ -27,6 +27,8 @@ import dev.vepo.contraponto.tag.TagSlug;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
@@ -101,9 +103,9 @@ public class PublishEndpoint {
 
     // ============================== PUBLIC API ==============================
 
-    private Response buildErrorResponse(String message) {
+    private Response buildErrorResponse(String i18nKey) {
         return Toast.response(Status.BAD_REQUEST)
-                    .message(message)
+                    .i18nKey(i18nKey)
                     .type(Toast.Type.ERROR)
                     .duration(TOAST_DURATION_SHORT)
                     .build();
@@ -125,7 +127,7 @@ public class PublishEndpoint {
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
 
         return Toast.ok()
-                    .message(SUCCESS_MSG_PUBLISHED)
+                    .i18nKey(I18nKeys.TOAST_POST_PUBLISHED, I18nDefaults.POST_PUBLISHED)
                     .type(Toast.Type.SUCCESS)
                     .duration(TOAST_DURATION_LONG)
                     .url(postUrl)
@@ -223,19 +225,19 @@ public class PublishEndpoint {
 
     private Optional<Response> validateRequest(SaveDraftRequest request) {
         if (request.blogId() == null) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_BLOG_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_BLOG_REQUIRED));
         }
         if (isBlank(request.content())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_CONTENT_REQUIRED));
         }
         if (isBlank(request.title())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_TITLE_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED));
         }
         if (TagSlug.hasInvalidSlugCharacters(request.slug())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_INVALID_SLUG));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_INVALID_SLUG));
         }
         if (slugAlreadyExistsForDifferentPost(request, request.blogId())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_SLUG_EXISTS));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_SLUG_EXISTS));
         }
         return Optional.empty();
     }

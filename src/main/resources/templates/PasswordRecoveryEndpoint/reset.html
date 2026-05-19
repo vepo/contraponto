@@ -8,12 +8,12 @@
         <main class="profile-page" id="main-content">
             <div class="container-narrow">
                 {#include components/breadcrumb trail=breadcrumb /}
-                <h1 class="profile-page__title">Choose a new password</h1>
+                <h1 class="profile-page__title" data-i18n="passwordReset.title">Escolher nova senha</h1>
 
                 <div id="resetMessage">
                     {#if success}
                     <div class="success-message">Your password was updated. Sign in with your new password.</div>
-                    <p class="auth-form__switch"><a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container">Sign In</a></p>
+                    <p class="auth-form__switch"><a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container" data-i18n="auth.signIn">Entrar</a></p>
                     {#else if invalidToken}
                     <div class="error-message visible">This reset link is invalid or has expired. Request a new one.</div>
                     <p class="auth-form__switch"><a href="/password-recovery">Request a new reset link</a></p>
@@ -31,16 +31,16 @@
                       autocomplete="off">
                     <input type="hidden" name="token" value="{token}">
                     <div class="form-group">
-                        <label>New Password</label>
+                        <label data-i18n="account.newPassword">Nova senha</label>
                         <input type="password" name="newPassword" required minlength="8">
                         <div class="error-message min-length">Password must be at least 8 characters.</div>
                     </div>
                     <div class="form-group">
-                        <label>Confirm New Password</label>
+                        <label data-i18n="account.confirmPassword">Confirmar nova senha</label>
                         <input type="password" name="confirmPassword" required>
                     </div>
                     {#include components/htmx-spinner id='reset-htmx-indicator' /}
-                    <button type="submit" class="btn btn--primary">Update password</button>
+                    <button type="submit" class="btn btn--primary" data-i18n="passwordReset.submit">Atualizar senha</button>
                 </form>
                 {/if}
             </div>

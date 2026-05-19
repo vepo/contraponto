@@ -1,11 +1,11 @@
-<h2 class="hub-panel__title">Tags</h2>
-<p class="hub-panel__subtitle">
-    Edit tag names, URL slugs, and descriptions shown on public tag pages.
+<h2 class="hub-panel__title" data-i18n="tag.manageTitle">Tags</h2>
+<p class="hub-panel__subtitle" data-i18n="tag.manageSubtitle">
+    Edite nomes, slugs de URL e descrições exibidas nas páginas de tags.
 </p>
 
 {#if tags.isEmpty()}
 <div class="pages-manage__empty">
-    <p>No tags yet. Tags are created when posts are published with labels.</p>
+    <p data-i18n="tag.manageEmpty">Nenhuma tag ainda. Tags são criadas ao publicar posts com rótulos.</p>
 </div>
 {#else}
 <div class="pages-manage__list">
@@ -28,9 +28,7 @@
                hx-swap="outerHTML"
                hx-push-url="/tags/{row.slug}/edit"
                class="btn btn--secondary btn--small"
-               data-nav>
-                Edit
-            </a>
+               data-nav data-i18n="common.edit">Editar</a>
         </div>
     </article>
     {/for}

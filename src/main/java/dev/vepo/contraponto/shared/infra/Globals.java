@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import dev.vepo.contraponto.notification.NotificationHtmxConfig;
 import dev.vepo.contraponto.rss.RssFeedPaths;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
+import dev.vepo.contraponto.shared.i18n.CurrentLocale;
+import dev.vepo.contraponto.shared.i18n.LocalePreference;
 import dev.vepo.contraponto.shared.security.CurrentCsrfToken;
 import io.quarkus.qute.TemplateGlobal;
 import jakarta.enterprise.inject.spi.CDI;
@@ -29,6 +31,25 @@ public class Globals {
     @TemplateGlobal(name = "currentYear")
     public static int currentYear() {
         return LocalDateTime.now().getYear();
+    }
+
+    @TemplateGlobal(name = "locale")
+    public static String locale() {
+        var current = CDI.current().select(CurrentLocale.class);
+        if (!current.isResolvable()) {
+            return LocalePreference.DEFAULT_LOCALE;
+        }
+        return current.get().get();
+    }
+
+    @TemplateGlobal(name = "localeLang")
+    public static String localeLang() {
+        var current = CDI.current().select(CurrentLocale.class);
+        if (!current.isResolvable()) {
+            return "pt-BR";
+        }
+        var locale = current.get().get();
+        return CDI.current().select(LocalePreference.class).get().toBcp47(locale);
     }
 
     @TemplateGlobal(name = "notificationBadgeTrigger")

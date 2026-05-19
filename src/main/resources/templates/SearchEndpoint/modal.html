@@ -1,7 +1,7 @@
 <div id="searchModal" class="modal modal--open">
     <div class="modal__container modal__container--search">
         <div class="modal__header">
-            <h2 class="modal__title">Search</h2>
+            <h2 class="modal__title" data-i18n="search.title">Buscar</h2>
             <button class="modal__close" onclick="this.closest('.modal').remove()">✕</button>
         </div>
         <div class="modal__body">
@@ -30,8 +30,8 @@
                         <circle cx="11" cy="11" r="7"/>
                         <path d="M21 21l-4.35-4.35"/>
                     </svg>
-                    <p class="search-initial-title">Find the perfect story</p>
-                    <p class="search-initial-hint">Start typing to search across all articles</p>
+                    <p class="search-initial-title" data-i18n="search.initialTitle">Encontre a história ideal</p>
+                    <p class="search-initial-hint" data-i18n="search.initialHint">Comece a digitar para buscar em todos os artigos</p>
                 </div>
                 <button id="btnGoToAdvanced" 
                         hx-get="/search" 
@@ -43,8 +43,7 @@
             </div>
             <div class="search-modal__footer">
                 <a onclick="main.closeModal('#btnGoToAdvanced')"
-                   class="search-modal__advanced">Advanced search →
-                </a>
+                   class="search-modal__advanced" data-i18n="search.advanced">Busca avançada →</a>
             </div>
         </div>
     </div>

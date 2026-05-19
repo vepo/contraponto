@@ -296,3 +296,12 @@ See `application.properties` and [docs/git-jekyll-convention.md](docs/git-jekyll
 | **SmallRye `@ConfigMapping`** | `ContrapontoGitConfig` (MicroProfile Config ecosystem) |
 
 REST, JPA, CDI, Bean Validation, and JTA elsewhere already use `jakarta.*` types.
+
+## 20. Interface internationalization (i18n)
+
+- **Default locale:** `pt-BR` — canonical copy in Qute templates (`data-i18n` keys + Portuguese text).
+- **Secondary locales:** `en`, `es` — JSON bundles at `GET /i18n/messages/{locale}.json` (`src/main/resources/i18n/`).
+- **Client:** `js/i18n.js` loads bundles when locale ≠ `pt-BR`, applies translations on load and after HTMX `afterSettle`.
+- **Preference:** cookie `contraponto_locale`; `POST /forms/locale` to switch; header/footer **language switcher** + Account hub hint.
+- **Scope:** menus, forms, validation chrome, toasts — not post/comment/blog body, custom page DB content, or account emails.
+- **Server toasts:** `Toast.i18nKey(key, ptBrDefault)` + `I18nDefaults` / `I18nKeys`; client resolves via `toast.js`.

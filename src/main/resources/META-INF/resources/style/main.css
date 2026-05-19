@@ -3230,3 +3230,7 @@ a:focus:not(:focus-visible) {
   font-weight: 600;
 }
 
+.locale-switcher { display: inline-flex; gap: 0.25rem; align-items: center; }
+.locale-switcher__btn { font-size: 0.75rem; padding: 0.2rem 0.45rem; border: 1px solid var(--color-border); background: transparent; cursor: pointer; border-radius: 4px; }
+.locale-switcher__btn--active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+

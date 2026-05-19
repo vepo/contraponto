@@ -81,11 +81,35 @@ class ToastManager {
     }
 }
 
+function resolveToastMessage(detail, xhr) {
+    const i18nKey = detail?.i18nKey || xhr?.getResponseHeader('X-Toast-I18n-Key');
+    const fallback = detail?.message || xhr?.getResponseHeader('X-Toast-Message');
+    if (i18nKey && window.i18n) {
+        if (window.i18n.locale === 'pt-BR' && fallback) {
+            return fallback;
+        }
+        let params = detail?.i18nParams;
+        if (!params) {
+            const paramsHeader = xhr?.getResponseHeader('X-Toast-I18n-Params');
+            if (paramsHeader) {
+                try {
+                    params = JSON.parse(paramsHeader);
+                } catch (e) {
+                    params = null;
+                }
+            }
+        }
+        const translated = window.i18n.t(i18nKey, params);
+        return translated !== i18nKey ? translated : (fallback || i18nKey);
+    }
+    return fallback;
+}
+
 function showToastFromXhr(event) {
     const xhr = event.detail?.xhr;
     if (!xhr || !window.toastManager) return;
 
-    const toastMessage = xhr.getResponseHeader('X-Toast-Message');
+    const toastMessage = resolveToastMessage(null, xhr);
     if (!toastMessage) return;
 
     let duration = window.toastManager.defaultDuration;
@@ -97,14 +121,18 @@ function showToastFromXhr(event) {
     window.toastManager.show(toastMessage, duration, toastType);
 }
 
-function showToastFromEvent(event) {
+async function showToastFromEvent(event) {
     if (!window.toastManager) return;
-    const { message, duration, type } = event.detail || {};
+    const detail = event.detail || {};
+    if (window.i18n) {
+        await window.i18n.waitUntilReady();
+    }
+    const message = resolveToastMessage(detail, null);
     if (!message) return;
     window.toastManager.show(
         message,
-        duration || window.toastManager.defaultDuration,
-        type
+        detail.duration || window.toastManager.defaultDuration,
+        detail.type
     );
 }
 

@@ -94,7 +94,7 @@
                     {/if}
                     <div class="pages-form__actions">
                         {#include components/htmx-spinner id='blogs-form-htmx-indicator' /}
-                        <button type="submit" class="btn btn--primary" disabled>Save Blog</button>
+                        <button type="submit" class="btn btn--primary" disabled data-i18n="blog.save">Salvar blog</button>
                         {#if canDelete && blog.isPresent && blog.get().active}
                         <button type="button"
                                 class="btn btn--danger"

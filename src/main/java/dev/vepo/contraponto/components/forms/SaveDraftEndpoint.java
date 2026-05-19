@@ -15,6 +15,8 @@ import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
@@ -69,9 +71,9 @@ public class SaveDraftEndpoint {
 
     // ============================== PUBLIC API ==============================
 
-    private Response buildErrorResponse(String message) {
+    private Response buildErrorResponse(String i18nKey) {
         return Toast.ok() // Using OK status but with error type (original behavior)
-                    .message(message)
+                    .i18nKey(i18nKey)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -79,7 +81,7 @@ public class SaveDraftEndpoint {
 
     private Response buildSuccessResponse(Post post) {
         return Toast.ok()
-                    .message(SUCCESS_MSG_DRAFT_SAVED)
+                    .i18nKey(I18nKeys.TOAST_DRAFT_SAVED, I18nDefaults.DRAFT_SAVED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/write/draft/%d".formatted(post.getId()))
@@ -144,10 +146,10 @@ public class SaveDraftEndpoint {
 
     private Optional<Response> validateRequest(SaveDraftRequest request) {
         if (isBlank(request.content())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_CONTENT_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_CONTENT_REQUIRED));
         }
         if (isBlank(request.title())) {
-            return Optional.of(buildErrorResponse(ERROR_MSG_TITLE_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED));
         }
         return Optional.empty();
     }

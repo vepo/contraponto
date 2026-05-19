@@ -9,6 +9,8 @@ import dev.vepo.contraponto.navigation.NavigationHub;
 import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
@@ -99,7 +101,7 @@ public class CustomPageSaveEndpoint {
         customPageChangedEvents.fire(new CustomPageChangedEvent(pageId));
 
         return Toast.ok()
-                    .message("Page deleted.")
+                    .i18nKey(I18nKeys.TOAST_PAGE_DELETED, I18nDefaults.PAGE_DELETED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/manage/pages")
@@ -109,7 +111,7 @@ public class CustomPageSaveEndpoint {
 
     private Response forbidden() {
         return Toast.response(Response.Status.FORBIDDEN)
-                    .message("You do not have permission to manage custom pages.")
+                    .i18nKey(I18nKeys.TOAST_PAGE_FORBIDDEN, I18nDefaults.PAGE_FORBIDDEN)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -117,7 +119,7 @@ public class CustomPageSaveEndpoint {
 
     private Response notFound() {
         return Toast.response(Response.Status.NOT_FOUND)
-                    .message("Page not found.")
+                    .i18nKey(I18nKeys.TOAST_PAGE_NOT_FOUND, I18nDefaults.PAGE_NOT_FOUND)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -160,7 +162,7 @@ public class CustomPageSaveEndpoint {
 
         if (customPageRepository.existsSlug(form.getSlug(), blogIdForSlug, page.getId())) {
             return Toast.response(Response.Status.BAD_REQUEST)
-                        .message("A page with this slug already exists for the selected scope.")
+                        .i18nKey(I18nKeys.TOAST_PAGE_SLUG_EXISTS, I18nDefaults.PAGE_SLUG_EXISTS)
                         .type(Toast.Type.ERROR)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                         .build();
@@ -179,7 +181,7 @@ public class CustomPageSaveEndpoint {
         logger.info("Saved custom page id={} slug={}", page.getId(), page.getSlug());
 
         return Toast.ok()
-                    .message("Page saved successfully.")
+                    .i18nKey(I18nKeys.TOAST_PAGE_SAVED, I18nDefaults.PAGE_SAVED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url("/manage/pages")
@@ -206,7 +208,7 @@ public class CustomPageSaveEndpoint {
         Long blogIdForSlug = resolveBlogId(form, null);
         if (blogIdForSlug == null && !form.isApplicationScope()) {
             return PageSaveResolution.error(Toast.response(Response.Status.BAD_REQUEST)
-                                                 .message("Select a blog for this page.")
+                                                 .i18nKey(I18nKeys.TOAST_PAGE_BLOG_REQUIRED, I18nDefaults.PAGE_BLOG_REQUIRED)
                                                  .type(Toast.Type.ERROR)
                                                  .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                                                  .build());
