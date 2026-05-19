@@ -223,6 +223,7 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Menu — review hub | `menu.review` | Revisão | Review | User menu (editor) → `/editor` |
 | Menu — administration hub | `menu.administration` | Administração | Administration | User menu (admin) → `/administration` |
 | Breadcrumb — home | `breadcrumb.home` | Início | Home | Public pages root segment |
+| Write — header | `write.title` | Escrever | Write | Header button → `/write` (icon + label) |
 | Auth — forgot password link | `auth.forgotPassword` | Esqueceu a senha? | Forgot password? | Login modal |
 
 Further interface labels use the same four-column shape; canonical keys and EN/ES strings live in `src/main/resources/i18n/messages_en.json` and `messages_es.json`. Legacy rows below retain English reference text — prefer the JSON catalog when adding or changing copy.

@@ -48,8 +48,14 @@ public class App {
         private AccessModal() {}
 
         public T assertErrorMessage(String errorMessage) {
-            var authError = wait.until(visibilityOfElementLocated(cssSelector("#authModal .response.error")));
-            assertThat(authError.getText()).contains(errorMessage);
+            waitForReady();
+            wait.until(d -> {
+                var elements = d.findElements(cssSelector("#authError .error-message, #authModal .response.error"));
+                return elements.stream()
+                               .filter(WebElement::isDisplayed)
+                               .map(WebElement::getText)
+                               .anyMatch(text -> text != null && text.contains(errorMessage));
+            });
             return (T) this;
         }
 
@@ -2380,8 +2386,7 @@ public class App {
 
     private void waitForI18n() {
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript("""
-                                                                                   return document.documentElement.dataset.i18nReady === 'true'
-                                                                                       || (window.i18n && window.i18n.locale === 'pt-BR');
+                                                                                   return document.documentElement.dataset.i18nReady === 'true';
                                                                                    """)));
     }
     // Inside App class, after SearchPage

@@ -1,5 +1,8 @@
 package dev.vepo.contraponto.shared.toast;
 
+import dev.vepo.contraponto.shared.i18n.I18nMessageCatalog;
+
+import io.quarkus.arc.Arc;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -65,6 +68,10 @@ public interface Toast {
         }
 
         public Response build() {
+            if (i18nKey != null) {
+                message = resolveMessage(i18nKey, message);
+                builder.header("X-Toast-Message", message);
+            }
             if (message != null || i18nKey != null) {
                 int duration = durationMs != null ? durationMs : TOAST_DEFAULT_DURATION_MS;
                 String type = typeName != null ? typeName : "Success";
@@ -73,6 +80,13 @@ public interface Toast {
                 builder.header("HX-Trigger-After-Settle", triggerJson);
             }
             return builder.build();
+        }
+
+        private static String resolveMessage(String key, String ptBrDefault) {
+            return Arc.container()
+                      .select(I18nMessageCatalog.class)
+                      .get()
+                      .resolve(key, ptBrDefault);
         }
 
         private static String buildTriggerJson(String message, String i18nKey, String i18nParamsJson,

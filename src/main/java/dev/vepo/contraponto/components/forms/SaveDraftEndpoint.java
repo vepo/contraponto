@@ -71,9 +71,9 @@ public class SaveDraftEndpoint {
 
     // ============================== PUBLIC API ==============================
 
-    private Response buildErrorResponse(String i18nKey) {
+    private Response buildErrorResponse(String i18nKey, String ptBrMessage) {
         return Toast.ok() // Using OK status but with error type (original behavior)
-                    .i18nKey(i18nKey)
+                    .i18nKey(i18nKey, ptBrMessage)
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
@@ -146,10 +146,10 @@ public class SaveDraftEndpoint {
 
     private Optional<Response> validateRequest(SaveDraftRequest request) {
         if (isBlank(request.content())) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_CONTENT_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_CONTENT_REQUIRED, I18nDefaults.POST_CONTENT_REQUIRED));
         }
         if (isBlank(request.title())) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED, I18nDefaults.POST_TITLE_REQUIRED));
         }
         return Optional.empty();
     }

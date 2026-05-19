@@ -103,9 +103,9 @@ public class PublishEndpoint {
 
     // ============================== PUBLIC API ==============================
 
-    private Response buildErrorResponse(String i18nKey) {
+    private Response buildErrorResponse(String i18nKey, String ptBrMessage) {
         return Toast.response(Status.BAD_REQUEST)
-                    .i18nKey(i18nKey)
+                    .i18nKey(i18nKey, ptBrMessage)
                     .type(Toast.Type.ERROR)
                     .duration(TOAST_DURATION_SHORT)
                     .build();
@@ -225,19 +225,19 @@ public class PublishEndpoint {
 
     private Optional<Response> validateRequest(SaveDraftRequest request) {
         if (request.blogId() == null) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_BLOG_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_BLOG_REQUIRED, I18nDefaults.POST_BLOG_REQUIRED));
         }
         if (isBlank(request.content())) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_CONTENT_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_CONTENT_REQUIRED, I18nDefaults.POST_CONTENT_REQUIRED));
         }
         if (isBlank(request.title())) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED, I18nDefaults.POST_TITLE_REQUIRED));
         }
         if (TagSlug.hasInvalidSlugCharacters(request.slug())) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_INVALID_SLUG));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_INVALID_SLUG, I18nDefaults.POST_INVALID_SLUG));
         }
         if (slugAlreadyExistsForDifferentPost(request, request.blogId())) {
-            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_SLUG_EXISTS));
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_SLUG_EXISTS, I18nDefaults.POST_SLUG_EXISTS));
         }
         return Optional.empty();
     }

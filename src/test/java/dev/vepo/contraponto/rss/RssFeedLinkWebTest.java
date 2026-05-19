@@ -29,7 +29,8 @@ class RssFeedLinkWebTest {
                    .then()
                    .statusCode(200)
                    .body(containsString("/feed/main-blog"))
-                   .body(containsString(">RSS<"));
+                   .body(containsString("rss-feed-link"))
+                   .body(containsString("RSS"));
     }
 
     @Test
@@ -38,7 +39,8 @@ class RssFeedLinkWebTest {
                    .then()
                    .statusCode(200)
                    .body(containsString("href=\"/feed\""))
-                   .body(containsString(">RSS<"));
+                   .body(containsString("rss-feed-link"))
+                   .body(containsString("RSS"));
     }
 
     @BeforeEach
@@ -72,6 +74,7 @@ class RssFeedLinkWebTest {
                    .then()
                    .statusCode(200)
                    .body(containsString("/tags/" + tagSlug + "/feed"))
-                   .body(containsString(">RSS<"));
+                   .body(containsString("rss-feed-link"))
+                   .body(containsString("RSS"));
     }
 }
