@@ -2,7 +2,7 @@ class HeaderManager {
     constructor() {
         this.init();
         this.setupHtmxListener();
-        this.setupSidebar(); 
+        this.setupSidebar();
     }
 
     init() {
@@ -25,28 +25,75 @@ class HeaderManager {
         };
         this.bindUserMenuToggle();
 
-        document.body.addEventListener('click', (evt) => {
-            const userMenuBtn = document.getElementById('userMenuBtn');
-            const userDropdown = document.getElementById('userDropdown');
-            if (!userMenuBtn || !userDropdown) {
-                return;
-            }
-            if (userMenuBtn.contains(evt.target)) {
-                return;
-            }
-            if (userDropdown.contains(evt.target)) {
-                if (evt.target.closest('[data-hx-get]')) {
+        if (!this.userMenuOutsideClickBound) {
+            this.userMenuOutsideClickBound = true;
+            document.body.addEventListener('click', (evt) => {
+                const userMenuBtn = document.getElementById('userMenuBtn');
+                const userDropdown = document.getElementById('userDropdown');
+                if (!userMenuBtn || !userDropdown) {
+                    return;
+                }
+                if (userMenuBtn.contains(evt.target)) {
+                    return;
+                }
+                if (userDropdown.contains(evt.target)) {
+                    if (evt.target.closest('[data-hx-get]')) {
+                        userDropdown.classList.remove('user-menu__dropdown--open');
+                    }
+                    return;
+                }
+                userDropdown.classList.remove('user-menu__dropdown--open');
+            });
+
+            document.addEventListener('keydown', (evt) => {
+                const userDropdown = document.getElementById('userDropdown');
+                if (evt.key === 'Escape' && userDropdown?.classList.contains('user-menu__dropdown--open')) {
                     userDropdown.classList.remove('user-menu__dropdown--open');
                 }
-                return;
-            }
-            userDropdown.classList.remove('user-menu__dropdown--open');
-        });
+            });
+        }
+    }
 
-        document.addEventListener('keydown', (evt) => {
-            const userDropdown = document.getElementById('userDropdown');
-            if (evt.key === 'Escape' && userDropdown?.classList.contains('user-menu__dropdown--open')) {
-                userDropdown.classList.remove('user-menu__dropdown--open');
+    rebindUserMenu() {
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        if (userMenuBtn) {
+            delete userMenuBtn.dataset.menuBound;
+        }
+        if (userDropdown) {
+            userDropdown.classList.remove('user-menu__dropdown--open');
+        }
+        this.bindUserMenuToggle?.();
+    }
+
+    isMenuContainerSwap(target) {
+        if (!target || target.nodeType !== Node.ELEMENT_NODE) {
+            return false;
+        }
+        if (target.id === 'menu-container') {
+            return true;
+        }
+        return target.closest?.('#menu-container') != null;
+    }
+
+    setupHtmxListener() {
+        const onPossibleMenuSwap = (evt) => {
+            if (this.isMenuContainerSwap(evt.detail?.target)) {
+                this.rebindUserMenu();
+            }
+        };
+
+        document.body.addEventListener('htmx:afterSwap', onPossibleMenuSwap);
+        document.body.addEventListener('htmx:oobAfterSwap', onPossibleMenuSwap);
+
+        // Auth forms fire loggedIn on body after menu OOB swap (see HtmxTriggers.LOGGED_IN_ON_BODY)
+        document.body.addEventListener('loggedIn', () => this.rebindUserMenu());
+
+        // Fallback if swap events were missed
+        document.body.addEventListener('htmx:afterSettle', () => {
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            if (userMenuBtn && !userMenuBtn.dataset.menuBound) {
+                this.rebindUserMenu();
             }
         });
     }
@@ -75,14 +122,12 @@ class HeaderManager {
         if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
 
-        // Close on Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && sidebar.classList.contains('open')) {
                 closeSidebar();
             }
         });
 
-        // Close sidebar after HTMX navigation (when main content updates)
         document.body.addEventListener('htmx:afterSwap', (evt) => {
             const target = evt.detail.target;
             if (target && (target.id === 'main' || target.tagName === 'MAIN' || target.closest('main'))) {
@@ -90,32 +135,11 @@ class HeaderManager {
             }
         });
 
-        // Close sidebar when any sidebar link/button is clicked
         const sidebarLinks = sidebar.querySelectorAll('[data-hx-get], .sidebar__link--button');
         sidebarLinks.forEach(link => {
             link.addEventListener('click', () => {
-                setTimeout(closeSidebar, 150); // allow HTMX request to start
+                setTimeout(closeSidebar, 150);
             });
-        });
-    }
-
-    setupHtmxListener() {
-        // After any HTMX swap that replaces the menu container, ensure the dropdown is closed
-        document.body.addEventListener('htmx:afterSwap', (evt) => {
-            if (evt && evt.detail && evt.detail.target) {
-                const menuContainer = document.getElementById('menu-container');
-                if (menuContainer && evt.detail.target.contains(menuContainer)) {
-                    const userMenuBtn = document.getElementById('userMenuBtn');
-                    const userDropdown = document.getElementById('userDropdown');
-                    if (userMenuBtn) {
-                        delete userMenuBtn.dataset.menuBound;
-                    }
-                    if (userDropdown) {
-                        userDropdown.classList.remove('user-menu__dropdown--open');
-                    }
-                    this.bindUserMenuToggle?.();
-                }
-            }
         });
     }
 }

@@ -25,7 +25,7 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 
 ### When full navigation is allowed
 
-- User clicks nav: `data-hx-get` + `hx-target="main"` + `hx-push-url`.
+- User clicks nav: `data-hx-get` + `hx-select="main"` + `hx-target="main"` + `hx-swap="outerHTML"` + `hx-push-url`. Default `innerHTML` would nest `<main>` inside `<main>`; `main.js` enforces `outerHTML` when both select and target are `main`.
 - **`loggedOut`** on a **protected path**: `main.js` redirects to `/` (documented exception).
 
 ---

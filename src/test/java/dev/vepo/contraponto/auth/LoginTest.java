@@ -50,9 +50,10 @@ class LoginTest {
            .usePassword("validPassword123")
            .assertSubmitEnabled()
            .submit()
-           // Modal closes, user menu appears
+           // Modal closes, user menu appears and opens on click
            .assertModalWasClosed()
            .assertMenuIsDisplayed()
+           .openUserMenu()
            // - Optionally check that the session cookie is set
            .assertCookieIsPresent(SignUpEndpoint.SESSION_COOKIE_NAME);
     }

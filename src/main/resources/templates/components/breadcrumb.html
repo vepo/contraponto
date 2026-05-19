@@ -11,6 +11,7 @@
             <a data-hx-get="{item.href}"
                hx-select="main"
                hx-target="main"
+               hx-swap="outerHTML"
                hx-push-url="{item.href}"
                class="breadcrumb__link"
                data-nav>{item.label}</a>

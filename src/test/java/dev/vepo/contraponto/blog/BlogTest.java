@@ -23,6 +23,16 @@ class BlogTest {
     private User nonExistentAuthor;
 
     @Test
+    void breadcrumbNavigationDoesNotNestMain(App app) {
+        app.access()
+           .goTo(testAuthor.getDefaultBlog())
+           .clickFirstPostTitle()
+           .assertSingleMainElement()
+           .clickBreadcrumbLink("Home")
+           .assertSingleMainElement();
+    }
+
+    @Test
     void clickingPostOnUserBlogNavigatesToPostPage(App app) {
         app.access()
            .goTo(testAuthor.getDefaultBlog())
@@ -30,7 +40,8 @@ class BlogTest {
            .clickFirstPostTitle()
            // Should land on the post page
            .assertUrlContains("/post/")
-           .assertPostTitle("Author Post 14"); // 15 is the featured
+           .assertPostTitle("Author Post 14") // 15 is the featured
+           .assertSingleMainElement();
     }
 
     @Test

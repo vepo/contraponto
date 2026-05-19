@@ -896,6 +896,11 @@ public class App {
             return (T) this;
         }
 
+        public T assertSingleMainElement() {
+            App.this.assertSingleMainElement();
+            return (T) this;
+        }
+
         public T assertUrl(String url) {
             App.this.assertUrl(url);
             return (T) this;
@@ -914,6 +919,11 @@ public class App {
         public App click(PagePlacement placement, String link) {
             _click(placement, link);
             return App.this;
+        }
+
+        public T clickBreadcrumbLink(String label) {
+            App.this.clickBreadcrumbLink(label);
+            return (T) this;
         }
 
         public T goToManageNextPage() {
@@ -1920,6 +1930,19 @@ public class App {
     public App click(PagePlacement placement, String link) {
         _click(placement, link);
         return this;
+    }
+
+    public App clickBreadcrumbLink(String label) {
+        var items = wait.until(visibilityOfAllElementsLocatedBy(cssSelector(".breadcrumb__item")));
+        for (var item : items) {
+            var links = item.findElements(cssSelector(".breadcrumb__link"));
+            if (!links.isEmpty() && links.getFirst().getText().trim().equals(label)) {
+                reliableClick(links.getFirst());
+                waitForReady();
+                return this;
+            }
+        }
+        throw new AssertionError("Breadcrumb link not found: " + label);
     }
 
     public BlogPage clickFirstPostTitle() {

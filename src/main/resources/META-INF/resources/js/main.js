@@ -24,7 +24,64 @@ class MainManager {
         this.setupRouteBasedElementsEnabler();
         this.setupErrorHandler();
         this.setupCsrfHeader();
+        this.setupMainNavigationSwap();
         this.updateUIElements();
+    }
+
+    /**
+     * Full-page HTMX nav selects <main> from the response and swaps the current <main>.
+     * Default swap (innerHTML) nests <main> inside <main>; outerHTML replaces the element.
+     */
+    setupMainNavigationSwap() {
+        const applyOuterHtmlSwap = (elt) => {
+            if (!elt || elt.getAttribute('hx-target') !== 'main' || elt.getAttribute('hx-select') !== 'main') {
+                return;
+            }
+            const swap = elt.getAttribute('hx-swap');
+            if (!swap || swap === 'innerHTML') {
+                elt.setAttribute('hx-swap', 'outerHTML');
+            }
+        };
+
+        const patchMainNavigationSwaps = (root = document) => {
+            root.querySelectorAll('[hx-target="main"][hx-select="main"]').forEach(applyOuterHtmlSwap);
+        };
+
+        document.body.addEventListener('htmx:beforeProcessNode', (evt) => {
+            applyOuterHtmlSwap(evt.detail.elt);
+        });
+
+        document.body.addEventListener('htmx:configRequest', (evt) => {
+            const elt = evt.detail.elt;
+            if (!elt || elt.getAttribute('hx-target') !== 'main' || elt.getAttribute('hx-select') !== 'main') {
+                return;
+            }
+            const swap = evt.detail.swap || elt.getAttribute('hx-swap');
+            if (!swap || swap === 'innerHTML') {
+                evt.detail.swap = 'outerHTML';
+            }
+        });
+
+        document.body.addEventListener('htmx:afterSettle', () => {
+            this.repairNestedMain();
+            patchMainNavigationSwaps();
+        });
+
+        patchMainNavigationSwaps();
+    }
+
+    repairNestedMain() {
+        let repaired;
+        do {
+            repaired = false;
+            document.querySelectorAll('main').forEach((outer) => {
+                const nested = outer.querySelector(':scope > main');
+                if (nested) {
+                    outer.replaceWith(nested);
+                    repaired = true;
+                }
+            });
+        } while (repaired);
     }
 
     setupCsrfHeader() {
