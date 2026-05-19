@@ -1,0 +1,9 @@
+# Copy to application-dev.properties (gitignored) for local SMTP testing.
+# Without this file, %dev uses quarkus.mailer.mock=true (no outbound email).
+
+quarkus.mailer.mock=false
+quarkus.mailer.host=sandbox.smtp.mailtrap.io
+quarkus.mailer.port=2525
+quarkus.mailer.start-tls=DISABLED
+quarkus.mailer.username=YOUR_MAILTRAP_USERNAME
+quarkus.mailer.password=YOUR_MAILTRAP_PASSWORD

@@ -21,7 +21,7 @@ Multi-author publishing with HTMX-driven navigation, per-user blogs, versioning,
 
 Open [http://localhost:8080](http://localhost:8080). Dev mode runs Flyway clean+migrate (`%dev.quarkus.flyway.clean-at-start=true`) and loads sample data from `dev-import.sql`.
 
-Default admin (from migration): `admin` / password hash in `V1.0.0__initial_schema.sql`.
+Default admin (from migration): `admin` — rotate password after first deploy (see [docs/deployment.md](docs/deployment.md)).
 
 ## Documentation
 
@@ -33,6 +33,7 @@ Default admin (from migration): `admin` / password hash in `V1.0.0__initial_sche
 | [docs/application-guidelines.md](docs/application-guidelines.md) | Route and flow descriptions |
 | [docs/ui-guidelines.md](docs/ui-guidelines.md) | Typography, colors, components |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git repository layout for sync |
+| [docs/deployment.md](docs/deployment.md) | Production deployment checklist |
 | [.cursor/rules/](.cursor/rules/) | Cursor project rules |
 
 ## Project structure

@@ -2,3 +2,4 @@ target
 .vscode
 .idea
 .antlr
+src/main/resources/application-dev.properties

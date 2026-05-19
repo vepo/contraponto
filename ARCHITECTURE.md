@@ -195,7 +195,7 @@ dev.vepo.contraponto/
 - `tb_custom_pages`
 - `tb_blog_audience`, `tb_notifications`, `tb_email_notification_log`
 
-Full DDL: `src/main/resources/db/migration/V1.0.0__initial_schema.sql`
+Full DDL: `src/main/resources/db/migration/V0.0.1__initial_schema.sql`
 
 ## 16. Adding a feature (checklist)
 
@@ -255,6 +255,7 @@ Anonymous **view** / **reading** sessions remain in PostgreSQL (`__view_session`
 quarkus.datasource.db-kind=postgresql
 quarkus.flyway.migrate-at-start=true
 %dev.quarkus.flyway.clean-at-start=true
+image.base.url=${APP_PUBLIC_URL:http://localhost:8080}
 app.session.store=memory
 app.session.ttl-seconds=2592000
 # Multi-instance production example:
@@ -262,7 +263,8 @@ app.session.ttl-seconds=2592000
 # quarkus.redis.hosts=redis://redis:6379
 quarkus.cache.caffeine."rss-feeds".expire-after-write=5M
 contraponto.git.poll-enabled=true
-contraponto.git.poll-interval=2m
+%prod.contraponto.git.poll-enabled=false
+%prod.app.secure-cookies=true
 %dev.quarkus.mailer.mock=true
 app.show-error-details=false
 %dev.app.show-error-details=true
@@ -270,7 +272,7 @@ app.dev-import.enabled=false
 %dev.app.dev-import.enabled=true
 ```
 
-See `application.properties` and [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md).
+See `application.properties`, [docs/deployment.md](docs/deployment.md), and [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md).
 
 ## 20. Jakarta EE vs Quarkus-specific APIs
 

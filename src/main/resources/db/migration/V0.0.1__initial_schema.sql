@@ -59,10 +59,11 @@ CREATE TABLE tb_images (
     size                 BIGINT NOT NULL,
     url                  VARCHAR(500) NOT NULL,
     blog_id              BIGINT NOT NULL,
-    alt_text             VARCHAR(512),
-    uploaded_by_user_id  BIGINT,
-    active               BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at           TIMESTAMP(6) NOT NULL,
+    alt_text                  VARCHAR(512),
+    git_asset_relative_path   VARCHAR(512),
+    uploaded_by_user_id       BIGINT,
+    active                    BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at                TIMESTAMP(6) NOT NULL,
 
     CONSTRAINT fk_images_blog FOREIGN KEY (blog_id) REFERENCES tb_blogs(id),
     CONSTRAINT fk_images_uploaded_by FOREIGN KEY (uploaded_by_user_id) REFERENCES tb_users(id)
@@ -471,3 +472,15 @@ INSERT INTO tb_custom_pages (slug, section, title, content, placement, published
     NOW(),
     NOW()
 );
+CREATE TABLE tb_reading_sessions (
+    id               BIGSERIAL PRIMARY KEY,
+    post_id          BIGINT NOT NULL REFERENCES tb_posts(id) ON DELETE CASCADE,
+    user_id          BIGINT REFERENCES tb_users(id) ON DELETE SET NULL,
+    session_id       VARCHAR(255) NOT NULL,
+    started_at       TIMESTAMP NOT NULL,
+    last_activity_at TIMESTAMP NOT NULL,
+    total_seconds    INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT uq_reading_session_post_session UNIQUE (post_id, session_id)
+);
+
+CREATE INDEX idx_reading_sessions_post_activity ON tb_reading_sessions (post_id, last_activity_at);

@@ -27,7 +27,7 @@ Treat `dev-import.sql` as part of the same change as endpoint + template (see [A
 | Multi-blog URLs | A secondary blog (e.g. bob’s `architecture-notes`) |
 | Tags / series / RSS / search | Tagged posts, series membership, enough volume to paginate if applicable |
 
-If migration seed already covers it (e.g. global footer **custom pages** in `V1.0.0__initial_schema.sql`), extend `dev-import.sql` only when dev needs **additional** examples.
+If migration seed already covers it (e.g. global footer **custom pages** in `V0.0.1__initial_schema.sql`), extend `dev-import.sql` only when dev needs **additional** examples.
 
 ## Script structure (follow existing sections)
 
