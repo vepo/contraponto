@@ -49,7 +49,7 @@ public class HomeEndpoint {
     }
 
     @GET
-    @Path("components/grid")
+    @Path("components/home/grid")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance grid(@QueryParam("limit") @DefaultValue("12") int limit, @QueryParam("page") int page) {

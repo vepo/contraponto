@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-18 · merged Flyway V1.0.0; hub-only manage URLs
+**Last verified:** 2026-05-19 · home load-more at `/components/home/grid`
 
 ---
 
@@ -48,7 +48,7 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 |---------|----------|-----|------:|---------------------|
 | Featured homepage | anyone | `GET /` | 0 | Land on `/` (or click logo). |
 | Featured homepage (return) | anyone | `GET /` | 1 | Click **contraponto** logo in header. |
-| Load more featured posts | anyone | `GET /components/grid?page=` | 1 | On `/` → **Load more**. |
+| Load more featured posts | anyone | `GET /components/home/grid?page=` | 1 | On `/` → **Load more**. |
 | Blog home (default blog) | anyone | `GET /{username}` | 2 | Home → open a post author byline **or** search result **or** **My Blog** (signed in). |
 | Multi-blog profile | anyone | `GET /{username}` | 2 | Home → author with multiple blogs (lists blogs instead of redirecting). |
 | Blog home (secondary blog) | anyone | `GET /{username}/{blogSlug}` | 3 | Home → multi-blog profile → blog name. |

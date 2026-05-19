@@ -106,8 +106,9 @@ public class BlogEndpoint {
                                       @QueryParam("page") int page) {
 
         var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
+        var mainBlog = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
         return Templates.grid(username,
-                              null,
+                              mainBlog,
                               this.postRepository.findPublishedByAuthor(user.getId(), PageQuery.forFeaturedGrid(limit, page)),
                               false);
     }

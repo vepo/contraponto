@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 
 import java.net.URL;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class SecondaryBlogHomeTest {
                .statusCode(200)
                .body(containsString("Architecture Notes"))
                .body(containsString("<strong>Secondary</strong>"))
-               .body(containsString("Secondary Post"));
+               .body(containsString("Secondary Post 1"));
     }
 
     @BeforeEach
@@ -61,13 +62,15 @@ class SecondaryBlogHomeTest {
                              .withDescription("**Secondary** blog description")
                              .persist();
 
-        Given.post()
-             .withAuthor(author)
-             .withBlog(secondaryBlog)
-             .withTitle("Secondary Post")
-             .withSlug("secondary-post")
-             .withContent("Body with enough words for read time.")
-             .withPublished(true)
-             .persist();
+        String content = "Body with enough words for read time on the secondary blog.";
+        IntStream.range(1, 16)
+                 .forEach(i -> Given.post()
+                                    .withAuthor(author)
+                                    .withBlog(secondaryBlog)
+                                    .withTitle("Secondary Post " + i)
+                                    .withSlug("secondary-post-" + i)
+                                    .withContent(content)
+                                    .withPublished(true)
+                                    .persist());
     }
 }
