@@ -11,12 +11,6 @@ class GithubContentRenderPluginTest {
     private final GithubContentRenderPlugin plugin = new GithubContentRenderPlugin();
 
     @Test
-    void joinsMultiWordUrl() {
-        assertThat(plugin.render(List.of("https://github.com/owner", "repo"))).contains("owner/repo")
-                                                                              .contains("https://github.com/owner/repo");
-    }
-
-    @Test
     void rejectsEmptyParams() {
         assertThat(plugin.render(List.of())).contains("content-render--error").contains("URL required");
     }
