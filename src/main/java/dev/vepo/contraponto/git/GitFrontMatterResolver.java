@@ -120,6 +120,14 @@ final class GitFrontMatterResolver {
         return filenameDate.map(LocalDate::atStartOfDay).orElse(null);
     }
 
+    static String resolveSerieTitle(Map<String, Object> frontMatter) {
+        String serie = trimToNull(frontMatter.get("serie"));
+        if (serie != null) {
+            return serie;
+        }
+        return trimToNull(frontMatter.get("series"));
+    }
+
     static String resolveSlug(Map<String, Object> frontMatter, String filenameStem) {
         String explicit = trimToNull(frontMatter.get("slug"));
         if (explicit != null) {

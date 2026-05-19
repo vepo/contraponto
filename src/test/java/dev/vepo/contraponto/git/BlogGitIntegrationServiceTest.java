@@ -214,6 +214,23 @@ class BlogGitIntegrationServiceTest {
         assertThat(managed.isGitEnabled()).isTrue();
     }
 
+    @Test
+    void syncSkipsImportWhenRemoteHeadMatchesWatermark() throws Exception {
+        Path upstream = Files.createTempDirectory("git-watermark-");
+        String branch = bootstrapUpstreamRepo(upstream);
+        User user = persistUserLinkedToUpstream(upstream, branch);
+
+        integrationTransaction.syncBlogFromGit(blogId(user));
+        assertThat(postRepository.findByBlogIdAndSlugWithTags(blogId(user), "mirror-post")).isPresent();
+        Blog afterFirst = reloadBlog(blogId(user));
+        assertThat(afterFirst.getGitLastKnownCommit()).isNotNull();
+
+        integrationTransaction.syncBlogFromGit(blogId(user));
+
+        assertThat(postRepository.findByBlogIdAndSlugWithTags(blogId(user), "mirror-post")).isPresent();
+        assertThat(reloadBlog(blogId(user)).getGitLastKnownCommit()).isEqualTo(afterFirst.getGitLastKnownCommit());
+    }
+
     private Path workspaceDir(long blogId) {
         Path root = resolvedGitWorkspaceRoot().resolve("blog-" + blogId);
         assertThat(root).exists();

@@ -13,6 +13,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.junit.QuarkusTest;
@@ -89,6 +90,21 @@ class GitImageSyncServiceTest {
     }
 
     @Test
+    void importImagesForPostImportsAsciiDocMacroPaths() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-adoc-macro");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("java-101/cap-01");
+        Files.createDirectories(nested);
+        Files.write(nested.resolve("diagram.PNG"), new byte[] { 1, 2, 3 });
+
+        String body = "image::java-101/cap-01/diagram.PNG[id=diagram, align=\"center\"]";
+        gitImageSyncService.importImagesForPost(blog, workspace, convention, null, body, Format.ASCIIDOC);
+
+        String uuid = GitImportedAssetId.normalize("diagram", ".PNG");
+        assertThat(Given.inject(dev.vepo.contraponto.image.ImageRepository.class).findByUuid(uuid)).isPresent();
+    }
+
+    @Test
     void prepareBodyForExportReturnsEmptyStringForNullBody() {
         assertThat(gitImageSyncService.prepareBodyForExport(null, JekyllLayoutConvention.defaults())).isEmpty();
     }
@@ -111,7 +127,7 @@ class GitImageSyncServiceTest {
         Files.write(assetsDir.resolve(assetName), new byte[] { 1, 2, 3 });
 
         String markdown = "![pic](assets/images/" + UUID + ".png)";
-        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention);
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention, Format.MARKDOWN);
 
         assertThat(stored).contains("/api/images/" + UUID + ".png");
         assertThat(stored).contains("contraponto:image");
@@ -120,8 +136,23 @@ class GitImageSyncServiceTest {
     @Test
     void prepareBodyForImportReturnsEmptyStringForNullBody() throws IOException {
         Path workspace = Files.createTempDirectory("git-image-null");
-        assertThat(gitImageSyncService.prepareBodyForImport(null, blog, workspace, JekyllLayoutConvention.defaults()))
-                                                                                                                      .isEmpty();
+        assertThat(gitImageSyncService.prepareBodyForImport(null, blog, workspace, JekyllLayoutConvention.defaults(), Format.MARKDOWN))
+                                                                                                                                       .isEmpty();
+    }
+
+    @Test
+    void prepareBodyForImportRewritesAsciiDocImageMacro() throws IOException {
+        Path workspace = Files.createTempDirectory("git-image-adoc-rewrite");
+        var convention = JekyllLayoutConvention.defaults();
+        Path nested = convention.resolveAssets(workspace).resolve("java-101/cap-01");
+        Files.createDirectories(nested);
+        Files.write(nested.resolve("diagram.png"), new byte[] { 1, 2 });
+
+        String body = "image::java-101/cap-01/diagram.png[Caption]";
+        String stored = gitImageSyncService.prepareBodyForImport(body, blog, workspace, convention, Format.ASCIIDOC);
+
+        String uuid = GitImportedAssetId.normalize("diagram", ".png");
+        assertThat(stored).contains("/api/images/" + uuid + ".png");
     }
 
     @Test
@@ -134,7 +165,7 @@ class GitImageSyncServiceTest {
         Files.write(assetsDir.resolve(jekyllName + ".jpg"), new byte[] { 4, 5, 6 });
 
         String markdown = "![diagram](assets/images/" + jekyllName + ".jpg)";
-        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention);
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention, Format.MARKDOWN);
 
         String uuid = GitImportedAssetId.normalize(jekyllName, ".jpg");
         assertThat(stored).contains("/api/images/" + uuid + ".jpg");
@@ -150,7 +181,7 @@ class GitImageSyncServiceTest {
         Files.write(nested.resolve(jekyllName + ".webp"), new byte[] { 7, 8, 9 });
 
         String markdown = "![cap](assets/images/capas/" + jekyllName + ".webp)";
-        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention);
+        String stored = gitImageSyncService.prepareBodyForImport(markdown, blog, workspace, convention, Format.MARKDOWN);
 
         String uuid = GitImportedAssetId.normalize(jekyllName, ".webp");
         assertThat(stored).contains("/api/images/" + uuid + ".webp");

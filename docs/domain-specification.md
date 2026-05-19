@@ -150,7 +150,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Repository readable** | Contraponto prepared the workspace and resolved layout (`_contraponto.yml` or defaults). | Flag on `GitSyncRun` |
 | **Data loadable** | Remote was reachable and clone/fetch/pull succeeded. | Flag on `GitSyncRun` |
 | **Git sync log entry** | One step or per-post result within a run (phase, message, remediation). | `GitSyncRunEntry` |
-| **Legacy Jekyll front matter** | Import-only YAML aliases (`permalink`, `image`, `publish_date`) mapped to slug, cover, and publish time; native keys win when both are set. | `GitFrontMatterResolver` |
+| **Legacy Jekyll front matter** | Import-only YAML aliases (`permalink`, `image`, `publish_date`, `series`) mapped to slug, cover, publish time, and serie; native keys win when both are set. | `GitFrontMatterResolver` |
 
 ### Discovery & feeds
 

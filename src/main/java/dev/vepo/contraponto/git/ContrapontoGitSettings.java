@@ -20,6 +20,7 @@ public class ContrapontoGitSettings {
     private final Optional<String> username;
     private final Optional<String> password;
     private final Optional<String> workspaceRoot;
+    private final int cloneDepth;
 
     @Inject
     public ContrapontoGitSettings(ContrapontoGitConfig config) {
@@ -28,6 +29,11 @@ public class ContrapontoGitSettings {
         this.username = config.username();
         this.password = config.password();
         this.workspaceRoot = config.workspaceRoot();
+        this.cloneDepth = config.cloneDepth();
+    }
+
+    public int cloneDepth() {
+        return cloneDepth;
     }
 
     public Optional<String> password() {

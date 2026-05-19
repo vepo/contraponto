@@ -156,17 +156,20 @@ public class BlogGitImportService {
             throws IOException {
         Post post = draft.post();
         String description = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");
-        String body = Objects.requireNonNullElse(doc.body(), "");
-        body = gitImageSyncService.prepareBodyForImport(body.stripTrailing(), blog, workspace, convention);
+        String rawBody = Objects.requireNonNullElse(doc.body(), "");
+        String coverPath = GitFrontMatterResolver.resolveCoverPath(doc.frontMatter());
+        Format format = GitFrontMatterResolver.resolveFormat(doc.frontMatter(), postFile);
+        gitImageSyncService.importImagesForPost(blog, workspace, convention, coverPath, rawBody, format);
+        String body = gitImageSyncService.prepareBodyForImport(rawBody.stripTrailing(), blog, workspace, convention, format);
 
-        serieService.applySerieTitleToPost(post, trimToNull(doc.frontMatter().get("serie")));
+        serieService.applySerieTitleToPost(post, GitFrontMatterResolver.resolveSerieTitle(doc.frontMatter()));
 
         post.setSlug(draft.slug());
         post.setTitle(draft.title());
         post.setDescription(description);
         post.setContent(body);
-        applyCoverFromFrontMatter(post, GitFrontMatterResolver.resolveCoverPath(doc.frontMatter()), convention, workspace, blog);
-        post.setFormat(GitFrontMatterResolver.resolveFormat(doc.frontMatter(), postFile));
+        applyCoverFromFrontMatter(post, coverPath, convention, workspace, blog);
+        post.setFormat(format);
 
         Optional<Boolean> featuredFlag = parseBoolean(doc.frontMatter().get("featured"));
         if (featuredFlag.isPresent()) {
@@ -237,12 +240,7 @@ public class BlogGitImportService {
         String ext = m.group(2);
         String basename = GitFrontMatterResolver.assetBasename(assetRel);
         String uuid = GitImportedAssetId.normalize(basename, ext);
-        try {
-            gitImageSyncService.importAssetsFromWorkspace(blog, workspace, convention);
-            gitImageSyncService.importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
-        } catch (IOException e) {
-            LOG.warn("Could not import assets for cover: {}", coverPath, e);
-        }
+        gitImageSyncService.importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
         imageRepository.findByUuid(uuid).ifPresent(post::setCover);
     }
 

@@ -172,6 +172,50 @@ class BlogGitImportServiceTest {
     }
 
     @Test
+    void ingestLinksPostsSharingJekyllSeriesFrontMatter() throws Exception {
+        Blog blog = baselineUser().getDefaultBlog();
+        Path dir = ingestDir();
+
+        Path first = dir.resolve("2025-11-01-08-00-00-part-one.md");
+        Files.writeString(first,
+                          """
+                          ---
+                          title: Part One
+                          published: true
+                          permalink: /posts/part-one
+                          series: Conversas sobre Arquitetura
+                          publish_date: 2025-11-01 08:00:00 +0300
+                          ---
+                          One""",
+                          StandardCharsets.UTF_8);
+
+        Path second = dir.resolve("2025-11-05-08-33-00-part-four.md");
+        Files.writeString(second,
+                          """
+                          ---
+                          title: Part Four
+                          published: true
+                          permalink: /posts/part-four
+                          series: Conversas sobre Arquitetura
+                          publish_date: 2025-11-05 08:33:00 +0300
+                          ---
+                          Four""",
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), first, SourceKind.POSTS_FOLDER);
+        ingest(blogGitImportService, blog.getId(), second, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> p1 = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "part-one");
+        Optional<Post> p2 = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "part-four");
+        assertThat(p1).isPresent();
+        assertThat(p2).isPresent();
+        assertThat(p1.get().getSerie()).isNotNull();
+        assertThat(p2.get().getSerie()).isNotNull();
+        assertThat(p1.get().getSerie().getId()).isEqualTo(p2.get().getSerie().getId());
+        assertThat(p1.get().getSerie().getTitle()).isEqualTo("Conversas sobre Arquitetura");
+    }
+
+    @Test
     void ingestPublishedFalseInPostsFolderStaysDraft() throws Exception {
         Blog blog = baselineUser().getDefaultBlog();
         Path dated = ingestDir().resolve("2026-06-01-draft-in-posts.md");

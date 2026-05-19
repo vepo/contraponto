@@ -8,6 +8,13 @@ import io.smallrye.config.WithDefault;
 @ConfigMapping(prefix = "contraponto.git")
 public interface ContrapontoGitConfig {
 
+    /**
+     * Shallow clone/fetch depth ({@code 1} = latest commit only). Use {@code 0} for
+     * full history.
+     */
+    @WithDefault("1")
+    int cloneDepth();
+
     Optional<String> password();
 
     @WithDefault("true")

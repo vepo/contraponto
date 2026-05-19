@@ -36,6 +36,7 @@ On **import**, Contraponto also accepts common Jekyll keys. Native keys above ta
 | `image` | cover | Same path rules as `cover` |
 | `publish_date` | `published_at` | Supports Jekyll datetimes such as `2023-09-26 15:39:23 +0300` |
 | `published` | published vs draft | `false` in `_posts/` still imports as a draft |
+| `series` | serie (series title) | Same as `serie`; posts with the same title share one serie, ordered by publish date |
 
 **Format** — front matter `format` if valid; otherwise inferred from the file extension (`.md` → `MARKDOWN`, `.adoc` / `.asciidoc` → `ASCIIDOC`).
 
@@ -79,6 +80,7 @@ Changes apply immediately on the next import or export after a `git pull` / sche
 | `contraponto.git.poll-enabled` | When `true`, the scheduler pulls + imports periodically |
 | `contraponto.git.poll-interval` | Quarkus Scheduler duration (`2m`, `120s`, …) |
 | `contraponto.git.username` / `contraponto.git.password` | Optional HTTPS credentials (often a PAT) |
+| `contraponto.git.clone-depth` | Shallow clone/fetch depth (`1` = latest commit only; `0` = full history) |
 
 SSH remotes instead of HTTPS typically rely on OS-level SSH configuration (outside this app).
 

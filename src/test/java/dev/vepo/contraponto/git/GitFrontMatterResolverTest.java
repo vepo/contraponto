@@ -45,6 +45,20 @@ class GitFrontMatterResolverTest {
     }
 
     @Test
+    void resolveSerieTitleFallsBackToSeries() {
+        Map<String, Object> fm = Map.of("series", "Conversas sobre Arquitetura");
+        assertThat(GitFrontMatterResolver.resolveSerieTitle(fm)).isEqualTo("Conversas sobre Arquitetura");
+    }
+
+    @Test
+    void resolveSerieTitlePrefersSerieOverSeries() {
+        Map<String, Object> fm = new LinkedHashMap<>();
+        fm.put("serie", "Native Serie");
+        fm.put("series", "Jekyll Series");
+        assertThat(GitFrontMatterResolver.resolveSerieTitle(fm)).isEqualTo("Native Serie");
+    }
+
+    @Test
     void resolveSlugPrefersExplicitSlugOverPermalink() {
         Map<String, Object> fm = Map.of(
                                         "slug", "Explicit",
