@@ -35,6 +35,16 @@ class SearchTest {
     }
 
     @Test
+    void modalSearchEnterOpensAdvancedPage(App app) {
+        app.access()
+           .searchModal()
+           .type("Java")
+           .submitWithEnter()
+           .assertUrlContains("/search")
+           .assertUrlContains("q=Java");
+    }
+
+    @Test
     void modalSearchHasAdvancedSearchLink(App app) {
         app.access()
            .searchModal()

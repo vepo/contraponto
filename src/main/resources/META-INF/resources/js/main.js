@@ -227,10 +227,12 @@ class MainManager {
         this.redirectIfPathProtected = this.redirectIfPathProtected.bind(this);
         this.updateUIElements = this.updateUIElements.bind(this);
         this.bindErrorMessage = this.bindErrorMessage.bind(this);
+        this.handleSearchModalSubmit = this.handleSearchModalSubmit.bind(this);
         this.setupRouteBasedElementsEnabler();
         this.setupErrorHandler();
         this.setupCsrfHeader();
         this.setupMainNavigationSwap();
+        this.setupSearchModalSubmit();
         this.updateUIElements();
     }
 
@@ -413,6 +415,32 @@ class MainManager {
             console.log(`Protected path detected: ${currentPath}, redirecting to /`);
             window.location.href = '/';
         }
+    }
+
+    setupSearchModalSubmit() {
+        document.body.addEventListener('submit', this.handleSearchModalSubmit);
+    }
+
+    handleSearchModalSubmit(event) {
+        const form = event.target;
+        if (form?.tagName !== 'FORM' || !form.classList.contains('search-form')) {
+            return;
+        }
+        if (!form.closest('#searchModal')) {
+            return;
+        }
+        event.preventDefault();
+        const q = (form.querySelector('[name=q]')?.value ?? '').trim();
+        const btn = document.getElementById('btnGoToAdvanced');
+        if (btn) {
+            const path = q ? `/search?q=${encodeURIComponent(q)}` : '/search';
+            btn.setAttribute('hx-get', path);
+            btn.setAttribute('hx-push-url', path);
+            if (typeof htmx !== 'undefined') {
+                htmx.process(btn);
+            }
+        }
+        this.closeModal('#btnGoToAdvanced');
     }
 
     closeModal(selector) {

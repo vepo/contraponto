@@ -1364,11 +1364,25 @@ public class App {
             return this;
         }
 
+        public SearchModal assertUrlContains(String urlFragment) {
+            wait.until(urlContains(urlFragment));
+            return this;
+        }
+
         public SearchModal close() {
             var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
             var closeBtn = modal.findElement(cssSelector(".modal__close"));
             reliableClick(closeBtn);
             wait.until(invisibilityOfElementLocated(By.id("searchModal")));
+            return this;
+        }
+
+        public SearchModal submitWithEnter() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("searchModal")));
+            var input = modal.findElement(cssSelector("input[name='q']"));
+            input.sendKeys(Keys.ENTER);
+            wait.until(urlContains("/search"));
+            waitForReady();
             return this;
         }
 

@@ -88,6 +88,7 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 - **Route:** `GET /search/modal` (returns modal HTML).  
 - **Behavior:** Input fires `GET /search/results?q=...` on `keyup` (300ms debounce). Results are loaded into the modal’s `#modalSearchResults` div.  
 - If the input is empty, an initial placeholder is shown.  
+- **Enter** in the search field opens the advanced search page (`/search`, with `?q=` when the field has text); same navigation as the **Busca avançada** footer link (`main.closeModal` + `#btnGoToAdvanced`).  
 - Clicking a result navigates away.
 
 ### 3.2 Search Page

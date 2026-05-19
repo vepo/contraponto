@@ -2273,11 +2273,28 @@ hr:after {
 /* Modal search specific */
 .modal__container--search {
     max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal__container--search .modal__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal__container--search .search-form {
+    flex-shrink: 0;
 }
 
 .search-results-modal {
-    max-height: 400px;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
     margin-top: 1rem;
 }
 
@@ -2286,6 +2303,7 @@ hr:after {
 }
 
 .search-modal__footer {
+    flex-shrink: 0;
     margin-top: 1rem;
     text-align: right;
     font-family: var(--font-sans);
