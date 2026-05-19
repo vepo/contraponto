@@ -9,6 +9,7 @@ import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.shared.security.SessionCookieSupport;
 import dev.vepo.contraponto.user.UserRepository;
+import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import dev.vepo.contraponto.view.ViewRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,6 +40,7 @@ public class LoginEndpoint {
 
     private final UserRepository userRepository;
     private final ViewRepository viewRepository;
+    private final ReadingTimeRepository readingTimeRepository;
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
     private final SessionCookieSupport sessionCookieSupport;
@@ -46,11 +48,13 @@ public class LoginEndpoint {
     @Inject
     public LoginEndpoint(UserRepository userRepository,
                          ViewRepository viewRepository,
+                         ReadingTimeRepository readingTimeRepository,
                          LoggedUserProvider loggedUserProvider,
                          PasswordService passwordService,
                          SessionCookieSupport sessionCookieSupport) {
         this.userRepository = userRepository;
         this.viewRepository = viewRepository;
+        this.readingTimeRepository = readingTimeRepository;
         this.loggedUserProvider = loggedUserProvider;
         this.passwordService = passwordService;
         this.sessionCookieSupport = sessionCookieSupport;
@@ -122,9 +126,11 @@ public class LoginEndpoint {
                                  var loggedUser = loggedUserProvider.login(user);
                                  logger.info("User logged in successfully: {}", login);
 
-                                 // migrate anonymous views
+                                 // migrate anonymous views and reading sessions
                                  if (anonymousSessionId != null && !anonymousSessionId.isBlank()) {
                                      viewRepository.migrateAnonymousViewsToUser(loggedUser.getId(), anonymousSessionId);
+                                     readingTimeRepository.migrateAnonymousSessionsToUser(loggedUser.getId(),
+                                                                                          anonymousSessionId);
                                  }
 
                                  var menuHtml = MenuEndpoint.Templates.menu(loggedUser).render();

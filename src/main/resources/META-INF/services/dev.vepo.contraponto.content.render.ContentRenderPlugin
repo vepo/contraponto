@@ -1,3 +1,4 @@
 dev.vepo.contraponto.content.render.YoutubeContentRenderPlugin
 dev.vepo.contraponto.content.render.GistContentRenderPlugin
 dev.vepo.contraponto.content.render.GithubContentRenderPlugin
+dev.vepo.contraponto.content.render.TwitterContentRenderPlugin

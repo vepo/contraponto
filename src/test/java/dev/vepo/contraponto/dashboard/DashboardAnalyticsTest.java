@@ -32,6 +32,18 @@ class DashboardAnalyticsTest {
     private User testUser;
 
     @Test
+    void analyticsFragmentIncludesReadingTimeChart() {
+        var blogId = testUser.getDefaultBlog().getId();
+        var sessionId = Given.inject(LoggedUserProvider.class).login(testUser).getSessionId();
+
+        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+               .get("/manage/dashboard/components/analytics?blogId=" + blogId)
+               .then()
+               .statusCode(200)
+               .body(containsString("Daily reading time"));
+    }
+
+    @Test
     void compareAnalyticsFragmentIncludesLegend() {
         var blogId = testUser.getDefaultBlog().getId();
         var sessionId = Given.inject(LoggedUserProvider.class).login(testUser).getSessionId();

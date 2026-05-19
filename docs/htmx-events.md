@@ -123,7 +123,15 @@ Always use `Toast.ok()...message()` for toasts — not raw `X-Toast-Message` in 
 | Subscribers | `hx-get` + swap self; never fetch `/` or `#main` on auth events |
 | Re-init JS | `htmx:afterSettle` / `afterSwap` with `evt.detail.target` guards |
 | Global side effects | Toasts on `document` (capture) OK; redirects only for documented exceptions |
-| Registration | One module per concern (`toast.js`, `main.js`, `write.js`, …) |
+| Registration | One module per concern (`toast.js`, `main.js`, `reading-time.js`, `write.js`, …) |
+
+### `reading-time.js` (post engagement)
+
+| Event | Use |
+|-------|-----|
+| `DOMContentLoaded` / `htmx:afterSettle` | Start 5s heartbeat when `main.article-page[data-reading-time-post-id]` is present |
+| `visibilitychange` | Pause interval when tab hidden; resume when visible |
+| `htmx:beforeSwap` | Stop tracker when leaving post page (`#main-content` / `main` swap) |
 
 ### Lifecycle hooks used in this repo
 

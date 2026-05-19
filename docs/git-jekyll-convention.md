@@ -2,6 +2,8 @@
 
 Contraponto mirrors each configured blog against a Git repository shaped like a [Jekyll](https://jekyllrb.com/) content tree. Paths and front matter keys follow **defaults** documented here so repositories work out of the box. You may override mappings with `_contraponto.yml` at the repository root.
 
+Enable Git sync on the blog **Edit** form (default/main blog at `/{username}`) or under **Settings** for any blog. This is a common setup for a personal site repo (e.g. GitHub Pages at `username.github.io`).
+
 ## Defaults (convention)
 
 | Aspect | Convention |

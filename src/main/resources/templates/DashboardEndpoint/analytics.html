@@ -84,6 +84,26 @@
         </div>
     </section>
 
+    <section class="dashboard-chart" aria-labelledby="dashboardReadingTimeTitle">
+        <h3 id="dashboardReadingTimeTitle" class="dashboard-chart__title">Daily reading time</h3>
+        <p class="dashboard-chart__summary">
+            {analytics.readingTime.total.formatReadingTimeTotal} reading time this month
+        </p>
+        <div class="dashboard-chart__plot" role="img" aria-label="Daily reading time for {analytics.monthLabel}">
+            {#for day in analytics.readingTime.days}
+            <div class="dashboard-chart__day"
+                 title="Day {day.day.dayOfMonth}: {day.count.formatReadingTimeTotal}">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(analytics.readingTimeChartMax)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+
     <section class="dashboard-chart" aria-labelledby="dashboardFollowersTitle">
         <h3 id="dashboardFollowersTitle" class="dashboard-chart__title">New followers</h3>
         <p class="dashboard-chart__summary">

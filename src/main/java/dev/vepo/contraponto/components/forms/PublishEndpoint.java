@@ -134,6 +134,7 @@ public class PublishEndpoint {
                                                       links,
                                                       loggedUser,
                                                       0L,
+                                                      0L,
                                                       audienceComponentEndpoint.buildView(blog),
                                                       breadcrumbService.forPost(view)))
                     .build();

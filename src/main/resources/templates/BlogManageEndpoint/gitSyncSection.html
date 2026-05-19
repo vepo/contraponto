@@ -1,0 +1,72 @@
+<div class="form-group">
+    <label for="blogDescription">Description</label>
+    <textarea id="blogDescription"
+              name="description"
+              rows="4"
+              placeholder="A short description (optional)">{#if blog.isPresent}{blog.get().description}{/if}</textarea>
+    <p class="form-group__hint">Markdown supported (bold, links, lists).</p>
+</div>
+
+{#if blog.isPresent}
+<fieldset class="git-sync">
+    <legend class="git-sync__legend">Git sync</legend>
+    <p class="git-sync__intro form-group__hint">
+        Publish posts to a remote Git repository using Contraponto’s Jekyll-style layout
+        (<code>_posts/</code>, <code>_drafts/</code>, YAML front matter).
+        <a href="https://github.com/vepo/contraponto/blob/main/docs/git-jekyll-convention.md"
+           target="_blank"
+           rel="noopener noreferrer">Layout convention</a>.
+    </p>
+    <label class="git-sync__enable">
+        <input type="checkbox"
+               class="git-sync__enable-input"
+               name="git_enabled"
+               {#if blog.get().gitEnabled}checked{/if}>
+        <span class="git-sync__enable-card">
+            <span class="git-sync__enable-title">Enable Git sync for this blog</span>
+            <span class="git-sync__enable-desc">
+                After each draft save or publish, push Markdown to your remote Git repository.
+            </span>
+        </span>
+    </label>
+    <div class="git-sync__config">
+        <div class="git-sync__fields-row">
+            <div class="form-group">
+                <label for="gitRemoteUrl">Git remote URL</label>
+                <input type="url"
+                       id="gitRemoteUrl"
+                       name="git_remote_url"
+                       placeholder="https://git.example.com/you/your-site.git"
+                       {#if blog.get().gitRemoteUrl}
+                       value="{blog.get().gitRemoteUrl}"
+                       {/if}
+                       autocomplete="off"/>
+                <p class="form-group__hint">
+                    HTTPS URL only. Private repos need a token in server configuration.
+                </p>
+            </div>
+            <div class="form-group">
+                <label for="gitBranch">Branch</label>
+                <input type="text"
+                       id="gitBranch"
+                       name="git_branch"
+                       placeholder="main"
+                       value="{blog.get().gitBranch}"
+                       maxlength="255"
+                       autocomplete="off"/>
+                <p class="form-group__hint">
+                    Use a dedicated branch if your site or CI builds from <code>main</code>.
+                </p>
+            </div>
+        </div>
+        <p class="git-sync__history-link">
+            <a data-hx-get="/blogs/{blog.get().id}/git-sync"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/blogs/{blog.get().id}/git-sync"
+               data-nav>View sync history</a>
+        </p>
+    </div>
+</fieldset>
+{/if}

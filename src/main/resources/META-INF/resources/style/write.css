@@ -668,6 +668,91 @@
     text-align: right;
 }
 
+/* AsciiDoc tables — mirrors .article-page__content table.tableblock */
+.write-preview .sectionbody:has(> table.tableblock) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 2rem 0;
+}
+
+.write-preview table.tableblock {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #d0d0d0;
+    font-family: 'Inter', Helvetica, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: #1a1a1a;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.write-preview table.tableblock caption.title {
+    caption-side: top;
+    padding: 0 0 0.5rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 500;
+    color: #4a4a4a;
+    text-align: left;
+}
+
+.write-preview table.tableblock thead th {
+    background: #fafafa;
+    font-weight: 600;
+    border-bottom: 2px solid #d0d0d0;
+}
+
+.write-preview table.tableblock th,
+.write-preview table.tableblock td {
+    padding: 0.7rem 1rem;
+    border: 1px solid #e5e5e5;
+    text-align: left;
+    vertical-align: top;
+}
+
+.write-preview table.tableblock tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.write-preview table.tableblock tbody tr:hover {
+    background: rgba(26, 137, 23, 0.05);
+}
+
+.write-preview .tableblock p.tableblock {
+    margin: 0;
+}
+
+.write-preview table:not(.tableblock) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    border: 1px solid #d0d0d0;
+    font-family: 'Inter', Helvetica, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.write-preview table:not(.tableblock) th,
+.write-preview table:not(.tableblock) td {
+    padding: 0.7rem 1rem;
+    border: 1px solid #e5e5e5;
+    vertical-align: top;
+}
+
+.write-preview table:not(.tableblock) thead th {
+    background: #fafafa;
+    font-weight: 600;
+    border-bottom: 2px solid #d0d0d0;
+}
+
+.write-preview table:not(.tableblock) tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
 /* Toolbar disabled state */
 .write-editor-toolbar[style*="pointer-events: none"] button {
     cursor: not-allowed;

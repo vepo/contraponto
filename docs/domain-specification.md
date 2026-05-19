@@ -85,7 +85,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Cover** | Optional hero image for a post (`Image`). | `Post.cover` |
 | **Format** | Markup dialect: **Markdown** or **AsciiDoc**. | `Format` enum |
 | **Content render plugin** | Pluggable handler registered via `ServiceLoader` that turns a **render tag** in post body into HTML (e.g. YouTube embed). | `ContentRenderPlugin` |
-| **Render tag** | Author syntax in post body: `{% renderIdentifier param1 param2 %}`. Built-in identifiers: `youtube`, `gist`, `github`. Unknown identifiers remain literal in output. | `ContentRenderTagProcessor` |
+| **Render tag** | Author syntax in post body: `{% renderIdentifier param1 param2 %}`. Built-in identifiers: `youtube`, `gist`, `github`, `twitter`. Unknown identifiers remain literal in output. | `ContentRenderTagProcessor` |
 | **Publish** | Action that marks the post published, creates a **publication snapshot**, sets **live publication**, fires `PostPublishedEvent`, and may trigger Git export and notifications. | `PostPublicationService.publish` |
 | **Republish** | Publish again when content differs from live snapshot; increments version, re-notifies audience. | Same service |
 | **Publication snapshot** | Immutable `PostPublication` row: version, content/tags/cover at publish time. | `PostPublication` |
@@ -98,6 +98,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Uploaded image** | Blog-scoped image: metadata in `tb_images`, bytes in `tb_image_content` (PostgreSQL `BYTEA`), optional **alt text**. Served at `/api/images/{filename}`. | `Image`, `ImageContent` |
 | **Image marker** | HTML comment in stored body: `<!-- contraponto:image uuid="…" -->` immediately before an image reference; hidden in the Write editor and stripped when rendering published post content (markers remain in stored content). | `ContentImageMarkerService` |
 | **Image lightbox** | Reader expands an inline post-body image in an on-page overlay (larger view, same image URL); closed with ESC, close control, or backdrop click. | `#image-lightbox`, `ImageLightboxManager` in `main.js` |
+| **Code block copy** | Reader copies the plain source from a fenced or listing code block via a **Copy** control; label briefly shows **Copied**. | `CodeCopyManager` in `main.js`, `.code-block__copy` |
 | **Image dependency** | Record that a post, publication snapshot, or custom page uses an uploaded image (`INLINE` or `COVER`). | `PostImageDependency`, `CustomPageImageDependency` |
 | **Image control** | Manage screen listing a blog's uploaded images, where each is used, and alt text editing. | `ImageControlEndpoint` |
 
@@ -140,7 +141,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
-| **Git integration** | Per-blog export/import to a remote Git repo over HTTPS (any host; Jekyll layout). | `Blog.gitEnabled`, etc. |
+| **Git integration** | Per-blog export/import to a remote Git repo over HTTPS (any host; Jekyll layout). Available on the **main blog** and **secondary blogs**; configured on blog **Edit** (default blog) or **Settings** (`GET /blogs/{id}/settings`). | `Blog.gitEnabled`, etc. |
 | **Git sync request** | Event after draft save or publish to export post to Git when enabled. | `PostGitSyncRequestedEvent` |
 | **Remote poll** | Scheduled pull of remote changes when poll enabled. | `GitRemotePollScheduler` |
 | **Git sync run** | One execution of Git export (push) or import (pull) for a blog. | `GitSyncRun` |
@@ -161,7 +162,11 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Search** | Full-text discovery via modal or `/search` page. | `SearchEndpoint` |
 | **Tag page** | Public listing of posts with a given tag. | `TagPageEndpoint` |
 | **RSS feed** | Syndication for site, blog, serie, or tag. | `rss` package |
-| **View count** | Anonymous read metric per post/session. | `View` |
+| **View count** | Read metric per post load (one row per page GET per session). | `View` |
+| **Estimated read time** | Word-count hint on post cards (e.g. "5 min read"); not tracked engagement. | `TemplateExtensions.readTime` |
+| **Reading time** | Actual seconds a reader spends on a published post while the browser tab is **visible**; extended by 5-second client heartbeats. | `ReadingSession` |
+| **Reading session** | One post + `__view_session` (+ optional user) row accumulating `total_seconds`. | `ReadingSession` |
+| **Average reading time** | Mean `total_seconds` across reading sessions for a post; shown on post metadata. | `ReadingTimeRepository.averageSecondsByPost` |
 
 ### Author workspaces
 
@@ -170,8 +175,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Write** | Editor for creating or editing a post (`/write`, `/write/draft/{id}`). | `WriteEndpoint` |
 | **Image control** | Per-blog list of uploaded images, usages, and alt text (`/blogs/{id}/images`). | `ImageControlEndpoint` |
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
-| **Dashboard** | Author overview per selected blog: analytics (daily views, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
-| **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
+| **Dashboard** | Author overview per selected blog: analytics (daily views, daily reading time, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
+| **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily reading time, daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
 | **Account security** | Update email (with verification) and password. | `AccountSecurityEndpoint`, `AccountSecurityUpdateEndpoint` |
 | **Author appearance** | Update display name, profile picture, and default blog banner. | `AuthorAppearanceEndpoint`, `AuthorAppearanceUpdateEndpoint` |
 | **Author blogs** | List, create, and edit own blogs (name, slug, banner) in the Writing hub. Extended settings (description, active, Git) on the blog settings form. | `BlogManageEndpoint`, Writing hub `blogs` section |
@@ -222,6 +227,8 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Blog audience — email (on) | Subscribed | Blog page |
 | Post — editor feature | Featured / ★ Featured | Post action bar, review row |
 | Post — editor not featured | ☆ Not Featured | Review row |
+| Post — code block copy | Copy | Code block toolbar |
+| Post — code block copied | Copied | After successful copy |
 | Home / blog hero | Featured | Category label on featured card |
 | Pagination — public lists | Load more | Home, blog grid, search |
 | Library tab | Drafts | Library |
@@ -233,9 +240,12 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Dashboard — month navigation | Previous month / Next month | Analytics toolbar |
 | Dashboard — compare views | Compare with previous month / Hide comparison | Views chart toggle |
 | Dashboard chart | Daily views | Views bar chart heading |
+| Dashboard chart | Daily reading time | Reading time bar chart heading |
 | Dashboard chart | New followers | Followers bar chart heading |
 | Dashboard chart | New email subscribers | Subscribers bar chart heading |
 | Dashboard summary | {n} views this month | Views chart total |
+| Dashboard summary | {duration} reading time this month | Reading time chart total (humanized hours/minutes) |
+| Post — average reading time | Avg reading time: {duration} | Post page metadata (when sessions exist) |
 | Dashboard summary | +{n} new this month · {m} followers total | Followers chart |
 | Dashboard summary | +{n} new this month · {m} subscribers total | Subscribers chart |
 | Comment moderation | Approve / Reject | Post owner (implicit in moderation UI) |

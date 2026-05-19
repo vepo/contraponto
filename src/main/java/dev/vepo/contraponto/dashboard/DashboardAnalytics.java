@@ -15,6 +15,7 @@ public record DashboardAnalytics(Blog blog,
                                  boolean canGoNextMonth,
                                  MonthSeries views,
                                  MonthSeries viewsComparison,
+                                 MonthSeries readingTime,
                                  MonthSeries newFollowers,
                                  MonthSeries newSubscribers,
                                  long totalFollowers,
@@ -51,6 +52,10 @@ public record DashboardAnalytics(Blog blog,
             return Math.max(views.maxDailyCount(), viewsComparison.maxDailyCount());
         }
         return views.maxDailyCount();
+    }
+
+    public long readingTimeChartMax() {
+        return readingTime.maxDailyCount();
     }
 
     public long viewsPercentChange() {

@@ -12,10 +12,11 @@ public class SecurityHeadersFilter implements ContainerResponseFilter {
 
     private static final String CSP = """
                                       default-src 'self'; \
-                                      script-src 'self' 'unsafe-inline'; \
-                                      style-src 'self' 'unsafe-inline'; \
-                                      img-src 'self' data:; \
-                                      font-src 'self'; \
+                                      script-src 'self' 'unsafe-inline' https://platform.twitter.com; \
+                                      style-src 'self' 'unsafe-inline' https://platform.twitter.com; \
+                                      img-src 'self' data: https://pbs.twimg.com https://abs.twimg.com https://syndication.twitter.com; \
+                                      font-src 'self' https://platform.twitter.com; \
+                                      frame-src https://platform.twitter.com; \
                                       connect-src 'self'; \
                                       form-action 'self'; \
                                       frame-ancestors 'none'""";

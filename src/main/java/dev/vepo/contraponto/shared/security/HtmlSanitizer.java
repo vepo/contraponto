@@ -41,7 +41,8 @@ public class HtmlSanitizer {
         });
         doc.select("script[src]").forEach(script -> {
             String src = script.attr("src");
-            if (!src.startsWith("https://gist.github.com/")) {
+            if (!src.startsWith("https://gist.github.com/")
+                    && !src.startsWith("https://platform.twitter.com/")) {
                 script.remove();
             }
         });

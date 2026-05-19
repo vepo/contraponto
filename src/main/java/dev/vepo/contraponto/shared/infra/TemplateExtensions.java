@@ -177,6 +177,43 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String formatReadingDuration(long seconds) {
+        if (seconds <= 0) {
+            return "< 1 min";
+        }
+        if (seconds < 60) {
+            return "< 1 min";
+        }
+        long minutes = seconds / 60;
+        if (minutes < 60) {
+            return minutes + " min";
+        }
+        long hours = minutes / 60;
+        long remainingMinutes = minutes % 60;
+        if (remainingMinutes == 0) {
+            return hours + "h";
+        }
+        return hours + "h " + remainingMinutes + "m";
+    }
+
+    @TemplateExtension
+    public static String formatReadingTimeTotal(long totalSeconds) {
+        if (totalSeconds <= 0) {
+            return "0 min";
+        }
+        long minutes = totalSeconds / 60;
+        if (minutes < 60) {
+            return minutes + " min";
+        }
+        long hours = minutes / 60;
+        long remainingMinutes = minutes % 60;
+        if (remainingMinutes == 0) {
+            return hours + "h";
+        }
+        return hours + "h " + remainingMinutes + "m";
+    }
+
+    @TemplateExtension
     public static String liveDescription(Post post) {
         if (post == null) {
             return "";

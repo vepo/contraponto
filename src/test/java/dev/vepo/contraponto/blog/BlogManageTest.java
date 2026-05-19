@@ -81,6 +81,15 @@ class BlogManageTest {
     }
 
     @Test
+    void defaultBlogEditShowsGitSync(App app) {
+        app.login(testUser)
+           .blogs()
+           .clickEdit(USER_NAME)
+           .assertTitle("Edit Blog")
+           .assertGitSyncSectionVisible();
+    }
+
+    @Test
     void editSecondaryBlog(App app) {
         Given.blog()
              .withUser(testUser)

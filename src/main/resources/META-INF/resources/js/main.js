@@ -73,6 +73,99 @@ class ImageLightboxManager {
     }
 }
 
+class CodeCopyManager {
+    static COPY_LABEL = 'Copy';
+    static COPIED_LABEL = 'Copied';
+    static ENHANCED_ATTR = 'data-code-copy-enhanced';
+
+    constructor() {
+        this.scopes = ['article.article-page__content', '.write-preview'];
+    }
+
+    enhanceAll() {
+        for (const scope of this.scopes) {
+            document.querySelectorAll(scope).forEach((root) => this.enhance(root));
+        }
+    }
+
+    enhance(root) {
+        root.querySelectorAll('pre code').forEach((code) => {
+            const pre = code.closest('pre');
+            if (!pre || pre.closest('.verseblock')) {
+                return;
+            }
+            const container = this.containerFor(pre);
+            if (!container || container.getAttribute(CodeCopyManager.ENHANCED_ATTR)) {
+                return;
+            }
+            container.setAttribute(CodeCopyManager.ENHANCED_ATTR, 'true');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'code-block__copy';
+            button.setAttribute('aria-label', CodeCopyManager.COPY_LABEL);
+            button.textContent = CodeCopyManager.COPY_LABEL;
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                this.copy(code, button);
+            });
+            container.insertBefore(button, container.firstChild);
+        });
+    }
+
+    containerFor(pre) {
+        const listingblock = pre.closest('.listingblock');
+        if (listingblock) {
+            return listingblock;
+        }
+        const existing = pre.parentElement;
+        if (existing?.classList.contains('code-block')) {
+            return existing;
+        }
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        return wrapper;
+    }
+
+    copy(code, button) {
+        const text = code.innerText;
+        if (!text) {
+            return;
+        }
+        this.writeClipboard(text);
+        button.textContent = CodeCopyManager.COPIED_LABEL;
+        button.classList.add('code-block__copy--copied');
+        button.setAttribute('aria-label', CodeCopyManager.COPIED_LABEL);
+        window.clearTimeout(button._copyResetTimer);
+        button._copyResetTimer = window.setTimeout(() => {
+            button.textContent = CodeCopyManager.COPY_LABEL;
+            button.classList.remove('code-block__copy--copied');
+            button.setAttribute('aria-label', CodeCopyManager.COPY_LABEL);
+        }, 2000);
+    }
+
+    writeClipboard(text) {
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(text).catch(() => this.fallbackCopy(text));
+            return;
+        }
+        this.fallbackCopy(text);
+    }
+
+    fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
+}
+
 class MainManager {
     constructor() {
         this.protectedPaths = [
@@ -251,6 +344,9 @@ class MainManager {
             } else {
                 hljs.highlightAll();
             }
+            if (window.codeCopy) {
+                window.codeCopy.enhanceAll();
+            }
         }
     }
 
@@ -305,4 +401,6 @@ class MainManager {
 document.addEventListener('DOMContentLoaded', () => {
     window.main = new MainManager();
     window.imageLightbox = new ImageLightboxManager();
+    window.codeCopy = new CodeCopyManager();
+    window.codeCopy.enhanceAll();
 });

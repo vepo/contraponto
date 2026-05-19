@@ -20,6 +20,7 @@ TRUNCATE TABLE tb_post_publication_tags CASCADE;
 TRUNCATE TABLE tb_post_publications CASCADE;
 TRUNCATE TABLE tb_post_tags CASCADE;
 TRUNCATE TABLE tb_views CASCADE;
+TRUNCATE TABLE tb_reading_sessions CASCADE;
 TRUNCATE TABLE tb_posts CASCADE;
 TRUNCATE TABLE tb_series CASCADE;
 TRUNCATE TABLE tb_tags CASCADE;
@@ -875,6 +876,29 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
     SELECT p.id, NULL, 'anon-session-5', '2024-05-20 11:00:00'
     FROM tb_posts p WHERE p.slug = 'rest-api-versioning-strategies';
+
+    -- ============================================
+    -- 12b. Reading time (tracked engagement)
+    -- ============================================
+    INSERT INTO tb_reading_sessions (post_id, user_id, session_id, started_at, last_activity_at, total_seconds)
+    SELECT p.id, NULL, 'anon-read-1', '2024-05-01 10:00:00', '2024-05-01 10:05:00', 180
+    FROM tb_posts p WHERE p.slug = 'introduction-to-distributed-systems-java';
+
+    INSERT INTO tb_reading_sessions (post_id, user_id, session_id, started_at, last_activity_at, total_seconds)
+    SELECT p.id, NULL, 'anon-read-2', '2024-05-02 11:00:00', '2024-05-02 11:10:00', 420
+    FROM tb_posts p WHERE p.slug = 'introduction-to-distributed-systems-java';
+
+    INSERT INTO tb_reading_sessions (post_id, user_id, session_id, started_at, last_activity_at, total_seconds)
+    SELECT p.id, (SELECT id FROM tb_users WHERE username = 'dave'), 'dave-read', '2024-05-03 12:00:00', '2024-05-03 12:08:00', 240
+    FROM tb_posts p WHERE p.slug = 'graphql-java-spring-boot';
+
+    INSERT INTO tb_reading_sessions (post_id, user_id, session_id, started_at, last_activity_at, total_seconds)
+    SELECT p.id, NULL, 'anon-read-3', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days', 600
+    FROM tb_posts p WHERE p.slug = 'consensus-raft-paxos-overview';
+
+    INSERT INTO tb_reading_sessions (post_id, user_id, session_id, started_at, last_activity_at, total_seconds)
+    SELECT p.id, NULL, 'anon-read-4', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', 900
+    FROM tb_posts p WHERE p.slug = 'dead-letter-queues-kafka';
 
     -- ============================================
     -- 13. Post comments (threads, moderation, /comments inbox)

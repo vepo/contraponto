@@ -287,6 +287,9 @@ class WriteEditor {
                 if (typeof hljs !== 'undefined') {
                     hljs.highlightAll();
                 }
+                if (window.codeCopy) {
+                    window.codeCopy.enhanceAll();
+                }
             } else {
                 previewDiv.innerHTML = '<p>Markdown preview not available.</p>';
             }
@@ -301,6 +304,9 @@ class WriteEditor {
                 previewDiv.innerHTML = html;
                 if (typeof hljs !== 'undefined') {
                     hljs.highlightAll();
+                }
+                if (window.codeCopy) {
+                    window.codeCopy.enhanceAll();
                 }
             } else {
                 previewDiv.innerHTML = '<p>AsciiDoc preview not available. Please refresh the page.</p>';

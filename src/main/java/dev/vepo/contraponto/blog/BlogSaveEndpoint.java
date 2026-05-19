@@ -186,7 +186,14 @@ public class BlogSaveEndpoint {
     }
 
     private boolean isAuthorCoreSave(BlogForm form) {
-        return BlogHubContext.WRITING == BlogHubContext.fromHubParam(form.getHub()) && form.getDescription() == null;
+        if (BlogHubContext.WRITING != BlogHubContext.fromHubParam(form.getHub())) {
+            return false;
+        }
+        if (form.getDescription() != null) {
+            return false;
+        }
+        return !form.isGitEnabled()
+                && (form.getGitRemoteUrl() == null || form.getGitRemoteUrl().isBlank());
     }
 
     private Response notFound() {

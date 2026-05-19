@@ -66,16 +66,19 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 #### 2.4.3 Post Page Content
 - The post page includes:  
   - Cover image (if present).  
-  - Title, byline (author → link to blog), publication date, view count.  
+  - Title, byline (author → link to blog), publication date, view count, average reading time (when sessions exist).  
   - Rendered content (Markdown/AsciiDoc).  
   - **Image lightbox:** clicking an inline image in the post body opens a larger view in an overlay (same URL); dismiss with ESC, the close control, or a click on the dark backdrop.  
+  - **Code block copy:** fenced and listing code blocks show a **Copy** control that copies plain source to the clipboard (label becomes **Copied** briefly).  
 - **Action bar** (only for authenticated users):  
   - **Author:** Edit button (pencil) → `/write/draft/{id}`  
   - **Editor:** Star toggle to mark/clear the **featured** flag. Clicking toggles via PUT, and the button updates without full page reload.
 
 #### 2.4.4 Post Interactions
 - Featured flag toggled via `PUT /admin/posts/{id}/featured` (or a dedicated review endpoint).  
-- View counts are tracked server‑side.
+- View counts are tracked server‑side on each page load.
+- Reading time is tracked client‑side: while a published post tab is **visible**, the browser sends a heartbeat every 5 seconds to `POST /forms/posts/{postId}/reading-time` (same `__view_session` cookie as views). Background or hidden tabs do not accumulate time.
+- Post metadata shows **average reading time** across reading sessions when data exists.
 
 ---
 
@@ -136,7 +139,7 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ### 6.2 Dashboard (`GET /manage/dashboard`)
 - Ownership: only authenticated users.  
-- **Analytics:** Per selected blog (`?blogId=` optional; defaults to main blog). `GET /manage/dashboard/components/analytics` returns HTMX fragment with daily views (optional comparison to previous calendar month), new followers, and new email subscribers for the chosen month.  
+- **Analytics:** Per selected blog (`?blogId=` optional; defaults to main blog). `GET /manage/dashboard/components/analytics` returns HTMX fragment with daily views (optional comparison to previous calendar month), daily reading time, new followers, and new email subscribers for the chosen month.  
 - Displays counts and recent activity (drafts, published) across all user’s blogs.  
 - Quick action to write.
 
@@ -159,7 +162,8 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ### 7.3 Author blogs (`GET /writing/blogs`)
 - List, create, and edit own blogs (name, slug, banner).  
-- **Settings** on a row opens the extended form (description, active, Git).  
+- **Edit** on the default blog includes description and **Git sync** (remote URL, branch, sync history).  
+- **Settings** on a row opens the extended form for secondary blogs (description, active, Git).  
 - Editors use **Manage** → **Blogs** for platform-wide list and deactivation.
 
 ---

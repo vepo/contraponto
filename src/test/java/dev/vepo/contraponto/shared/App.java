@@ -156,6 +156,12 @@ public class App {
             return this;
         }
 
+        public BlogManagePage assertGitSyncSectionVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".git-sync__legend")));
+            assertThat(driver.findElements(cssSelector("#gitRemoteUrl"))).isNotEmpty();
+            return this;
+        }
+
         public BlogManagePage assertManagePageNotLoaded() {
             assertThat(driver.findElements(cssSelector(".pages-manage__title"))).isEmpty();
             return this;
@@ -1010,6 +1016,13 @@ public class App {
             return this;
         }
 
+        public PostPage assertCodeBlockCopyShowsCopied() {
+            var button = wait.until(visibilityOfElementLocated(
+                                                               cssSelector(".article-page__content .code-block__copy")));
+            assertThat(button.getText()).isEqualTo("Copied");
+            return this;
+        }
+
         public PostPage assertCommentsFormVisible() {
             await().atMost(Duration.ofSeconds(15)).until(() -> {
                 var forms = driver.findElements(cssSelector("#comments .comment-form"));
@@ -1137,6 +1150,13 @@ public class App {
             var trigger = wait.until(visibilityOfElementLocated(cssSelector(".article-page__version")));
             assertThat(trigger.getText()).containsIgnoringCase("version " + version);
             assertThat(trigger.getText()).containsIgnoringCase("current");
+            return this;
+        }
+
+        public PostPage clickFirstCodeBlockCopy() {
+            var button = wait.until(elementToBeClickable(
+                                                         cssSelector(".article-page__content .code-block__copy")));
+            reliableClick(button);
             return this;
         }
 

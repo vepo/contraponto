@@ -125,7 +125,9 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
 | `.imageblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor block images | Centered figure, caption in `.title`; styles in main.css / write.css |
 | `.verseblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor verse / poetry | Lines in `pre.content`, attribution in `.attribution`; styles in main.css / write.css |
+| `.tableblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor tables | `table.tableblock` with caption `.title`, cell text in `p.tableblock`; horizontal scroll via `.sectionbody:has(> table.tableblock)`; styles in main.css / write.css |
 | `image-lightbox`, `image-lightbox__*` | `#image-lightbox` in `components/head.html` | Post body image expand overlay; `main.js` + main.css |
+| `code-block`, `code-block__copy` | Injected by `CodeCopyManager` on `.listingblock` / `pre` | Copy post and write-preview code; `main.js` + main.css |
 | `post-serie-nav`, `post-serie-nav__*` | `PostEndpoint/serie-nav.html` | Serie parts list on post page |
 | `article-page__version`, `article-page__version-icon` | `PostEndpoint/post.html` | Version history trigger in metadata |
 | `post-history`, `post-history__*` | `PostEndpoint/history-list.html`, `historyModal.html` | Version history modal list |
@@ -136,7 +138,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header |
 | `search-page`, `search-form`, `search-result`, `search-modal__*` | Search endpoints | |
 | `user-blog-page`, `user-blog__*` | `BlogEndpoint/home.html` | Author blog |
-| `content-render`, `content-render--youtube`, `content-render--gist`, `content-render--github`, `content-render--error` | Post body render plugins | YouTube, Gist, GitHub embeds |
+| `content-render`, `content-render--youtube`, `content-render--gist`, `content-render--github`, `content-render--twitter`, `content-render--error` | Post body render plugins | YouTube, Gist, GitHub, Twitter embeds |
 | `tag-page-*`, `serie-page-*` | Tag/serie pages | |
 | `custom-page`, `custom-page__*` | `CustomPageEndpoint/page.html` | Static pages |
 | `error-page`, `error-*` | `error.html` | |
@@ -151,7 +153,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `image-upload-area` | `components/image-upload-area.html` | Reusable banner/profile image picker |
 | `user-blog-header__banner` | `BlogEndpoint/home.html` | Blog home hero banner |
 | `stat-card`, `recent-*` | `DashboardEndpoint/panel.html` | Manage hub dashboard panel |
-| `dashboard-analytics`, `dashboard-chart` | `DashboardEndpoint/analytics.html` | Per-blog charts; HTMX month nav |
+| `dashboard-analytics`, `dashboard-chart` | `DashboardEndpoint/analytics.html` | Per-blog charts (views, reading time, followers, subscribers); HTMX month nav |
 | `library-tab`, `library-tabs` | `LibraryEndpoint/panel.html`, `LibraryEndpoint/tab.html` | Writing hub library |
 | `draft-card`, `drafts-page` | `LibraryEndpoint/tab.html` | |
 | `post-card` | Library published tab | |

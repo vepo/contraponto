@@ -1282,6 +1282,136 @@ a {
   text-align: right;
 }
 
+/* AsciiDoc tables (Asciidoctor .tableblock) */
+.article-page__content .sectionbody:has(> table.tableblock) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: var(--spacing-lg) 0;
+}
+
+.article-page__content table.tableblock {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--color-border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.article-page__content table.tableblock caption.title {
+  caption-side: top;
+  padding: 0 0 var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--color-text-light);
+  text-align: left;
+}
+
+.article-page__content table.tableblock thead th {
+  background: var(--color-bg-offset);
+  font-weight: 600;
+  color: var(--color-text);
+  border-bottom: 2px solid var(--color-border-strong);
+}
+
+.article-page__content table.tableblock th,
+.article-page__content table.tableblock td {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.article-page__content table.tableblock tbody tr:nth-child(even) {
+  background: var(--color-bg-offset);
+}
+
+.article-page__content table.tableblock tbody tr:hover {
+  background: rgba(26, 137, 23, 0.05);
+}
+
+.article-page__content .tableblock p.tableblock {
+  margin: 0;
+}
+
+/* Markdown tables in post body */
+.article-page__content table:not(.tableblock) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-lg) 0;
+  border: 1px solid var(--color-border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  box-shadow: var(--shadow-sm);
+}
+
+.article-page__content table:not(.tableblock) th,
+.article-page__content table:not(.tableblock) td {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.article-page__content table:not(.tableblock) thead th {
+  background: var(--color-bg-offset);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border-strong);
+}
+
+.article-page__content table:not(.tableblock) tbody tr:nth-child(even) {
+  background: var(--color-bg-offset);
+}
+
+/* Code blocks — copy control (AsciiDoc .listingblock, Markdown .code-block wrapper) */
+.article-page__content .listingblock,
+.article-page__content .code-block,
+.write-preview .listingblock,
+.write-preview .code-block {
+  position: relative;
+}
+
+.code-block__copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.code-block__copy:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.code-block__copy--copied {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.article-page__content .listingblock .content,
+.write-preview .listingblock .content,
+.article-page__content .code-block,
+.write-preview .code-block {
+  padding-top: 2.25rem;
+}
+
 /* Pull quote */
 .pull-quote {
   font-family: var(--font-serif-display);
@@ -2248,6 +2378,26 @@ hr:after {
 
 .content-render--gist {
     min-height: 2rem;
+}
+
+.content-render--twitter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 2rem;
+}
+
+.content-render--twitter .twitter-tweet-rendered,
+.content-render--twitter blockquote.twitter-tweet {
+    width: 100% !important;
+    max-width: 550px;
+    margin-inline: auto !important;
+}
+
+.content-render--twitter iframe {
+    width: 100% !important;
+    max-width: 550px;
 }
 
 .content-render--error {

@@ -15,6 +15,7 @@ import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import dev.vepo.contraponto.view.ViewRepository;
 import io.quarkus.qute.CheckedTemplate;
@@ -48,6 +49,7 @@ public class PostEndpoint {
                                                    Links links,
                                                    LoggedUser user,
                                                    long viewCount,
+                                                   long averageReadingSeconds,
                                                    BlogAudienceView audience,
                                                    BreadcrumbTrail breadcrumb);
 
@@ -73,6 +75,7 @@ public class PostEndpoint {
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final ViewRepository viewRepository;
+    private final ReadingTimeRepository readingTimeRepository;
 
     private final SessionIdProvider sessionIdProvider;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
@@ -85,6 +88,7 @@ public class PostEndpoint {
                         CustomPageRepository customPageRepository,
                         LoggedUser loggedUser,
                         ViewRepository viewRepository,
+                        ReadingTimeRepository readingTimeRepository,
                         SessionIdProvider sessionIdProvider,
                         BlogAudienceComponentEndpoint audienceComponentEndpoint,
                         BreadcrumbService breadcrumbService) {
@@ -94,6 +98,7 @@ public class PostEndpoint {
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.viewRepository = viewRepository;
+        this.readingTimeRepository = readingTimeRepository;
         this.sessionIdProvider = sessionIdProvider;
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.breadcrumbService = breadcrumbService;
@@ -189,6 +194,7 @@ public class PostEndpoint {
                                   LocalDateTime.now());
 
         long viewCount = viewRepository.countByPost(post);
+        long averageReadingSeconds = readingTimeRepository.averageSecondsByPost(post);
 
         PostPublication live = post.getLivePublication();
         PublishedPostView view = new PublishedPostView(post, live);
@@ -198,6 +204,7 @@ public class PostEndpoint {
                                                    loadLinks(post),
                                                    loggedUser,
                                                    viewCount,
+                                                   averageReadingSeconds,
                                                    audience,
                                                    breadcrumbService.forPost(view));
         ResponseBuilder response = Response.ok(template);

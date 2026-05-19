@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.blog;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.net.URL;
@@ -13,12 +14,20 @@ import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 @QuarkusTest
 class BlogSaveEndpointTest {
 
     @TestHTTPResource("/")
     URL baseUrl;
+
+    @Inject
+    BlogRepository blogRepository;
+
+    @Inject
+    EntityManager entityManager;
 
     private User owner;
 
@@ -38,6 +47,35 @@ class BlogSaveEndpointTest {
                 .header("HX-Trigger", equalTo("{\"toast:show\":{\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"))
                 .header("HX-Trigger-After-Settle",
                         equalTo("{\"toast:show\":{\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"));
+    }
+
+    @Test
+    void mainBlogSaveAppliesGitIntegration() {
+        var mainBlog = owner.getDefaultBlog();
+        var remoteUrl = "https://github.com/vepo/contraponto.git";
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", mainBlog.getId())
+                .formParam("name", "Main Blog With Git")
+                .formParam("slug", mainBlog.getSlug())
+                .formParam("description", "Default blog bio")
+                .formParam("hub", "writing")
+                .formParam("git_enabled", "on")
+                .formParam("git_remote_url", remoteUrl)
+                .formParam("git_branch", "main")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200);
+
+        var reloaded = Given.transaction(() -> {
+            entityManager.clear();
+            return blogRepository.findById(mainBlog.getId()).orElseThrow();
+        });
+        assertThat(reloaded.getName()).isEqualTo("Main Blog With Git");
+        assertThat(reloaded.isGitEnabled()).isTrue();
+        assertThat(reloaded.getGitRemoteUrl()).isEqualTo(remoteUrl);
+        assertThat(reloaded.getGitBranch()).isEqualTo("main");
     }
 
     @BeforeEach

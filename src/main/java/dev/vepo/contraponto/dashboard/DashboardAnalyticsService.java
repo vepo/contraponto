@@ -13,6 +13,7 @@ import dev.vepo.contraponto.notification.BlogAudienceRepository;
 import dev.vepo.contraponto.notification.NotificationRepository;
 import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.view.ViewRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -24,6 +25,7 @@ public class DashboardAnalyticsService {
     private final BlogRepository blogRepository;
     private final BlogAccess blogAccess;
     private final ViewRepository viewRepository;
+    private final ReadingTimeRepository readingTimeRepository;
     private final NotificationRepository notificationRepository;
     private final BlogAudienceRepository audienceRepository;
     private final LoggedUser loggedUser;
@@ -32,12 +34,14 @@ public class DashboardAnalyticsService {
     public DashboardAnalyticsService(BlogRepository blogRepository,
                                      BlogAccess blogAccess,
                                      ViewRepository viewRepository,
+                                     ReadingTimeRepository readingTimeRepository,
                                      NotificationRepository notificationRepository,
                                      BlogAudienceRepository audienceRepository,
                                      LoggedUser loggedUser) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.viewRepository = viewRepository;
+        this.readingTimeRepository = readingTimeRepository;
         this.notificationRepository = notificationRepository;
         this.audienceRepository = audienceRepository;
         this.loggedUser = loggedUser;
@@ -52,6 +56,14 @@ public class DashboardAnalyticsService {
                                                                                      type,
                                                                                      range.start(),
                                                                                      range.end());
+        return toMonthSeries(yearMonth, counts);
+    }
+
+    private MonthSeries buildReadingTimeSeries(long blogId, YearMonth yearMonth) {
+        var range = monthRange(yearMonth);
+        Map<LocalDate, Long> counts = readingTimeRepository.countDailySecondsByBlogId(blogId,
+                                                                                      range.start(),
+                                                                                      range.end());
         return toMonthSeries(yearMonth, counts);
     }
 
@@ -75,6 +87,7 @@ public class DashboardAnalyticsService {
         MonthSeries viewsComparison = compareViews
                                                    ? buildViewsSeries(blog.getId(), selected.minusMonths(1))
                                                    : null;
+        MonthSeries readingTime = buildReadingTimeSeries(blog.getId(), selected);
 
         MonthSeries newFollowers = buildNotificationSeries(blog,
                                                            NotificationType.NEW_FOLLOW,
@@ -91,6 +104,7 @@ public class DashboardAnalyticsService {
                                       selected.isBefore(now),
                                       views,
                                       viewsComparison,
+                                      readingTime,
                                       newFollowers,
                                       newSubscribers,
                                       audienceRepository.countFollowersByBlogId(blog.getId()),

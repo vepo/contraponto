@@ -113,6 +113,19 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void formatReadingDurationFormatsMinutesAndHours() {
+        assertThat(TemplateExtensions.formatReadingDuration(30)).isEqualTo("< 1 min");
+        assertThat(TemplateExtensions.formatReadingDuration(120)).isEqualTo("2 min");
+        assertThat(TemplateExtensions.formatReadingDuration(3900)).isEqualTo("1h 5m");
+    }
+
+    @Test
+    void formatReadingTimeTotalFormatsMonthTotals() {
+        assertThat(TemplateExtensions.formatReadingTimeTotal(0)).isEqualTo("0 min");
+        assertThat(TemplateExtensions.formatReadingTimeTotal(5400)).isEqualTo("1h 30m");
+    }
+
+    @Test
     void linkUrlForFollowReturnsBlogUrl() {
         var owner = new User();
         owner.setUsername("bob");
