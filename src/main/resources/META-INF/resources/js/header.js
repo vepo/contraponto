@@ -8,6 +8,7 @@ class HeaderManager {
     init() {
         this.setupUserMenu();
         this.setupNotificationMenu();
+        this.setupLocalePicker();
     }
 
     setupUserMenu() {
@@ -53,6 +54,68 @@ class HeaderManager {
                 }
             });
         }
+    }
+
+    setupLocalePicker() {
+        this.bindLocalePickerToggle = () => {
+            const trigger = document.getElementById('localePickerBtn');
+            const dropdown = document.getElementById('localePickerDropdown');
+            if (!trigger || !dropdown || trigger.dataset.localePickerBound) {
+                return;
+            }
+            trigger.dataset.localePickerBound = 'true';
+            trigger.addEventListener('click', (evt) => {
+                evt.preventDefault();
+                evt.stopPropagation();
+                const opening = !dropdown.classList.contains('locale-picker__dropdown--open');
+                dropdown.classList.toggle('locale-picker__dropdown--open');
+                trigger.setAttribute('aria-expanded', opening ? 'true' : 'false');
+            });
+        };
+        this.bindLocalePickerToggle();
+
+        if (!this.localePickerOutsideClickBound) {
+            this.localePickerOutsideClickBound = true;
+            document.body.addEventListener('click', (evt) => {
+                const trigger = document.getElementById('localePickerBtn');
+                const dropdown = document.getElementById('localePickerDropdown');
+                if (!trigger || !dropdown) {
+                    return;
+                }
+                if (trigger.contains(evt.target) || dropdown.contains(evt.target)) {
+                    if (dropdown.contains(evt.target) && evt.target.closest('[data-locale]')) {
+                        dropdown.classList.remove('locale-picker__dropdown--open');
+                        trigger.setAttribute('aria-expanded', 'false');
+                    }
+                    return;
+                }
+                dropdown.classList.remove('locale-picker__dropdown--open');
+                trigger.setAttribute('aria-expanded', 'false');
+            });
+
+            document.addEventListener('keydown', (evt) => {
+                const dropdown = document.getElementById('localePickerDropdown');
+                const trigger = document.getElementById('localePickerBtn');
+                if (evt.key === 'Escape' && dropdown?.classList.contains('locale-picker__dropdown--open')) {
+                    dropdown.classList.remove('locale-picker__dropdown--open');
+                    if (trigger) {
+                        trigger.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+        }
+    }
+
+    rebindLocalePicker() {
+        const trigger = document.getElementById('localePickerBtn');
+        const dropdown = document.getElementById('localePickerDropdown');
+        if (trigger) {
+            delete trigger.dataset.localePickerBound;
+        }
+        if (dropdown) {
+            dropdown.classList.remove('locale-picker__dropdown--open');
+        }
+        this.bindLocalePickerToggle?.();
     }
 
     rebindUserMenu() {
@@ -230,6 +293,10 @@ class HeaderManager {
             const bellBtn = document.getElementById('notificationBellBtn');
             if (bellBtn && !bellBtn.dataset.notificationBound) {
                 this.rebindNotificationMenu();
+            }
+            const localePickerBtn = document.getElementById('localePickerBtn');
+            if (localePickerBtn && !localePickerBtn.dataset.localePickerBound) {
+                this.rebindLocalePicker();
             }
         });
     }

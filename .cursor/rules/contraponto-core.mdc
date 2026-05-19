@@ -10,7 +10,7 @@ Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) and existing code in the same pa
 ## Stack
 
 - Quarkus + Qute + HTMX (no SPA framework). PostgreSQL + Flyway (`db/migration/`).
-- Prefer server-rendered HTML fragments over client-side JS.
+- Prefer server-rendered HTML fragments over client-side JS. JS: [contraponto-javascript.mdc](contraponto-javascript.mdc); CSS: [contraponto-css.mdc](contraponto-css.mdc).
 
 ## Endpoints
 

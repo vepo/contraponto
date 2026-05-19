@@ -1,0 +1,65 @@
+---
+description: JavaScript and HTMX-first frontend conventions
+globs: src/main/resources/META-INF/resources/js/*.js,src/main/resources/templates/**/*.html
+alwaysApply: false
+---
+
+# JavaScript and HTMX-first
+
+Follow [docs/htmx-events.md](../../docs/htmx-events.md) for scoped refresh, auth allowlist, custom events, and response headers. Do not duplicate that doc here.
+
+## HTMX first
+
+Before adding JS, try (in order): inline/OOB HTML in the mutation response → `hx-target` on the activating element → body broadcast + scoped `hx-trigger` subscribers.
+
+**Forbidden:** `window.location.reload()` after login/signup; refetching `#main` on auth; one global `loggedIn` handler that calls many endpoints; full pages from `/forms/*`.
+
+**JS is appropriate when:** browser APIs are required (file upload, clipboard, `visibilitychange`, timers), rich editor preview (`write.js`), local chrome toggles (dropdowns, lightbox, sidebar), or lazy `htmx.ajax` for a fragment (`header.js`).
+
+## Where code lives
+
+- App JS: `src/main/resources/META-INF/resources/js/{concern}.js` (kebab-case).
+- Extend an existing module when the concern matches (`header.js`, `toast.js`, …); otherwise add a file and a `<script src>` in [components/head.html](../../src/main/resources/templates/components/head.html) after `htmx.js`, respecting load order.
+- **Never** edit `js/third-party/`. No npm, webpack, or `import`/`export`.
+
+## Class module pattern
+
+- One `PascalCase` class per file (`HeaderManager`, `ReadingTimeTracker`).
+- Init via `DOMContentLoaded` or immediate singleton when listeners attach to `document`.
+- Early `return` if required DOM is missing (no throw).
+- `.bind(this)` in the constructor for methods passed to listeners.
+
+## HTMX integration
+
+| Event | Use for |
+|-------|---------|
+| `htmx:afterSettle` | Re-init widgets after transitions (forms, write editor, highlight) |
+| `htmx:afterSwap` | Immediate chrome (menu, cover upload) |
+| `htmx:beforeSwap` | Teardown when leaving a page region |
+| `htmx:configRequest` | Headers (CSRF, `Authorization`) |
+
+- Listen on `document.body`; **always guard** with `evt.detail?.target` (id, `closest('main')`, or a helper like `isMenuContainerSwap`).
+- After HTMX replaces nodes, re-bind with `dataset.*Bound = 'true'` and `delete dataset.*Bound` before re-attaching listeners.
+- Programmatic fetch: `htmx.ajax` when swapping server HTML; raw `fetch` only for non-HTML APIs (reading time, image upload).
+
+## Templates
+
+- Prefer `hx-get` / `hx-post`, `data-hx-get`, `hx-target`, OOB, and `HX-Trigger` over new JS.
+- **Do not add** new inline `<script>` blocks or `onclick` handlers (existing debt: locale picker, modal close, error retry — do not expand).
+- Do not add a third CSRF copy in templates (`main.js` and `head.html` already set `X-CSRF-Token`).
+
+## i18n and toasts
+
+- User-visible strings: `data-i18n` / `data-i18n-attr` in HTML; in JS use `window.i18n?.t(key)` with a `pt-BR` fallback string.
+- Toasts: server `Toast` helper + `toast.js`; not `alert()` or hand-built `X-Toast-*` headers in endpoints.
+
+## Style
+
+- `camelCase` methods/locals; `static` class constants; existing BEM classes from [docs/ui-elements.md](../../docs/ui-elements.md) only.
+- `window.*` globals only when cross-script (`window.i18n`, `window.toastManager`).
+- `console.warn` for recoverable issues; no `console.log` in production paths.
+- Scoped `hljs.highlightElement` inside `main` — see `shouldHighlightCode` in `main.js`; never unscoped `hljs.highlightAll()` on every settle.
+
+## Tests
+
+Web UI: extend `App` DSL ([contraponto-tests.mdc](contraponto-tests.mdc)); no raw WebDriver for HTMX flows.

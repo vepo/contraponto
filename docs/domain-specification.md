@@ -198,7 +198,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Breadcrumb trail** | Ordered navigation labels from Home or a hub to the current page; last item is not linked. | `BreadcrumbService`, `components/breadcrumb.html` |
 | **Locale** | User-facing language for interface chrome (`pt-BR`, `en`, `es`). Default is **pt-BR** (text in HTML). | `LocalePreference`, cookie `contraponto_locale` |
 | **Language preference** | Persisted locale choice; applied client-side via `data-i18n` markers. | `LocaleSwitchEndpoint`, `i18n.js` |
-| **Language switcher** | Compact PT / EN / ES control in header and footer; full control with hint on Account hub. | `components/locale-switcher.html` |
+| **Language switcher** | Flag dropdown in header and footer (compact trigger); full list with hint on Account hub. | `components/locale-switcher.html` |
 
 ### Interface internationalization (i18n)
 
@@ -206,6 +206,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 - **Secondary locales:** `en`, `es` — JSON bundles at `GET /i18n/messages/{locale}.json`; the browser applies them to elements with `data-i18n` keys.
 - **Scope:** menus, forms, validation messages, toasts, pagination, hub chrome — **not** post/comment/blog body, custom page content from DB, or account emails.
 - **Keys:** dot-separated identifiers (e.g. `auth.signIn`, `menu.writing`). Full catalog: `src/main/resources/i18n/messages_en.json` and `messages_es.json`.
+- **Markup rules:** `data-i18n` on leaf text nodes only; form placeholders use `data-i18n-attr` (never `textContent` on `input`/`textarea`). Placeholder and field value are distinct.
 
 ### UI labels (user-visible copy)
 

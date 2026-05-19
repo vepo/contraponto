@@ -16,14 +16,16 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Post publications / versions | ✅ | ❌ | — | ✅ |
 | Tags & series | ✅ | ❌ | ⚠️ | ⚠️ |
 | Notifications & audience | ✅ | ❌ | ⚠️ | ✅ |
-| UI element catalog (BEM, CSS bundles) | — | — | — | ✅ `ui-elements.md` + `contraponto-ui.mdc` |
+| UI element catalog (BEM, CSS bundles) | — | — | — | ✅ `ui-elements.md` + `contraponto-ui.mdc` + `contraponto-css.mdc` |
 | Git/Jekyll sync | ✅ (link) | ❌ | — | ✅ |
 | RSS feeds | ✅ | ❌ | — | — |
 | Custom page URL shapes | ✅ | ⚠️ (old `/page/{username}/...`) | — | ✅ |
 | Roles (`USER_ADMINISTRATOR`) | ✅ | ❌ | — | ✅ |
 | User/blog admin UI | ✅ | ❌ | — | — |
 | UI feature catalog (paths & step counts) | ✅ | — | — | ✅ [feature-catalog.md](feature-catalog.md) + `feature-catalog.mdc` |
-| HTMX events / scoped refresh | ✅ | — | — | — |
+| HTMX events / scoped refresh | ✅ | — | — | ✅ [htmx-events.md](htmx-events.md) |
+| JavaScript modules / HTMX-first | ✅ | — | — | ✅ `contraponto-javascript.mdc` |
+| CSS authoring (tokens, bundles) | — | — | ✅ [ui-elements.md](ui-elements.md) | ✅ `contraponto-css.mdc` |
 
 ## Conventions to adopt or document
 
@@ -47,6 +49,8 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 - [ ] **Deferred actions after login** — pattern for session-stored intents (follow-after-login); generalize or document as one-off.
 - [x] **Email** — `quarkus.mailer.*`, mock in dev/test; post-publish dedup via `tb_email_notification_log`; account emails in domain spec §UI labels and `auth/AccountEmailService`.
 - [ ] **Admin path naming** — `/review`, `/users`, `/blogs`, `/pages` are not under `/admin`; decide if rename or document as intentional.
+- [ ] **Inline `onclick` in templates** — migrate locale picker, modal close, error retry to HTMX or `js/*.js` managers (do not add new inline handlers).
+- [ ] **Hard-coded colors in `write.css`** — align with `:root` tokens when editing write surfaces.
 
 ### Low priority / nice to have
 
@@ -67,6 +71,8 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Legacy `.cursorrules` removed | ✅ (use `.cursor/rules/`) |
 | File-scoped rules for tests | ✅ `contraponto-tests.mdc` |
 | Feature catalog maintenance rule | ✅ `feature-catalog.mdc` (always-on) |
+| JavaScript / HTMX-first rule | ✅ `contraponto-javascript.mdc` (globs: `js/*.js`, templates) |
+| CSS authoring rule | ✅ `contraponto-css.mdc` (globs: `style/*.css`, templates) |
 
 ## Implemented features (reference — keep ARCHITECTURE in sync)
 

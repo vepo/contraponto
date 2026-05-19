@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
@@ -15,6 +15,8 @@ class I18nWebTest {
 
     private static final String PASSWORD = "password123";
     private User user;
+    private User author;
+    private Post post;
 
     @BeforeEach
     void setUp() {
@@ -25,6 +27,41 @@ class I18nWebTest {
                     .withName("I18n User")
                     .withPassword(PASSWORD)
                     .persist();
+        author = Given.user()
+                      .withUsername("i18nauthor")
+                      .withEmail("i18nauthor@test.com")
+                      .withName("I18n Author")
+                      .withPassword(PASSWORD)
+                      .persist();
+        post = Given.post()
+                    .withAuthor(author)
+                    .withTitle("I18n Post")
+                    .withSlug("i18n-post")
+                    .withContent("Enough words for a published post about internationalization testing.")
+                    .persist();
+    }
+
+    @Test
+    void shouldKeepMenuIconsWhenLocaleIsEn(App app) {
+        app.login(user)
+           .setLocaleCookie("en")
+           .refresh()
+           .openUserMenu();
+
+        app.assertUserMenuItemHasIcon("/writing");
+        assertThat(app.userMenuLinkText("/writing")).isEqualTo("Writing");
+    }
+
+    @Test
+    void shouldNotFillCommentTextareaWhenLocaleIsEs(App app) {
+        app.login(user)
+           .visitPost(author.getUsername(), post.getSlug())
+           .setLocaleCookie("es")
+           .refresh()
+           .assertCommentsFormVisible();
+
+        assertThat(app.commentTextareaValue()).isEmpty();
+        assertThat(app.commentTextareaPlaceholder()).isEqualTo("Escribe un comentario…");
     }
 
     @Test

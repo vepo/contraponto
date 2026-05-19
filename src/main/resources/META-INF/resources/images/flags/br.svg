@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 18" role="img" aria-hidden="true">
+  <rect width="24" height="18" fill="#009b3a"/>
+  <path d="M12 1.2 21.6 9 12 16.8 2.4 9Z" fill="#fedf00"/>
+  <circle cx="12" cy="9" r="3.6" fill="#002776"/>
+  <clipPath id="br-globe">
+    <circle cx="12" cy="9" r="3.6"/>
+  </clipPath>
+</svg>

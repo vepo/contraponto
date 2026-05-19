@@ -1877,6 +1877,14 @@ public class App {
         return this;
     }
 
+    public App assertCommentsFormVisible() {
+        await().atMost(Duration.ofSeconds(15)).until(() -> {
+            var forms = driver.findElements(cssSelector("#comments .comment-form"));
+            return forms.size() == 1 && forms.get(0).isDisplayed();
+        });
+        return this;
+    }
+
     public App assertCookieIsPresent(String key) {
         assertThat(driver.manage()
                          .getCookieNamed(key)).isNotNull()
@@ -2006,6 +2014,13 @@ public class App {
         return this;
     }
 
+    public App assertUserMenuItemHasIcon(String hxGetPath) {
+        var link = wait.until(visibilityOfElementLocated(
+                                                         cssSelector("a.user-menu__item[data-hx-get='%s']".formatted(hxGetPath))));
+        assertThat(link.findElements(By.tagName("svg")).size()).isEqualTo(1);
+        return this;
+    }
+
     public BlogManagePage blogs() {
         return writingBlogs();
     }
@@ -2068,6 +2083,20 @@ public class App {
         reliableClick(wait.until(elementToBeClickable(By.id("notificationBellBtn"))));
         waitForReady();
         return this;
+    }
+
+    public String commentTextareaPlaceholder() {
+        return (String) ((JavascriptExecutor) driver).executeScript("""
+                                                                    const textarea = document.querySelector('#comments .comment-form__input');
+                                                                    return textarea ? textarea.placeholder : '';
+                                                                    """);
+    }
+
+    public String commentTextareaValue() {
+        return (String) ((JavascriptExecutor) driver).executeScript("""
+                                                                    const textarea = document.querySelector('#comments .comment-form__input');
+                                                                    return textarea ? textarea.value : '';
+                                                                    """);
     }
 
     public CommentManagePage comments() {

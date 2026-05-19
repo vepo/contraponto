@@ -21,6 +21,7 @@ class I18nManager {
             this.ready = true;
             document.documentElement.dataset.i18nReady = 'true';
             this.apply(document);
+            this.syncLocalePickers();
         });
         this.registerHtmxHooks();
         return this.loadPromise;
@@ -37,6 +38,12 @@ class I18nManager {
         if (t === 'pt' || t.toLowerCase() === 'pt-br') return I18nManager.DEFAULT_LOCALE;
         if (t === 'en' || t === 'es') return t;
         return I18nManager.DEFAULT_LOCALE;
+    }
+
+    flagPath(locale) {
+        if (locale === 'en') return '/images/flags/en.svg';
+        if (locale === 'es') return '/images/flags/es.svg';
+        return '/images/flags/br.svg';
     }
 
     applyDocumentLang() {
@@ -92,16 +99,46 @@ class I18nManager {
         }
     }
 
+    isFormControl(el) {
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    }
+
+    shouldSkipTextUpdate(el) {
+        if (this.isFormControl(el)) {
+            return true;
+        }
+        if (el.hasAttribute('data-i18n-attr') && !el.querySelector('[data-i18n-text]')) {
+            return true;
+        }
+        return false;
+    }
+
+    applyText(el, translated) {
+        const textTarget = el.querySelector('[data-i18n-text]');
+        if (textTarget) {
+            textTarget.textContent = translated;
+            return;
+        }
+        if (el.children.length > 0) {
+            return;
+        }
+        el.textContent = translated;
+    }
+
     apply(root) {
         if (!root) return;
         if (this.locale === I18nManager.DEFAULT_LOCALE) return;
         if (!this.messages) return;
 
         root.querySelectorAll('[data-i18n]').forEach((el) => {
+            if (this.shouldSkipTextUpdate(el)) {
+                return;
+            }
             const key = el.getAttribute('data-i18n');
             const translated = this.t(key, this.parseParams(el));
             if (translated && translated !== key) {
-                el.textContent = translated;
+                this.applyText(el, translated);
             }
         });
 
@@ -118,6 +155,21 @@ class I18nManager {
         });
     }
 
+    syncLocalePickers(normalized) {
+        const locale = normalized ?? this.locale;
+        document.querySelectorAll('[data-locale-picker]').forEach((picker) => {
+            const flag = picker.querySelector('[data-locale-flag]');
+            if (flag) {
+                flag.src = this.flagPath(locale);
+            }
+            picker.querySelectorAll('[data-locale]').forEach((opt) => {
+                const active = opt.dataset.locale === locale;
+                opt.classList.toggle('locale-picker__option--active', active);
+                opt.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+        });
+    }
+
     registerHtmxHooks() {
         document.body.addEventListener('htmx:afterSettle', (evt) => {
             const target = evt.detail?.target;
@@ -126,6 +178,7 @@ class I18nManager {
             } else {
                 this.apply(document);
             }
+            this.syncLocalePickers();
         });
     }
 
@@ -151,8 +204,12 @@ class I18nManager {
         document.documentElement.dataset.i18nReady = 'true';
         this.applyDocumentLang();
         this.apply(document);
-        document.querySelectorAll('.locale-switcher__btn--active').forEach((btn) => {
-            btn.classList.toggle('locale-switcher__btn--active', btn.dataset.locale === normalized);
+        this.syncLocalePickers(normalized);
+        document.querySelectorAll('.locale-picker__dropdown--open').forEach((panel) => {
+            panel.classList.remove('locale-picker__dropdown--open');
+        });
+        document.querySelectorAll('.locale-picker__trigger[aria-expanded="true"]').forEach((btn) => {
+            btn.setAttribute('aria-expanded', 'false');
         });
     }
 

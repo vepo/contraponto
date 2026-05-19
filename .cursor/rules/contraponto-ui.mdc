@@ -1,23 +1,12 @@
 ---
-description: UI class names, CSS bundles (main/manage/write), and element catalog
-globs: src/main/resources/templates/**/*.html,src/main/resources/META-INF/resources/style/**/*.css
+description: UI class catalog, templates, buttons, and domain labels
+globs: src/main/resources/templates/**/*.html
 alwaysApply: false
 ---
 
-# UI elements and CSS
+# UI elements (templates)
 
-Before changing templates or stylesheets, read [docs/ui-elements.md](../../docs/ui-elements.md).
-
-## Stylesheet bundles
-
-| File | Put styles here when |
-|------|----------------------|
-| `style/main.css` | Global shell, public reading, shared primitives (`.btn`, `.form-group`, `.container`) |
-| `style/manage.css` | Profile, dashboard, library, review, CRUD lists, notifications, subscriptions |
-| `style/write.css` | Write editor only |
-| `style/fonts.css` | `@font-face` only |
-
-Load order in `components/head.html`: fonts → main → manage → write → third-party.
+Before changing templates, read [docs/ui-elements.md](../../docs/ui-elements.md). For CSS file authoring (tokens, bundles, formatting), see [contraponto-css.mdc](contraponto-css.mdc).
 
 ## Class names
 
@@ -36,5 +25,5 @@ Reading → Load more (`contraponto-pagination.mdc`). Managing → `manage-pagin
 ## New surfaces
 
 1. Register block in ui-elements.md.
-2. Add CSS to the correct bundle.
+2. Add CSS per [contraponto-css.mdc](contraponto-css.mdc).
 3. Update ui-guidelines.md for UX narrative if it is a new page type.

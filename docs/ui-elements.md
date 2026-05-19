@@ -84,18 +84,25 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 
 | Block | Purpose |
 |-------|---------|
-| `.toast` | Global toast container |
+| `.toast` | Global toast container (position/animation only; styles in **main.css**) |
+| `.toast--success` | Success message pill (`var(--color-primary)`) |
+| `.toast--error` | Error message pill (`var(--color-accent)`) |
 | `.page-progress` | HTMX global indicator (`#global-indicator`) |
 | `.loading-spinner` | Inline loading text (library tab) |
 | `.spinner` | Animated spinner (optional) |
 
-### Locale switcher (main.css)
+### Locale picker (main.css)
 
 | Block | Purpose |
 |-------|---------|
-| `.locale-switcher` | Inline PT / EN / ES control (header, footer, Account hub) |
-| `.locale-switcher__btn` | Locale button |
-| `.locale-switcher__btn--active` | Selected locale |
+| `.locale-picker` | Language dropdown root (header, footer, Account hub) |
+| `.locale-picker--compact` | Flag-only trigger + dropdown panel |
+| `.locale-picker--list` | Always-visible option list (Account hub) |
+| `.locale-picker__trigger` | Opens dropdown (compact mode) |
+| `.locale-picker__dropdown` | Dropdown panel |
+| `.locale-picker__option` | Locale row (flag + name) |
+| `.locale-picker__option--active` | Selected locale |
+| `.locale-picker__flag` | Flag image (24×18) |
 
 ### Pagination
 

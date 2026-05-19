@@ -321,7 +321,8 @@ On the post page (all readers): **Version {n}** with a history icon in `article-
 ## 24. Interface language (i18n)
 
 - **Default:** Brazilian Portuguese (`pt-BR`) in templates; each interface string has a `data-i18n` key.
-- **Secondary:** English and Spanish via header/footer **PT / EN / ES** switcher (`POST /forms/locale`, cookie `contraponto_locale`).
+- **Secondary:** English and Spanish via header/footer **flag dropdown** (`POST /forms/locale`, cookie `contraponto_locale`). Click the flag, then choose a language.
+- **Markup:** put `data-i18n` on leaf text (e.g. `<span>` inside buttons/menus). Use `data-i18n-attr` for placeholders and `aria-label` on inputs — never set `textContent` on form controls.
 - **Account hub:** same switcher plus short hint that only chrome is translated (author content stays as written).
 - **Do not translate:** post bodies, comments, blog descriptions, custom page content from the database, transactional emails.
 

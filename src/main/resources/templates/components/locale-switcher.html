@@ -1,20 +1,57 @@
-<div class="locale-switcher" role="group" aria-label="Idioma" data-i18n="locale.label" data-i18n-attr="aria-label">
+<div class="locale-picker {#if variant?? && variant == 'list'}locale-picker--list{#else}locale-picker--compact{/if}" data-locale-picker>
+    {#if variant?? && variant == 'list'}
+    <ul class="locale-picker__list" role="listbox" aria-label="Idioma" data-i18n="locale.label" data-i18n-attr="aria-label">
+    {#else}
     <button type="button"
-            class="locale-switcher__btn {#if locale == 'pt-BR'}locale-switcher__btn--active{/if}"
-            data-locale="pt-BR"
-            onclick="window.i18n && window.i18n.setLocale('pt-BR')"
-            aria-pressed="{locale == 'pt-BR'}"
-            data-i18n="locale.pt">PT</button>
-    <button type="button"
-            class="locale-switcher__btn {#if locale == 'en'}locale-switcher__btn--active{/if}"
-            data-locale="en"
-            onclick="window.i18n && window.i18n.setLocale('en')"
-            aria-pressed="{locale == 'en'}"
-            data-i18n="locale.en">EN</button>
-    <button type="button"
-            class="locale-switcher__btn {#if locale == 'es'}locale-switcher__btn--active{/if}"
-            data-locale="es"
-            onclick="window.i18n && window.i18n.setLocale('es')"
-            aria-pressed="{locale == 'es'}"
-            data-i18n="locale.es">ES</button>
+            class="locale-picker__trigger icon-btn"
+            id="localePickerBtn"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-label="Idioma"
+            data-i18n="locale.label"
+            data-i18n-attr="aria-label">
+        <img src="/images/flags/{#if locale == 'en'}en{#else if locale == 'es'}es{#else}br{/if}.svg" alt="" class="locale-picker__flag" width="24" height="18" data-locale-flag />
+    </button>
+    <div class="locale-picker__dropdown" id="localePickerDropdown" role="listbox" aria-label="Idioma" data-i18n="locale.label" data-i18n-attr="aria-label">
+        <ul class="locale-picker__menu">
+    {/if}
+        <li role="none">
+            <button type="button"
+                    class="locale-picker__option {#if locale == 'pt-BR'}locale-picker__option--active{/if}"
+                    role="option"
+                    aria-selected="{locale == 'pt-BR'}"
+                    data-locale="pt-BR"
+                    onclick="window.i18n && window.i18n.setLocale('pt-BR')">
+                <img src="/images/flags/br.svg" alt="" class="locale-picker__flag" width="24" height="18" />
+                <span data-i18n="locale.name.ptBr">Português (Brasil)</span>
+            </button>
+        </li>
+        <li role="none">
+            <button type="button"
+                    class="locale-picker__option {#if locale == 'en'}locale-picker__option--active{/if}"
+                    role="option"
+                    aria-selected="{locale == 'en'}"
+                    data-locale="en"
+                    onclick="window.i18n && window.i18n.setLocale('en')">
+                <img src="/images/flags/en.svg" alt="" class="locale-picker__flag" width="24" height="18" />
+                <span data-i18n="locale.name.en">English</span>
+            </button>
+        </li>
+        <li role="none">
+            <button type="button"
+                    class="locale-picker__option {#if locale == 'es'}locale-picker__option--active{/if}"
+                    role="option"
+                    aria-selected="{locale == 'es'}"
+                    data-locale="es"
+                    onclick="window.i18n && window.i18n.setLocale('es')">
+                <img src="/images/flags/es.svg" alt="" class="locale-picker__flag" width="24" height="18" />
+                <span data-i18n="locale.name.es">Español</span>
+            </button>
+        </li>
+    {#if variant?? && variant == 'list'}
+    </ul>
+    {#else}
+        </ul>
+    </div>
+    {/if}
 </div>

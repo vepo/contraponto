@@ -1,0 +1,57 @@
+---
+description: CSS authoring style, design tokens, and stylesheet bundles
+globs: src/main/resources/META-INF/resources/style/*.css,src/main/resources/templates/**/*.html
+alwaysApply: false
+---
+
+# CSS conventions
+
+Class registry and block names: [docs/ui-elements.md](../../docs/ui-elements.md). Template/button rules: [contraponto-ui.mdc](contraponto-ui.mdc). HTMX behavior: [docs/htmx-events.md](../../docs/htmx-events.md).
+
+## Stylesheet bundles
+
+| File | Scope |
+|------|--------|
+| `style/fonts.css` | `@font-face` only — no layout or components |
+| `style/main.css` | `:root` tokens, reset, shell, public reading, shared primitives (`.btn`, `.form-group`, `.container`, HTMX feedback) |
+| `style/manage.css` | Logged-in operations (library, dashboard, CRUD, review, notifications) |
+| `style/write.css` | Write editor (`/write`, `/write/draft/*`) only |
+
+Load order in [components/head.html](../../src/main/resources/templates/components/head.html): fonts → main → manage → write → third-party.
+
+- Put new rules in the bundle that owns the primary surface; extend primitives in **main.css** instead of duplicating `.btn` / `.form-group`.
+- **Never** edit `style/third-party/`. No Sass/Less/PostCSS build step.
+
+## Design tokens
+
+- Colors, spacing, typography, radius, shadows, motion: `var(--…)` from `:root` in **main.css** (`--color-primary`, `--spacing-md`, `--font-sans`, `--duration-normal`, `--htmx-opacity-busy`, …).
+- Add new global tokens only in `main.css` `:root` blocks; reference them elsewhere.
+- **Do not** introduce new hard-coded hex colors in main/manage (existing debt in `write.css` — use tokens when touching that file).
+
+## Naming and selectors
+
+- **BEM:** `block`, `block__element`, `block--modifier`; utilities `u-*` (e.g. `u-hidden`, `u-mt-md`).
+- **kebab-case** only; page blocks match domain pages (`library-page`, `article-card`, `notifications-page`).
+- Prefer single-class or shallow compounds (`.btn.btn--primary`); avoid deep descendant chains and IDs in CSS.
+- State for HTMX: use shipped classes (`.htmx-request`, `.htmx-indicator`) — styles live in **main.css** only.
+
+## File style
+
+- **2-space** indent (match `main.css` / `manage.css`).
+- Section banners: `/* ========== SECTION NAME ========== */` before each major block.
+- One declaration per line; properties roughly grouped (layout → box → typography → visual → motion).
+- Transitions: `var(--duration-normal)` and `var(--ease-out)` where possible.
+- Responsive: `@media (max-width: 768px)` for mobile overrides (existing breakpoint).
+- `!important` only for utilities (`[hidden]`, `.u-hidden`) or reduced-motion overrides — not for component tweaks.
+
+## Templates vs CSS
+
+- Layout and look: **classes in CSS**, not inline `style="…"` in Qute (exceptions: email HTML under `templates/email/`, dynamic chart bar heights in analytics).
+- Prefer server-rendered structure + HTMX swaps over JS-driven styling ([contraponto-javascript.mdc](contraponto-javascript.mdc)).
+
+## New UI checklist
+
+1. Register the block in [ui-elements.md](../../docs/ui-elements.md).
+2. Add CSS to the correct bundle with tokens + BEM.
+3. Use existing `.btn` modifiers — never `btn--sm` (use `btn--small`).
+4. Update [ui-guidelines.md](../../docs/ui-guidelines.md) when adding a new page type.
