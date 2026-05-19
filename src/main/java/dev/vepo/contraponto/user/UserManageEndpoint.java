@@ -26,7 +26,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/users")
@@ -41,8 +40,6 @@ public class UserManageEndpoint {
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
-
-        static native TemplateInstance list(Page<UserRow> users, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         static native TemplateInstance panel(Page<UserRow> users, String basePath);
 
@@ -95,16 +92,6 @@ public class UserManageEndpoint {
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
-        if (!userAccess.canManageUsers(loggedUser)) {
-            return forbidden();
-        }
-
-        return Response.seeOther(UriBuilder.fromPath("/administration/users").queryParam("page", page).build()).build();
     }
 
     Page<UserRow> listPage(int page) {

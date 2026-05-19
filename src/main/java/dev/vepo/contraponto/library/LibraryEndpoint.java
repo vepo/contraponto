@@ -1,9 +1,5 @@
 package dev.vepo.contraponto.library;
 
-import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.custompage.Links;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
-import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -26,17 +22,14 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
-@Path("/library")
+@Path("/writing/library/components")
 @ApplicationScoped
 public class LibraryEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-
-        public static native TemplateInstance library(LoggedUser user, Links links, BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance panel();
 
@@ -48,23 +41,16 @@ public class LibraryEndpoint {
     }
 
     private final PostRepository postRepository;
-    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
-    private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public LibraryEndpoint(PostRepository postRepository,
-                           CustomPageRepository customPageRepository,
-                           LoggedUser loggedUser,
-                           BreadcrumbService breadcrumbService) {
+    public LibraryEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
-        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
-        this.breadcrumbService = breadcrumbService;
     }
 
     @DELETE
-    @Path("components/posts/{postId}/delete")
+    @Path("posts/{postId}/delete")
     @Transactional
     public Response deletePost(@PathParam("postId") Long id) {
         Post post = postRepository.findById(id)
@@ -91,18 +77,12 @@ public class LibraryEndpoint {
         return Response.ok().build();
     }
 
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response library() {
-        return Response.seeOther(UriBuilder.fromPath("/writing/library").build()).build();
-    }
-
     public TemplateInstance renderHubPanel() {
         return Templates.panel();
     }
 
     @GET
-    @Path("components/tab/{type}")
+    @Path("tab/{type}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance tab(@PathParam("type") String type, @QueryParam("page") @DefaultValue("1") int page) {
         return Templates.tab(switch (type) {

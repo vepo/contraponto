@@ -65,7 +65,7 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 - Items: **My Blog**, **Writing**, **Manage**, **Account**, **Review** (editor only), **Administration** (user administrator only), **Sign out**.
 - Each hub link opens a **left-sidebar shell**: breadcrumb, sticky section nav, and the active section panel (no hub-level duplicate title).
 - Default section loads on first open (e.g. Manage → Dashboard, Writing → Library, Review → Featured Posts).
-- Section URLs are bookmarkable (`/writing/blogs`, `/writing/appearance`, `/manage/blogs` for editors, `/account/security`, `/editor/tags`). Legacy paths (`/dashboard`, `/library`, `/profile`, `/blogs`, …) redirect to the matching section URL.
+- Section URLs are bookmarkable (`/writing/library`, `/writing/blogs`, `/writing/appearance`, `/manage/dashboard`, `/manage/pages`, `/account/security`, `/editor/tags`, …).
 - **Writing** hub sidebar lists **Library** only; compose via header **Write** (`/write`).
 - Panel list headers use **hub-panel__header** with compact primary actions (`btn--small`).
 - Desktop: section nav stays visible while the panel scrolls (`position: sticky`). Mobile: horizontal section tabs under the site header.
@@ -164,7 +164,7 @@ Both modals are accessible via the header buttons.
 
 ## 9. Profile Settings
 
-**URL:** `/profile`
+**URL:** `/account/security`
 - A narrow‑width form with fields: Full Name, Email, Current Password (required for changes), New Password (optional), Confirm New Password.
 - Email change shows **Verification pending for {email}.** until the new address is confirmed.
 - Validation rules: password mismatch, email format, etc.
@@ -192,19 +192,19 @@ Both modals are accessible via the header buttons.
 
 ## 11. Dashboard
 
-**URL:** `/dashboard`
+**URL:** `/manage/dashboard`
 - **Analytics (per blog):** Blog selector; month navigation (Previous / Next); optional “Compare with previous month” on daily views. Three bar charts: Daily views, New followers, New email subscribers. Each chart shows month totals; audience charts show current totals.
 - **Stats cards:** Number of drafts and published posts (clickable links to library filtered by tab).
 - **Recent drafts / published:** Lists with title, last‑updated date, views (for published).
 - **Quick action:** “✍️ Write a new story” button.
 
-Analytics load via HTMX (`GET /dashboard/components/analytics`) on page load and when blog, month, or compare changes.
+Analytics load via HTMX (`GET /manage/dashboard/components/analytics`) on page load and when blog, month, or compare changes.
 
 ---
 
 ## 12. Library
 
-**URL:** `/library`
+**URL:** `/writing/library`
 - Tabs: **Drafts** / **Published** – each loads content dynamically via HTMX.
 - Each card shows title (or “Untitled”), excerpt, metadata, and action buttons (Edit, Delete for drafts).
 - Empty state: “No drafts yet” with a link to start writing.

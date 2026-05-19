@@ -11,8 +11,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/account")
@@ -30,21 +28,6 @@ public class AccountHubEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance hub() {
         return hubService.shell(NavigationHub.ACCOUNT, hubService.defaultSectionSlug(NavigationHub.ACCOUNT), 1);
-    }
-
-    @GET
-    @Path("profile")
-    @Produces(MediaType.TEXT_HTML)
-    public Response legacyProfile(@QueryParam("verified") @DefaultValue("false") boolean emailVerified,
-                                  @QueryParam("error") String error) {
-        var builder = UriBuilder.fromPath("/account/security");
-        if (emailVerified) {
-            builder.queryParam("verified", true);
-        }
-        if (error != null) {
-            builder.queryParam("error", error);
-        }
-        return Response.seeOther(builder.build()).build();
     }
 
     @GET

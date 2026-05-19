@@ -2,10 +2,6 @@ package dev.vepo.contraponto.admin;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
-import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.custompage.Links;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
-import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -18,27 +14,21 @@ import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
-@Path("/review")
+@Path("/editor/review/components")
 @ApplicationScoped
 public class ReviewEndpoint {
 
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance panel(Page<Post> posts, String basePath);
-
-        public static native TemplateInstance review(Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance row(Post post); // for HTMX swap
 
@@ -48,19 +38,12 @@ public class ReviewEndpoint {
     }
 
     private final PostRepository postRepository;
-    private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
-    private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public ReviewEndpoint(PostRepository postRepository,
-                          CustomPageRepository customPageRepository,
-                          LoggedUser loggedUser,
-                          BreadcrumbService breadcrumbService) {
+    public ReviewEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
-        this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
-        this.breadcrumbService = breadcrumbService;
     }
 
     private Response forbidden() {
@@ -76,7 +59,7 @@ public class ReviewEndpoint {
     }
 
     @PUT
-    @Path("components/{postId}/featured/toggle")
+    @Path("{postId}/featured/toggle")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     @Transactional
@@ -116,15 +99,4 @@ public class ReviewEndpoint {
         return Templates.panel(listPage(page), basePath);
     }
 
-    /**
-     * Main review page – shows all published posts with featured toggle.
-     */
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response review(@QueryParam("page") @DefaultValue("1") int page) {
-        if (!loggedUser.isEditor()) {
-            return forbidden();
-        }
-        return Response.seeOther(UriBuilder.fromPath("/editor/review").queryParam("page", page).build()).build();
-    }
 }

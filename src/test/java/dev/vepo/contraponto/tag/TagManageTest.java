@@ -19,7 +19,7 @@ class TagManageTest {
     void editorCanBrowseAndEditTags(App app) {
         app.login(editor)
            .tagsManage()
-           .assertTitle("Manage Tags")
+           .assertTitle("Tags")
            .assertTagListed("news")
            .clickEdit("news")
            .fillName("Headlines")

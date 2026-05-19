@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.image.CustomPageImageDependencyService;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.NavigationHub;
+import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -32,26 +33,23 @@ public class CustomPageSaveEndpoint {
     private final CustomPageRepository customPageRepository;
     private final CustomPageAccess customPageAccess;
     private final BlogRepository blogRepository;
-    private final CustomPageManageEndpoint customPageManageEndpoint;
     private final CustomPageImageDependencyService customPageImageDependencyService;
+    private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
-    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public CustomPageSaveEndpoint(CustomPageRepository customPageRepository,
                                   CustomPageAccess customPageAccess,
                                   BlogRepository blogRepository,
-                                  CustomPageManageEndpoint customPageManageEndpoint,
                                   CustomPageImageDependencyService customPageImageDependencyService,
-                                  LoggedUser loggedUser,
-                                  BreadcrumbService breadcrumbService) {
+                                  NavigationHubService navigationHubService,
+                                  LoggedUser loggedUser) {
         this.customPageRepository = customPageRepository;
         this.customPageAccess = customPageAccess;
         this.blogRepository = blogRepository;
-        this.customPageManageEndpoint = customPageManageEndpoint;
         this.customPageImageDependencyService = customPageImageDependencyService;
+        this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
-        this.breadcrumbService = breadcrumbService;
     }
 
     private boolean applyScope(CustomPage page, CustomPageForm form, Long blogIdForSlug) {
@@ -98,14 +96,8 @@ public class CustomPageSaveEndpoint {
                     .message("Page deleted.")
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url("/pages")
-                    .page(CustomPageManageEndpoint.Templates.list(customPageManageEndpoint.listPage(1,
-                                                                                                    customPageAccess.canListAll(
-                                                                                                                                loggedUser)),
-                                                                  customPageAccess.canListAll(loggedUser),
-                                                                  customPageRepository.loadLinks(),
-                                                                  loggedUser,
-                                                                  breadcrumbService.manageCustomPages()))
+                    .url("/manage/pages")
+                    .page(navigationHubService.shell(NavigationHub.MANAGE, "pages", 1))
                     .build();
     }
 
@@ -183,14 +175,8 @@ public class CustomPageSaveEndpoint {
                     .message("Page saved successfully.")
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url("/pages")
-                    .page(CustomPageManageEndpoint.Templates.list(customPageManageEndpoint.listPage(1,
-                                                                                                    customPageAccess.canListAll(
-                                                                                                                                loggedUser)),
-                                                                  customPageAccess.canListAll(loggedUser),
-                                                                  customPageRepository.loadLinks(),
-                                                                  loggedUser,
-                                                                  breadcrumbService.manageCustomPages()))
+                    .url("/manage/pages")
+                    .page(navigationHubService.shell(NavigationHub.MANAGE, "pages", 1))
                     .build();
     }
 

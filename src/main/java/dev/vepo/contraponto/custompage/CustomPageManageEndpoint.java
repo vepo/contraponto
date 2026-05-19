@@ -26,7 +26,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/pages")
@@ -36,12 +35,6 @@ public class CustomPageManageEndpoint {
     @CheckedTemplate
     public static class Templates {
         static native TemplateInstance form(CustomPageFormView formView,
-                                            Links links,
-                                            LoggedUser user,
-                                            BreadcrumbTrail breadcrumb);
-
-        static native TemplateInstance list(Page<CustomPageRow> pages,
-                                            boolean editorView,
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
@@ -120,16 +113,6 @@ public class CustomPageManageEndpoint {
             return customPageRepository.loadLinks();
         }
         return customPageRepository.loadLinks(page.getBlog().getId());
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
-        if (!loggedUser.isAuthenticated()) {
-            return forbidden();
-        }
-
-        return Response.seeOther(UriBuilder.fromPath("/manage/pages").queryParam("page", page).build()).build();
     }
 
     public Page<CustomPageRow> listPage(int page, boolean editorView) {

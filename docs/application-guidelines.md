@@ -127,15 +127,15 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ## 6. Library & Dashboard
 
-### 6.1 Library (`GET /library`)
+### 6.1 Library (`GET /writing/library`)
 - Tabs: **Drafts** and **Published**.  
-- Tabs load their content dynamically via HTMX (`GET /library/tab?type=drafts` or `published`).  
+- Tabs load their content dynamically via HTMX (`GET /writing/library/components/tab/drafts` or `published`).  
 - Each entry shows title, metadata, and action buttons (Edit, Delete for drafts).  
 - A user can only see their own posts (filtered by blog ownership).
 
-### 6.2 Dashboard (`GET /dashboard`)
+### 6.2 Dashboard (`GET /manage/dashboard`)
 - Ownership: only authenticated users.  
-- **Analytics:** Per selected blog (`?blogId=` optional; defaults to main blog). `GET /dashboard/components/analytics` returns HTMX fragment with daily views (optional comparison to previous calendar month), new followers, and new email subscribers for the chosen month.  
+- **Analytics:** Per selected blog (`?blogId=` optional; defaults to main blog). `GET /manage/dashboard/components/analytics` returns HTMX fragment with daily views (optional comparison to previous calendar month), new followers, and new email subscribers for the chosen month.  
 - Displays counts and recent activity (drafts, published) across all user’s blogs.  
 - Quick action to write.
 
@@ -143,12 +143,12 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 
 ## 7. Account security and author appearance
 
-### 7.1 Account security (`GET /account/security`, legacy `GET /profile` redirects here)
+### 7.1 Account security (`GET /account/security`)
 - Requires authentication.  
 - Form to update email and password.  
 - Password change requires current password; triggers a **password changed** account email.  
 - Email change requires verification: sets **pending email**, sends link to new address; confirmed email stays active until `GET /account/verify-email?token=…`.  
-- POST to `/forms/account/security` (legacy `/forms/profile` delegates when only security fields are sent).
+- POST to `/forms/account/security` for email/password changes; POST to `/forms/writing/appearance` for display name and images.
 
 ### 7.2 Author appearance (`GET /writing/appearance`)
 - Requires authentication.  

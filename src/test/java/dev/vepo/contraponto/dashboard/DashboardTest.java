@@ -177,10 +177,7 @@ class DashboardTest {
     @Test
     void unauthenticatedUserIsRedirectedToHome(App app) {
         app.access()
-           .dashboard() // Will attempt to go to /dashboard
-           .assertUrlEquals("/")
-           // Since not logged in, the backend should redirect or show login
-           // In an HTMX app, the dashboard page might not load and login button appears
+           .goToPath("/manage/dashboard")
            .assertAccessButtonIsDisplayed();
     }
 

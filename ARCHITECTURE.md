@@ -195,7 +195,7 @@ dev.vepo.contraponto/
 - `tb_custom_pages`
 - `tb_blog_audience`, `tb_notifications`, `tb_email_notification_log`
 
-Full DDL: `src/main/resources/db/migration/V0.0.1__Initial_schema.sql`
+Full DDL: `src/main/resources/db/migration/V1.0.0__initial_schema.sql`
 
 ## 16. Adding a feature (checklist)
 

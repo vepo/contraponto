@@ -7,7 +7,7 @@
     <div class="review-row__actions">
         <!-- Toggle button: sends PUT to the endpoint, swaps the whole row -->
         <button class="btn btn--small {#if post.featured}btn--featured{/if}"
-                hx-put="/review/components/{post.id}/featured/toggle"
+                hx-put="/editor/review/components/{post.id}/featured/toggle"
                 hx-target="#post-row-{post.id}"
                 hx-swap="outerHTML">
             {#if post.featured}

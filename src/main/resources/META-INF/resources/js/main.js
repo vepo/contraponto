@@ -1,6 +1,22 @@
 class MainManager {
     constructor() {
-        this.protectedPaths = ['/write', '/profile', '/blogs', '/pages', '/users', '/write/draft/[0-9]+'];
+        this.protectedPaths = [
+            '/write',
+            '/account/security',
+            '/manage/dashboard',
+            '/writing/library',
+            '/writing/blogs',
+            '/writing/appearance',
+            '/manage/pages',
+            '/manage/comments',
+            '/administration/users',
+            '/editor/review',
+            '/editor/tags',
+            '/account/notifications',
+            '/account/subscriptions',
+            '/blogs',
+            '/write/draft/[0-9]+'
+        ];
         // Bind methods to this instance
         this.redirectIfPathProtected = this.redirectIfPathProtected.bind(this);
         this.updateUIElements = this.updateUIElements.bind(this);
@@ -74,7 +90,7 @@ class MainManager {
                     /* ignore malformed path */
                 }
                 if (!newActiveValue) {
-                    const m = requestPath.match(/\/library\/components\/tab\/(drafts|published)(?:\?|$)/);
+                    const m = requestPath.match(/\/writing\/library\/components\/tab\/(drafts|published)(?:\?|$)/);
                     if (m) newActiveValue = m[1];
                 }
             }

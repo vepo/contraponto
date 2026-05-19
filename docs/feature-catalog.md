@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-18 · account security / author appearance / writing blogs split
+**Last verified:** 2026-05-18 · merged Flyway V1.0.0; hub-only manage URLs
 
 ---
 
@@ -98,7 +98,7 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
 | Manage hub (dashboard) | `USER` | `GET /manage` | 2 | Open user menu → **Manage** (dashboard panel default). |
-| Dashboard analytics | `USER` | `GET /dashboard/components/analytics` | 2 | **Manage** hub (month controls on same panel). |
+| Dashboard analytics | `USER` | `GET /manage/dashboard/components/analytics` | 2 | **Manage** hub (month controls on same panel). |
 | My Blog shortcut | `USER` | `GET /{username}` | 2 | Open user menu → **My Blog**. |
 | Blog list (author) | `USER` | `GET /writing/blogs` | 2 | Open user menu → **Writing** → **Blogs** in left nav. |
 | Blog list (platform) | `EDITOR` | `GET /manage/blogs` | 2 | Open user menu → **Manage** → **Blogs** in left nav. |
@@ -143,12 +143,11 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 |---------|----------|-----|------:|-------------------------------|
 | Review hub (featured posts) | `EDITOR` | `GET /editor` | 2 | Open user menu → **Review** (featured posts panel default). |
 | Featured review list | `EDITOR` | `GET /editor/review` | 2 | Same as Review hub (bookmarkable section URL). |
-| Toggle featured (review) | `EDITOR` | `PUT /review/components/{postId}/featured/toggle` | 4 | **Featured Posts** → star on row. |
+| Toggle featured (review) | `EDITOR` | `PUT /editor/review/components/{postId}/featured/toggle` | 4 | **Featured Posts** → star on row. |
 | Toggle featured (on post) | `EDITOR` | `PUT …/component/featured/toggle` | 3–4 | Open post → star control in action bar. |
 | Tag admin list | `EDITOR` | `GET /editor/tags` | 2 | Open user menu → **Review** → **Tags** in left nav. |
 | Edit tag metadata | `EDITOR` | `GET /tags/{slug}/edit` | 4 | **Tags** → **Edit** on row. |
 | Edit tag (from public tag page) | `EDITOR` | `GET /tags/{slug}/edit` | 4 | Home → post → tag → **Edit** (editor-only link on tag page). |
-| Platform-wide blog list (legacy) | `EDITOR` | `GET /blogs` | 2 | Redirects to `/writing/blogs` (authors) or use **Manage** → **Blogs**. |
 
 ---
 

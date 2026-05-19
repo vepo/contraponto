@@ -23,7 +23,7 @@ TRUNCATE TABLE tb_views CASCADE;
 TRUNCATE TABLE tb_posts CASCADE;
 TRUNCATE TABLE tb_series CASCADE;
 TRUNCATE TABLE tb_tags CASCADE;
--- Clear image FKs before delete (V0.0.4 profile/banner columns reference tb_images; TRUNCATE CASCADE would wipe tb_users/tb_blogs)
+-- Clear image FKs before delete (profile/banner columns reference tb_images; TRUNCATE CASCADE would wipe tb_users/tb_blogs)
 UPDATE tb_users SET profile_picture_id = NULL, default_banner_id = NULL;
 UPDATE tb_blogs SET banner_id = NULL;
 UPDATE tb_posts SET cover_id = NULL;
@@ -52,6 +52,7 @@ VALUES
     ('carol', 'carol@contraponto.blog', 'Carol Silva', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
     ('dave', 'dave@contraponto.blog', 'Dave Reader', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
     ('eve', 'eve@contraponto.blog', 'Eve Subscriber', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
+    ('vepo', 'vepo@contraponto.blog', 'Victor Osório', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', TRUE, NOW(), NOW()),
     ('ghost', 'ghost@contraponto.blog', 'Inactive Account', '$2a$10$9JdzFX8ar0ZcKP5bQkduBuwhFBRBgMW7.pCV4btIDcPgf.zdDGcCO', FALSE, NOW(), NOW());
 
 INSERT INTO tb_user_roles (user_id, role)
@@ -64,6 +65,7 @@ FROM (VALUES
     ('carol', 'USER'),
     ('dave', 'USER'),
     ('eve', 'USER'),
+    ('vepo', 'USER'),
     ('ghost', 'USER')
 ) AS v(username, role)
 JOIN tb_users u ON u.username = v.username;
@@ -87,6 +89,14 @@ INSERT INTO tb_blogs (name, slug, description, owner_id, main, active, created_a
 SELECT 'Carol Explores APIs', 'carol', 'GraphQL, REST, and API design', u.id, TRUE, TRUE, NOW()
 FROM tb_users u WHERE u.username = 'carol';
 
+INSERT INTO tb_blogs (name, slug, description, owner_id, main, active, created_at)
+SELECT 'Victor Osório', 'vepo', 'Software, systems, and craft', u.id, TRUE, TRUE, NOW()
+FROM tb_users u WHERE u.username = 'vepo';
+
+INSERT INTO tb_blogs (name, slug, description, owner_id, main, active, created_at)
+SELECT 'Notas do dia a dia de um engenheiro de software', 'notas', 'Jekyll notes synced from vepo.github.io', u.id, FALSE, TRUE, NOW()
+FROM tb_users u WHERE u.username = 'vepo';
+
 UPDATE tb_blogs b
 SET git_enabled = TRUE,
     git_remote_url = 'https://github.com/contraponto-dev/alice-on-systems.git',
@@ -94,6 +104,13 @@ SET git_enabled = TRUE,
     git_last_known_commit = '7f3a9c2e1b0d4f8a6e5d4c3b2a19087'
 FROM tb_users u
 WHERE b.owner_id = u.id AND u.username = 'alice' AND b.main;
+
+UPDATE tb_blogs b
+SET git_enabled = TRUE,
+    git_remote_url = 'https://github.com/vepo/vepo.github.io',
+    git_branch = 'source'
+FROM tb_users u
+WHERE b.owner_id = u.id AND u.username = 'vepo' AND b.slug = 'notas';
 
 -- ============================================
 -- 3b. Custom pages (footer pages come from Flyway migration)
@@ -104,9 +121,9 @@ VALUES (
     'Platform',
     'Developer playbook',
     '<h2>Local development</h2>
-    <p>Seed users share the <code>admin</code> password: <code>alice</code>, <code>bob</code>, <code>carol</code>, <code>editor</code>, <code>dave</code>, <code>eve</code>.</p>
+    <p>Seed users share the <code>admin</code> password: <code>alice</code>, <code>bob</code>, <code>carol</code>, <code>editor</code>, <code>dave</code>, <code>eve</code>, <code>vepo</code>.</p>
     <ul>
-        <li><a href="/review">Featured review</a> — sign in as <code>editor</code></li>
+        <li><a href="/editor/review">Featured review</a> — sign in as <code>editor</code></li>
         <li><a href="/comments">Comment moderation</a> — sign in as <code>alice</code></li>
         <li><a href="/users">User admin</a> — sign in as <code>admin</code></li>
     </ul>',

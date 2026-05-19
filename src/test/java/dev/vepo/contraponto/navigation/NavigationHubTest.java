@@ -64,22 +64,6 @@ class NavigationHubTest {
     }
 
     @Test
-    void legacyTagManageRedirectsToEditorTags(App app) {
-        Given.cleanup();
-        var editor = Given.user()
-                          .withUsername("legacyeditor")
-                          .withEmail("legacyeditor@test.com")
-                          .withName("Legacy Editor")
-                          .withPassword("password123")
-                          .withRole(Role.EDITOR)
-                          .persist();
-
-        app.login(editor)
-           .goToPath("/tags/manage")
-           .assertUrl("/editor/tags");
-    }
-
-    @Test
     void manageHubReachesDashboard(App app) {
         app.login(author)
            .openUserMenu()

@@ -143,12 +143,12 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 
 | Block | Templates | Notes |
 |-------|-----------|-------|
-| `profile-page`, `profile-form` | `ProfileEndpoint/profile.html` | Profile picture + default banner uploads |
+| `profile-form` | `AccountSecurityEndpoint/panel.html`, `AuthorAppearanceEndpoint/panel.html` | Account security and author appearance |
 | `image-upload-area` | `components/image-upload-area.html` | Reusable banner/profile image picker |
 | `user-blog-header__banner` | `BlogEndpoint/home.html` | Blog home hero banner |
-| `dashboard-page`, `stat-card`, `recent-*` | `DashboardEndpoint/dashboard.html` | |
+| `stat-card`, `recent-*` | `DashboardEndpoint/panel.html` | Manage hub dashboard panel |
 | `dashboard-analytics`, `dashboard-chart` | `DashboardEndpoint/analytics.html` | Per-blog charts; HTMX month nav |
-| `library-page`, `library-tab`, `library-tabs` | `LibraryEndpoint/library.html` | |
+| `library-tab`, `library-tabs` | `LibraryEndpoint/panel.html`, `LibraryEndpoint/tab.html` | Writing hub library |
 | `draft-card`, `drafts-page` | `LibraryEndpoint/tab.html` | |
 | `post-card` | Library published tab | |
 | `review-page`, `review-row` | `ReviewEndpoint/*` | |

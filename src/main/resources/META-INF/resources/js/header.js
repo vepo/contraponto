@@ -10,21 +10,37 @@ class HeaderManager {
     }
 
     setupUserMenu() {
-        // Single delegated click handler for both opening and closing
+        this.bindUserMenuToggle = () => {
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            if (!userMenuBtn || !userDropdown || userMenuBtn.dataset.menuBound) {
+                return;
+            }
+            userMenuBtn.dataset.menuBound = 'true';
+            userMenuBtn.addEventListener('click', (evt) => {
+                evt.preventDefault();
+                evt.stopPropagation();
+                userDropdown.classList.toggle('user-menu__dropdown--open');
+            });
+        };
+        this.bindUserMenuToggle();
+
         document.body.addEventListener('click', (evt) => {
             const userMenuBtn = document.getElementById('userMenuBtn');
             const userDropdown = document.getElementById('userDropdown');
-            if (!userMenuBtn || !userDropdown) return;
-
-            const isButtonClick = userMenuBtn.contains(evt.target);
-            const isInsideDropdown = userDropdown.contains(evt.target);
-
-            if (isButtonClick) {
-                evt.stopPropagation();
-                userDropdown.classList.toggle('user-menu__dropdown--open');
-            } else if (!isInsideDropdown || evt.target.dataset.hxGet) {
-                userDropdown.classList.remove('user-menu__dropdown--open');
+            if (!userMenuBtn || !userDropdown) {
+                return;
             }
+            if (userMenuBtn.contains(evt.target)) {
+                return;
+            }
+            if (userDropdown.contains(evt.target)) {
+                if (evt.target.closest('[data-hx-get]')) {
+                    userDropdown.classList.remove('user-menu__dropdown--open');
+                }
+                return;
+            }
+            userDropdown.classList.remove('user-menu__dropdown--open');
         });
 
         document.addEventListener('keydown', (evt) => {
@@ -89,10 +105,15 @@ class HeaderManager {
             if (evt && evt.detail && evt.detail.target) {
                 const menuContainer = document.getElementById('menu-container');
                 if (menuContainer && evt.detail.target.contains(menuContainer)) {
+                    const userMenuBtn = document.getElementById('userMenuBtn');
                     const userDropdown = document.getElementById('userDropdown');
+                    if (userMenuBtn) {
+                        delete userMenuBtn.dataset.menuBound;
+                    }
                     if (userDropdown) {
                         userDropdown.classList.remove('user-menu__dropdown--open');
                     }
+                    this.bindUserMenuToggle?.();
                 }
             }
         });

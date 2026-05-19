@@ -1,17 +1,6 @@
 package dev.vepo.contraponto.dashboard;
 
-import java.util.List;
-import java.util.Map;
-
-import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.custompage.Links;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
-import dev.vepo.contraponto.navigation.BreadcrumbTrail;
-import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
-import dev.vepo.contraponto.view.ViewRepository;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,22 +11,15 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
-@Path("/dashboard")
+@Path("/manage/dashboard/components")
 @ApplicationScoped
 public class DashboardEndpoint {
 
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance analytics(DashboardAnalytics analytics);
-
-        public static native TemplateInstance dashboard(DashboardPage page,
-                                                        Links links,
-                                                        LoggedUser user,
-                                                        BreadcrumbTrail breadcrumb);
 
         public static native TemplateInstance panel(DashboardPage page);
 
@@ -46,30 +28,15 @@ public class DashboardEndpoint {
         }
     }
 
-    private final PostRepository postRepository;
-    private final ViewRepository viewRepository;
-    private final CustomPageRepository customPageRepository;
     private final DashboardAnalyticsService analyticsService;
-    private final LoggedUser loggedUser;
-    private final BreadcrumbService breadcrumbService;
 
     @Inject
-    public DashboardEndpoint(PostRepository postRepository,
-                             ViewRepository viewRepository,
-                             CustomPageRepository customPageRepository,
-                             DashboardAnalyticsService analyticsService,
-                             LoggedUser loggedUser,
-                             BreadcrumbService breadcrumbService) {
-        this.postRepository = postRepository;
-        this.viewRepository = viewRepository;
-        this.customPageRepository = customPageRepository;
+    public DashboardEndpoint(DashboardAnalyticsService analyticsService) {
         this.analyticsService = analyticsService;
-        this.loggedUser = loggedUser;
-        this.breadcrumbService = breadcrumbService;
     }
 
     @GET
-    @Path("components/analytics")
+    @Path("analytics")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance analytics(@QueryParam("blogId") Long blogId,
                                       @QueryParam("year") Integer year,
@@ -78,13 +45,4 @@ public class DashboardEndpoint {
         return Templates.analytics(analyticsService.load(blogId, year, month, compare));
     }
 
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response dashboard(@QueryParam("blogId") Long blogId) {
-        var builder = UriBuilder.fromPath("/manage/dashboard");
-        if (blogId != null) {
-            builder.queryParam("blogId", blogId);
-        }
-        return Response.seeOther(builder.build()).build();
-    }
 }

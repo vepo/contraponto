@@ -56,7 +56,7 @@ class NotificationEndpointTest {
 
     @Test
     void notifications_page_lists_items() {
-        session(recipient).get("/notifications")
+        session(recipient).get("/account/notifications")
                           .then()
                           .statusCode(200)
                           .body(containsString("started following"));

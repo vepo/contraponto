@@ -26,7 +26,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 @Logged
 @Path("/blogs")
@@ -42,12 +41,6 @@ public class BlogManageEndpoint {
                                             boolean coreFormOnly,
                                             boolean canDelete,
                                             long uploadBlogId,
-                                            Links links,
-                                            LoggedUser user,
-                                            BreadcrumbTrail breadcrumb);
-
-        static native TemplateInstance list(Page<BlogRow> blogs,
-                                            BlogHubContext hubContext,
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
@@ -127,16 +120,6 @@ public class BlogManageEndpoint {
                     .type(Toast.Type.ERROR)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .build();
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response list(@QueryParam("page") @DefaultValue("1") int page) {
-        if (!loggedUser.isAuthenticated()) {
-            return forbidden();
-        }
-
-        return Response.seeOther(UriBuilder.fromPath("/writing/blogs").queryParam("page", page).build()).build();
     }
 
     public Page<BlogRow> listPage(int page, boolean editorView) {

@@ -368,7 +368,7 @@ public class App {
         }
 
         public CommentManagePage assertTitle(String expected) {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title")));
             assertThat(title.getText()).isEqualTo(expected);
             return this;
         }
@@ -425,7 +425,7 @@ public class App {
         }
 
         public CustomPageManagePage assertTitle(String expected) {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title, .pages-manage__title")));
             assertThat(title.getText()).isEqualTo(expected);
             return this;
         }
@@ -599,7 +599,7 @@ public class App {
         }
 
         public DashboardPage assertTitle(String expected) {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".dashboard-page__title")));
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title")));
             assertThat(title.getText()).isEqualTo(expected);
             return this;
         }
@@ -1468,7 +1468,7 @@ public class App {
         }
 
         public TagManagePage assertTitle(String expected) {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title")));
             assertThat(title.getText()).isEqualTo(expected);
             return this;
         }
@@ -1499,7 +1499,7 @@ public class App {
         }
 
         public UserManagePage assertTitle(String expected) {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title, .pages-manage__title")));
             assertThat(title.getText()).isEqualTo(expected);
             return this;
         }
@@ -1944,8 +1944,10 @@ public class App {
     }
 
     public App clickMenuLink(String path) {
-        reliableClick(wait.until(elementToBeClickable(
-                                                      cssSelector(".user-menu__dropdown a[data-hx-get='%s']".formatted(path)))));
+        openUserMenu();
+        var selector = "#userDropdown a[data-hx-get='%s']".formatted(path);
+        var link = wait.until(presenceOfElementLocated(cssSelector(selector)));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", link);
         waitForReady();
         return this;
     }
@@ -1957,17 +1959,17 @@ public class App {
     }
 
     public CommentManagePage comments() {
-        _goTo("/comments");
+        _goTo("/manage/comments");
         return new CommentManagePage();
     }
 
     public CustomPageManagePage customPages() {
-        _goTo("/pages");
+        _goTo("/manage/pages");
         return new CustomPageManagePage();
     }
 
     public DashboardPage dashboard() {
-        _goTo("/dashboard");
+        _goTo("/manage/dashboard");
         return new DashboardPage();
     }
 
@@ -1992,7 +1994,7 @@ public class App {
     }
 
     public DashboardPage goToAnalyticsFragment(long blogId, boolean compare) {
-        var path = "/dashboard/components/analytics?blogId=" + blogId;
+        var path = "/manage/dashboard/components/analytics?blogId=" + blogId;
         if (compare) {
             path += "&compare=true";
         }
@@ -2028,8 +2030,8 @@ public class App {
     }
 
     public ReviewPage goToReview() {
-        _goTo("/review");
-        wait.until(visibilityOfElementLocated(cssSelector(".review-page")));
+        _goTo("/editor/review");
+        wait.until(visibilityOfElementLocated(cssSelector(".review-list")));
         return new ReviewPage();
     }
 
@@ -2090,14 +2092,25 @@ public class App {
     }
 
     public App openNotificationsFromMenu() {
-        openUserMenu()
-                      .clickMenuLink("/account");
-        return this;
+        return clickMenuLink("/account");
     }
 
     public App openUserMenu() {
-        reliableClick(wait.until(elementToBeClickable(By.id("userMenuBtn"))));
-        wait.until(visibilityOfElementLocated(cssSelector(".user-menu__dropdown")));
+        wait.until(elementToBeClickable(By.id("userMenuBtn")));
+        ((JavascriptExecutor) driver).executeScript("""
+                                                    const dropdown = document.getElementById('userDropdown');
+                                                    const button = document.getElementById('userMenuBtn');
+                                                    if (!dropdown || !button) {
+                                                        return false;
+                                                    }
+                                                    if (!dropdown.classList.contains('user-menu__dropdown--open')) {
+                                                        button.click();
+                                                    }
+                                                    return dropdown.classList.contains('user-menu__dropdown--open');
+                                                    """);
+        wait.until(d -> d.findElement(By.id("userDropdown"))
+                         .getAttribute("class")
+                         .contains("user-menu__dropdown--open"));
         return this;
     }
 
@@ -2107,7 +2120,7 @@ public class App {
     }
 
     public ProfilePage profile() {
-        _goTo("/profile");
+        _goTo("/account/security");
         waitForReady();
         return new ProfilePage();
     }
@@ -2158,7 +2171,7 @@ public class App {
     }
 
     public TagManagePage tagsManage() {
-        _goTo("/tags/manage");
+        _goTo("/editor/tags");
         return new TagManagePage();
     }
 
@@ -2176,7 +2189,7 @@ public class App {
     }
 
     public UserManagePage users() {
-        _goTo("/users");
+        _goTo("/administration/users");
         return new UserManagePage();
     }
 

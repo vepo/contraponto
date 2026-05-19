@@ -21,7 +21,7 @@ Multi-author publishing with HTMX-driven navigation, per-user blogs, versioning,
 
 Open [http://localhost:8080](http://localhost:8080). Dev mode runs Flyway clean+migrate (`%dev.quarkus.flyway.clean-at-start=true`) and loads sample data from `dev-import.sql`.
 
-Default admin (from migration): `admin` / password hash in `V0.0.1__Initial_schema.sql`.
+Default admin (from migration): `admin` / password hash in `V1.0.0__initial_schema.sql`.
 
 ## Documentation
 
@@ -84,17 +84,14 @@ src/main/java/dev/vepo/contraponto/
 |------|------|
 | Home | `/` |
 | Write | `/write`, `/write/draft/{id}` |
-| Library | `/library` |
-| Dashboard | `/dashboard` |
-| Profile | `/profile` |
+| Writing hub | `/writing`, `/writing/library`, `/writing/blogs`, `/writing/appearance` |
+| Manage hub | `/manage`, `/manage/dashboard`, `/manage/pages`, `/manage/comments` |
+| Account hub | `/account`, `/account/security`, `/account/notifications`, `/account/subscriptions` |
+| Editor hub | `/editor`, `/editor/review`, `/editor/tags` |
+| Administration | `/administration/users` |
 | Search | `/search` |
-| Review (editor) | `/review` |
-| Notifications | `/notifications` |
-| Subscriptions | `/subscriptions` |
-| Manage blogs | `/blogs` |
-| Manage users | `/users` |
-| Manage pages | `/pages` |
-| Tags | `/tags/{slug}` |
+| Blog edit | `/blogs/{id}/edit`, `/blogs/new` |
+| Tags (public) | `/tags/{slug}` |
 | Site RSS | `/feed` |
 
 Post and blog URLs: `/{username}/post/{slug}`, `/{username}/{blogSlug}/post/{slug}`, etc. (see ARCHITECTURE.md).

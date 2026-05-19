@@ -31,7 +31,7 @@ class HeaderComponentsTest {
         var sessionId = Given.inject(LoggedUserProvider.class).login(user).getSessionId();
 
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .get("/profile")
+               .get("/account/security")
                .then()
                .statusCode(200)
                .body(containsString("Escrever"))

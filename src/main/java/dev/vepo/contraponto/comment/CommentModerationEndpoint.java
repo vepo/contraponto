@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.comment;
 
+import dev.vepo.contraponto.navigation.NavigationHub;
+import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -27,19 +29,19 @@ public class CommentModerationEndpoint {
     private final PostCommentService commentService;
     private final PostRepository postRepository;
     private final CommentComponentEndpoint componentEndpoint;
-    private final CommentManageEndpoint commentManageEndpoint;
+    private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
 
     @Inject
     public CommentModerationEndpoint(PostCommentService commentService,
                                      PostRepository postRepository,
                                      CommentComponentEndpoint componentEndpoint,
-                                     CommentManageEndpoint commentManageEndpoint,
+                                     NavigationHubService navigationHubService,
                                      LoggedUser loggedUser) {
         this.commentService = commentService;
         this.postRepository = postRepository;
         this.componentEndpoint = componentEndpoint;
-        this.commentManageEndpoint = commentManageEndpoint;
+        this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
     }
 
@@ -67,7 +69,7 @@ public class CommentModerationEndpoint {
                                .type(Toast.Type.SUCCESS)
                                .duration(Toast.TOAST_DEFAULT_DURATION_MS);
             if ("manage".equals(from)) {
-                return builder.page(commentManageEndpoint.renderList(1)).build();
+                return builder.page(navigationHubService.shell(NavigationHub.MANAGE, "comments", 1)).build();
             }
             return builder.page(componentEndpoint.renderComments(post)).build();
         } catch (ForbiddenException e) {

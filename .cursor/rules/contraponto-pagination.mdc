@@ -17,7 +17,7 @@ Classify the UI before choosing a control.
 
 ## Managing UIs (logged-in operations)
 
-- **When:** library, CRUD indexes (`/users`, `/blogs`, `/pages`, `/tags/manage`, `/comments`), review, notifications, subscriptions.
+- **When:** library, CRUD indexes (`/administration/users`, hub blog lists, `/manage/pages`, `/editor/tags`, `/manage/comments`), review, notifications, subscriptions.
 - **Control:** `{#include components/manage-pagination page=... basePath='...' extraQuery='' /}` (add `fragmentTarget='#libraryContent'` for HTMX tab fragments).
 - **Data:** `PageQuery.forGrid(20, page)`; repository returns `Page<T>` with count query.
 - **Footer must show:** total items, range (Showing X–Y), Page N of M, Previous/Next.
@@ -25,7 +25,7 @@ Classify the UI before choosing a control.
 
 ## Exceptions
 
-- `/dashboard` — fixed “recent N” previews only; full lists use paginated routes.
+- `/manage/dashboard` — fixed “recent N” previews only; full lists use paginated routes.
 
 ## New list endpoints
 

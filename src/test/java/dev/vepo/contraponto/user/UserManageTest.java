@@ -26,7 +26,7 @@ class UserManageTest {
            .fillEmail("newmember@example.com")
            .fillPassword("memberPass123")
            .submit()
-           .assertUrl("/users")
+           .assertUrl("/administration/users")
            .assertUserListed("New Member");
     }
 
@@ -44,7 +44,7 @@ class UserManageTest {
            .clickEdit("Deactivate Me")
            .setActive(false)
            .submit()
-           .assertUrl("/users");
+           .assertUrl("/administration/users");
 
         app.clearAuth()
            .loginModal()
@@ -68,7 +68,7 @@ class UserManageTest {
            .clickEdit("Reset Me")
            .fillNewPassword("newPass45678")
            .submit()
-           .assertUrl("/users");
+           .assertUrl("/administration/users");
     }
 
     @Test
@@ -85,7 +85,7 @@ class UserManageTest {
            .clickEdit("Email User")
            .fillEmail("updated@example.com")
            .submit()
-           .assertUrl("/users")
+           .assertUrl("/administration/users")
            .assertUserListed("Email User");
     }
 

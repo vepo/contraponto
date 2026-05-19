@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.auth.AccountEmailService;
 import dev.vepo.contraponto.auth.PasswordService;
-import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.NavigationHub;
+import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
@@ -35,34 +35,28 @@ public class UserSaveEndpoint {
     private final UserAccess userAccess;
     private final UserService userService;
     private final PasswordService passwordService;
-    private final CustomPageRepository customPageRepository;
-    private final UserManageEndpoint userManageEndpoint;
+    private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
     private final LoggedUserProvider loggedUserProvider;
     private final AccountEmailService accountEmailService;
-    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public UserSaveEndpoint(UserRepository userRepository,
                             UserAccess userAccess,
                             UserService userService,
                             PasswordService passwordService,
-                            CustomPageRepository customPageRepository,
-                            UserManageEndpoint userManageEndpoint,
+                            NavigationHubService navigationHubService,
                             LoggedUser loggedUser,
                             LoggedUserProvider loggedUserProvider,
-                            AccountEmailService accountEmailService,
-                            BreadcrumbService breadcrumbService) {
+                            AccountEmailService accountEmailService) {
         this.userRepository = userRepository;
         this.userAccess = userAccess;
         this.userService = userService;
         this.passwordService = passwordService;
-        this.customPageRepository = customPageRepository;
-        this.userManageEndpoint = userManageEndpoint;
+        this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
         this.accountEmailService = accountEmailService;
-        this.breadcrumbService = breadcrumbService;
     }
 
     private boolean applyPasswordChange(User user, UserManageForm form) {
@@ -100,11 +94,8 @@ public class UserSaveEndpoint {
                     .message("User created successfully.")
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url("/users")
-                    .page(UserManageEndpoint.Templates.list(userManageEndpoint.listPage(1),
-                                                            customPageRepository.loadLinks(),
-                                                            loggedUser,
-                                                            breadcrumbService.administrationUsers()))
+                    .url("/administration/users")
+                    .page(navigationHubService.shell(NavigationHub.ADMINISTRATION, "users", 1))
                     .build();
     }
 
@@ -187,11 +178,8 @@ public class UserSaveEndpoint {
                     .message("User saved successfully.")
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url("/users")
-                    .page(UserManageEndpoint.Templates.list(userManageEndpoint.listPage(1),
-                                                            customPageRepository.loadLinks(),
-                                                            loggedUser,
-                                                            breadcrumbService.administrationUsers()))
+                    .url("/administration/users")
+                    .page(navigationHubService.shell(NavigationHub.ADMINISTRATION, "users", 1))
                     .build();
     }
 

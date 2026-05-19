@@ -43,7 +43,7 @@ class CustomPageManageTest {
            .fillSection("Info")
            .fillContent("<p>Hello world</p>")
            .submit()
-           .assertUrl("/pages")
+           .assertUrl("/manage/pages")
            .assertToastSuccess("Page saved successfully.")
            .assertPageCount(1)
            .assertPageListed("About Me", "/" + USER_USERNAME + "/page/about")
@@ -66,7 +66,7 @@ class CustomPageManageTest {
            .customPages()
            .assertPageCount(1)
            .clickDelete("Delete Me")
-           .assertUrl("/pages")
+           .assertUrl("/manage/pages")
            .assertToastSuccess("Page deleted.")
            .assertPageCount(0);
     }
@@ -90,7 +90,7 @@ class CustomPageManageTest {
            .fillSection("Help")
            .fillContent("<p>updated</p>")
            .submit()
-           .assertUrl("/pages")
+           .assertUrl("/manage/pages")
            .assertToastSuccess("Page saved successfully.")
            .assertPageListed("Contact Us", "/" + USER_USERNAME + "/page/contact");
     }
@@ -106,7 +106,7 @@ class CustomPageManageTest {
            .fillSection("Legal")
            .fillContent("<p>Terms of service</p>")
            .submit()
-           .assertUrl("/pages")
+           .assertUrl("/manage/pages")
            .assertToastSuccess("Page saved successfully.")
            .assertPageListed("Terms", "/page/terms")
            .openPublicPage("/page/terms")

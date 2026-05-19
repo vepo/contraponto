@@ -37,7 +37,7 @@ class DashboardAnalyticsTest {
         var sessionId = Given.inject(LoggedUserProvider.class).login(testUser).getSessionId();
 
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .get("/dashboard/components/analytics?blogId=" + blogId + "&compare=true")
+               .get("/manage/dashboard/components/analytics?blogId=" + blogId + "&compare=true")
                .then()
                .statusCode(200)
                .body(containsString("dashboard-chart__legend"));
@@ -194,7 +194,7 @@ class DashboardAnalyticsTest {
         io.restassured.RestAssured.basePath = "";
 
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .get("/dashboard/components/analytics?blogId=" + otherBlogId)
+               .get("/manage/dashboard/components/analytics?blogId=" + otherBlogId)
                .then()
                .statusCode(404);
     }

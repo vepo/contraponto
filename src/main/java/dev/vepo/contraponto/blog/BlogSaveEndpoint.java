@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.git.BlogGitIntegrationService;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.NavigationHub;
+import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.GitRemoteUrlValidator;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -65,11 +66,9 @@ public class BlogSaveEndpoint {
     private final CustomPageRepository customPageRepository;
     private final BlogGitIntegrationService blogGitIntegrationService;
     private final GitRemoteUrlValidator gitRemoteUrlValidator;
-    private final BlogManageEndpoint blogManageEndpoint;
     private final BlogBannerService blogBannerService;
-
+    private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
-    private final BreadcrumbService breadcrumbService;
 
     @Inject
     public BlogSaveEndpoint(BlogRepository blogRepository,
@@ -78,20 +77,18 @@ public class BlogSaveEndpoint {
                             CustomPageRepository customPageRepository,
                             BlogGitIntegrationService blogGitIntegrationService,
                             GitRemoteUrlValidator gitRemoteUrlValidator,
-                            BlogManageEndpoint blogManageEndpoint,
                             BlogBannerService blogBannerService,
-                            LoggedUser loggedUser,
-                            BreadcrumbService breadcrumbService) {
+                            NavigationHubService navigationHubService,
+                            LoggedUser loggedUser) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
         this.customPageRepository = customPageRepository;
         this.blogGitIntegrationService = blogGitIntegrationService;
         this.gitRemoteUrlValidator = gitRemoteUrlValidator;
-        this.blogManageEndpoint = blogManageEndpoint;
         this.blogBannerService = blogBannerService;
+        this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
-        this.breadcrumbService = breadcrumbService;
     }
 
     private Optional<String> applyGitIntegrationFields(Blog blog, BlogForm form) {
@@ -228,20 +225,17 @@ public class BlogSaveEndpoint {
         return createBlog(form);
     }
 
-    private Response successList(String hub) {
-        var hubContext = resolveSuccessHub(hub);
+    private Response successList(String hubParam) {
+        var hubContext = resolveSuccessHub(hubParam);
         boolean platform = hubContext == BlogHubContext.MANAGE;
+        var navigationHub = platform ? NavigationHub.MANAGE : NavigationHub.WRITING;
+        var hubPath = platform ? "/manage/blogs" : "/writing/blogs";
         return Toast.ok()
                     .message("Blog saved successfully.")
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url(platform ? "/manage/blogs" : "/writing/blogs")
-                    .page(BlogManageEndpoint.Templates.list(blogManageEndpoint.listPage(1, platform),
-                                                            hubContext,
-                                                            customPageRepository.loadLinks(),
-                                                            loggedUser,
-                                                            platform ? breadcrumbService.manageBlogs()
-                                                                     : breadcrumbService.writingBlogs()))
+                    .url(hubPath)
+                    .page(navigationHubService.shell(navigationHub, "blogs", 1))
                     .build();
     }
 

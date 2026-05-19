@@ -30,10 +30,10 @@ class TagManageEndpointTest {
         var sessionId = Given.inject(LoggedUserProvider.class).login(editor).getSessionId();
 
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .get("/tags/manage")
+               .get("/editor/tags")
                .then()
                .statusCode(200)
-               .body(containsString("Manage Tags"))
+               .body(containsString("Tags"))
                .body(containsString("news"));
 
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
@@ -48,7 +48,7 @@ class TagManageEndpointTest {
         var sessionId = Given.inject(LoggedUserProvider.class).login(reader).getSessionId();
 
         given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
-               .get("/tags/manage")
+               .get("/editor/tags")
                .then()
                .statusCode(403);
     }

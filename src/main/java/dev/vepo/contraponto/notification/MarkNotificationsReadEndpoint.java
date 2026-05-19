@@ -32,6 +32,6 @@ public class MarkNotificationsReadEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public Response markAllRead() {
         notificationRepository.markAllRead(loggedUser.getId());
-        return Response.seeOther(URI.create("/notifications")).build();
+        return Response.seeOther(URI.create("/account/notifications")).build();
     }
 }

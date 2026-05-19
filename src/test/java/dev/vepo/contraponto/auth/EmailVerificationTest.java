@@ -33,7 +33,7 @@ class EmailVerificationTest {
                 .formParam("email", "verify-new@example.com")
                 .formParam("currentPassword", "verifyPass12")
                 .when()
-                .post("/forms/profile")
+                .post("/forms/account/security")
                 .then()
                 .statusCode(200)
                 .body(org.hamcrest.Matchers.containsString("Check your new email to confirm the address change."));
@@ -56,7 +56,7 @@ class EmailVerificationTest {
 
         TestHttp.session(user)
                 .when()
-                .get("/profile?verified=true")
+                .get("/account/security?verified=true")
                 .then()
                 .statusCode(200)
                 .body(org.hamcrest.Matchers.containsString("Email address updated."));
