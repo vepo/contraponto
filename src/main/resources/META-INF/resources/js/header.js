@@ -67,6 +67,17 @@ class HeaderManager {
         this.bindUserMenuToggle?.();
     }
 
+    loadNotificationOverlay(overlay) {
+        if (!overlay || typeof htmx === 'undefined') {
+            return;
+        }
+        overlay.dataset.loading = 'true';
+        htmx.ajax('GET', '/components/notifications/overlay', {
+            target: '#notificationOverlay',
+            swap: 'innerHTML',
+        });
+    }
+
     setupNotificationMenu() {
         this.bindNotificationMenuToggle = () => {
             const bellBtn = document.getElementById('notificationBellBtn');
@@ -82,12 +93,9 @@ class HeaderManager {
                 const opening = !overlay.classList.contains('notification-menu__dropdown--open');
                 overlay.classList.toggle('notification-menu__dropdown--open');
                 bellBtn.setAttribute('aria-expanded', opening ? 'true' : 'false');
-                if (opening && !overlay.dataset.loaded) {
+                if (opening && !overlay.dataset.loaded && !overlay.dataset.loading) {
                     overlay.dataset.loaded = 'true';
-                    htmx.ajax('GET', '/components/notifications/overlay', {
-                        target: '#notificationOverlay',
-                        swap: 'innerHTML',
-                    });
+                    this.loadNotificationOverlay(overlay);
                 }
             });
 
@@ -144,25 +152,31 @@ class HeaderManager {
     rebindNotificationMenu() {
         const bellBtn = document.getElementById('notificationBellBtn');
         const overlay = document.getElementById('notificationOverlay');
+        const wasOpen = overlay?.classList.contains('notification-menu__dropdown--open');
         if (bellBtn) {
             delete bellBtn.dataset.notificationBound;
         }
         if (overlay) {
             delete overlay.dataset.loaded;
-            overlay.innerHTML = '';
+            delete overlay.dataset.loading;
             overlay.classList.remove('notification-menu__dropdown--open');
         }
         this.bindNotificationMenuToggle?.();
+        if (wasOpen && overlay) {
+            overlay.classList.add('notification-menu__dropdown--open');
+            if (bellBtn) {
+                bellBtn.setAttribute('aria-expanded', 'true');
+            }
+            overlay.dataset.loaded = 'true';
+            this.loadNotificationOverlay(overlay);
+        }
     }
 
     isNotificationBadgeSwap(target) {
         if (!target || target.nodeType !== Node.ELEMENT_NODE) {
             return false;
         }
-        if (target.id === 'notification-badge-container') {
-            return true;
-        }
-        return target.closest?.('#notification-badge-container') != null;
+        return target.id === 'notification-badge-container';
     }
 
     isMenuContainerSwap(target) {
@@ -185,10 +199,15 @@ class HeaderManager {
             }
         };
 
-        document.body.addEventListener('htmx:afterSwap', onPossibleMenuSwap);
+        document.body.addEventListener('htmx:afterSwap', (evt) => {
+            onPossibleMenuSwap(evt);
+            const target = evt.detail?.target;
+            if (target?.id === 'notificationOverlay') {
+                delete target.dataset.loading;
+            }
+        });
         document.body.addEventListener('htmx:oobAfterSwap', onPossibleMenuSwap);
 
-        // Auth forms fire loggedIn on body after menu OOB swap (see HtmxTriggers.LOGGED_IN_ON_BODY)
         document.body.addEventListener('loggedIn', () => {
             this.rebindUserMenu();
             this.rebindNotificationMenu();
@@ -197,14 +216,12 @@ class HeaderManager {
         document.body.addEventListener('notificationsChanged', () => {
             const overlay = document.getElementById('notificationOverlay');
             if (overlay?.classList.contains('notification-menu__dropdown--open')) {
-                htmx.ajax('GET', '/components/notifications/overlay', {
-                    target: '#notificationOverlay',
-                    swap: 'innerHTML',
-                });
+                delete overlay.dataset.loaded;
+                this.loadNotificationOverlay(overlay);
+                overlay.dataset.loaded = 'true';
             }
         });
 
-        // Fallback if swap events were missed
         document.body.addEventListener('htmx:afterSettle', () => {
             const userMenuBtn = document.getElementById('userMenuBtn');
             if (userMenuBtn && !userMenuBtn.dataset.menuBound) {

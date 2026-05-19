@@ -1652,3 +1652,14 @@
   margin-bottom: 0.35rem;
 }
 
+.image-control-hub__blog-select {
+  margin-bottom: var(--spacing-md);
+  max-width: 20rem;
+}
+
+.image-control-hub__blog-name {
+  margin: 0 0 var(--spacing-md);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #666);
+}
+

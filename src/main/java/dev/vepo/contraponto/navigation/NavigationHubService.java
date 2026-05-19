@@ -66,7 +66,7 @@ public class NavigationHubService {
     }
 
     public TemplateInstance shell(NavigationHub hub, String sectionSlug, int page) {
-        return shell(hub, sectionSlug, page, false, null);
+        return shell(hub, sectionSlug, page, false, null, null);
     }
 
     public TemplateInstance shell(NavigationHub hub,
@@ -74,6 +74,15 @@ public class NavigationHubService {
                                   int page,
                                   boolean emailVerified,
                                   String profileError) {
+        return shell(hub, sectionSlug, page, emailVerified, profileError, null);
+    }
+
+    public TemplateInstance shell(NavigationHub hub,
+                                  String sectionSlug,
+                                  int page,
+                                  boolean emailVerified,
+                                  String profileError,
+                                  Long blogId) {
         var section = registry.requireSection(hub, sectionSlug, loggedUser);
         var meta = meta(hub);
         var navGroups = registry.groups(hub, loggedUser);
@@ -84,7 +93,7 @@ public class NavigationHubService {
                                    navGroups,
                                    registry.isSingleSectionHub(hub, loggedUser),
                                    sectionSlug,
-                                   new RawString(panelService.render(hub, sectionSlug, page, emailVerified, profileError)
+                                   new RawString(panelService.render(hub, sectionSlug, page, emailVerified, profileError, blogId)
                                                              .render()),
                                    customPageRepository.loadLinks(),
                                    loggedUser);
@@ -92,7 +101,7 @@ public class NavigationHubService {
 
     public HubMeta meta(NavigationHub hub) {
         return switch (hub) {
-            case WRITING -> new HubMeta("Writing", "Writing", "Library, your blogs, and author appearance.");
+            case WRITING -> new HubMeta("Writing", "Writing", "Library, images, your blogs, and author appearance.");
             case MANAGE -> new HubMeta("Manage", "Manage", "Dashboard, custom pages, comments, and platform blogs.");
             case ACCOUNT -> new HubMeta("Account", "Account", "Notifications, subscriptions, and account security.");
             case REVIEW -> new HubMeta("Review", "Review", "Editorial tools for featured posts and tags.");

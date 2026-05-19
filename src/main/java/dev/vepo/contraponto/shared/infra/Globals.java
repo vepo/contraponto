@@ -3,6 +3,7 @@ package dev.vepo.contraponto.shared.infra;
 import java.time.LocalDateTime;
 
 import dev.vepo.contraponto.notification.NotificationHtmxConfig;
+import dev.vepo.contraponto.rss.RssFeedPaths;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.security.CurrentCsrfToken;
 import io.quarkus.qute.TemplateGlobal;
@@ -42,6 +43,11 @@ public class Globals {
             return new LoggedUser();
         }
         return loggedUser.get();
+    }
+
+    @TemplateGlobal(name = "siteRssFeedUrl")
+    public static String siteRssFeedUrl() {
+        return RssFeedPaths.siteFeed();
     }
 
     private Globals() {

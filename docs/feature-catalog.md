@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-19 · home load-more at `/components/home/grid`
+**Last verified:** 2026-05-19 · RSS links, Writing Images hub, notification overlay
 
 ---
 
@@ -25,7 +25,7 @@ Paths below list clicks in order. **Steps** = number of steps in that path from 
 
 ### Out of scope here
 
-RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flows (`/account/verify-email`, password-reset token links). See [ARCHITECTURE.md](../ARCHITECTURE.md).
+Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, password-reset token links). RSS **XML** endpoints are documented in [ARCHITECTURE.md](../ARCHITECTURE.md); this catalog lists **RSS** link buttons in the UI.
 
 ---
 
@@ -63,6 +63,10 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 | Quick search → open result | anyone | post/blog URL | 2 | Search icon → click a result. |
 | Full search page | anyone | `GET /search` | — | **No primary UI link** in header/menu (UI-only catalog omits direct-URL access). |
 | Load more (blog/tag lists) | anyone | HTMX grid fragment | +1 | On listing page → **Load more**. |
+| Site RSS feed link | anyone | `GET /feed` | 1 | Home → **RSS** above grid **or** footer **RSS**. |
+| Blog RSS feed link | anyone | `GET /{username}/feed/main-blog` or `…/{blogSlug}/feed` | 2–3 | On blog home → **RSS** in header actions. |
+| Tag RSS feed link | anyone | `GET /tags/{slug}/feed` | 3 | On tag page → **RSS** in header actions. |
+| Serie RSS feed link | anyone | `…/serie/{slug}/feed` | 3–4 | On serie page → **RSS** in header actions. |
 
 ---
 
@@ -90,6 +94,7 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 | Delete draft | `USER` | HTMX delete on library | 2 | **Writing** hub → **Delete** on draft row. |
 | Save draft | `USER` | `POST /forms/write/draft` | — | On `/write` → header **Salvar Rascunho** (no extra navigation). |
 | Publish post | `USER` | `POST /forms/write/publish` | — | On `/write` → header **Publicar**. |
+| Image library (Writing hub) | `USER` | `GET /writing/images` | 2 | Open user menu → **Writing** → **Images** in left nav. |
 
 ---
 
@@ -105,7 +110,7 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 | New blog | `USER` | `GET /blogs/new` | 3 | **Writing** → **Blogs** → **New Blog**. |
 | Edit blog (core) | `USER` | `GET /blogs/{id}/edit?hub=writing` | 4 | **Writing** → **Blogs** → **Edit** on row. |
 | Blog settings (extended) | `USER` | `GET /blogs/{id}/settings` | 4 | **Writing** → **Blogs** → **Settings** on row. |
-| Blog image library | `USER` | `GET /blogs/{blogId}/images` | 5 | **Blogs** → **Edit** → **Images**. |
+| Blog image library (deep link) | `USER` | `GET /blogs/{blogId}/images` | 2 | **Writing** → **Images** (or direct URL / bookmark). |
 | Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 5 | **Blogs** → **Edit** → **View sync history**. |
 | Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 6 | Sync history → run link. |
 | Custom pages list | `USER` | `GET /manage/pages` | 2 | Open user menu → **Manage** → **Custom Pages** in left nav. |
@@ -115,7 +120,8 @@ RSS feeds (`/feed`, `…/feed`), image JSON API (`/api/images`), email-only flow
 | Account hub (notifications) | `USER` | `GET /account` | 2 | Open user menu → **Account** (notifications panel default). |
 | Account security | `USER` | `GET /account/security` | 2 | Open user menu → **Account** → **Security** in left nav. |
 | Author appearance | `USER` | `GET /writing/appearance` | 2 | Open user menu → **Writing** → **Appearance** in left nav. |
-| Notifications inbox | `USER` | `GET /account/notifications` | 1 | Header bell. |
+| Notifications overlay | `USER` | `GET /components/notifications/overlay` | 1 | Header bell → dropdown preview (stays on current page). |
+| Notifications inbox | `USER` | `GET /account/notifications` | 2 | Header bell → **View all notifications** **or** user menu → **Account**. |
 | Notifications (menu path) | `USER` | `GET /account` | 2 | Open user menu → **Account**. |
 | Subscriptions | `USER` | `GET /account/subscriptions` | 2 | Open user menu → **Account** → **Subscriptions** in left nav. |
 

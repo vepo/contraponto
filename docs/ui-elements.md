@@ -169,6 +169,10 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `hub-layout`, `hub-layout--single`, `hub-nav__sticky`, `hub-nav`, `hub-nav__link`, `hub-nav__link--active`, `hub-panel` | `components/hub-shell.html`, `manage.css` | Sticky left nav + section panel |
 | `hub-panel__header`, `hub-panel__title`, `hub-panel__subtitle` | `components/hub-panel-header.html`, hub panel templates, `manage.css` | Panel section title + compact CTA |
 | `page-top`, `page-top__actions` | `components/page-top.html`, `PostEndpoint/post.html`, `main.css` | Post page actions row (breadcrumb above, same as manage) |
+| `rss-feed-link`, `rss-feed-link__icon` | `components/rss-feed-link.html`, `main.css` | RSS syndication link (opens feed in new tab) |
+| `page-meta` | `HomeEndpoint/home.html`, `main.css` | Right-aligned meta row (e.g. site RSS on home) |
+| `user-blog-header__actions` | `BlogEndpoint/home.html`, `main.css` | Blog header row: audience controls + RSS |
+| `image-control-hub__blog-select`, `image-control-hub__blog-name` | `ImageControlEndpoint/panel.html`, `manage.css` | Writing hub Images blog switcher |
 | `nav-hub-page`, `nav-hub__*` | (deprecated) | Replaced by hub shell; remove when card templates are deleted |
 
 ---

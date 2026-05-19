@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
+    {#include components/head rssAlternateUrl=serie.rssFeedUrl rssAlternateTitle=serie.title}
     {serie.title} — serie — contraponto
     {/include}
     <body hx-history-elt>
@@ -12,6 +12,9 @@
             <header class="serie-page-header container">
                 <p class="serie-page__label">Serie</p>
                 <h1 class="serie-page__title">{serie.title}</h1>
+                <p class="serie-page__actions">
+                    {#include components/rss-feed-link feedUrl=serie.rssFeedUrl /}
+                </p>
             </header>
 
             <div class="container">

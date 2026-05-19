@@ -1,0 +1,28 @@
+{#include components/hub-panel-header title='Images' subtitle='Uploaded images for each blog. Switch blog to manage alt text and see where images are used.' /}
+
+{#if ownedBlogs.isEmpty()}
+<div class="pages-manage__empty">
+    <p>No blogs found.</p>
+</div>
+{#else}
+<div class="image-control-hub__blog-select">
+    <label class="write-form__label" for="imageControlBlogSelect">Blog</label>
+    <select id="imageControlBlogSelect"
+            name="blogId"
+            class="dashboard-analytics__select"
+            data-hx-get="/writing/images"
+            hx-select="main"
+            hx-target="main"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+            hx-trigger="change">
+        {#for ownedBlog in ownedBlogs}
+        <option value="{ownedBlog.id}" {#if ownedBlog.id == blog.id}selected{/if}>{ownedBlog.name}</option>
+        {/for}
+    </select>
+</div>
+
+<p class="image-control-hub__blog-name">{blog.name}</p>
+
+{#include ImageControlEndpoint/image-list blog=blog images=images hubMode=true basePath=basePath extraQuery=extraQuery fragmentTarget='' /}
+{/if}

@@ -169,6 +169,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Search** | Full-text discovery via modal or `/search` page. | `SearchEndpoint` |
 | **Tag page** | Public listing of posts with a given tag. | `TagPageEndpoint` |
 | **RSS feed** | Syndication for site, blog, serie, or tag. | `rss` package |
+| **RSS feed link** | Public control that opens the matching feed URL in a new tab. | `components/rss-feed-link.html`, `RssFeedPaths` |
 | **View count** | Read metric per post load (one row per page GET per session). | `View` |
 | **Estimated read time** | Word-count hint on post cards (e.g. "5 min read"); not tracked engagement. | `TemplateExtensions.readTime` |
 | **Reading time** | Actual seconds a reader spends on a published post while the browser tab is **visible**; extended by 5-second client heartbeats. | `ReadingSession` |
@@ -180,7 +181,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Write** | Editor for creating or editing a post (`/write`, `/write/draft/{id}`). | `WriteEndpoint` |
-| **Image control** | Per-blog list of uploaded images, usages, and alt text (`/blogs/{id}/images`). | `ImageControlEndpoint` |
+| **Image control** | Per-blog list of uploaded images, usages, and alt text. Reachable from Writing hub **Images** (`/writing/images`) with a blog switcher, or directly at `/blogs/{id}/images`. | `ImageControlEndpoint`, Writing hub `images` section |
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
 | **Dashboard** | Author overview per selected blog: analytics (daily views, daily reading time, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily reading time, daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
@@ -190,7 +191,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Platform blog management** | Editors list all blogs and deactivate others’ secondary blogs. | `BlogManageEndpoint`, Manage hub `blogs` section (`EDITOR`+) |
 | **User management** | Administrators create and edit users, roles, and passwords. | `UserManageEndpoint`, `UserSaveEndpoint` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
-| **Navigation hub** | Logged-in shell with sticky left sidebar sections and distinct URLs per feature (Writing → Library, Blogs, Appearance; Manage; Account; Review; Administration). Writing hub does not duplicate the header Write action. Manage **Blogs** nav is visible only to `EDITOR`+. Menu opens the hub default section. | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` and `/{hub}/{section}` |
+| **Navigation hub** | Logged-in shell with sticky left sidebar sections and distinct URLs per feature (Writing → Library, Images, Blogs, Appearance; Manage; Account; Review; Administration). Writing hub does not duplicate the header Write action. Manage **Blogs** nav is visible only to `EDITOR`+. Menu opens the hub default section. | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` and `/{hub}/{section}` |
 | **Breadcrumb trail** | Ordered navigation labels from Home or a hub to the current page; last item is not linked. | `BreadcrumbService`, `components/breadcrumb.html` |
 
 ### UI labels (user-visible copy)
@@ -241,7 +242,8 @@ Use these exact strings in templates, toasts, and tests unless this table is upd
 | Library tab | Drafts | Library |
 | Library tab | Published | Library |
 | Notifications empty | No notifications yet. Follow blogs to see new posts here. | Notifications page |
-| Notifications overlay empty | No unread notifications. | Notification overlay |
+| Notifications overlay empty | No notification | Notification overlay |
+| RSS feed link | RSS | Blog, tag, serie, home, footer |
 | Dismiss notification (button) | Dismiss | Notification overlay row |
 | Close notification overlay (button) | Close (×, aria-label) | Notification overlay header |
 | View all notifications (link) | View all notifications | Notification overlay footer |

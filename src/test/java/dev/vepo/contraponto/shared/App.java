@@ -783,7 +783,8 @@ public class App {
         private ImageControlPage() {}
 
         public ImageControlPage assertImageControlTitle() {
-            var title = wait.until(visibilityOfElementLocated(cssSelector(".pages-manage__title")));
+            var title = wait.until(visibilityOfElementLocated(
+                                                              cssSelector(".pages-manage__title, .hub-panel__title")));
             assertThat(title.getText()).isEqualTo("Images");
             return this;
         }
@@ -1894,6 +1895,24 @@ public class App {
         return this;
     }
 
+    public App assertImageControlTitle() {
+        var title = wait.until(visibilityOfElementLocated(
+                                                          cssSelector(".pages-manage__title, .hub-panel__title")));
+        assertThat(title.getText()).isEqualTo("Images");
+        return this;
+    }
+
+    public App assertImageListed(String filename) {
+        wait.until(d -> d.findElements(cssSelector(".pages-manage__row-title")).stream()
+                         .anyMatch(el -> el.getText().contains(filename)));
+        return this;
+    }
+
+    public App assertImageUsage(String postTitle) {
+        wait.until(d -> d.findElement(cssSelector(".image-control__usage-list")).getText().contains(postTitle));
+        return this;
+    }
+
     public App assertLinks(PagePlacement placement, String... links) {
         _assertLinks(placement, links);
         return this;
@@ -1931,6 +1950,18 @@ public class App {
     public App assertNotPostMessage() {
         var emptyMessage = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__empty")));
         assertThat(emptyMessage.getText()).contains("No posts published yet");
+        return this;
+    }
+
+    public App assertNotificationOverlayOpen() {
+        var overlay = wait.until(visibilityOfElementLocated(By.id("notificationOverlay")));
+        assertThat(overlay.getAttribute("class")).contains("notification-menu__dropdown--open");
+        return this;
+    }
+
+    public App assertNotificationOverlayShows(String text) {
+        assertNotificationOverlayOpen();
+        wait.until(d -> d.findElement(By.id("notificationOverlay")).getText().contains(text));
         return this;
     }
 
@@ -2024,7 +2055,7 @@ public class App {
     }
 
     public App clickNotificationBell() {
-        reliableClick(wait.until(elementToBeClickable(By.id("notification-bell"))));
+        reliableClick(wait.until(elementToBeClickable(By.id("notificationBellBtn"))));
         waitForReady();
         return this;
     }
@@ -2162,6 +2193,12 @@ public class App {
         return new UserManagePage();
     }
 
+    public App openHome() {
+        _goTo("/");
+        waitForReady();
+        return this;
+    }
+
     public App openNotificationsFromMenu() {
         return clickMenuLink("/account");
     }
@@ -2182,6 +2219,15 @@ public class App {
         wait.until(d -> d.findElement(By.id("userDropdown"))
                          .getAttribute("class")
                          .contains("user-menu__dropdown--open"));
+        return this;
+    }
+
+    public App openViewAllNotificationsFromOverlay() {
+        clickNotificationBell();
+        assertNotificationOverlayOpen();
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector("#notificationOverlay a.notification-overlay__view-all"))));
+        waitForReady();
         return this;
     }
 

@@ -22,14 +22,13 @@ class NotificationNavigationTest {
     private User recipient;
 
     @Test
-    void headerBellAfterMenuDoesNotDuplicateMain(App app) {
+    void headerBellOpensOverlayWithoutDuplicatingMain(App app) {
         app.login(recipient)
-           .openNotificationsFromMenu()
-           .assertUrl("/account")
-           .assertSingleMainElement()
            .clickNotificationBell()
-           .assertUrl("/account/notifications")
-           .assertSingleMainElement();
+           .assertNotificationOverlayOpen()
+           .assertNotificationOverlayShows("started following")
+           .assertSingleMainElement()
+           .assertUrl("/");
     }
 
     @BeforeEach
@@ -55,5 +54,13 @@ class NotificationNavigationTest {
                          .withPassword("password123")
                          .persist();
         notificationService.notifyNewFollow(recipient, blog, actor);
+    }
+
+    @Test
+    void viewAllNotificationsLinkNavigatesToInbox(App app) {
+        app.login(recipient)
+           .openViewAllNotificationsFromOverlay()
+           .assertUrl("/account/notifications")
+           .assertSingleMainElement();
     }
 }

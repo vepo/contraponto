@@ -86,7 +86,7 @@ class NotificationEndpointTest {
                           .then()
                           .statusCode(200)
                           .header(HtmxTriggers.HEADER_AFTER_SETTLE, containsString("notificationsChanged"))
-                          .body(containsString("No unread notifications"));
+                          .body(containsString("No notification"));
 
         assertThat(notificationRepository.countUnread(recipient.getId())).isZero();
     }

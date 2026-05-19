@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
+    {#include components/head rssAlternateUrl=siteRssFeedUrl rssAlternateTitle='Contraponto'}
     contraponto
     {/include}
     <body hx-history-elt>
@@ -11,6 +11,9 @@
                 {#include HomeEndpoint/featured post=post /}
             {/if}
 
+            <div class="container page-meta">
+                {#include components/rss-feed-link feedUrl=siteRssFeedUrl /}
+            </div>
             <div class="container">
                 <div class="posts-grid">
                     {#include HomeEndpoint/grid ignoreFirst=true /}

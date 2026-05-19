@@ -42,7 +42,10 @@ class ImageControlTest {
         postImageDependencyService.syncPostDependencies(post);
 
         app.login(author);
-        app.goToBlogImages(blog.getId())
+        app.openUserMenu()
+           .clickMenuLink("/writing")
+           .clickHubSection("/writing", "images")
+           .assertBreadcrumb("Writing", "Images")
            .assertImageControlTitle()
            .assertImageListed(image.getFilename())
            .assertImageUsage("Post with image");

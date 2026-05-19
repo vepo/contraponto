@@ -97,6 +97,16 @@ class NavigationHubTest {
     }
 
     @Test
+    void writingHubOpensImagesSection(App app) {
+        app.login(author)
+           .openUserMenu()
+           .clickMenuLink("/writing")
+           .clickHubSection("/writing", "images")
+           .assertUrl("/writing/images")
+           .assertBreadcrumb("Writing", "Images");
+    }
+
+    @Test
     void writingHubOpensLibrary(App app) {
         app.login(author)
            .openUserMenu()

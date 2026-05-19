@@ -12,6 +12,7 @@ import dev.vepo.contraponto.custompage.CustomPageManageEndpoint;
 import dev.vepo.contraponto.dashboard.DashboardAnalyticsService;
 import dev.vepo.contraponto.dashboard.DashboardEndpoint;
 import dev.vepo.contraponto.dashboard.DashboardPage;
+import dev.vepo.contraponto.image.ImageControlEndpoint;
 import dev.vepo.contraponto.library.LibraryEndpoint;
 import dev.vepo.contraponto.notification.NotificationEndpoint;
 import dev.vepo.contraponto.notification.SubscriptionEndpoint;
@@ -40,6 +41,7 @@ public class NavigationHubPanelService {
     private final CustomPageManageEndpoint customPageManageEndpoint;
     private final CommentManageEndpoint commentManageEndpoint;
     private final LibraryEndpoint libraryEndpoint;
+    private final ImageControlEndpoint imageControlEndpoint;
     private final NotificationEndpoint notificationEndpoint;
     private final SubscriptionEndpoint subscriptionEndpoint;
     private final AccountSecurityEndpoint accountSecurityEndpoint;
@@ -59,6 +61,7 @@ public class NavigationHubPanelService {
                                      CustomPageManageEndpoint customPageManageEndpoint,
                                      CommentManageEndpoint commentManageEndpoint,
                                      LibraryEndpoint libraryEndpoint,
+                                     ImageControlEndpoint imageControlEndpoint,
                                      NotificationEndpoint notificationEndpoint,
                                      SubscriptionEndpoint subscriptionEndpoint,
                                      AccountSecurityEndpoint accountSecurityEndpoint,
@@ -76,6 +79,7 @@ public class NavigationHubPanelService {
         this.customPageManageEndpoint = customPageManageEndpoint;
         this.commentManageEndpoint = commentManageEndpoint;
         this.libraryEndpoint = libraryEndpoint;
+        this.imageControlEndpoint = imageControlEndpoint;
         this.notificationEndpoint = notificationEndpoint;
         this.subscriptionEndpoint = subscriptionEndpoint;
         this.accountSecurityEndpoint = accountSecurityEndpoint;
@@ -85,7 +89,7 @@ public class NavigationHubPanelService {
     }
 
     public TemplateInstance render(NavigationHub hub, String sectionSlug, int page) {
-        return render(hub, sectionSlug, page, false, null);
+        return render(hub, sectionSlug, page, false, null, null);
     }
 
     public TemplateInstance render(NavigationHub hub,
@@ -93,9 +97,18 @@ public class NavigationHubPanelService {
                                    int page,
                                    boolean emailVerified,
                                    String profileError) {
+        return render(hub, sectionSlug, page, emailVerified, profileError, null);
+    }
+
+    public TemplateInstance render(NavigationHub hub,
+                                   String sectionSlug,
+                                   int page,
+                                   boolean emailVerified,
+                                   String profileError,
+                                   Long blogId) {
         registry.requireSection(hub, sectionSlug, loggedUser);
         return switch (hub) {
-            case WRITING -> renderWriting(sectionSlug, page);
+            case WRITING -> renderWriting(sectionSlug, page, blogId);
             case MANAGE -> renderManage(sectionSlug, page);
             case ACCOUNT -> renderAccount(sectionSlug, page, emailVerified, profileError);
             case REVIEW -> renderReview(sectionSlug, page);
@@ -103,10 +116,11 @@ public class NavigationHubPanelService {
         };
     }
 
-    private TemplateInstance renderWriting(String sectionSlug, int page) {
+    private TemplateInstance renderWriting(String sectionSlug, int page, Long blogId) {
         String basePath = registry.sectionPath(NavigationHub.WRITING, sectionSlug);
         return switch (sectionSlug) {
             case "library" -> libraryEndpoint.renderHubPanel();
+            case "images" -> imageControlEndpoint.renderHubPanel(blogId, page);
             case "blogs" -> blogManageEndpoint.renderAuthorHubPanel(page, basePath);
             case "appearance" -> authorAppearanceEndpoint.renderHubPanel();
             default -> throw new NotFoundException("Unknown writing section: " + sectionSlug);

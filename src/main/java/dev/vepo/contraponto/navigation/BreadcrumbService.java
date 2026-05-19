@@ -275,9 +275,8 @@ public class BreadcrumbService {
 
     public BreadcrumbTrail writingBlogImages(Blog blog) {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
-                     link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
-                     link(blog.getName(), "/blogs/" + blog.getId() + "/settings"),
-                     current("Images"));
+                     link("Images", hubRegistry.sectionPath(NavigationHub.WRITING, "images")),
+                     current(blog.getName()));
     }
 
     public BreadcrumbTrail writingBlogNew() {

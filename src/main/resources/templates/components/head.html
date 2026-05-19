@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/style/manage.css"/>
     <link rel="stylesheet" href="/style/write.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    {#if rssAlternateUrl?? && rssAlternateUrl}
+    <link rel="alternate" type="application/rss+xml" href="{rssAlternateUrl}" title="{rssAlternateTitle.or('RSS')}">
+    {/if}
     <script src="/js/third-party/htmx.js"></script>
     <script>
         document.addEventListener('htmx:configRequest', function (evt) {

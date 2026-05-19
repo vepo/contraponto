@@ -27,15 +27,7 @@
                             {/if}
                         </p>
                     </div>
-                    {#if blog.isPresent && hubContext.authorMode()}
-                    <a data-hx-get="/blogs/{blog.get().id}/images"
-                       hx-select="main"
-                       hx-target="main"
-                       hx-swap="outerHTML"
-                       hx-push-url="/blogs/{blog.get().id}/images"
-                       class="btn btn--secondary"
-                       data-nav>Images</a>
-                    {#if coreFormOnly}
+                    {#if blog.isPresent && hubContext.authorMode() && coreFormOnly}
                     <a data-hx-get="/blogs/{blog.get().id}/settings"
                        hx-select="main"
                        hx-target="main"
@@ -43,7 +35,6 @@
                        hx-push-url="/blogs/{blog.get().id}/settings"
                        class="btn btn--secondary"
                        data-nav>Settings</a>
-                    {/if}
                     {/if}
                     <a data-hx-get="{#if hubContext.authorMode()}/writing/blogs{#else}/manage/blogs{/if}"
                        hx-select="main"

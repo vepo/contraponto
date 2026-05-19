@@ -5,6 +5,8 @@ import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.NavigationHub;
+import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -34,6 +36,7 @@ public class ImageAltSaveEndpoint {
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
+    private final NavigationHubService navigationHubService;
 
     @Inject
     public ImageAltSaveEndpoint(BlogRepository blogRepository,
@@ -41,13 +44,15 @@ public class ImageAltSaveEndpoint {
                                 ImageControlService imageControlService,
                                 CustomPageRepository customPageRepository,
                                 LoggedUser loggedUser,
-                                BreadcrumbService breadcrumbService) {
+                                BreadcrumbService breadcrumbService,
+                                NavigationHubService navigationHubService) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.imageControlService = imageControlService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.navigationHubService = navigationHubService;
     }
 
     @PUT
@@ -57,7 +62,8 @@ public class ImageAltSaveEndpoint {
     public Response saveAlt(@PathParam("blogId") long blogId,
                             @PathParam("uuid") String uuid,
                             @FormParam("altText") String altText,
-                            @FormParam("page") @jakarta.ws.rs.DefaultValue("1") int page) {
+                            @FormParam("page") @jakarta.ws.rs.DefaultValue("1") int page,
+                            @FormParam("hub") String hub) {
         Blog blog = blogRepository.findById(blogId).orElse(null);
         if (blog == null || !blogAccess.canEdit(blog, loggedUser)) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -66,6 +72,14 @@ public class ImageAltSaveEndpoint {
             imageControlService.updateAltText(blog, uuid, altText);
         } catch (IllegalArgumentException _) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if ("writing".equals(hub)) {
+            return Toast.ok()
+                        .message(SUCCESS_MSG)
+                        .type(Toast.Type.SUCCESS)
+                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                        .page(navigationHubService.shell(NavigationHub.WRITING, "images", page, false, null, blogId))
+                        .build();
         }
         var links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
         var images = imageControlService.listForBlog(blog, PageQuery.forGrid(20, page));

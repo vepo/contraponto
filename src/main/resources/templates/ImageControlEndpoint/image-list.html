@@ -1,0 +1,58 @@
+{#if images.isEmpty()}
+<div class="pages-manage__empty">
+    <p>No images uploaded for this blog yet.</p>
+</div>
+{#else}
+<div class="pages-manage__list">
+    {#for row in images.data}
+    <article class="pages-manage__row image-control__row" id="image-row-{row.uuid}">
+        <div class="pages-manage__row-main image-control__row-main">
+            <img src="{row.url}" alt="" class="image-control__thumb" width="80" height="80"/>
+            <div>
+                <h2 class="pages-manage__row-title">{row.filename}</h2>
+                <p class="pages-manage__row-meta">{row.createdAt}</p>
+                {#if hubMode}
+                <form class="image-control__alt-form"
+                      hx-put="/forms/blogs/{blog.id}/images/{row.uuid}/alt?page={images.page}"
+                      hx-target="main"
+                      hx-select="main"
+                      hx-swap="outerHTML"
+                      hx-push-url="/writing/images?blogId={blog.id}&page={images.page}">
+                    <input type="hidden" name="hub" value="writing"/>
+                {#else}
+                <form class="image-control__alt-form"
+                      hx-put="/forms/blogs/{blog.id}/images/{row.uuid}/alt?page={images.page}"
+                      hx-target="#main-content"
+                      hx-swap="outerHTML">
+                {/if}
+                    <label class="write-form__label" for="alt-{row.uuid}">Alt text</label>
+                    <div class="image-control__alt-row">
+                        <input type="text"
+                               id="alt-{row.uuid}"
+                               name="altText"
+                               class="write-form__slug"
+                               value="{row.altText}"
+                               placeholder="Describe this image"/>
+                        <button type="submit" class="btn btn--primary btn--small">Save</button>
+                    </div>
+                </form>
+                {#if !row.usages.isEmpty()}
+                <div class="image-control__usages">
+                    <p class="write-form__label">Used in</p>
+                    <ul class="image-control__usage-list">
+                        {#for usage in row.usages}
+                        <li>
+                            <a href="{usage.url}" data-hx-get="{usage.url}" hx-select="main" hx-target="main" hx-swap="outerHTML" hx-push-url="{usage.url}" data-nav>{usage.title}</a>
+                            <span class="pages-manage__badge">{usage.roleLabel}</span>
+                        </li>
+                        {/for}
+                    </ul>
+                </div>
+                {/if}
+            </div>
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=images basePath=basePath extraQuery=extraQuery fragmentTarget=fragmentTarget /}
+{/if}

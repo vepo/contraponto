@@ -2,9 +2,12 @@ package dev.vepo.contraponto.image;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import java.util.List;
+
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.dashboard.DashboardAnalyticsService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
@@ -40,6 +43,12 @@ public class ImageControlEndpoint {
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb);
 
+        static native TemplateInstance panel(List<Blog> ownedBlogs,
+                                             Blog blog,
+                                             Page<ImageControlRow> images,
+                                             String basePath,
+                                             String extraQuery);
+
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
         }
@@ -51,6 +60,7 @@ public class ImageControlEndpoint {
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
+    private final DashboardAnalyticsService dashboardAnalyticsService;
 
     @Inject
     public ImageControlEndpoint(BlogRepository blogRepository,
@@ -58,13 +68,15 @@ public class ImageControlEndpoint {
                                 ImageControlService imageControlService,
                                 CustomPageRepository customPageRepository,
                                 LoggedUser loggedUser,
-                                BreadcrumbService breadcrumbService) {
+                                BreadcrumbService breadcrumbService,
+                                DashboardAnalyticsService dashboardAnalyticsService) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.imageControlService = imageControlService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.dashboardAnalyticsService = dashboardAnalyticsService;
     }
 
     public Response forbidden() {
@@ -82,5 +94,23 @@ public class ImageControlEndpoint {
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
         Page<ImageControlRow> images = imageControlService.listForBlog(blog, PageQuery.forGrid(20, page));
         return Templates.list(blog, images, links, loggedUser, breadcrumbService.writingBlogImages(blog));
+    }
+
+    public TemplateInstance renderHubPanel(Long blogId, int page) {
+        List<Blog> ownedBlogs = blogRepository.findByOwnerIdForManagement(loggedUser.getId());
+        if (ownedBlogs.isEmpty()) {
+            return Templates.panel(List.of(), null, new Page<>(List.of(), 1, 20, 0), "/writing/images", "");
+        }
+        Long resolvedBlogId = blogId != null ? blogId : dashboardAnalyticsService.resolveDefaultBlogId();
+        Blog blog = ownedBlogs.stream()
+                              .filter(b -> b.getId().equals(resolvedBlogId))
+                              .findFirst()
+                              .orElse(ownedBlogs.getFirst());
+        if (!blogAccess.canEdit(blog, loggedUser)) {
+            throw new NotFoundException();
+        }
+        Page<ImageControlRow> images = imageControlService.listForBlog(blog, PageQuery.forGrid(20, page));
+        String extraQuery = "&blogId=" + blog.getId();
+        return Templates.panel(ownedBlogs, blog, images, "/writing/images", extraQuery);
     }
 }

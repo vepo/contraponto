@@ -58,6 +58,7 @@ public class NavigationHubRegistry {
     private List<HubNavGroup> writingGroups() {
         return List.of(new HubNavGroup("Writing",
                                        List.of(new HubSectionNav("library", "Library"),
+                                               new HubSectionNav("images", "Images"),
                                                new HubSectionNav("blogs", "Blogs"))),
                        new HubNavGroup("Author", List.of(new HubSectionNav("appearance", "Appearance"))));
     }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
+    {#include components/head rssAlternateUrl=mainBlog.rssFeedUrl rssAlternateTitle=(mainBlog.main ? author.name : mainBlog.name)}
     {author.name} - contraponto
     {/include}
     <body hx-history-elt>
@@ -17,7 +17,10 @@
                 {#if mainBlog.description}
                 <div class="user-blog__bio">{mainBlog.renderedDescription.raw}</div>
                 {/if}
-                {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
+                <div class="user-blog-header__actions">
+                    {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
+                    {#include components/rss-feed-link feedUrl=mainBlog.rssFeedUrl /}
+                </div>
             </header>
             {#if !posts.isEmpty}
             {#let post = posts.data.get(0)}

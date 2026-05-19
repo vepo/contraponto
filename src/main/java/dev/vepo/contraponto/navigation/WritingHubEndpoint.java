@@ -34,7 +34,8 @@ public class WritingHubEndpoint {
     @Path("{section}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance section(@PathParam("section") String section,
-                                    @QueryParam("page") @DefaultValue("1") int page) {
-        return hubService.shell(NavigationHub.WRITING, section, page);
+                                    @QueryParam("page") @DefaultValue("1") int page,
+                                    @QueryParam("blogId") Long blogId) {
+        return hubService.shell(NavigationHub.WRITING, section, page, false, null, blogId);
     }
 }

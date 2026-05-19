@@ -22,6 +22,7 @@ import dev.vepo.contraponto.blog.BlogDescriptionRenderer;
 import dev.vepo.contraponto.content.render.PostContentRenderer;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
+import dev.vepo.contraponto.rss.RssFeedPaths;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagPageEndpoint;
 import java.util.List;
@@ -330,6 +331,21 @@ public class TemplateExtensions {
     @TemplateExtension
     public static String url(Tag tag) {
         return TagPageEndpoint.url(tag);
+    }
+
+    @TemplateExtension
+    public static String rssFeedUrl(Blog blog) {
+        return blog == null ? null : RssFeedPaths.blogFeed(blog);
+    }
+
+    @TemplateExtension
+    public static String rssFeedUrl(Serie serie) {
+        return serie == null ? null : RssFeedPaths.serieFeed(serie);
+    }
+
+    @TemplateExtension
+    public static String rssFeedUrl(Tag tag) {
+        return tag == null ? null : RssFeedPaths.tagFeed(tag);
     }
 
     @TemplateExtension

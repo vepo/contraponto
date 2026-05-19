@@ -66,10 +66,10 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 - Each hub link opens a **left-sidebar shell**: breadcrumb, sticky section nav, and the active section panel (no hub-level duplicate title).
 - Default section loads on first open (e.g. Manage → Dashboard, Writing → Library, Review → Featured Posts).
 - Section URLs are bookmarkable (`/writing/library`, `/writing/blogs`, `/writing/appearance`, `/manage/dashboard`, `/manage/pages`, `/account/security`, `/editor/tags`, …).
-- **Writing** hub sidebar lists **Library** only; compose via header **Write** (`/write`).
+- **Writing** hub sidebar: **Library**, **Images**, **Blogs**, **Appearance**; compose via header **Write** (`/write`).
 - Panel list headers use **hub-panel__header** with compact primary actions (`btn--small`).
 - Desktop: section nav stays visible while the panel scrolls (`position: sticky`). Mobile: horizontal section tabs under the site header.
-- Header shortcuts unchanged: **Write** button → `/write`; notifications bell → `/account/notifications`.
+- Header shortcuts unchanged: **Write** button → `/write`; notifications bell → overlay dropdown (full inbox via **View all notifications**).
 - The dropdown closes on escape or when clicking outside.
 
 ### 3.6 Breadcrumbs
@@ -273,7 +273,7 @@ Implementation details (BEM blocks, `main.css` / `manage.css` / `write.css` bund
 - **Overlay**: unread count in header, per-row **Dismiss**, panel **Close** (×), **Mark all read**, and **View all notifications** link to the full inbox.
 - Badge and open overlay refresh on `notificationsChanged` (after dismiss / mark-all-read) and on a configurable poll interval.
 - **Inbox** at `/account/notifications`: full list with read/unread styling; “Mark all read” when unread exist.
-- **Empty state** (inbox): invite users to follow blogs; overlay empty state: “No unread notifications.”
+- **Empty state** (inbox): invite users to follow blogs; overlay empty state: **No notification** (placeholder shown immediately while loading).
 - Pagination: manage style (Previous / Next, 20 per page).
 
 ---
