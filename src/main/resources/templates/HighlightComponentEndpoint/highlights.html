@@ -31,6 +31,32 @@
     </section>
     {/if}
 
+    {#for official in section.officialHighlights}
+    {#if !official.approvedNotes.isEmpty}
+    <section class="official-highlight-notes" aria-labelledby="official-notes-{official.anchorClusterHash}">
+        <h2 class="official-highlight-notes__title" id="official-notes-{official.anchorClusterHash}"
+            data-i18n="highlight.note.publicSectionTitle">Notas dos leitores</h2>
+        <blockquote class="official-highlight-notes__passage">{official.passage}</blockquote>
+        <div class="official-highlight-notes__list">
+            {#for note in official.approvedNotes}
+            {#include HighlightComponentEndpoint/highlightNoteCard note=note /}
+            {/for}
+        </div>
+    </section>
+    {/if}
+    {/for}
+
+    {#if !section.readerNotes.isEmpty}
+    <section class="post-highlight-notes" id="post-highlight-notes">
+        <h2 class="post-highlight-notes__title" data-i18n="highlight.note.myNotesSectionTitle">Minhas notas neste post</h2>
+        <div class="post-highlight-notes__list">
+            {#for note in section.readerNotes}
+            {#include HighlightComponentEndpoint/highlightNoteCard note=note /}
+            {/for}
+        </div>
+    </section>
+    {/if}
+
     <div id="highlights-selection-bar" class="highlights-selection-bar u-hidden" hidden>
         {#if section.authenticated}
         <button type="button" class="btn btn--small btn--primary" data-highlight-action="create" data-i18n="highlight.create">Destacar</button>
@@ -49,7 +75,7 @@
            hx-push-url="/write?respondsTo={section.post.id}"
            class="btn btn--outline btn--small"
            data-i18n="postResponse.create">Responder com post</a>
-        <a data-hx-get="/highlights" hx-select="main" hx-target="main" hx-push-url="/highlights" class="btn btn--outline btn--small">Meus destaques</a>
+        <a data-hx-get="/reading/highlights" hx-select="main" hx-target="main" hx-push-url="/reading/highlights" class="btn btn--outline btn--small" data-i18n="reading.myHighlights">Meus destaques</a>
         {#else}
         <button type="button" class="btn btn--outline btn--small" data-highlight-action="sign-in" data-i18n="postResponse.create">Responder com post</button>
         {/if}

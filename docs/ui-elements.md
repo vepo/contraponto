@@ -152,7 +152,10 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `post-highlights`, `post-highlights__actions` | `HighlightComponentEndpoint/highlights.html` | Lazy-loaded below article; respond / my highlights actions |
 | `highlights-selection-bar` | `HighlightComponentEndpoint/highlights.html` | Fixed popover on text selection (**Highlight**, **Add note**, **Remove highlight**); moved to `document.body` while visible |
 | `post-highlight`, `post-highlight--personal`, `post-highlight--official`, `post-highlight__badge` | Applied by `highlight.js` | Inline marks in `.article-page__content` |
-| `highlight-note-modal`, `highlight-note-modal__*` | `HighlightNoteFormEndpoint/highlightNoteModal.html` | Note dialog loaded into `#modal-container` |
+| `highlights-note-dialog`, `highlights-note-dialog__*` | `HighlightNoteFormEndpoint/highlightNoteDialog.html` | Floating note dialog (text, public flag, OK/Cancel) appended to `document.body` near selection |
+| `highlight-note-card`, `highlight-note-card__*` | `HighlightComponentEndpoint/highlightNoteCard.html` | Note display: body, owner, status, timestamp |
+| `post-highlight-notes`, `post-highlight-notes__*` | `HighlightComponentEndpoint/highlights.html` | Reader's notes on current post |
+| `official-highlight-notes`, `official-highlight-notes__*` | `HighlightComponentEndpoint/highlights.html` | Approved public notes on official highlights |
 | `post-response-banner`, `post-responses-section`, `post-responses-section__*` | `HighlightComponentEndpoint/highlights.html` | Post response link-back and approved responses list |
 | `blog-audience` | `BlogAudienceComponentEndpoint/audienceControls.html` | Follow / subscribe; no top margin inside `article-page__actions` (blog header keeps spacing below title) |
 | `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header bell + unread count |

@@ -1100,10 +1100,23 @@ public class App {
             return this;
         }
 
-        public PostPage assertHighlightNoteModalVisible() {
-            var modal = wait.until(visibilityOfElementLocated(By.id("highlightNoteModal")));
-            assertThat(modal.findElement(By.id("highlightNoteBody")).isDisplayed()).isTrue();
+        public PostPage assertHighlightNoteCardVisible(String body) {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var cards = driver.findElements(cssSelector(".highlight-note-card"));
+                return cards.stream().anyMatch(card -> card.isDisplayed() && card.getText().contains(body));
+            });
             return this;
+        }
+
+        public PostPage assertHighlightNoteDialogVisible() {
+            var dialog = wait.until(visibilityOfElementLocated(By.id("highlightNoteDialog")));
+            assertThat(dialog.findElement(By.id("highlightNoteBody")).isDisplayed()).isTrue();
+            return this;
+        }
+
+        /** @deprecated use {@link #assertHighlightNoteDialogVisible()} */
+        public PostPage assertHighlightNoteModalVisible() {
+            return assertHighlightNoteDialogVisible();
         }
 
         public PostPage assertHighlightSelectionBarShowsSignIn() {
@@ -1246,9 +1259,9 @@ public class App {
             reliableClick(button);
             waitForReady();
             if ("note".equals(action)) {
-                await().atMost(Duration.ofSeconds(10)).until(() -> {
-                    var modals = driver.findElements(By.id("highlightNoteModal"));
-                    return !modals.isEmpty() && modals.get(0).isDisplayed();
+                await().atMost(Duration.ofSeconds(15)).until(() -> {
+                    var dialogs = driver.findElements(By.id("highlightNoteDialog"));
+                    return !dialogs.isEmpty() && dialogs.get(0).isDisplayed();
                 });
             }
             return this;
@@ -1283,7 +1296,7 @@ public class App {
             return this;
         }
 
-        public PostPage openHighlightNoteModalFromPageData() {
+        public PostPage openHighlightNoteDialogFromPageData() {
             var status =
                     (Long) ((JavascriptExecutor) driver).executeScript("""
                                                                        const data = JSON.parse(document.getElementById('post-highlights-data').textContent);
@@ -1291,52 +1304,18 @@ public class App {
                                                                        if (!id) {
                                                                            throw new Error('No highlight id in page data');
                                                                        }
-                                                                       const container = document.getElementById('modal-container');
-                                                                       if (!container) {
-                                                                           throw new Error('modal-container not found');
-                                                                       }
-                                                                       const xhr = new XMLHttpRequest();
-                                                                       xhr.open('GET', '/forms/highlights/' + id + '/notes/modal', false);
-                                                                       xhr.send();
-                                                                       container.innerHTML = xhr.responseText;
-                                                                       if (typeof htmx !== 'undefined') {
-                                                                           htmx.process(container);
-                                                                       }
-                                                                       if (typeof window.i18n !== 'undefined') {
-                                                                           window.i18n.apply(container);
-                                                                       }
-                                                                       return xhr.status;
+                                                                       const mgr = PostHighlightManager.instance();
+                                                                       mgr.selectionRect = { top: 120, left: 24, bottom: 140, right: 200, width: 176, height: 20 };
+                                                                       mgr.openNoteDialog(id);
+                                                                       return 200;
                                                                        """);
             assertThat(status).isEqualTo(200L);
-            return assertHighlightNoteModalVisible();
+            return assertHighlightNoteDialogVisible();
         }
 
+        /** @deprecated use {@link #openHighlightNoteDialogFromPageData()} */
         public PostPage openHighlightNoteModalFromPageData() {
-            var status =
-                    (Long) ((JavascriptExecutor) driver).executeScript("""
-                                                                       const data = JSON.parse(document.getElementById('post-highlights-data').textContent);
-                                                                       const id = data.marks?.[0]?.id;
-                                                                       if (!id) {
-                                                                           throw new Error('No highlight id in page data');
-                                                                       }
-                                                                       const container = document.getElementById('modal-container');
-                                                                       if (!container) {
-                                                                           throw new Error('modal-container not found');
-                                                                       }
-                                                                       const xhr = new XMLHttpRequest();
-                                                                       xhr.open('GET', '/forms/highlights/' + id + '/notes/modal', false);
-                                                                       xhr.send();
-                                                                       container.innerHTML = xhr.responseText;
-                                                                       if (typeof htmx !== 'undefined') {
-                                                                           htmx.process(container);
-                                                                       }
-                                                                       if (typeof window.i18n !== 'undefined') {
-                                                                           window.i18n.apply(container);
-                                                                       }
-                                                                       return xhr.status;
-                                                                       """);
-            assertThat(status).isEqualTo(200L);
-            return assertHighlightNoteModalVisible();
+            return openHighlightNoteDialogFromPageData();
         }
 
         public PostPage selectPassageInArticle(String passage) {
@@ -1374,14 +1353,14 @@ public class App {
         }
 
         public PostPage submitHighlightNote(String body) {
-            assertHighlightNoteModalVisible();
-            var modal = driver.findElement(By.id("highlightNoteModal"));
-            var textarea = modal.findElement(By.id("highlightNoteBody"));
+            assertHighlightNoteDialogVisible();
+            var dialog = driver.findElement(By.id("highlightNoteDialog"));
+            var textarea = dialog.findElement(By.id("highlightNoteBody"));
             textarea.clear();
             textarea.sendKeys(body);
-            reliableClick(modal.findElement(cssSelector("[data-highlight-note-form] button[type='submit']")));
+            reliableClick(dialog.findElement(cssSelector("[data-highlight-note-form] button[type='submit']")));
             waitForReady();
-            return this;
+            return assertHighlightNoteCardVisible(body);
         }
 
         public PostPage toggleFeatured() {

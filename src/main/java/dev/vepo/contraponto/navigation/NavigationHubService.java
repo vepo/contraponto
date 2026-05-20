@@ -109,6 +109,7 @@ public class NavigationHubService {
     public HubMeta meta(NavigationHub hub) {
         return switch (hub) {
             case WRITING -> new HubMeta("Writing", "Writing", "Library, images, your blogs, and author appearance.");
+            case READING -> new HubMeta("Reading", "Reading", "Your highlights and notes across posts.");
             case MANAGE -> new HubMeta("Manage", "Manage", "Dashboard, custom pages, comments, and platform blogs.");
             case ACCOUNT -> new HubMeta("Account", "Account", "Notifications, subscriptions, and account security.");
             case REVIEW -> new HubMeta("Review", "Review", "Editorial tools for featured posts and tags.");

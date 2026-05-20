@@ -77,6 +77,7 @@ public class HighlightComponentEndpoint {
                                                 section.currentUserId(),
                                                 section.marks(),
                                                 section.officialHighlights(),
+                                                section.readerNotes(),
                                                 section.approvedResponses(),
                                                 source.getId(),
                                                 source.getTitle(),

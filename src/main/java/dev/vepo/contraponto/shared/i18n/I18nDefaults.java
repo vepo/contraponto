@@ -34,6 +34,7 @@ public final class I18nDefaults {
     public static final String COMMENT_NOT_FOUND = "Comentário não encontrado.";
     public static final String HIGHLIGHT_CREATED = "Trecho destacado.";
     public static final String HIGHLIGHT_NOTE_PENDING = "Nota enviada para aprovação.";
+    public static final String HIGHLIGHT_NOTE_SAVED = "Nota salva.";
     public static final String HIGHLIGHT_OFFICIAL_APPROVED = "Destaque publicado no post.";
     public static final String HIGHLIGHT_PROPOSAL_REJECTED = "Proposta recusada.";
     public static final String POST_RESPONSE_PENDING = "Resposta publicada. O autor pode aprová-la no post original.";

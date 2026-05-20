@@ -28,6 +28,17 @@ class PostHighlightSelectionWebTest {
     }
 
     @Test
+    void note_modal_opens_from_fresh_selection(App app) {
+        app.login(reader).goTo(post)
+           .waitForPostHighlights()
+           .selectPassageInArticle(PASSAGE)
+           .assertHighlightSelectionBarVisible()
+           .clickHighlightSelectionAction("note")
+           .assertHighlightNoteModalVisible()
+           .submitHighlightNote("Note on a fresh selection");
+    }
+
+    @Test
     void note_modal_opens_when_adding_note(App app) {
         app.login(reader).goTo(post)
            .waitForPostHighlights()

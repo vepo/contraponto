@@ -165,8 +165,12 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Highlight note** | Optional text on a **post text highlight** (max 1000 characters). | `HighlightNote` |
 | **Private highlight note** | Note visible only to the highlight author (default). | `HighlightNoteStatus.PRIVATE` |
 | **Public highlight note** | Reader marks note **public**; requires **author approval** before display on post. | `HighlightNoteStatus.PENDING` → `APPROVED` |
+| **Add note button** | Opens **highlight note dialog** on post page. | `data-highlight-action="note"` |
+| **Highlight note dialog** | Floating panel near selected text with note text, public checkbox, **OK** / **Cancel**. | `#highlightNoteDialog` |
+| **Highlight note card** | Shows note body, owner, status badge, timestamp after save. | `.highlight-note-card` |
 | **Text selection bar** | Floating UI after text selection in `.article-page__content`. | `PostHighlightManager` |
-| **Highlights library** | Reader's list of own highlights and notes. | `HighlightsLibraryEndpoint` — `GET /highlights` |
+| **Highlights library** | Reader's list of own highlights and notes. | Reading hub — `GET /reading/highlights` (`GET /highlights` redirects) |
+| **Reading hub** | Signed-in reader hub for highlights and notes. | `ReadingHubEndpoint` — `GET /reading`; user menu **Reading** |
 | **Highlight moderation** | Author queue: proposals, public notes, post responses. | `HighlightManageEndpoint` — `GET /writing/highlights` |
 | **Post response** | **Published post** on responder's blog that responds to another **published post**. | `PostResponse` |
 | **Source post** | Post being responded to. | `PostResponse.sourcePost` |
@@ -258,6 +262,7 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Auth — register | `auth.signUp` | Cadastrar-se | Sign up | Modal |
 | Auth — logout | `auth.signOut` | Sair | Sign out | Menu |
 | Menu — writing hub | `menu.writing` | Escrita | Writing | User menu → `/writing` |
+| Menu — reading hub | `menu.reading` | Leitura | Reading | User menu → `/reading` |
 | Menu — manage hub | `menu.manage` | Gerenciar | Manage | User menu → `/manage` |
 | Menu — account hub | `menu.account` | Conta | Account | User menu → `/account` |
 | Menu — review hub | `menu.review` | Revisão | Review | User menu (editor) → `/editor` |

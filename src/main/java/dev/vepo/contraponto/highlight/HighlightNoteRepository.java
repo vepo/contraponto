@@ -73,6 +73,59 @@ public class HighlightNoteRepository {
                             .findFirst();
     }
 
+    public List<HighlightNote> findByUserAndHighlightIds(long userId, List<Long> highlightIds) {
+        return entityManager.createQuery("""
+                                         SELECT n FROM HighlightNote n
+                                         JOIN FETCH n.user
+                                         JOIN FETCH n.highlight h
+                                         WHERE n.user.id = :userId AND h.id IN :highlightIds
+                                         ORDER BY n.createdAt DESC
+                                         """, HighlightNote.class)
+                            .setParameter("userId", userId)
+                            .setParameter("highlightIds", highlightIds)
+                            .getResultList();
+    }
+
+    public List<HighlightNote> findByUserAndPost(long userId, long postId) {
+        return entityManager.createQuery("""
+                                         SELECT n FROM HighlightNote n
+                                         JOIN FETCH n.user
+                                         JOIN FETCH n.highlight h
+                                         WHERE n.user.id = :userId AND h.post.id = :postId
+                                         ORDER BY n.createdAt DESC
+                                         """, HighlightNote.class)
+                            .setParameter("userId", userId)
+                            .setParameter("postId", postId)
+                            .getResultList();
+    }
+
+    public Page<HighlightNoteLibraryRow> findLibraryForUser(long userId, PageQuery query) {
+        long total = entityManager.createQuery("""
+                                               SELECT COUNT(n) FROM HighlightNote n
+                                               WHERE n.user.id = :userId
+                                               """, Long.class)
+                                  .setParameter("userId", userId)
+                                  .getSingleResult();
+
+        var rows = entityManager.createQuery("""
+                                             SELECT new dev.vepo.contraponto.highlight.HighlightNoteLibraryRow(
+                                                 n.id, h.id, p.id, p.title, p.slug, u.username, b.slug,
+                                                 h.passage, n.body, n.user.name, n.status, n.publicNote, n.createdAt)
+                                             FROM HighlightNote n
+                                             JOIN n.highlight h
+                                             JOIN h.post p
+                                             JOIN p.blog b
+                                             JOIN b.owner u
+                                             WHERE n.user.id = :userId
+                                             ORDER BY n.createdAt DESC
+                                             """, HighlightNoteLibraryRow.class)
+                                .setParameter("userId", userId)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(rows, query.page(), query.limit(), total);
+    }
+
     public Page<NoteManageRow> findPendingPublicForPostAuthor(long authorUserId, PageQuery query) {
         long total = entityManager.createQuery("""
                                                SELECT COUNT(n) FROM HighlightNote n

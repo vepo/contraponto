@@ -1,12 +1,12 @@
 /**
- * Post text highlights: selection bar, create/remove, note modal.
+ * Post text highlights: selection bar, create/remove, note dialog.
  */
 class PostHighlightManager {
     static ARTICLE_SELECTOR = '.article-page__content';
     static ROOT_SELECTOR = '#post-highlights-root';
     static DATA_SCRIPT_ID = 'post-highlights-data';
     static BAR_ID = 'highlights-selection-bar';
-    static MODAL_CONTAINER_ID = 'modal-container';
+    static NOTE_DIALOG_ID = 'highlightNoteDialog';
 
     constructor() {
         this.root = null;
@@ -15,6 +15,7 @@ class PostHighlightManager {
         this.marks = [];
         this.official = [];
         this.selection = null;
+        this.selectionRect = null;
         this.barHome = null;
         this.boundSelectionChange = this.onSelectionChange.bind(this);
         this.boundBarClick = this.onBarClick.bind(this);
@@ -82,6 +83,14 @@ class PostHighlightManager {
     }
 
     onDocumentMouseDown(evt) {
+        const dialog = document.getElementById(PostHighlightManager.NOTE_DIALOG_ID);
+        if (dialog && dialog.contains(evt.target)) {
+            return;
+        }
+        if (dialog) {
+            this.closeNoteDialog();
+        }
+
         const bar = document.getElementById(PostHighlightManager.BAR_ID);
         if (!bar || bar.hidden) {
             return;
@@ -98,12 +107,18 @@ class PostHighlightManager {
 
     onDocumentKeyDown(evt) {
         if (evt.key === 'Escape') {
+            if (document.getElementById(PostHighlightManager.NOTE_DIALOG_ID)) {
+                this.closeNoteDialog();
+                return;
+            }
             this.hideBar();
-            this.closeNoteModal();
         }
     }
 
     onSelectionChange() {
+        if (document.getElementById(PostHighlightManager.NOTE_DIALOG_ID)) {
+            return;
+        }
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || !this.article) {
             this.hideBar();
@@ -165,9 +180,11 @@ class PostHighlightManager {
         if (!this.selection) {
             return;
         }
+        this.captureSelectionRect();
         const highlightId = this.resolveHighlightId();
         if (highlightId) {
-            this.openNoteModal(highlightId);
+            this.hideBar(false, false);
+            this.openNoteDialog(highlightId);
             return;
         }
         this.pendingNoteAfterCreate = true;
@@ -212,12 +229,14 @@ class PostHighlightManager {
         if (!xhr || !path.includes('/highlights')) {
             return;
         }
+        const verb = (evt.detail?.requestConfig?.verb || '').toLowerCase();
         if (path.includes('/notes') && evt.detail.successful) {
-            this.closeNoteModal();
+            this.closeNoteDialog();
             this.hideBar();
+            window.getSelection()?.removeAllRanges();
             return;
         }
-        if (evt.detail.verb === 'post' && path.includes('/forms/posts/') && path.includes('/highlights')) {
+        if (verb === 'post' && path.includes('/forms/posts/') && path.includes('/highlights') && evt.detail.successful) {
             const highlightId = xhr.getResponseHeader('X-Highlight-Id');
             if (this.pendingNoteAfterCreate && highlightId) {
                 this.finishPendingNote(highlightId);
@@ -236,15 +255,12 @@ class PostHighlightManager {
                 this.openPendingNoteFromFragment();
             }
         }
-        if (evt.detail?.target?.id === PostHighlightManager.MODAL_CONTAINER_ID) {
-            this.bindNoteModalClose();
-        }
     }
 
     finishPendingNote(highlightId) {
         this.pendingNoteAfterCreate = false;
-        this.openNoteModal(highlightId);
-        this.hideBar();
+        this.openNoteDialog(highlightId);
+        this.hideBar(false, false);
         window.getSelection()?.removeAllRanges();
     }
 
@@ -277,11 +293,8 @@ class PostHighlightManager {
         this.hideBar();
     }
 
-    openNoteModal(highlightId) {
-        const container = document.getElementById(PostHighlightManager.MODAL_CONTAINER_ID);
-        if (!container) {
-            return;
-        }
+    openNoteDialog(highlightId) {
+        this.closeNoteDialog();
         const headers = {};
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
         if (csrf) {
@@ -290,36 +303,79 @@ class PostHighlightManager {
         fetch('/forms/highlights/' + highlightId + '/notes/modal', { headers })
             .then(response => response.text())
             .then(html => {
-                container.innerHTML = html;
-                if (typeof htmx !== 'undefined') {
-                    htmx.process(container);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html.trim();
+                const dialog = wrapper.firstElementChild;
+                if (!dialog) {
+                    return;
                 }
-                window.i18n?.apply(container);
-                this.bindNoteModalClose();
+                document.body.appendChild(dialog);
+                if (typeof htmx !== 'undefined') {
+                    htmx.process(dialog);
+                }
+                window.i18n?.apply(dialog);
+                this.positionFloatingElement(dialog, this.getAnchorRect());
+                this.bindNoteDialogClose();
+                dialog.querySelector('textarea')?.focus();
             });
     }
 
-    closeNoteModal() {
-        const container = document.getElementById(PostHighlightManager.MODAL_CONTAINER_ID);
-        if (container) {
-            container.innerHTML = '';
+    closeNoteDialog() {
+        document.getElementById(PostHighlightManager.NOTE_DIALOG_ID)?.remove();
+    }
+
+    bindNoteDialogClose() {
+        const dialog = document.getElementById(PostHighlightManager.NOTE_DIALOG_ID);
+        if (!dialog || dialog.dataset.noteDialogBound === 'true') {
+            return;
+        }
+        dialog.dataset.noteDialogBound = 'true';
+        dialog.querySelectorAll('[data-highlight-note-close]').forEach(btn => {
+            btn.addEventListener('click', () => this.closeNoteDialog());
+        });
+    }
+
+    captureSelectionRect() {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+            this.selectionRect = sel.getRangeAt(0).getBoundingClientRect();
         }
     }
 
-    bindNoteModalClose() {
-        const modal = document.getElementById('highlightNoteModal');
-        if (!modal || modal.dataset.noteModalBound === 'true') {
-            return;
+    getAnchorRect() {
+        if (this.selectionRect) {
+            return this.selectionRect;
         }
-        modal.dataset.noteModalBound = 'true';
-        modal.querySelectorAll('[data-highlight-note-close]').forEach(btn => {
-            btn.addEventListener('click', () => this.closeNoteModal());
-        });
-        modal.addEventListener('click', evt => {
-            if (evt.target === modal) {
-                this.closeNoteModal();
-            }
-        });
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+            return sel.getRangeAt(0).getBoundingClientRect();
+        }
+        return {
+            top: 80,
+            left: 16,
+            bottom: 100,
+            right: 200,
+            width: 184,
+            height: 20
+        };
+    }
+
+    positionFloatingElement(element, anchorRect) {
+        const margin = 8;
+        let top = anchorRect.bottom + margin;
+        let left = anchorRect.left;
+        element.style.visibility = 'hidden';
+        element.style.display = 'block';
+        const elementRect = element.getBoundingClientRect();
+        const maxLeft = window.innerWidth - elementRect.width - margin;
+        left = Math.max(margin, Math.min(left, maxLeft));
+        const maxTop = window.innerHeight - elementRect.height - margin;
+        if (top > maxTop) {
+            top = Math.max(margin, anchorRect.top - elementRect.height - margin);
+        }
+        element.style.top = top + 'px';
+        element.style.left = left + 'px';
+        element.style.visibility = 'visible';
     }
 
     applyMarks() {
@@ -432,37 +488,27 @@ class PostHighlightManager {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
             const rect = sel.getRangeAt(0).getBoundingClientRect();
-            const margin = 8;
-            let top = rect.bottom + margin;
-            let left = rect.left;
-            bar.style.visibility = 'hidden';
+            this.selectionRect = rect;
+            this.positionFloatingElement(bar, rect);
             bar.style.display = 'flex';
-            const barRect = bar.getBoundingClientRect();
-            const maxLeft = window.innerWidth - barRect.width - margin;
-            left = Math.max(margin, Math.min(left, maxLeft));
-            const maxTop = window.innerHeight - barRect.height - margin;
-            if (top > maxTop) {
-                top = Math.max(margin, rect.top - barRect.height - margin);
-            }
-            bar.style.top = top + 'px';
-            bar.style.left = left + 'px';
-            bar.style.visibility = 'visible';
         }
     }
 
-    hideBar(clearPending = true) {
+    hideBar(clearPending = true, clearSelection = true) {
         const bar = document.getElementById(PostHighlightManager.BAR_ID);
-        if (!bar) {
-            return;
+        if (bar) {
+            bar.hidden = true;
+            bar.classList.add('u-hidden');
+            bar.style.visibility = '';
+            bar.style.display = '';
+            if (this.barHome && bar.parentElement === document.body) {
+                this.barHome.appendChild(bar);
+            }
         }
-        bar.hidden = true;
-        bar.classList.add('u-hidden');
-        bar.style.visibility = '';
-        bar.style.display = '';
-        if (this.barHome && bar.parentElement === document.body) {
-            this.barHome.appendChild(bar);
+        if (clearSelection) {
+            this.selection = null;
+            this.selectionRect = null;
         }
-        this.selection = null;
         if (clearPending) {
             this.pendingNoteAfterCreate = false;
         }

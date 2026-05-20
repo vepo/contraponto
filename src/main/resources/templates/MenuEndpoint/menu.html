@@ -39,6 +39,20 @@
             <span class="user-menu__label" data-i18n="menu.writing">Escrita</span>
         </a>
 
+        <a data-hx-get="/reading"
+           hx-select="main"
+           hx-target="main"
+           hx-swap="outerHTML"
+           hx-push-url="/reading"
+           class="user-menu__item"
+           data-nav>
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                <path d="M4 19.5C4 18.1 5.1 17 6.5 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M6.5 2H20V22H6.5C5.1 22 4 20.9 4 19.5V4.5C4 3.1 5.1 2 6.5 2Z" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span class="user-menu__label" data-i18n="menu.reading">Leitura</span>
+        </a>
+
         <a data-hx-get="/manage"
            hx-select="main"
            hx-target="main"

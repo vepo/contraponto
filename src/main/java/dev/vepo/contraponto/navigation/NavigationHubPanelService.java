@@ -7,6 +7,7 @@ import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogManageEndpoint;
 import dev.vepo.contraponto.comment.CommentManageEndpoint;
 import dev.vepo.contraponto.highlight.HighlightManageEndpoint;
+import dev.vepo.contraponto.highlight.HighlightsLibraryEndpoint;
 import dev.vepo.contraponto.components.AccountSecurityEndpoint;
 import dev.vepo.contraponto.components.AuthorAppearanceEndpoint;
 import dev.vepo.contraponto.custompage.CustomPageManageEndpoint;
@@ -42,6 +43,7 @@ public class NavigationHubPanelService {
     private final CustomPageManageEndpoint customPageManageEndpoint;
     private final CommentManageEndpoint commentManageEndpoint;
     private final HighlightManageEndpoint highlightManageEndpoint;
+    private final HighlightsLibraryEndpoint highlightsLibraryEndpoint;
     private final LibraryEndpoint libraryEndpoint;
     private final ImageControlEndpoint imageControlEndpoint;
     private final NotificationEndpoint notificationEndpoint;
@@ -63,6 +65,7 @@ public class NavigationHubPanelService {
                                      CustomPageManageEndpoint customPageManageEndpoint,
                                      CommentManageEndpoint commentManageEndpoint,
                                      HighlightManageEndpoint highlightManageEndpoint,
+                                     HighlightsLibraryEndpoint highlightsLibraryEndpoint,
                                      LibraryEndpoint libraryEndpoint,
                                      ImageControlEndpoint imageControlEndpoint,
                                      NotificationEndpoint notificationEndpoint,
@@ -82,6 +85,7 @@ public class NavigationHubPanelService {
         this.customPageManageEndpoint = customPageManageEndpoint;
         this.commentManageEndpoint = commentManageEndpoint;
         this.highlightManageEndpoint = highlightManageEndpoint;
+        this.highlightsLibraryEndpoint = highlightsLibraryEndpoint;
         this.libraryEndpoint = libraryEndpoint;
         this.imageControlEndpoint = imageControlEndpoint;
         this.notificationEndpoint = notificationEndpoint;
@@ -113,10 +117,20 @@ public class NavigationHubPanelService {
         registry.requireSection(hub, sectionSlug, loggedUser);
         return switch (hub) {
             case WRITING -> renderWriting(sectionSlug, page, blogId);
+            case READING -> renderReading(sectionSlug, page);
             case MANAGE -> renderManage(sectionSlug, page);
             case ACCOUNT -> renderAccount(sectionSlug, page, emailVerified, profileError);
             case REVIEW -> renderReview(sectionSlug, page);
             case ADMINISTRATION -> renderAdministration(sectionSlug, page);
+        };
+    }
+
+    private TemplateInstance renderReading(String sectionSlug, int page) {
+        String basePath = registry.sectionPath(NavigationHub.READING, sectionSlug);
+        return switch (sectionSlug) {
+            case "highlights" -> highlightsLibraryEndpoint.renderHighlightsHubPanel(page, basePath);
+            case "notes" -> highlightsLibraryEndpoint.renderNotesHubPanel(page, basePath);
+            default -> throw new NotFoundException("Unknown reading section: " + sectionSlug);
         };
     }
 

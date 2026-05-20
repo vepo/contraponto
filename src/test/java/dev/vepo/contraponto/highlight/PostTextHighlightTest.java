@@ -89,7 +89,7 @@ class PostTextHighlightTest {
                 .get("/forms/highlights/" + highlightId + "/notes/modal")
                 .then()
                 .statusCode(200)
-                .body(containsString("highlightNoteModal"));
+                .body(containsString("highlightNoteDialog"));
     }
 
     @Test
@@ -197,6 +197,35 @@ class PostTextHighlightTest {
                 .statusCode(200);
 
         assertEquals(1, highlightRepository.countByUserAndPost(reader.getId(), post.getId()));
+    }
+
+    @Test
+    void saved_private_note_shows_owner_and_timestamp() {
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("passage", "hello")
+                .formParam("anchorJson", anchor)
+                .post("/forms/posts/" + post.getId() + "/highlights")
+                .then()
+                .statusCode(200);
+
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("body", "My private note on this passage")
+                .post("/forms/highlights/" + highlightId + "/notes")
+                .then()
+                .statusCode(200);
+
+        TestHttp.authenticated(reader)
+                .get("/" + author.getUsername() + "/post/" + post.getSlug() + "/components/highlights")
+                .then()
+                .statusCode(200)
+                .body(containsString("My private note on this passage"))
+                .body(containsString("HL Reader 1"))
+                .body(containsString("highlight-note-card"))
+                .body(containsString("post-highlight-notes"));
     }
 
     @BeforeEach

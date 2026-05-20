@@ -59,6 +59,8 @@ public class SeoService {
     private static boolean isPrivatePath(String path) {
         return path.startsWith("/write")
                 || path.startsWith("/writing")
+                || path.startsWith("/reading")
+                || path.startsWith("/highlights")
                 || path.startsWith("/manage")
                 || path.startsWith("/account")
                 || path.startsWith("/administration")
@@ -86,6 +88,9 @@ public class SeoService {
         }
         if (path.startsWith("/writing")) {
             return "Escrita";
+        }
+        if (path.startsWith("/reading") || path.startsWith("/highlights")) {
+            return "Reading";
         }
         if (path.startsWith("/manage")) {
             return "Gerenciar";

@@ -124,10 +124,6 @@ public class BreadcrumbService {
         return trail(items);
     }
 
-    public BreadcrumbTrail forHighlightsLibrary() {
-        return trail(link("Home", "/"), current("Meus destaques"));
-    }
-
     public BreadcrumbTrail forMainBlog(User author) {
         return trail(link(HOME_LABEL, HOME_PATH), current(author.getName()));
     }

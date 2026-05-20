@@ -1,0 +1,41 @@
+<div id="highlightNoteDialog"
+     class="highlights-note-dialog"
+     role="dialog"
+     aria-labelledby="highlightNoteDialogTitle">
+    <div class="highlights-note-dialog__header">
+        <h2 id="highlightNoteDialogTitle" class="highlights-note-dialog__title" data-i18n="highlight.note.add">Adicionar nota</h2>
+        <button type="button"
+                class="highlights-note-dialog__close"
+                data-highlight-note-close
+                aria-label="Close"
+                data-i18n="common.close"
+                data-i18n-attr="aria-label">✕</button>
+    </div>
+    <div class="highlights-note-dialog__body">
+        <p class="highlights-note-dialog__passage">{passageExcerpt}</p>
+        <form hx-post="/forms/highlights/{highlightId}/notes"
+              hx-target="#post-highlights"
+              hx-swap="innerHTML"
+              data-highlight-note-form>
+            <div class="form-group highlights-note-dialog__field">
+                <label for="highlightNoteBody" data-i18n="highlight.note.bodyLabel">Texto da nota</label>
+                <textarea id="highlightNoteBody"
+                          name="body"
+                          class="form-control"
+                          rows="4"
+                          maxlength="1000"
+                          required
+                          data-i18n="highlight.note.placeholder"
+                          data-i18n-attr="placeholder"></textarea>
+            </div>
+            <label class="highlights-note-dialog__checkbox">
+                <input type="checkbox" name="makePublic" value="true"/>
+                <span data-i18n="highlight.note.makePublic">Tornar nota pública (sujeita à aprovação do autor)</span>
+            </label>
+            <div class="form-actions u-mt-md">
+                <button type="button" class="btn btn--outline" data-highlight-note-close data-i18n="common.cancel">Cancelar</button>
+                <button type="submit" class="btn btn--primary" data-i18n="common.ok">OK</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -30,7 +30,7 @@ public class HighlightNoteFormEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        static native TemplateInstance highlightNoteModal(long highlightId, String passageExcerpt);
+        static native TemplateInstance highlightNoteDialog(long highlightId, String passageExcerpt);
 
         private Templates() {
             throw new UnsupportedOperationException("Utility class");
@@ -39,14 +39,17 @@ public class HighlightNoteFormEndpoint {
 
     private final HighlightNoteService noteService;
     private final PostTextHighlightRepository highlightRepository;
+    private final HighlightComponentEndpoint componentEndpoint;
     private final LoggedUser loggedUser;
 
     @Inject
     public HighlightNoteFormEndpoint(HighlightNoteService noteService,
                                      PostTextHighlightRepository highlightRepository,
+                                     HighlightComponentEndpoint componentEndpoint,
                                      LoggedUser loggedUser) {
         this.noteService = noteService;
         this.highlightRepository = highlightRepository;
+        this.componentEndpoint = componentEndpoint;
         this.loggedUser = loggedUser;
     }
 
@@ -74,7 +77,7 @@ public class HighlightNoteFormEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance modal(@PathParam("highlightId") long highlightId) {
         PostTextHighlight highlight = loadOwnedHighlight(highlightId);
-        return Templates.highlightNoteModal(highlightId, excerpt(highlight.getPassage()));
+        return Templates.highlightNoteDialog(highlightId, excerpt(highlight.getPassage()));
     }
 
     @POST
@@ -84,19 +87,15 @@ public class HighlightNoteFormEndpoint {
                          @FormParam("body") String body,
                          @FormParam("makePublic") boolean makePublic) {
         try {
+            PostTextHighlight highlight = loadOwnedHighlight(highlightId);
             HighlightNote note = noteService.saveNote(highlightId, loggedUser.getId(), body, makePublic);
+            var toast = Toast.ok().type(Toast.Type.SUCCESS).duration(Toast.TOAST_DEFAULT_DURATION_MS);
             if (note.isPublicNote()) {
-                return Toast.ok()
-                            .i18nKey(I18nKeys.TOAST_HIGHLIGHT_NOTE_PENDING, I18nDefaults.HIGHLIGHT_NOTE_PENDING)
-                            .type(Toast.Type.SUCCESS)
-                            .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                            .build();
+                toast.i18nKey(I18nKeys.TOAST_HIGHLIGHT_NOTE_PENDING, I18nDefaults.HIGHLIGHT_NOTE_PENDING);
+            } else {
+                toast.i18nKey(I18nKeys.TOAST_HIGHLIGHT_NOTE_SAVED, I18nDefaults.HIGHLIGHT_NOTE_SAVED);
             }
-            return Toast.ok()
-                        .message("Note saved.")
-                        .type(Toast.Type.SUCCESS)
-                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .build();
+            return toast.page(componentEndpoint.renderHighlights(highlight.getPost())).build();
         } catch (BadRequestException e) {
             return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
         }

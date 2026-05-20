@@ -112,11 +112,11 @@ public class PostTextHighlightService {
         List<OfficialHighlightView> officialViews = new ArrayList<>();
         for (OfficialHighlight official : officials) {
             officialClusters.add(official.getAnchorClusterHash());
-            List<PublicNoteView> notes = noteRepository
-                                                       .findApprovedPublicForCluster(post.getId(), official.getAnchorClusterHash())
-                                                       .stream()
-                                                       .map(n -> new PublicNoteView(n.getUser().getName(), n.getBody()))
-                                                       .toList();
+            List<HighlightNoteCardView> notes = noteRepository
+                                                              .findApprovedPublicForCluster(post.getId(), official.getAnchorClusterHash())
+                                                              .stream()
+                                                              .map(n -> toNoteCard(n, excerptPassage(official.getPassage())))
+                                                              .toList();
             officialViews.add(new OfficialHighlightView(official.getAnchorClusterHash(),
                                                         official.getPassage(),
                                                         official.getAnchorJson(),
@@ -124,6 +124,7 @@ public class PostTextHighlightService {
         }
 
         List<HighlightMarkView> marks = new ArrayList<>();
+        List<HighlightNoteCardView> readerNotes = new ArrayList<>();
         if (currentUserId != null) {
             for (PostTextHighlight h : highlightRepository.findByPostForUser(post.getId(), currentUserId)) {
                 boolean isOfficial = officialClusters.contains(h.getAnchorClusterHash());
@@ -135,6 +136,10 @@ public class PostTextHighlightService {
                                                 isOfficial,
                                                 true));
             }
+            readerNotes = noteRepository.findByUserAndPost(currentUserId, post.getId())
+                                        .stream()
+                                        .map(n -> toNoteCard(n, excerptPassage(n.getHighlight().getPassage())))
+                                        .toList();
         }
 
         List<PostResponseCardView> responses = postResponseRepository.findApprovedForSourcePost(post.getId())
@@ -158,6 +163,7 @@ public class PostTextHighlightService {
                                                            currentUserId,
                                                            marks,
                                                            officialViews,
+                                                           readerNotes,
                                                            responses,
                                                            null,
                                                            null,
@@ -170,6 +176,7 @@ public class PostTextHighlightService {
                                          currentUserId,
                                          marks,
                                          officialViews,
+                                         readerNotes,
                                          responses,
                                          null,
                                          null,
@@ -211,6 +218,17 @@ public class PostTextHighlightService {
 
         maybeCreateOrRefreshProposal(post, clusterHash, trimmedPassage);
         return highlight;
+    }
+
+    private String excerptPassage(String passage) {
+        if (passage == null) {
+            return "";
+        }
+        String trimmed = passage.trim();
+        if (trimmed.length() <= 120) {
+            return trimmed;
+        }
+        return trimmed.substring(0, 119) + "…";
     }
 
     private CommonHighlightProposal loadProposalForModeration(long postId, long proposalId, long ownerUserId) {
@@ -286,6 +304,16 @@ public class PostTextHighlightService {
             throw new ForbiddenException("You can only remove your own highlights.");
         }
         highlightRepository.delete(highlight);
+    }
+
+    private HighlightNoteCardView toNoteCard(HighlightNote note, String passageExcerpt) {
+        return new HighlightNoteCardView(note.getId(),
+                                         passageExcerpt,
+                                         note.getBody(),
+                                         note.getUser().getName(),
+                                         note.getStatus(),
+                                         note.isPublicNote(),
+                                         note.getCreatedAt());
     }
 
     private String validatePassage(String passage) {
