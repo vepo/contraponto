@@ -17,8 +17,17 @@
                     data-i18n="write.unpublishedBanner">Há alterações não publicadas. Os leitores ainda veem a última versão publicada até você publicar novamente.
                 </div>
                 {/if}
+                {#if writePage.respondsToPostId??}
+                <div class="write-form__banner write-form__banner--info" role="status">
+                    <span data-i18n="postResponse.inResponseTo">Em resposta a</span>:
+                    <a href="{writePage.respondsToUrl}" data-hx-get="{writePage.respondsToUrl}" hx-select="main" hx-target="main" hx-push-url="{writePage.respondsToUrl}">{writePage.respondsToTitle}</a>
+                </div>
+                {/if}
                 <form id="postForm" class="write-form">
                     <input type="hidden" name="postId" value="{#if writePage.post.isPresent}{writePage.post.get().id}{/if}"/>
+                    {#if writePage.respondsToPostId??}
+                    <input type="hidden" name="respondsTo" value="{writePage.respondsToPostId}"/>
+                    {/if}
 
                         <!-- Title field - vintage style -->
                         <div class="write-form__group write-form__group--title">

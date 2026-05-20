@@ -11,4 +11,5 @@ public record SaveDraftRequest(@FormParam("postId") Long id,
                                @FormParam("content") String content,
                                @FormParam("format") String format,
                                @FormParam("tagsJson") String tagsJson,
-                               @FormParam("serieTitle") String serieTitle) {}
+                               @FormParam("serieTitle") String serieTitle,
+                               @FormParam("respondsTo") Long respondsTo) {}

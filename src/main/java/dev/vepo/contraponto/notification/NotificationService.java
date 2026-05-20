@@ -52,6 +52,11 @@ public class NotificationService {
     }
 
     @Transactional
+    public void notifyCommonHighlightProposal(User recipient, Post post) {
+        create(recipient, NotificationType.COMMON_HIGHLIGHT_PROPOSAL, post.getBlog(), post, null, null, null);
+    }
+
+    @Transactional
     public void notifyGitSyncFailed(User recipient, Blog blog, GitSyncRun run) {
         create(recipient, NotificationType.GIT_SYNC_FAILED, blog, run.getPost(), null, null, null, run);
     }
@@ -79,5 +84,15 @@ public class NotificationService {
     @Transactional
     public void notifyNewSubscribe(User recipient, Blog blog, User actor) {
         create(recipient, NotificationType.NEW_SUBSCRIBE, blog, null, null, null, actor);
+    }
+
+    @Transactional
+    public void notifyPostResponse(User recipient, Post sourcePost, User actor) {
+        create(recipient, NotificationType.POST_RESPONSE, sourcePost.getBlog(), sourcePost, null, null, actor);
+    }
+
+    @Transactional
+    public void notifyPublicHighlightNote(User recipient, Post post, User actor) {
+        create(recipient, NotificationType.PUBLIC_HIGHLIGHT_NOTE, post.getBlog(), post, null, null, actor);
     }
 }

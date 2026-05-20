@@ -6,6 +6,7 @@ import dev.vepo.contraponto.admin.ReviewEndpoint;
 import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogManageEndpoint;
 import dev.vepo.contraponto.comment.CommentManageEndpoint;
+import dev.vepo.contraponto.highlight.HighlightManageEndpoint;
 import dev.vepo.contraponto.components.AccountSecurityEndpoint;
 import dev.vepo.contraponto.components.AuthorAppearanceEndpoint;
 import dev.vepo.contraponto.custompage.CustomPageManageEndpoint;
@@ -40,6 +41,7 @@ public class NavigationHubPanelService {
     private final BlogAccess blogAccess;
     private final CustomPageManageEndpoint customPageManageEndpoint;
     private final CommentManageEndpoint commentManageEndpoint;
+    private final HighlightManageEndpoint highlightManageEndpoint;
     private final LibraryEndpoint libraryEndpoint;
     private final ImageControlEndpoint imageControlEndpoint;
     private final NotificationEndpoint notificationEndpoint;
@@ -60,6 +62,7 @@ public class NavigationHubPanelService {
                                      BlogAccess blogAccess,
                                      CustomPageManageEndpoint customPageManageEndpoint,
                                      CommentManageEndpoint commentManageEndpoint,
+                                     HighlightManageEndpoint highlightManageEndpoint,
                                      LibraryEndpoint libraryEndpoint,
                                      ImageControlEndpoint imageControlEndpoint,
                                      NotificationEndpoint notificationEndpoint,
@@ -78,6 +81,7 @@ public class NavigationHubPanelService {
         this.blogAccess = blogAccess;
         this.customPageManageEndpoint = customPageManageEndpoint;
         this.commentManageEndpoint = commentManageEndpoint;
+        this.highlightManageEndpoint = highlightManageEndpoint;
         this.libraryEndpoint = libraryEndpoint;
         this.imageControlEndpoint = imageControlEndpoint;
         this.notificationEndpoint = notificationEndpoint;
@@ -123,6 +127,7 @@ public class NavigationHubPanelService {
             case "images" -> imageControlEndpoint.renderHubPanel(blogId, page);
             case "blogs" -> blogManageEndpoint.renderAuthorHubPanel(page, basePath);
             case "appearance" -> authorAppearanceEndpoint.renderHubPanel();
+            case "highlights" -> highlightManageEndpoint.renderHubPanel(page, basePath, "proposals");
             default -> throw new NotFoundException("Unknown writing section: " + sectionSlug);
         };
     }

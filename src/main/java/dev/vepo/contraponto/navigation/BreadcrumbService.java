@@ -110,6 +110,10 @@ public class BreadcrumbService {
         return trail(items);
     }
 
+    public BreadcrumbTrail forHighlightsLibrary() {
+        return trail(link("Home", "/"), current("Meus destaques"));
+    }
+
     public BreadcrumbTrail forMainBlog(User author) {
         return trail(link(HOME_LABEL, HOME_PATH), current(author.getName()));
     }
@@ -298,6 +302,10 @@ public class BreadcrumbService {
     public BreadcrumbTrail writingDraft(String draftTitle) {
         String label = draftTitle == null || draftTitle.isBlank() ? "Write" : draftTitle;
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)), current(label));
+    }
+
+    public BreadcrumbTrail writingHighlights() {
+        return hubSection(NavigationHub.WRITING, "Destaques e respostas");
     }
 
     public BreadcrumbTrail writingLibrary() {

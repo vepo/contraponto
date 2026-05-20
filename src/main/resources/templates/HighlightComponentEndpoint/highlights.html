@@ -1,0 +1,57 @@
+<div id="post-highlights-root"
+     class="post-highlights"
+     data-post-id="{section.post.id}"
+     data-highlights-url="{section.highlightsUrl}"
+     data-authenticated="{section.authenticated}">
+    <script type="application/json" id="post-highlights-data">{section.highlightsJson.raw}</script>
+
+    {#if section.respondsToTitle?? && section.respondsToUrl??}
+    <div class="post-response-banner">
+        <span data-i18n="postResponse.inResponseTo">Em resposta a</span>:
+        <a data-hx-get="{section.respondsToUrl}" hx-select="main" hx-target="main" hx-push-url="{section.respondsToUrl}">{section.respondsToTitle}</a>
+    </div>
+    {/if}
+
+    {#if !section.approvedResponses.isEmpty}
+    <section class="post-responses-section" id="post-responses">
+        <h2 class="post-responses-section__title" data-i18n="postResponse.sectionTitle">Respostas</h2>
+        <div class="post-responses-section__list">
+            {#for card in section.approvedResponses}
+            <article class="post-responses-section__card">
+                <h3 class="post-responses-section__card-title">
+                    <a data-hx-get="{card.url}" hx-select="main" hx-target="main" hx-push-url="{card.url}">{card.title}</a>
+                </h3>
+                <p class="post-responses-section__card-meta">{card.authorName}</p>
+                {#if card.excerpt}
+                <p class="post-responses-section__card-excerpt">{card.excerpt}</p>
+                {/if}
+            </article>
+            {/for}
+        </div>
+    </section>
+    {/if}
+
+    <div id="highlights-selection-bar" class="highlights-selection-bar u-hidden" hidden>
+        {#if section.authenticated}
+        <button type="button" class="btn btn--small btn--primary" data-highlight-action="create" data-i18n="highlight.create">Destacar</button>
+        <button type="button" class="btn btn--small btn--outline" data-highlight-action="note" data-i18n="highlight.note.add">Adicionar nota</button>
+        <button type="button" class="btn btn--small btn--outline u-hidden" data-highlight-action="remove" data-i18n="highlight.remove">Remover destaque</button>
+        {#else}
+        <button type="button" class="btn btn--small btn--primary" data-highlight-action="sign-in" data-i18n="highlight.signInToHighlight">Entre para destacar</button>
+        {/if}
+    </div>
+
+    <div class="post-highlights__actions">
+        {#if section.authenticated}
+        <a data-hx-get="/write?respondsTo={section.post.id}"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/write?respondsTo={section.post.id}"
+           class="btn btn--outline btn--small"
+           data-i18n="postResponse.create">Responder com post</a>
+        <a data-hx-get="/highlights" hx-select="main" hx-target="main" hx-push-url="/highlights" class="btn btn--outline btn--small">Meus destaques</a>
+        {#else}
+        <button type="button" class="btn btn--outline btn--small" data-highlight-action="sign-in" data-i18n="postResponse.create">Responder com post</button>
+        {/if}
+    </div>
+</div>

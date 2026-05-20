@@ -83,6 +83,14 @@
                     {view.render.raw}
                 </article>
 
+                <div id="post-highlights"
+                     class="post-highlights-section post-highlights-section--loading"
+                     hx-get="{view.post.url}/components/highlights"
+                     hx-trigger="load, {authRefreshTrigger}"
+                     hx-target="#post-highlights"
+                     hx-swap="innerHTML">
+                </div>
+
                 <div id="comments"
                      class="comments-section comments-section--loading"
                      hx-get="{view.post.url}/components/comments"

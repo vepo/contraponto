@@ -132,7 +132,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Dismiss notification** | Mark one notification read from the overlay. | `DismissNotificationEndpoint` — button: "Dismiss" |
 | **Close notification overlay** | Hide the dropdown without changing read state. | Close control (`data-notification-close`) |
 | **Notifications changed** | HTMX event; refreshes badge and open overlay. | `HtmxTriggers.NOTIFICATIONS_CHANGED_ON_BODY` |
-| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`. | `NotificationType` |
+| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`, `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`, `GIT_SYNC_*`. | `NotificationType` |
 | **Follow after login** | Guest clicks Follow, signs in via modal, then clicks Follow again. | Post page / audience widget |
 | **Subscriptions page** | Authenticated list of blogs the user follows/subscribes to. | `SubscriptionEndpoint` |
 
@@ -146,6 +146,35 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Moderation** | Post owner approves or rejects pending comments. | `PostCommentService` |
 | **Root comment** | Top-level comment (`parent = null`). | `PostComment.isRoot` |
 | **Reply** | Comment whose parent must be **Approved**. | `createReply` |
+
+### Highlights & post responses
+
+| Term | Meaning | Code / notes |
+|------|---------|--------------|
+| **Post text highlight** | Reader's saved passage on a **published post** (**live publication**). Private on the post body unless part of an **official highlight**. | `PostTextHighlight` |
+| **Highlight passage** | Selected plain text (trimmed), max 500 characters. | `PostTextHighlight.passage` |
+| **Highlight anchor** | Locator for the passage within a **publication snapshot** (character offsets in article plain text). | `PostTextHighlight.anchorJson` |
+| **Highlight passage cluster** | Highlights on the same post with the same `anchor_cluster_hash`. | `HighlightAnchorClusterer` |
+| **Common highlight proposal** | Inbox item for the **author** when distinct readers reach the cluster threshold. | `CommonHighlightProposal` |
+| **Official highlight** | **Author-approved** passage shown on the post for all readers. | `OfficialHighlight` |
+| **Highlight note** | Optional text on a **post text highlight** (max 1000 characters). | `HighlightNote` |
+| **Private highlight note** | Note visible only to the highlight author (default). | `HighlightNoteStatus.PRIVATE` |
+| **Public highlight note** | Reader marks note **public**; requires **author approval** before display on post. | `HighlightNoteStatus.PENDING` → `APPROVED` |
+| **Text selection bar** | Floating UI after text selection in `.article-page__content`. | `PostHighlightManager` |
+| **Highlights library** | Reader's list of own highlights and notes. | `HighlightsLibraryEndpoint` — `GET /highlights` |
+| **Highlight moderation** | Author queue: proposals, public notes, post responses. | `HighlightManageEndpoint` — `GET /writing/highlights` |
+| **Post response** | **Published post** on responder's blog that responds to another **published post**. | `PostResponse` |
+| **Source post** | Post being responded to. | `PostResponse.sourcePost` |
+| **Response post** | New post; always links to **source post**. | `PostResponse.responsePost` |
+| **Response link-back** | Link from **source post** to **response post**; shown when **Approved**. | `PostResponseLinkBackStatus` |
+| **Destacar** | Create highlight action (PT-BR). | `highlight.create` |
+| **Entre para destacar** | Guest gate on highlight. | `highlight.signInToHighlight` |
+| **Destaques e respostas** | Writing hub moderation nav label. | `highlight.moderation.title` |
+| **Responder com post** | Start **post response** from source post. | `postResponse.create` |
+| **Em resposta a** | Banner on **response post**. | `postResponse.inResponseTo` |
+| **Respostas** | Section on **source post** for approved link-backs. | `postResponse.sectionTitle` |
+
+**Notification types (highlights):** `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`.
 
 ### Git sync
 

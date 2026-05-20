@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head}Meus destaques - contraponto{/include}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main class="highlights-library-page" id="main-content">
+            <div class="container-narrow">
+                {#include components/breadcrumb trail=breadcrumb /}
+                <h1 class="page-title">Meus destaques</h1>
+                {#if highlights.isEmpty()}
+                <p class="highlights-library-page__empty">Você ainda não destacou nenhum trecho.</p>
+                {#else}
+                <div class="highlights-library-page__list">
+                    {#for row in highlights.data}
+                    <article class="highlights-library-page__row">
+                        <h2 class="highlights-library-page__post-title">
+                            <a data-hx-get="/{row.authorUsername}/post/{row.postSlug}"
+                               hx-select="main" hx-target="main"
+                               hx-push-url="/{row.authorUsername}/post/{row.postSlug}">{row.postTitle}</a>
+                        </h2>
+                        <blockquote class="highlights-library-page__passage">{row.passage}</blockquote>
+                        <time class="highlights-library-page__date">{row.createdAt.format('dd/MM/yyyy')}</time>
+                    </article>
+                    {/for}
+                </div>
+                {#include components/manage-pagination page=highlights basePath='/highlights' extraQuery='' fragmentTarget='' /}
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

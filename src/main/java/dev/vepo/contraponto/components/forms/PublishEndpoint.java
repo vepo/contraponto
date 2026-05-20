@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.PostWriteService;
+import dev.vepo.contraponto.postresponse.PostResponseService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.GitSyncTrigger;
@@ -73,6 +74,7 @@ public class PublishEndpoint {
     private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
+    private final PostResponseService postResponseService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -86,7 +88,8 @@ public class PublishEndpoint {
                            Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                            BlogAudienceComponentEndpoint audienceComponentEndpoint,
                            LoggedUser loggedUser,
-                           BreadcrumbService breadcrumbService) {
+                           BreadcrumbService breadcrumbService,
+                           PostResponseService postResponseService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -99,6 +102,7 @@ public class PublishEndpoint {
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.postResponseService = postResponseService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -186,6 +190,10 @@ public class PublishEndpoint {
         tagService.syncPostTags(post, request.tagsJson());
         postImageDependencyService.syncPostDependencies(post);
         PostPublication published = publicationService.publish(post);
+
+        if (request.respondsTo() != null) {
+            postResponseService.createOnPublish(post, request.respondsTo(), loggedUser.getId());
+        }
 
         postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.PUBLISH));
 
