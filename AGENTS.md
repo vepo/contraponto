@@ -14,7 +14,7 @@ Read these before changing code or tests:
 | [docs/ui-elements.md](docs/ui-elements.md) | CSS class catalog and main/manage/write bundles |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git ↔ Jekyll sync layout |
 | [docs/deployment.md](docs/deployment.md) | Production checklist (DB, SMTP, URL, secrets) |
-| [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped); list UIs → `contraponto-pagination.mdc`; JS/HTMX → `contraponto-javascript.mdc`; CSS → `contraponto-css.mdc` |
+| [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped); static analysis finish gate → `static-analysis.mdc`; list UIs → `contraponto-pagination.mdc`; JS/HTMX → `contraponto-javascript.mdc`; CSS → `contraponto-css.mdc` |
 
 **Workflow:** entity/repository → service (if non-trivial) → endpoint → Qute template → `@WebTest` with `App` + `Given` → navigation/links if user-facing.
 
