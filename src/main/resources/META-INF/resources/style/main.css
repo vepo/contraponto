@@ -1827,20 +1827,6 @@ a {
   margin-bottom: 0.5rem;
 }
 
-/* Drop cap */
-/* Markdown: direct <p> that is first-of-type inside .article-page__content */
-/* AsciiDoc: first <p> inside a .paragraph div that is not preceded by another .paragraph */
-.article-page__content > p:first-of-type::first-letter,
-.article-page__content .paragraph:first-of-type p:first-of-type::first-letter {
-  font-family: var(--font-serif-display);
-  font-size: 4.2rem;
-  float: left;
-  line-height: 0.8;
-  padding-right: 0.5rem;
-  padding-top: 0.15rem;
-  font-weight: 700;
-}
-
 .article-page__content > p:first-of-type,
 .article-page__content .paragraph:first-of-type {
     min-height: calc(4.2rem - 1.4rem);
