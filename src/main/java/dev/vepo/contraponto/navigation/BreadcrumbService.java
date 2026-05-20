@@ -93,6 +93,20 @@ public class BreadcrumbService {
         return BreadcrumbTrail.EMPTY;
     }
 
+    public BreadcrumbTrail forAuthorDirectory() {
+        return trail(link(HOME_LABEL, HOME_PATH), current("Autores"));
+    }
+
+    public BreadcrumbTrail forAuthorProfile(User author) {
+        return trail(link(HOME_LABEL, HOME_PATH),
+                     link("Autores", "/authors"),
+                     current(author.getName()));
+    }
+
+    public BreadcrumbTrail forBlogDirectory() {
+        return trail(link(HOME_LABEL, HOME_PATH), current("Blogs"));
+    }
+
     public BreadcrumbTrail forCustomPage(CustomPage page) {
         var blog = page.getBlog();
         var items = new ArrayList<BreadcrumbItem>();

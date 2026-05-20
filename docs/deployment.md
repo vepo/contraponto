@@ -35,7 +35,7 @@ export QUARKUS_PROFILE=prod
 
 | Variable | Required | Purpose |
 |----------|:--------:|---------|
-| `APP_PUBLIC_URL` | yes | HTTPS origin, e.g. `https://contraponto.example` — used in emails, RSS links, and HTML sanitization (`image.base.url`) |
+| `APP_PUBLIC_URL` | yes | HTTPS origin, e.g. `https://contraponto.example` — used in emails, RSS links, HTML sanitization, SEO canonical/Open Graph URLs, and `Sitemap:` in `robots.txt` (`image.base.url`) |
 
 ## 3. SMTP (mailer)
 

@@ -6,27 +6,24 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 @ApplicationScoped
 public class GitSyncRunService {
 
-    private final BlogRepository blogRepository;
     private final GitSyncRunRepository gitSyncRunRepository;
     private final GitSyncRunTransaction gitSyncRunTransaction;
     private final ObjectMapper objectMapper;
 
     @Inject
-    public GitSyncRunService(BlogRepository blogRepository,
-                             GitSyncRunRepository gitSyncRunRepository,
+    public GitSyncRunService(GitSyncRunRepository gitSyncRunRepository,
                              GitSyncRunTransaction gitSyncRunTransaction,
                              ObjectMapper objectMapper) {
-        this.blogRepository = blogRepository;
         this.gitSyncRunRepository = gitSyncRunRepository;
         this.gitSyncRunTransaction = gitSyncRunTransaction;
         this.objectMapper = objectMapper;
@@ -60,19 +57,12 @@ public class GitSyncRunService {
                                                     result.technicalDetail()));
     }
 
+    @Transactional(value = TxType.REQUIRES_NEW)
     public long beginRunForBlog(long blogId,
                                 GitSyncOperation operation,
                                 GitSyncTrigger trigger,
                                 Long postId) {
-        Blog blog = blogRepository.findById(blogId).orElseThrow();
-        return gitSyncRunTransaction.beginRun(
-                                              blogId,
-                                              operation,
-                                              trigger,
-                                              postId,
-                                              blog.getGitRemoteUrl(),
-                                              blog.getGitBranch(),
-                                              blog.getGitLastKnownCommit());
+        return gitSyncRunTransaction.beginRun(blogId, operation, trigger, postId);
     }
 
     public String buildConventionSnapshot(JekyllLayoutConvention convention,

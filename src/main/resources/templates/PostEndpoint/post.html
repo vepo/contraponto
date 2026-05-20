@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    {view.liveTitle}
-    {/include}
-    <body hx-history-elt>
+    {#include components/head seo=seo /}
+    <body>
         {#include components/header /}
-        <main class="article-page" id="main-content"
+        <main hx-history-elt class="article-page" id="main-content"
               data-reading-time-post-id="{view.post.id}"
               data-reading-time-url="/forms/posts/{view.post.id}/reading-time">
             <div class="container-narrow">
@@ -102,5 +100,6 @@
         </main>
 
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

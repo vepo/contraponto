@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head seo=seo /}
+    <body>
+        {#include components/header /}
+        <main id="main-content" class="author-profile-page" hx-history-elt>
+            <div class="author-profile">
+                {#include components/breadcrumb trail=breadcrumb /}
+                <header class="author-profile-header">
+                    <img src="{author.avatarUrl}" alt="" class="author-profile-header__avatar" width="88" height="88"/>
+                    <h1 class="author-profile-header__name">{author.name}</h1>
+                    <p class="author-profile-header__username">@{author.username}</p>
+                    {#if renderedBio}
+                    <div class="author-profile-header__bio">{renderedBio.raw}</div>
+                    {/if}
+                    {#include components/author-social-links socialLinks=socialLinks /}
+                    <p class="author-profile-header__actions">
+                        <a data-hx-get="/{author.username}"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-push-url="/{author.username}"
+                           class="btn btn--primary"
+                           data-i18n="authorProfile.mainBlog">Ver blog principal</a>
+                    </p>
+                </header>
+
+                {#if !topTags.isEmpty}
+                <section class="author-profile__tags">
+                    <h2 class="author-profile__section-title" data-i18n="authorProfile.topTags">Principais tags</h2>
+                    {#include components/profile-tag-list topTags=topTags /}
+                </section>
+                {/if}
+
+                {#if !blogs.isEmpty}
+                <section class="author-profile__blogs">
+                    <h2 class="author-profile__section-title" data-i18n="authorProfile.blogs">Blogs</h2>
+                    <div class="directory-grid directory-grid--compact">
+                        {#for blog in blogs}
+                        <article class="blog-directory-card blog-directory-card--compact">
+                            <a data-hx-get="{blog.url}"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-push-url="{blog.url}"
+                               class="blog-directory-card__link">
+                                <div class="blog-directory-card__body">
+                                    <h3 class="blog-directory-card__title">{#if blog.main}{author.name}{#else}{blog.name}{/if}</h3>
+                                    {#if blog.description}
+                                    <p class="blog-directory-card__excerpt">{blog.description}</p>
+                                    {/if}
+                                </div>
+                            </a>
+                        </article>
+                        {/for}
+                    </div>
+                </section>
+                {/if}
+
+                {#if !recentPosts.isEmpty}
+                <section class="author-profile__posts">
+                    <h2 class="author-profile__section-title" data-i18n="authorProfile.recentPosts">Publicações recentes</h2>
+                    <div class="posts-grid posts-grid--compact">
+                        {#for post in recentPosts}
+                        <article class="article-card">
+                            <div class="article-card__content">
+                                <h3 class="article-card__title">
+                                    <a data-hx-get="{post.url}"
+                                       hx-select="main"
+                                       hx-target="main"
+                                       hx-push-url="{post.url}">{post.liveTitle}</a>
+                                </h3>
+                            </div>
+                        </article>
+                        {/for}
+                    </div>
+                </section>
+                {/if}
+            </div>
+        </main>
+        {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
+    </body>
+</html>

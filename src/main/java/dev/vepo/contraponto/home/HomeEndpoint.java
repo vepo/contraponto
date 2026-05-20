@@ -6,6 +6,12 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
+import dev.vepo.contraponto.tag.AuthorTagUsage;
+import dev.vepo.contraponto.tag.TagUsage;
+import java.util.Collections;
+import java.util.List;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -30,7 +36,13 @@ public class HomeEndpoint {
 
         static native TemplateInstance grid(Page<Post> posts, boolean ignoreFirst);
 
-        static native TemplateInstance home(Page<Post> posts, Links links, LoggedUser user);
+        static native TemplateInstance home(Page<Post> posts,
+                                            Links links,
+                                            LoggedUser user,
+                                            SeoMetadata seo,
+                                            List<TagUsage> topTags,
+                                            List<AuthorTagUsage> mainAuthors,
+                                            long totalAuthors);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -40,12 +52,17 @@ public class HomeEndpoint {
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final SeoService seoService;
 
     @Inject
-    public HomeEndpoint(PostRepository postRepository, CustomPageRepository customPageRepository, LoggedUser loggedUser) {
+    public HomeEndpoint(PostRepository postRepository,
+                        CustomPageRepository customPageRepository,
+                        LoggedUser loggedUser,
+                        SeoService seoService) {
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.seoService = seoService;
     }
 
     @GET
@@ -60,6 +77,12 @@ public class HomeEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance home(@QueryParam("limit") @DefaultValue("12") int limit) {
-        return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)), customPageRepository.loadLinks(), loggedUser);
+        return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)),
+                              customPageRepository.loadLinks(),
+                              loggedUser,
+                              seoService.forHome(),
+                              Collections.emptyList(),
+                              Collections.emptyList(),
+                              0L);
     }
 }

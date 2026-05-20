@@ -43,6 +43,7 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.TransactionRequiredException;
 
 @ApplicationScoped
 public class BlogGitIntegrationService {
@@ -286,13 +287,36 @@ public class BlogGitIntegrationService {
         finalizeRun(GitSyncOutcome.SKIPPED, GitErrorKind.NONE, false, false, null, null, summary);
     }
 
+    private static GitSyncPhase phaseForFailure(Exception e, GitErrorKind kind) {
+        if (isTransactionRequired(e)) {
+            return GitSyncPhase.FETCH;
+        }
+        return switch (kind) {
+            case WORKSPACE -> GitSyncPhase.WORKSPACE;
+            case CONVENTION -> GitSyncPhase.CONVENTION;
+            case POST -> GitSyncPhase.POST_IMPORT;
+            case NETWORK, REPOSITORY, AUTHENTICATION, UNKNOWN, NONE -> GitSyncPhase.FETCH;
+        };
+    }
+
+    private static boolean isTransactionRequired(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof TransactionRequiredException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
     private void handleFailure(Exception e,
                                boolean repositoryReadable,
                                boolean dataLoadable,
                                String conventionSnapshot) {
         GitSyncErrorClassifier.ClassifiedError classified = errorClassifier.classify(e);
         gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.error(
-                                                                        GitSyncPhase.WORKSPACE,
+                                                                        phaseForFailure(e, classified.kind()),
                                                                         classified.message(),
                                                                         classified.remediation(),
                                                                         e.toString()));

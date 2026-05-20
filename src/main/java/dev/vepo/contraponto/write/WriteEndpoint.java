@@ -18,6 +18,8 @@ import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.tag.TagService;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
@@ -38,7 +40,11 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance write(WritePage writePage, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
+        public static native TemplateInstance write(WritePage writePage,
+                                                    Links links,
+                                                    LoggedUser user,
+                                                    BreadcrumbTrail breadcrumb,
+                                                    SeoMetadata seo);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -53,6 +59,7 @@ public class WriteEndpoint {
     private final ContentImageMarkerService contentImageMarkerService;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
+    private final SeoService seoService;
 
     @Inject
     public WriteEndpoint(PostRepository postRepository,
@@ -62,7 +69,8 @@ public class WriteEndpoint {
                          TagService tagService,
                          ContentImageMarkerService contentImageMarkerService,
                          LoggedUser loggedUser,
-                         BreadcrumbService breadcrumbService) {
+                         BreadcrumbService breadcrumbService,
+                         SeoService seoService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.customPageRepository = customPageRepository;
@@ -71,6 +79,7 @@ public class WriteEndpoint {
         this.contentImageMarkerService = contentImageMarkerService;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.seoService = seoService;
     }
 
     private record ResponseContext(Long postId, String title, String url) {}
@@ -117,7 +126,8 @@ public class WriteEndpoint {
                                              responseContext.url()),
                                links,
                                loggedUser,
-                               breadcrumbService.writingWrite());
+                               breadcrumbService.writingWrite(),
+                               seoService.forPrivatePage("Escrever"));
     }
 
     @GET
@@ -151,6 +161,7 @@ public class WriteEndpoint {
                                              null),
                                links,
                                loggedUser,
-                               breadcrumbService.writingDraft(post.getTitle()));
+                               breadcrumbService.writingDraft(post.getTitle()),
+                               seoService.forPrivatePage("Escrever"));
     }
 }

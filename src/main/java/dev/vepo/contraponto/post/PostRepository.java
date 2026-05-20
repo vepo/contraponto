@@ -86,7 +86,7 @@ public class PostRepository {
                             .getSingleResult();
     }
 
-    private long countPublishedByBlog(long blogId) {
+    public long countPublishedByBlog(long blogId) {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
                                          FROM Post p
@@ -469,6 +469,17 @@ public class PostRepository {
                                                                   """, Post.class)
                                                      .setParameter("ownerId", ownerId)
                                                      .setMaxResults(limit)
+                                                     .getResultList());
+    }
+
+    public List<Post> findPublishedForSitemap() {
+        return attachLatestPublications(entityManager.createQuery("""
+                                                                  SELECT DISTINCT p FROM Post p
+                                                                  JOIN FETCH p.blog b
+                                                                  JOIN FETCH b.owner o
+                                                                  WHERE p.published = true AND b.active = true
+                                                                  ORDER BY p.id
+                                                                  """, Post.class)
                                                      .getResultList());
     }
 

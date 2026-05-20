@@ -3,9 +3,9 @@
     {#include components/head}
     Reset your password - contraponto
     {/include}
-    <body hx-history-elt>
+    <body>
         {#include components/header /}
-        <main class="profile-page" id="main-content">
+        <main hx-history-elt class="profile-page" id="main-content">
             <div class="container-narrow">
                 {#include components/breadcrumb trail=breadcrumb /}
                 <h1 class="profile-page__title" data-i18n="passwordRecovery.title">Redefinir sua senha</h1>
@@ -43,6 +43,5 @@
             </div>
         </main>
         {#include components/footer /}
-        <div id="modal-container"></div>
     </body>
 </html>

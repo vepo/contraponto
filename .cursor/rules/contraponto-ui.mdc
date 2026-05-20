@@ -6,7 +6,7 @@ alwaysApply: false
 
 # UI elements (templates)
 
-Before changing templates, read [docs/ui-elements.md](../../docs/ui-elements.md). For CSS file authoring (tokens, bundles, formatting), see [contraponto-css.mdc](contraponto-css.mdc).
+Before changing templates, read [docs/ui-elements.md](../../docs/ui-elements.md) and [docs/ui-palette.md](../../docs/ui-palette.md). For CSS file authoring (tokens, bundles, formatting), see [contraponto-css.mdc](contraponto-css.mdc).
 
 ## Class names
 
@@ -24,6 +24,7 @@ Reading → Load more (`contraponto-pagination.mdc`). Managing → `manage-pagin
 
 ## New surfaces
 
+0. Confirm colors/spacing against [ui-palette.md](../../docs/ui-palette.md).
 1. Register block in ui-elements.md.
 2. Add CSS per [contraponto-css.mdc](contraponto-css.mdc).
 3. Update ui-guidelines.md for UX narrative if it is a new page type.

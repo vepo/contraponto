@@ -180,6 +180,18 @@ public class CustomPageRepository {
         return new Page<>(data, query.page(), query.limit(), total);
     }
 
+    public List<CustomPage> findPublishedForSitemap() {
+        return entityManager.createQuery("""
+                                         SELECT cp FROM CustomPage cp
+                                         LEFT JOIN FETCH cp.blog b
+                                         LEFT JOIN FETCH b.owner
+                                         WHERE cp.published = true AND
+                                               (b IS NULL OR b.active = true)
+                                         ORDER BY cp.id
+                                         """, CustomPage.class)
+                            .getResultList();
+    }
+
     public List<CustomPageRow> listAllForManagement() {
         return entityManager.createQuery("""
                                          SELECT cp FROM CustomPage cp

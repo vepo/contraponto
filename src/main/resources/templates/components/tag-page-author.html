@@ -1,0 +1,14 @@
+<article class="tag-page-author">
+    <a data-hx-get="/authors/{usage.author.username}"
+       hx-select="main"
+       hx-target="main"
+       hx-push-url="/authors/{usage.author.username}"
+       class="tag-page-author__link">
+        <img src="{usage.author.avatarUrl}" alt="" class="tag-page-author__avatar" width="48" height="48"/>
+        <div class="tag-page-author__body">
+            <span class="tag-page-author__name">{usage.author.name}</span>
+            <span class="tag-page-author__username">@{usage.author.username}</span>
+            <span class="tag-page-author__count">{usage.postCount} <span data-i18n="tag.authorPostCount">publicações</span></span>
+        </div>
+    </a>
+</article>

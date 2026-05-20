@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    {page.title} - contraponto
-    {/include}
-    <body hx-history-elt>
+    {#include components/head seo=seo /}
+    <body>
         {#include components/header /}
-        <main class="custom-page article-page" id="main-content">
+        <main hx-history-elt class="custom-page article-page" id="main-content">
             <div class="container-narrow">
                 {#include components/breadcrumb trail=breadcrumb /}
                 <h1 class="article-page__title">{page.title}</h1>
@@ -15,5 +13,6 @@
             </div>
         </main>
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

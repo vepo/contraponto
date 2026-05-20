@@ -6,7 +6,7 @@ alwaysApply: false
 
 # CSS conventions
 
-Class registry and block names: [docs/ui-elements.md](../../docs/ui-elements.md). Template/button rules: [contraponto-ui.mdc](contraponto-ui.mdc). HTMX behavior: [docs/htmx-events.md](../../docs/htmx-events.md).
+Class registry and block names: [docs/ui-elements.md](../../docs/ui-elements.md). **Palette tokens:** [docs/ui-palette.md](../../docs/ui-palette.md) (read before any UI change). Template/button rules: [contraponto-ui.mdc](contraponto-ui.mdc). HTMX behavior: [docs/htmx-events.md](../../docs/htmx-events.md).
 
 ## Stylesheet bundles
 
@@ -51,6 +51,7 @@ Load order in [components/head.html](../../src/main/resources/templates/componen
 
 ## New UI checklist
 
+0. Read [ui-palette.md](../../docs/ui-palette.md); use existing tokens or extend `:root` + the doc together.
 1. Register the block in [ui-elements.md](../../docs/ui-elements.md).
 2. Add CSS to the correct bundle with tokens + BEM.
 3. Use existing `.btn` modifiers — never `btn--sm` (use `btn--small`).

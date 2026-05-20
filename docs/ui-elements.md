@@ -1,6 +1,6 @@
 # UI Elements catalog
 
-Canonical reference for **CSS class names** and **stylesheet bundles**. For UX flows and page narratives, see [ui-guidelines.md](ui-guidelines.md). For user-visible copy, see [domain-specification.md](domain-specification.md) § UI labels.
+Canonical reference for **CSS class names** and **stylesheet bundles**. For **design tokens** (colors, spacing, typography), see [ui-palette.md](ui-palette.md). For UX flows and page narratives, see [ui-guidelines.md](ui-guidelines.md). For user-visible copy, see [domain-specification.md](domain-specification.md) § UI labels.
 
 ---
 
@@ -41,8 +41,8 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 
 | Class | Purpose |
 |-------|---------|
-| `.container` | Max width 1192px |
-| `.container-narrow` | Max width 900px (forms, manage pages) |
+| `.container` | Max width 1080px (`--container-max`) |
+| `.container-narrow` | Max width 760px (`--container-narrow`) |
 | `.sr-only` / `.u-sr-only` | Screen-reader only text |
 
 ### Buttons (always `btn` + modifier)

@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head rssAlternateUrl=tag.rssFeedUrl rssAlternateTitle=tag.name}
-    {tag.name} — tags — contraponto
-    {/include}
-    <body hx-history-elt>
+    {#include components/head seo=seo rssAlternateUrl=tag.rssFeedUrl rssAlternateTitle=tag.name /}
+    <body>
         {#include components/header /}
-        <main id="main-content" class="user-blog-page">
-            <div class="container">
-                {#include components/breadcrumb trail=breadcrumb /}
-            </div>
-            <header class="tag-page-header container">
-                <h1 class="tag-page__title"><span class="tag-page__hash" aria-hidden="true">#</span>{tag.name}</h1>
-                {#if tag.description}
-                <p class="tag-page__description">{tag.description}</p>
-                {/if}
-                <p class="tag-page__actions">
-                    {#include components/rss-feed-link feedUrl=tag.rssFeedUrl /}
-                    {#if user.isEditor}
-                    <a data-hx-get="/tags/{tag.slug}/edit"
-                       hx-select="main"
-                       hx-target="main"
-                       hx-push-url="/tags/{tag.slug}/edit"
-                       class="btn btn--small btn--outline" data-i18n="tag.editTitle">Editar tag</a>
-                    {/if}
-                </p>
-            </header>
-
-            <div class="container">
-                <div class="posts-grid">
-                    {#include TagPageEndpoint/grid tagSlug=tag.slug posts=posts /}
+        <main hx-history-elt id="main-content" class="browse-page">
+            {#include components/browse-sidebar-nav links=links /}
+            <div class="browse-page-shell">
+                <div class="browse-page-shell__main">
+                    {#include components/breadcrumb trail=breadcrumb /}
+                    <header class="tag-page-header">
+                        <h1 class="tag-page__title"><span class="tag-page__hash" aria-hidden="true">#</span>{tag.name}</h1>
+                        {#if tag.description}
+                        <p class="tag-page__description">{tag.description}</p>
+                        {/if}
+                        <p class="tag-page__actions">
+                            {#if user.isEditor}
+                            <a data-hx-get="/tags/{tag.slug}/edit"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-push-url="/tags/{tag.slug}/edit"
+                               class="btn btn--small btn--outline" data-i18n="tag.editTitle">Editar tag</a>
+                            {/if}
+                        </p>
+                    </header>
+                    <div class="posts-grid">
+                        {#include TagPageEndpoint/grid tagSlug=tag.slug posts=posts /}
+                    </div>
                 </div>
             </div>
+            {#include components/browse-explore-aside topTags=topTags mainAuthors=mainAuthors totalAuthors=totalAuthors rssFeedUrl=tag.rssFeedUrl /}
         </main>
 
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

@@ -87,7 +87,7 @@ class BlogTest {
     void userBlogHasCorrectPageTitle(App app) {
         app.access()
            .goTo(testAuthor.getDefaultBlog())
-           .assertPageTitleContains(testAuthor.getName(), "contraponto");
+           .assertPageTitleContains(testAuthor.getName(), "Contraponto");
     }
 
     @Test

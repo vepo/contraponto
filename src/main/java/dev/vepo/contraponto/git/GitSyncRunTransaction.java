@@ -90,10 +90,7 @@ public class GitSyncRunTransaction {
     public long beginRun(long blogId,
                          GitSyncOperation operation,
                          GitSyncTrigger trigger,
-                         Long postId,
-                         String remoteUrl,
-                         String branch,
-                         String commitBefore) {
+                         Long postId) {
         Blog blog = blogRepository.findById(blogId).orElseThrow();
         GitSyncRun run = new GitSyncRun();
         run.setBlog(blog);
@@ -104,9 +101,9 @@ public class GitSyncRunTransaction {
         run.setTrigger(trigger);
         run.setOutcome(GitSyncOutcome.FAILED);
         run.setGitErrorKind(GitErrorKind.NONE);
-        run.setRemoteUrl(remoteUrl);
-        run.setBranch(branch);
-        run.setCommitBefore(commitBefore);
+        run.setRemoteUrl(blog.getGitRemoteUrl());
+        run.setBranch(blog.getGitBranch());
+        run.setCommitBefore(blog.getGitLastKnownCommit());
         run.setSettingsSnapshot(buildSettingsSnapshot());
         gitSyncRunRepository.create(run);
         return run.getId();

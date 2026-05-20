@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    Search results - contraponto
-    {/include}
-    <body hx-history-elt>
+    {#include components/head seo=seo /}
+    <body>
         {#include components/header /}
-        <main class="search-page" id="main-content">
+        <main hx-history-elt class="search-page" id="main-content">
             <div class="container-narrow">
                 {#include components/breadcrumb trail=breadcrumb /}
                 <h1 class="search-page__title" data-i18n="search.title">Buscar</h1>
@@ -51,5 +49,6 @@
         </main>
         
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

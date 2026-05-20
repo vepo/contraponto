@@ -1,0 +1,10 @@
+{#if !socialLinks.isEmpty}
+<nav class="author-profile__social" aria-label="Social links">
+    {#for link in socialLinks}
+    <a href="{link.url}"
+       class="author-profile__social-link author-profile__social-link--{link.key}"
+       target="_blank"
+       rel="noopener noreferrer{#if link.key == 'website'} me{/if}">{link.label}</a>
+    {/for}
+</nav>
+{/if}

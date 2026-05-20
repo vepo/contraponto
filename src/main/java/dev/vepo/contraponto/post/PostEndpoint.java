@@ -16,6 +16,8 @@ import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import dev.vepo.contraponto.view.ViewRepository;
 import io.quarkus.qute.CheckedTemplate;
@@ -51,7 +53,8 @@ public class PostEndpoint {
                                                    long viewCount,
                                                    long averageReadingSeconds,
                                                    BlogAudienceView audience,
-                                                   BreadcrumbTrail breadcrumb);
+                                                   BreadcrumbTrail breadcrumb,
+                                                   SeoMetadata seo);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
 
@@ -80,6 +83,7 @@ public class PostEndpoint {
     private final SessionIdProvider sessionIdProvider;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
+    private final SeoService seoService;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -91,7 +95,8 @@ public class PostEndpoint {
                         ReadingTimeRepository readingTimeRepository,
                         SessionIdProvider sessionIdProvider,
                         BlogAudienceComponentEndpoint audienceComponentEndpoint,
-                        BreadcrumbService breadcrumbService) {
+                        BreadcrumbService breadcrumbService,
+                        SeoService seoService) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -102,6 +107,7 @@ public class PostEndpoint {
         this.sessionIdProvider = sessionIdProvider;
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.breadcrumbService = breadcrumbService;
+        this.seoService = seoService;
     }
 
     @GET
@@ -206,7 +212,8 @@ public class PostEndpoint {
                                                    viewCount,
                                                    averageReadingSeconds,
                                                    audience,
-                                                   breadcrumbService.forPost(view));
+                                                   breadcrumbService.forPost(view),
+                                                   seoService.forPost(view));
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));

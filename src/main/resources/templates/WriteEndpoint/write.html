@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    {#if writePage.post.isPresent}
-        data-i18n="write.editPageTitle">Editar publicação
-    {#else}
-        data-i18n="write.newPageTitle">Escrever uma história
-    {/if} - contraponto
-    {/include}
-    <body hx-history-elt class="write-page">
+    {#include components/head seo=seo /}
+    <body class="write-page">
         {#include components/header /}
-        <main class="write-main">
+        <main hx-history-elt class="write-main">
             <div class="write-container">
                 {#include components/breadcrumb trail=breadcrumb /}
                 {#if writePage.hasUnpublishedChanges}
@@ -196,5 +190,6 @@
         </main>
 
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

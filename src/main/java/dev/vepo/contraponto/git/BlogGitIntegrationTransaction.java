@@ -9,9 +9,9 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
-import io.quarkus.arc.Arc;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -30,18 +30,20 @@ public class BlogGitIntegrationTransaction {
     private final BlogGitIntegrationService integrationService;
     private final BlogRepository blogRepository;
     private final PostRepository postRepository;
-
     private final GitSyncRunService gitSyncRunService;
+    private final Instance<BlogGitIntegrationTransaction> self;
 
     @Inject
     public BlogGitIntegrationTransaction(BlogGitIntegrationService integrationService,
                                          BlogRepository blogRepository,
                                          PostRepository postRepository,
-                                         GitSyncRunService gitSyncRunService) {
+                                         GitSyncRunService gitSyncRunService,
+                                         Instance<BlogGitIntegrationTransaction> self) {
         this.integrationService = integrationService;
         this.blogRepository = blogRepository;
         this.postRepository = postRepository;
         this.gitSyncRunService = gitSyncRunService;
+        this.self = self;
     }
 
     @Transactional(value = TxType.REQUIRES_NEW)
@@ -53,20 +55,39 @@ public class BlogGitIntegrationTransaction {
         }
     }
 
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public Optional<Long> openExportRun(long postId, GitSyncTrigger trigger) {
+        Optional<Post> opt = postRepository.findById(postId);
+        if (opt.isEmpty()) {
+            return Optional.empty();
+        }
+        Blog blog = opt.get().getBlog();
+        if (!(blog.isActive() && isConfiguredForGit(blog))) {
+            return Optional.empty();
+        }
+        long runId = gitSyncRunService.beginRunForBlog(blog.getId(), GitSyncOperation.EXPORT, trigger, postId);
+        return Optional.of(runId);
+    }
+
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public Optional<Long> openImportRun(long blogId, GitSyncTrigger trigger) {
+        Optional<Blog> blogOpt = blogRepository.findById(blogId);
+        if (blogOpt.isEmpty() || !blogOpt.get().isActive() || !isConfiguredForGit(blogOpt.get())) {
+            return Optional.empty();
+        }
+        long runId = gitSyncRunService.beginRunForBlog(blogId, GitSyncOperation.IMPORT, trigger, null);
+        return Optional.of(runId);
+    }
+
     @ActivateRequestContext
     public void runScheduledExport(long postId, GitSyncTrigger trigger) {
         try {
-            Optional<Post> opt = postRepository.findById(postId);
-            if (opt.isEmpty()) {
+            Optional<Long> runId = self.get().openExportRun(postId, trigger);
+            if (runId.isEmpty()) {
                 return;
             }
-            Blog blog = opt.get().getBlog();
-            if (!(blog.isActive() && isConfiguredForGit(blog))) {
-                return;
-            }
-            long runId = gitSyncRunService.beginRunForBlog(blog.getId(), GitSyncOperation.EXPORT, trigger, postId);
-            GitSyncRunContext.setRunId(runId);
-            self().exportPost(postId);
+            GitSyncRunContext.setRunId(runId.get());
+            self.get().exportPost(postId);
         } catch (RuntimeException e) {
             LOG.error("Git export failed postId={}", postId, e);
         } finally {
@@ -77,22 +98,17 @@ public class BlogGitIntegrationTransaction {
     @ActivateRequestContext
     public void runScheduledImport(long blogId, GitSyncTrigger trigger) {
         try {
-            Optional<Blog> blogOpt = blogRepository.findById(blogId);
-            if (blogOpt.isEmpty() || !blogOpt.get().isActive() || !isConfiguredForGit(blogOpt.get())) {
+            Optional<Long> runId = self.get().openImportRun(blogId, trigger);
+            if (runId.isEmpty()) {
                 return;
             }
-            long runId = gitSyncRunService.beginRunForBlog(blogId, GitSyncOperation.IMPORT, trigger, null);
-            GitSyncRunContext.setRunId(runId);
-            self().syncBlogFromGit(blogId);
+            GitSyncRunContext.setRunId(runId.get());
+            self.get().syncBlogFromGit(blogId);
         } catch (RuntimeException e) {
             LOG.error("Git import failed blogId={}", blogId, e);
         } finally {
             GitSyncRunContext.clear();
         }
-    }
-
-    private BlogGitIntegrationTransaction self() {
-        return Arc.container().select(BlogGitIntegrationTransaction.class).get();
     }
 
     @Transactional(value = TxType.REQUIRES_NEW)

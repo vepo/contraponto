@@ -69,6 +69,24 @@ public class User {
     @JoinColumn(name = "default_banner_id")
     private Image defaultBlogBanner;
 
+    @Column(name = "profile_description", columnDefinition = "TEXT")
+    private String profileDescription;
+
+    @Column(name = "website_url", length = 2048)
+    private String websiteUrl;
+
+    @Column(name = "twitter_url", length = 2048)
+    private String twitterUrl;
+
+    @Column(name = "mastodon_url", length = 2048)
+    private String mastodonUrl;
+
+    @Column(name = "github_url", length = 2048)
+    private String githubUrl;
+
+    @Column(name = "linkedin_url", length = 2048)
+    private String linkedinUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -133,8 +151,20 @@ public class User {
         return email;
     }
 
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public String getLinkedinUrl() {
+        return linkedinUrl;
+    }
+
+    public String getMastodonUrl() {
+        return mastodonUrl;
     }
 
     public String getName() {
@@ -149,6 +179,10 @@ public class User {
         return pendingEmail;
     }
 
+    public String getProfileDescription() {
+        return profileDescription;
+    }
+
     public Image getProfilePicture() {
         return profilePicture;
     }
@@ -157,12 +191,20 @@ public class User {
         return roles;
     }
 
+    public String getTwitterUrl() {
+        return twitterUrl;
+    }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     public String getUsername() {
         return username;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
     }
 
     public boolean hasRole(Role role) {
@@ -198,8 +240,20 @@ public class User {
         this.email = email;
     }
 
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
+    }
+
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public void setMastodonUrl(String mastodonUrl) {
+        this.mastodonUrl = mastodonUrl;
     }
 
     public void setName(String name) {
@@ -214,6 +268,10 @@ public class User {
         this.pendingEmail = pendingEmail;
     }
 
+    public void setProfileDescription(String profileDescription) {
+        this.profileDescription = profileDescription;
+    }
+
     public void setProfilePicture(Image profilePicture) {
         this.profilePicture = profilePicture;
     }
@@ -222,12 +280,20 @@ public class User {
         this.roles = new HashSet<>(roles);
     }
 
+    public void setTwitterUrl(String twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
     }
 
     @Override

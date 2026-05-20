@@ -15,17 +15,17 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 ### 2.1 Typography-driven hierarchy
 - **Serif fonts** (Cormorant Garamond, Playfair Display) for headings, titles, and body copy to evoke a timeless editorial feel.
 - **Sans‑serif font** (Inter) for UI elements, metadata, and navigation – ensuring clean contrast.
-- Font sizes follow a modular scale: `18px` base for body, `1.1rem` for article content, `3rem` for main titles on desktop.
+- Font sizes follow a modular scale: `16px` base for body, `1.1rem` for article content, `2.25rem` for main post titles on desktop. Full token table: [ui-palette.md](ui-palette.md).
 
-### 2.2 Color restraint
-- Primary brand colour: `#1a8917` (green) – used sparingly for links, buttons, and accents.
-- Accent colour: `#c41e3a` (deep red) – reserved for high‑emphasis elements like drop caps, pull‑quote borders, and critical alerts.
-- Neutral palette: `#1a1a1a` (text), `#4a4a4a` (secondary text), `#6b6b6b` (muted), `#fafafa` (background offset).
-- Background: pure white `#ffffff` to maximise contrast.
+### 2.2 Color restraint (muted editorial)
+- Primary brand colour: `#3a6b3e` (sage green) – links, buttons, accents.
+- Accent colour: `#7a3344` (muted burgundy) – drop caps, pull‑quote borders, critical alerts.
+- Neutrals: warm paper `#f6f5f2` (background), `#1a1a18` (text), `#3a3a37` / `#5a5a56` (secondary/muted).
+- **Canonical reference:** [ui-palette.md](ui-palette.md) — check before adding UI colours.
 
-### 2.3 Spacious & breathable layout
-- Generous whitespace: max‑content width `1192px` for home, `900px` for articles.
-- Grid‑based layout for post cards; consistent spacing units (`0.5rem` – `4rem`).
+### 2.3 Compact, readable layout
+- Content width `1080px` (home), `760px` (narrow forms/articles).
+- Grid‑based post cards; spacing tokens from `0.375rem` to `3rem` (see ui-palette.md).
 
 ### 2.4 Subtle interactions
 - Hover states use colour shifts and soft shadows, never abrupt changes.

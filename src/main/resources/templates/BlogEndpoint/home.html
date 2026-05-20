@@ -1,40 +1,47 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head rssAlternateUrl=mainBlog.rssFeedUrl rssAlternateTitle=(mainBlog.main ? author.name : mainBlog.name)}
-    {author.name} - contraponto
-    {/include}
-    <body hx-history-elt>
+    {#include components/head seo=seo rssAlternateUrl=mainBlog.rssFeedUrl rssAlternateTitle=(mainBlog.main ? author.name : mainBlog.name) /}
+    <body>
         {#include components/header /}
-        <main id="main-content">
-            <div class="container">
-                {#include components/breadcrumb trail=breadcrumb /}
-            </div>
-            <header class="user-blog-header container">
-                {#if mainBlog.bannerUrl}
-                <img src="{mainBlog.bannerUrl}" alt="" class="user-blog-header__banner"/>
-                {/if}
-                <h1 class="user-blog__name">{#if mainBlog.main}{author.name}{#else}{mainBlog.name}{/if}</h1>
-                {#if mainBlog.description}
-                <div class="user-blog__bio">{mainBlog.renderedDescription.raw}</div>
-                {/if}
-                <div class="user-blog-header__actions">
-                    {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
-                    {#include components/rss-feed-link feedUrl=mainBlog.rssFeedUrl /}
+        <main hx-history-elt id="main-content" class="browse-page">
+            {#include components/browse-sidebar-nav links=links /}
+            <div class="browse-page-shell">
+                <div class="browse-page-shell__main">
+                    {#include components/breadcrumb trail=breadcrumb /}
+                    <header class="user-blog-header">
+                        {#if mainBlog.bannerUrl}
+                        <img src="{mainBlog.bannerUrl}" alt="" class="user-blog-header__banner"/>
+                        {/if}
+                        <h1 class="user-blog__name">{#if mainBlog.main}{author.name}{#else}{mainBlog.name}{/if}</h1>
+                        {#if !mainBlog.main}
+                        <p class="user-blog__byline">
+                            <span data-i18n="directory.byAuthor">por </span>
+                            <a data-hx-get="/authors/{author.username}"
+                               hx-select="main"
+                               hx-target="main"
+                               hx-push-url="/authors/{author.username}">{author.name}</a>
+                        </p>
+                        {/if}
+                        {#if mainBlog.description}
+                        <div class="user-blog__bio">{mainBlog.renderedDescription.raw}</div>
+                        {/if}
+                        <div class="user-blog-header__actions">
+                            {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
+                        </div>
+                    </header>
+                    {#if !posts.isEmpty}
+                    {#let post = posts.data.get(0)}
+                        {#include BlogEndpoint/featured post=post username=author.username /}
+                    {/if}
+                    <div class="posts-grid">
+                        {#include BlogEndpoint/grid ignoreFirst=true username=author.username blog=mainBlog /}
+                    </div>
                 </div>
-            </header>
-            {#if !posts.isEmpty}
-            {#let post = posts.data.get(0)}
-                {#include BlogEndpoint/featured post=post username=author.username /}
-            {/if}
-
-            <div class="container">
-                <div class="posts-grid">
-                    {#include BlogEndpoint/grid ignoreFirst=true username=author.username blog=mainBlog /}
-                </div>
             </div>
+            {#include components/browse-explore-aside topTags=topTags mainAuthors=mainAuthors totalAuthors=totalAuthors rssFeedUrl=mainBlog.rssFeedUrl /}
         </main>
 
         {#include components/footer /}
-
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

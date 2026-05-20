@@ -1,0 +1,50 @@
+---
+description: No Python; scripts in bash or JBang; JavaScript browser-only
+alwaysApply: true
+---
+
+# Tooling languages
+
+## No Python
+
+- Do **not** add `.py` files anywhere in the repository.
+- Do **not** introduce `requirements.txt`, `pyproject.toml`, `Pipfile`, or Python setup in CI.
+- Legacy `scripts/*.py` still exist — when you touch one, **migrate** it to bash or JBang Java in the same change instead of extending it.
+
+## `scripts/` — bash or JBang only
+
+All automation under [`scripts/`](../../scripts/) must be:
+
+| Kind | File | Conventions |
+|------|------|-------------|
+| Shell | `*.sh` | `#!/usr/bin/env bash`, `set -euo pipefail`, resolve repo root from script dir |
+| Java (JBang) | `*.java` | JBang shebang; `//DEPS` only when JVM libraries are justified |
+
+- **Naming:** kebab-case, verb-led (`audit-ui-classes.sh`).
+- **Never** in `scripts/`: `.py`, `.js`, `.ts`, `.mjs`, Node/npm, or any runtime meant for the browser.
+
+**Prefer bash** for grep/sed/file transforms and small glue. **Use JBang** when typed logic, parsing, or reuse of Java/Maven dependencies is clearer than a long shell script.
+
+JBang header (adjust class name and deps):
+
+```java
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//DEPS info.picocli:picocli:4.7.5
+
+public class MyScript {
+  public static void main(String[] args) { /* ... */ }
+}
+```
+
+Run: `jbang scripts/my-script.java` (document in script comment or README if non-obvious).
+
+## JavaScript — browser only
+
+- **Allowed:** app and vendored JS under `src/main/resources/META-INF/resources/js/` (see [contraponto-javascript.mdc](contraponto-javascript.mdc)).
+- **Forbidden:** Node.js tooling, `package.json` for build scripts, `.mjs`/`.cjs` outside browser bundles, JavaScript/TypeScript under `scripts/`, or standalone JS in CI.
+
+User-facing behavior stays **Quarkus + Qute + HTMX**; do not add a Node build step to serve or bundle frontend assets.
+
+## CI and hooks
+
+GitHub Actions and git hooks: **bash** or **JBang/Java** — not Python or Node script runners.

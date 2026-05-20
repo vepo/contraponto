@@ -722,8 +722,9 @@ public class App {
         }
 
         public BlogPage accessPost() {
-            var featuredTitle = elm.findElement(className("featured__title"));
-            reliableClick(featuredTitle);
+            var featuredLink = elm.findElement(cssSelector(".featured__title a[data-hx-get]"));
+            reliableClick(featuredLink);
+            waitForReady();
             return new BlogPage();
         }
 
@@ -868,6 +869,11 @@ public class App {
         public App assertAccessButtonIsDisplayed() {
             App.this.assertAccessButtonIsDisplayed();
             return App.this;
+        }
+
+        public T assertDocumentTitleContains(String text) {
+            App.this.assertDocumentTitleContains(text);
+            return (T) this;
         }
 
         public App assertErrorPage(Status status) {
@@ -2078,6 +2084,14 @@ public class App {
         return this;
     }
 
+    public App assertDocumentTitleContains(String text) {
+        waitForReady();
+        await().atMost(Duration.ofSeconds(10))
+               .pollInterval(Duration.ofMillis(200))
+               .until(() -> driver.getTitle() != null && driver.getTitle().contains(text));
+        return this;
+    }
+
     public App assertFeaturedDisplayed() {
         var articles = driver.findElements(cssSelector(".article-card, .featured"));
         assertThat(articles).isNotEmpty();
@@ -2169,6 +2183,12 @@ public class App {
 
     public App assertNumberOfPosts(int numberOfPosts) {
         _assertNumberOfPosts(numberOfPosts);
+        return this;
+    }
+
+    public App assertPageSourceContains(String text) {
+        waitForReady();
+        assertThat(driver.getPageSource()).contains(text);
         return this;
     }
 

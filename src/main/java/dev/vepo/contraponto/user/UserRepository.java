@@ -61,6 +61,35 @@ public class UserRepository {
         return typedQuery.getSingleResult() > 0;
     }
 
+    public List<User> findAuthorsWithPublishedPosts() {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT u FROM User u
+                                         JOIN Blog b ON b.owner = u
+                                         WHERE b.active = true AND
+                                               EXISTS (
+                                                   SELECT 1 FROM Post p
+                                                   WHERE p.blog = b AND p.published = true
+                                               )
+                                         ORDER BY u.username ASC
+                                         """, User.class)
+                            .getResultList();
+    }
+
+    public List<User> findAuthorsWithPublishedPostsForDirectory() {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT u FROM User u
+                                         LEFT JOIN FETCH u.profilePicture
+                                         JOIN Blog b ON b.owner = u
+                                         WHERE b.active = true AND
+                                               EXISTS (
+                                                   SELECT 1 FROM Post p
+                                                   WHERE p.blog = b AND p.published = true
+                                               )
+                                         ORDER BY u.name ASC, u.username ASC
+                                         """, User.class)
+                            .getResultList();
+    }
+
     public Optional<User> findByEmail(String email) {
         return entityManager.createQuery("FROM User WHERE email = :email", User.class)
                             .setParameter("email", email)
@@ -97,6 +126,23 @@ public class UserRepository {
                                 .setMaxResults(query.maxResults())
                                 .getResultList();
         return new Page<>(data, query.page(), query.limit(), total);
+    }
+
+    public Optional<User> findPublicAuthorByUsername(String username) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT u FROM User u
+                                         JOIN Blog b ON b.owner = u
+                                         WHERE u.username = :username AND
+                                               u.active = true AND
+                                               b.active = true AND
+                                               EXISTS (
+                                                   SELECT 1 FROM Post p
+                                                   WHERE p.blog = b AND p.published = true
+                                               )
+                                         """, User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
     }
 
     public List<User> listAllForManagement() {

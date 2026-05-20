@@ -42,16 +42,14 @@
     <script src="/js/third-party/languages/dockerfile.min.js"></script>
     <script src="/js/third-party/marked.min.js"></script>
     <script src="/js/third-party/asciidoctor.min.js"></script>
+    {#if seo??}
+    <title id="page-title">{seo.title}</title>
+    <div id="seo-head">
+        {#include components/seo-meta-tags seo=seo /}
+    </div>
+    {#else}
     <title>
     {#insert}{/insert}
     </title>
+    {/if}
 </head>
-<div id="modal-container"></div>
-<div id="image-lightbox" class="image-lightbox" hidden aria-hidden="true">
-    <button type="button" class="image-lightbox__close" aria-label="Fechar" data-i18n="lightbox.close" data-i18n-attr="aria-label">&times;</button>
-    <div class="image-lightbox__backdrop" data-lightbox-close></div>
-    <figure class="image-lightbox__figure">
-        <img class="image-lightbox__image" alt="" decoding="async">
-        <figcaption class="image-lightbox__caption"></figcaption>
-    </figure>
-</div>

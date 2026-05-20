@@ -8,6 +8,7 @@ import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.user.AuthorSocialUrls;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -45,6 +46,26 @@ public class AuthorAppearanceUpdateEndpoint {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.blogBannerService = blogBannerService;
+    }
+
+    private String applySocialUrl(dev.vepo.contraponto.user.User user, String raw, java.util.function.Consumer<String> setter) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw.isBlank()) {
+            setter.accept(null);
+            return null;
+        }
+        var normalized = AuthorSocialUrls.normalizeHttpsUrl(raw);
+        if (normalized.isEmpty()) {
+            return "URL is invalid.";
+        }
+        String value = normalized.get();
+        if (!value.startsWith("https://")) {
+            return value;
+        }
+        setter.accept(value);
+        return null;
     }
 
     private String buildErrorResponseBody(String message) {
@@ -96,6 +117,36 @@ public class AuthorAppearanceUpdateEndpoint {
 
         if (request.defaultBannerId() != null) {
             blogBannerService.applyDefaultBlogBanner(user, request.defaultBannerId());
+            updated = true;
+        }
+
+        if (request.profileDescription() != null) {
+            user.setProfileDescription(request.profileDescription().trim());
+            updated = true;
+        }
+
+        var socialError = applySocialUrl(user, request.websiteUrl(), user::setWebsiteUrl);
+        if (socialError != null) {
+            return Response.ok(buildErrorResponseBody(socialError)).build();
+        }
+        socialError = applySocialUrl(user, request.twitterUrl(), user::setTwitterUrl);
+        if (socialError != null) {
+            return Response.ok(buildErrorResponseBody(socialError)).build();
+        }
+        socialError = applySocialUrl(user, request.mastodonUrl(), user::setMastodonUrl);
+        if (socialError != null) {
+            return Response.ok(buildErrorResponseBody(socialError)).build();
+        }
+        socialError = applySocialUrl(user, request.githubUrl(), user::setGithubUrl);
+        if (socialError != null) {
+            return Response.ok(buildErrorResponseBody(socialError)).build();
+        }
+        socialError = applySocialUrl(user, request.linkedinUrl(), user::setLinkedinUrl);
+        if (socialError != null) {
+            return Response.ok(buildErrorResponseBody(socialError)).build();
+        }
+        if (request.websiteUrl() != null || request.twitterUrl() != null || request.mastodonUrl() != null
+                || request.githubUrl() != null || request.linkedinUrl() != null) {
             updated = true;
         }
 
