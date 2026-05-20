@@ -683,7 +683,8 @@ public class App {
 
         public DashboardPage enableCompareViews() {
             var link = wait.until(elementToBeClickable(cssSelector("a.dashboard-analytics__compare-link")));
-            if (link.getText().contains("Compare with previous month")) {
+            var hxGet = link.getAttribute("data-hx-get");
+            if (hxGet != null && hxGet.contains("compare=true")) {
                 reliableClick(link);
                 waitForReady();
                 wait.until(visibilityOfElementLocated(cssSelector(".dashboard-chart__legend")));
@@ -892,11 +893,19 @@ public class App {
         }
 
         public T assertManagePaginationSummary(long total, int page, int totalPages) {
-            var summary = wait.until(visibilityOfElementLocated(cssSelector(".manage-pagination__summary")))
-                              .getText();
-            var itemLabel = total == 1 ? "1 item" : "%d items".formatted(total);
-            assertThat(summary).contains(itemLabel);
-            assertThat(summary).contains("Page %d of %d".formatted(page, totalPages));
+            waitForReady();
+            var itemLabelEn = total == 1 ? "1 item" : "%d items".formatted(total);
+            var itemLabelPt = total == 1 ? "1 item" : "%d itens".formatted(total);
+            var pageLabelEn = "Page %d of %d".formatted(page, totalPages);
+            var pageLabelPt = "Página %d de %d".formatted(page, totalPages);
+            wait.until(d -> {
+                ((JavascriptExecutor) d).executeScript("window.i18n?.apply(document)");
+                var text = d.findElement(cssSelector(".manage-pagination__summary")).getText();
+                return text.contains(itemLabelEn) || text.contains(itemLabelPt);
+            });
+            var summary = driver.findElement(cssSelector(".manage-pagination__summary")).getText();
+            assertThat(summary).satisfiesAnyOf(s -> assertThat(s).contains(pageLabelEn),
+                                               s -> assertThat(s).contains(pageLabelPt));
             return (T) this;
         }
 
@@ -2329,6 +2338,7 @@ public class App {
     }
 
     public SearchPage searchPage() {
+        access();
         _goTo("/search");
         return new SearchPage();
     }
@@ -2400,7 +2410,18 @@ public class App {
 
     private void waitForI18n() {
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript("""
-                                                                                   return document.documentElement.dataset.i18nReady === 'true';
+                                                                                   const root = document.documentElement;
+                                                                                   if (!root || root.tagName !== 'HTML') {
+                                                                                       return true;
+                                                                                   }
+                                                                                   if (root.dataset.i18nReady === 'true') {
+                                                                                       return true;
+                                                                                   }
+                                                                                   const locale = document.querySelector('meta[name="app-locale"]')?.content?.trim();
+                                                                                   if (!locale || locale === 'pt-BR') {
+                                                                                       return true;
+                                                                                   }
+                                                                                   return typeof window.i18n !== 'undefined' && window.i18n.ready === true;
                                                                                    """)));
     }
     // Inside App class, after SearchPage

@@ -83,7 +83,7 @@ class PostCommentTest {
                 .then()
                 .statusCode(200)
                 .body(containsString("Great article!"))
-                .body(containsString("Pending moderation"));
+                .body(containsString("Moderação pendente"));
 
         long commentId = Given.inject(PostCommentRepository.class)
                               .findRootComments(post.getId()).getFirst().getId();

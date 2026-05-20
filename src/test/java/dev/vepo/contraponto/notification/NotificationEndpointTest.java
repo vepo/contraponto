@@ -86,7 +86,7 @@ class NotificationEndpointTest {
                           .then()
                           .statusCode(200)
                           .header(HtmxTriggers.HEADER_AFTER_SETTLE, containsString("notificationsChanged"))
-                          .body(containsString("No notification"));
+                          .body(containsString("Nenhuma notificação"));
 
         assertThat(notificationRepository.countUnread(recipient.getId())).isZero();
     }
@@ -105,8 +105,8 @@ class NotificationEndpointTest {
                           .then()
                           .statusCode(200)
                           .body(containsString("started following"))
-                          .body(containsString("Dismiss"))
-                          .body(containsString("Mark all read"));
+                          .body(containsString("Dispensar"))
+                          .body(containsString("Marcar tudo como lido"));
     }
 
     private io.restassured.specification.RequestSpecification session(User user) {

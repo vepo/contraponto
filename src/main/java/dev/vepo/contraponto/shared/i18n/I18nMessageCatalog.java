@@ -10,6 +10,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.quarkus.arc.Unremovable;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,6 +20,7 @@ import jakarta.inject.Inject;
  * request locale and bundled {@code messages_*.json} files.
  */
 @ApplicationScoped
+@Unremovable
 public class I18nMessageCatalog {
 
     private static final Map<String, String> PT_BR_DEFAULTS = Map.ofEntries(

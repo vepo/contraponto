@@ -9,7 +9,7 @@
       <form hx-post="/forms/auth/{mode}"
             hx-headers='{"X-CSRF-Token": "{csrfToken}"}'
             hx-target="#authError" 
-            hx-target-error="#modal-container .response.error" 
+            hx-target-error="#authError" 
             hx-swap="innerHTML"
             hx-indicator="#auth-htmx-indicator"
             autocomplete="off">

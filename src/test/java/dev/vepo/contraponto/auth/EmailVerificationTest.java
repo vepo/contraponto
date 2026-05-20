@@ -59,7 +59,7 @@ class EmailVerificationTest {
                 .get("/account/security?verified=true")
                 .then()
                 .statusCode(200)
-                .body(org.hamcrest.Matchers.containsString("Email address updated."));
+                .body(org.hamcrest.Matchers.containsString("Endereço de e-mail atualizado."));
     }
 
     @BeforeEach

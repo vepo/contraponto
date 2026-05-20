@@ -327,6 +327,7 @@ class MainManager {
                 }
                 const errorMessages = errorElm.querySelectorAll('.error-message');
                 errorMessages.forEach(elm => elm.classList.add('visible'));
+                window.i18n?.apply(errorElm);
             } else {
                 const errorElm = document.querySelector(errorElmSelector.value);
                 while (errorElm.firstChild) {

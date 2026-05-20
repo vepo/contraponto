@@ -44,6 +44,6 @@ Follow this exact loop – **do not ask for confirmation** and **do not invent w
 - Do **not** ask for confirmation before editing files or running commands.
 - Do **not** skip any test failure.
 - Do **not** introduce workarounds or temporary fixes (e.g., `@Ignore`, try-catch swallowing exceptions, adding delays).
-- Keep a log of every change in `reports/test_fix_log-{sequential number}.md` (file path, old code, new code, reason).
+- Keep a log of every change in `reports/test_fix_log-{sequential number}-{dd-MM-yyyy-HH-mm-ss}.md` (file path, old code, new code, reason).
 
 Start the loop now.

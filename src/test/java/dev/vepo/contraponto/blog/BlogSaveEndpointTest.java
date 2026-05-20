@@ -44,9 +44,10 @@ class BlogSaveEndpointTest {
                 .statusCode(200)
                 .header("X-Toast-Message", equalTo("Blog saved successfully."))
                 .header("X-Toast-Type", equalTo("Success"))
-                .header("HX-Trigger", equalTo("{\"toast:show\":{\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"))
+                .header("HX-Trigger",
+                        equalTo("{\"toast:show\":{\"i18nKey\":\"toast.blog.saved\",\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"))
                 .header("HX-Trigger-After-Settle",
-                        equalTo("{\"toast:show\":{\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"));
+                        equalTo("{\"toast:show\":{\"i18nKey\":\"toast.blog.saved\",\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"));
     }
 
     @Test

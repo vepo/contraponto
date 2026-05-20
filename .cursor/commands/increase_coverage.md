@@ -77,6 +77,6 @@ Only delete production code after you have **confirmed it is unreachable and unr
 - Do **not** delete or weaken existing assertions.
 - Prefer **safe removal of unused code**, then adding new test methods; only change production behavior when fixing a clear bug or when removal is verified as above.
 - If a method is unreachable due to design issues (private methods, complex dependencies), first consider deletion if truly dead; otherwise use reflection, or refactor the production code to be testable (e.g., extract logic, add package-private access).
-- Keep a log of changes in `reports/coverage_log-{sequential number}.md`.
+- Keep a log of changes in `reports/coverage_log-{sequential number}-{dd-MM-yyyy-HH-mm-ss}.md`.
 
 Start the loop now.
