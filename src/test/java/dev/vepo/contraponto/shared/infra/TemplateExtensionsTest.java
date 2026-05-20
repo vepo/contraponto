@@ -224,6 +224,45 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void notificationMessageAndLinkForHighlightTypes() {
+        var owner = new User();
+        owner.setUsername("alice");
+        var blog = new Blog();
+        blog.setName("Alice Blog");
+        blog.setOwner(owner);
+        blog.setMain(true);
+        var post = new Post();
+        post.setTitle("Highlight Post");
+        post.setSlug("highlight-post");
+        post.setBlog(blog);
+        var actor = new User();
+        actor.setName("Reader");
+
+        var proposal = new Notification();
+        proposal.setType(NotificationType.COMMON_HIGHLIGHT_PROPOSAL);
+        proposal.setBlog(blog);
+        proposal.setPost(post);
+        assertThat(TemplateExtensions.message(proposal)).contains("highlighted");
+        assertThat(TemplateExtensions.linkUrl(proposal)).isEqualTo("/writing/highlights");
+
+        var publicNote = new Notification();
+        publicNote.setType(NotificationType.PUBLIC_HIGHLIGHT_NOTE);
+        publicNote.setBlog(blog);
+        publicNote.setPost(post);
+        publicNote.setActor(actor);
+        assertThat(TemplateExtensions.message(publicNote)).contains("public highlight note");
+        assertThat(TemplateExtensions.linkUrl(publicNote)).isEqualTo("/writing/highlights");
+
+        var response = new Notification();
+        response.setType(NotificationType.POST_RESPONSE);
+        response.setBlog(blog);
+        response.setPost(post);
+        response.setActor(actor);
+        assertThat(TemplateExtensions.message(response)).contains("response");
+        assertThat(TemplateExtensions.linkUrl(response)).isEqualTo("/writing/highlights");
+    }
+
+    @Test
     void notificationMessageAndLinkForNewComment() {
         var owner = new User();
         owner.setUsername("bob");

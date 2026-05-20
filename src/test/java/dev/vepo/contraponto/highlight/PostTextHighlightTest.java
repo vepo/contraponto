@@ -54,6 +54,25 @@ class PostTextHighlightTest {
     private Post post;
 
     @Test
+    void approve_resolved_proposal_returns_bad_request() {
+        String anchor = "{\"start\":0,\"end\":8,\"prefix\":\"\",\"suffix\":\"\"}";
+        String passage = "resolved!";
+        for (User u : new User[] { reader, reader2, reader3 }) {
+            createHighlight(u, passage, anchor);
+        }
+        long proposalId = proposalRepository.findPendingForPost(post.getId()).getFirst().getId();
+        TestHttp.authenticated(author)
+                .post("/forms/posts/" + post.getId() + "/highlight-proposals/" + proposalId + "/approve")
+                .then()
+                .statusCode(200);
+
+        TestHttp.authenticated(author)
+                .post("/forms/posts/" + post.getId() + "/highlight-proposals/" + proposalId + "/approve")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     void approved_public_note_visible_with_official_highlight() {
         String anchor = "{\"start\":0,\"end\":8,\"prefix\":\"\",\"suffix\":\"\"}";
         String passage = "official!";
@@ -264,6 +283,52 @@ class PostTextHighlightTest {
                 .post("/forms/posts/" + post.getId() + "/highlight-proposals/" + proposalId + "/reject")
                 .then()
                 .statusCode(403);
+    }
+
+    @Test
+    void non_owner_cannot_remove_highlight() {
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        createHighlight(reader, "hello", anchor);
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+
+        TestHttp.authenticated(reader2)
+                .delete("/forms/posts/" + post.getId() + "/highlights/" + highlightId)
+                .then()
+                .statusCode(403);
+
+        assertEquals(1, highlightRepository.countByUserAndPost(reader.getId(), post.getId()));
+    }
+
+    @Test
+    void note_empty_body_returns_bad_request() {
+        String anchor = "{\"start\":0,\"end\":4,\"prefix\":\"\",\"suffix\":\"\"}";
+        createHighlight(reader, "note", anchor);
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("body", "   ")
+                .post("/forms/highlights/" + highlightId + "/notes")
+                .then()
+                .statusCode(400);
+
+        assertTrue(noteRepository.findByUserAndPost(reader.getId(), post.getId()).isEmpty());
+    }
+
+    @Test
+    void note_over_max_length_returns_bad_request() {
+        String anchor = "{\"start\":0,\"end\":4,\"prefix\":\"\",\"suffix\":\"\"}";
+        createHighlight(reader, "note", anchor);
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("body", "n".repeat(1001))
+                .post("/forms/highlights/" + highlightId + "/notes")
+                .then()
+                .statusCode(400);
+
+        assertTrue(noteRepository.findByUserAndPost(reader.getId(), post.getId()).isEmpty());
     }
 
     @Test
