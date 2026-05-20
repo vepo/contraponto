@@ -173,6 +173,11 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Tag page** | Public listing of posts with a given tag. | `TagPageEndpoint` |
 | **RSS feed** | Syndication for site, blog, serie, or tag. | `rss` package |
 | **RSS feed link** | Public control that opens the matching feed URL in a new tab. | `components/rss-feed-link.html`, `RssFeedPaths` |
+| **Page metadata** | Per-route SEO bundle: document title, description, canonical URL, `noindex`, Open Graph / Twitter Card fields, optional JSON-LD. | `SeoMetadata`, `SeoService`, `components/seo-metadata.html` |
+| **Author directory** | Public index of authors with at least one published post on an active blog. | `GET /authors`, `AuthorDirectoryEndpoint` |
+| **Blog directory** | Public index of active blogs. | `GET /explore/blogs`, `BlogDirectoryEndpoint` |
+| **Sitemap** | Machine-readable list of public URLs for crawlers. | `GET /sitemap.xml`, `SitemapEndpoint` |
+| **Robots policy** | Crawl rules and sitemap reference for crawlers. | `GET /robots.txt`, `RobotsEndpoint` |
 | **View count** | Read metric per post load (one row per page GET per session). | `View` |
 | **Estimated read time** | Word-count hint on post cards (e.g. "5 min read"); not tracked engagement. | `TemplateExtensions.readTime` |
 | **Reading time** | Actual seconds a reader spends on a published post while the browser tab is **visible**; extended by 5-second client heartbeats. | `ReadingSession` |
@@ -264,6 +269,10 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Notifications empty | No notifications yet. Follow blogs to see new posts here. | Notifications page |
 | Notifications overlay empty | No notification | Notification overlay |
 | RSS feed link | RSS | Blog, tag, serie, home, footer |
+| Home — browse authors | Ver autores | Browse authors | Home `page-meta` → `/authors` |
+| Home — browse blogs | Ver blogs | Browse blogs | Home `page-meta` → `/explore/blogs` |
+| Author directory — title | Autores | Authors | `/authors` page heading |
+| Blog directory — title | Blogs | Blogs | `/explore/blogs` page heading |
 | Dismiss notification (button) | Dismiss | Notification overlay row |
 | Close notification overlay (button) | Close (×, aria-label) | Notification overlay header |
 | View all notifications (link) | View all notifications | Notification overlay footer |

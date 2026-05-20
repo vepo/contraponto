@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    {pageTitle} - contraponto
-    {/include}
+    {#include components/head seo=seo /}
     <body hx-history-elt>
         {#include components/header /}
         <main class="pages-manage hub-shell-page" id="main-content">
@@ -11,5 +9,6 @@
             </div>
         </main>
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

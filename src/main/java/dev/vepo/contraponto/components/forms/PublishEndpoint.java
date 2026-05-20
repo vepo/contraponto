@@ -25,6 +25,7 @@ import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagSlug;
 import dev.vepo.contraponto.tag.TagService;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
@@ -73,6 +74,7 @@ public class PublishEndpoint {
     private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
+    private final SeoService seoService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -86,7 +88,8 @@ public class PublishEndpoint {
                            Event<PostGitSyncRequestedEvent> postGitSyncEvents,
                            BlogAudienceComponentEndpoint audienceComponentEndpoint,
                            LoggedUser loggedUser,
-                           BreadcrumbService breadcrumbService) {
+                           BreadcrumbService breadcrumbService,
+                           SeoService seoService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -99,6 +102,7 @@ public class PublishEndpoint {
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.seoService = seoService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -138,7 +142,8 @@ public class PublishEndpoint {
                                                       0L,
                                                       0L,
                                                       audienceComponentEndpoint.buildView(blog),
-                                                      breadcrumbService.forPost(view)))
+                                                      breadcrumbService.forPost(view),
+                                                      seoService.forPost(view)))
                     .build();
     }
 

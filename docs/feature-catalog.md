@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-19 · Interface i18n (PT default, EN/ES), flag locale picker
+**Last verified:** 2026-05-19 · SEO metadata, author/blog directories, sitemap/robots
 
 ---
 
@@ -47,6 +47,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
 | Featured homepage | anyone | `GET /` | 0 | Land on `/` (or click logo). |
+| Author directory | anyone | `GET /authors` | 1 | On `/` → **Ver autores** in page meta. |
+| Blog directory | anyone | `GET /explore/blogs` | 1 | On `/` → **Ver blogs** in page meta. |
 | Featured homepage (return) | anyone | `GET /` | 1 | Click **contraponto** logo in header. |
 | Load more featured posts | anyone | `GET /components/home/grid?page=` | 1 | On `/` → **Load more**. |
 | Blog home (default blog) | anyone | `GET /{username}` | 2 | Home → open a post author byline **or** search result **or** **My Blog** (signed in). |

@@ -9,6 +9,8 @@ import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.rss.RssFeedService;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -35,11 +37,11 @@ public class TagPageEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance edit(Tag tag, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
+        public static native TemplateInstance edit(Tag tag, Links links, LoggedUser user, BreadcrumbTrail breadcrumb, SeoMetadata seo);
 
         public static native TemplateInstance grid(String tagSlug, Page<Post> posts);
 
-        public static native TemplateInstance tag(Tag tag, Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb);
+        public static native TemplateInstance tag(Tag tag, Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb, SeoMetadata seo);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -58,6 +60,7 @@ public class TagPageEndpoint {
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
     private final RssFeedService rssFeedService;
+    private final SeoService seoService;
 
     @Inject
     public TagPageEndpoint(TagRepository tagRepository,
@@ -65,13 +68,15 @@ public class TagPageEndpoint {
                            CustomPageRepository customPageRepository,
                            LoggedUser loggedUser,
                            BreadcrumbService breadcrumbService,
-                           RssFeedService rssFeedService) {
+                           RssFeedService rssFeedService,
+                           SeoService seoService) {
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
         this.rssFeedService = rssFeedService;
+        this.seoService = seoService;
     }
 
     @GET
@@ -86,7 +91,8 @@ public class TagPageEndpoint {
         return Response.ok(Templates.edit(tag,
                                           customPageRepository.loadLinks(),
                                           loggedUser,
-                                          breadcrumbService.reviewTagEdit(tag)))
+                                          breadcrumbService.reviewTagEdit(tag),
+                                          seoService.forPrivatePage("Edit tag")))
                        .build();
     }
 
@@ -112,7 +118,8 @@ public class TagPageEndpoint {
                              postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, 1)),
                              customPageRepository.loadLinks(),
                              loggedUser,
-                             breadcrumbService.forTag(tag));
+                             breadcrumbService.forTag(tag),
+                             seoService.forTag(tag));
     }
 
     @GET

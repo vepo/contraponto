@@ -5,6 +5,8 @@ import java.util.List;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.RawString;
@@ -30,7 +32,8 @@ public class NavigationHubService {
                                                         String activeSlug,
                                                         RawString panelContent,
                                                         Links links,
-                                                        LoggedUser user);
+                                                        LoggedUser user,
+                                                        SeoMetadata seo);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -42,18 +45,21 @@ public class NavigationHubService {
     private final BreadcrumbService breadcrumbService;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final SeoService seoService;
 
     @Inject
     public NavigationHubService(NavigationHubRegistry registry,
                                 NavigationHubPanelService panelService,
                                 BreadcrumbService breadcrumbService,
                                 CustomPageRepository customPageRepository,
-                                LoggedUser loggedUser) {
+                                LoggedUser loggedUser,
+                                SeoService seoService) {
         this.registry = registry;
         this.panelService = panelService;
         this.breadcrumbService = breadcrumbService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.seoService = seoService;
     }
 
     public String defaultSectionSlug(NavigationHub hub) {
@@ -96,7 +102,8 @@ public class NavigationHubService {
                                    new RawString(panelService.render(hub, sectionSlug, page, emailVerified, profileError, blogId)
                                                              .render()),
                                    customPageRepository.loadLinks(),
-                                   loggedUser);
+                                   loggedUser,
+                                   seoService.forPrivatePage(meta.pageTitle()));
     }
 
     public HubMeta meta(NavigationHub hub) {

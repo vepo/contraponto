@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    {#if writePage.post.isPresent}
-        data-i18n="write.editPageTitle">Editar publicação
-    {#else}
-        data-i18n="write.newPageTitle">Escrever uma história
-    {/if} - contraponto
-    {/include}
+    {#include components/head seo=seo /}
     <body hx-history-elt class="write-page">
         {#include components/header /}
         <main class="write-main">
@@ -187,5 +181,6 @@
         </main>
 
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

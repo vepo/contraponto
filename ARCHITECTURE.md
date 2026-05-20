@@ -85,6 +85,19 @@ Republishing increments version and triggers notifications again.
 
 Registered before catch-all `/{username}` routes where needed (`SiteWideFeedEndpoint`).
 
+## 8.1 SEO
+
+| Resource | Path | Notes |
+|----------|------|--------|
+| Page metadata | Per-route `SeoMetadata` in Qute `components/seo-metadata.html` | Title, description, canonical, Open Graph, Twitter Card, optional JSON-LD |
+| SEO fragment (HTMX) | `GET /components/seo?path=...` | Refreshes `#seo-head` after navigation or history restore |
+| Author directory | `GET /authors` | Public list of authors with published posts |
+| Blog directory | `GET /explore/blogs` | Public list of active blogs |
+| Sitemap | `GET /sitemap.xml` | Published posts, blogs, tags, series, custom pages |
+| Robots | `GET /robots.txt` | Disallow manage/auth paths; `Sitemap:` uses `image.base.url` / `APP_PUBLIC_URL` |
+
+Set **`APP_PUBLIC_URL`** in production so canonical URLs, `og:image`, and the sitemap locs use the public origin. HTMX OOB + `main.js` keep head metadata in sync with `hx-push-url` navigation (see [docs/htmx-events.md](docs/htmx-events.md)).
+
 ## 9. Design patterns
 
 ### Repository

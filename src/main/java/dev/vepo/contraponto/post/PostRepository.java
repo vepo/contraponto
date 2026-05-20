@@ -472,6 +472,17 @@ public class PostRepository {
                                                      .getResultList());
     }
 
+    public List<Post> findPublishedForSitemap() {
+        return attachLatestPublications(entityManager.createQuery("""
+                                                                  SELECT DISTINCT p FROM Post p
+                                                                  JOIN FETCH p.blog b
+                                                                  JOIN FETCH b.owner o
+                                                                  WHERE p.published = true AND b.active = true
+                                                                  ORDER BY p.id
+                                                                  """, Post.class)
+                                                     .getResultList());
+    }
+
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
         return entityManager.createQuery("""
                                          SELECT DISTINCT p FROM Post p

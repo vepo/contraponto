@@ -10,6 +10,7 @@ import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -33,7 +34,8 @@ public class SeriePageEndpoint {
                                                     List<Post> posts,
                                                     Links links,
                                                     LoggedUser user,
-                                                    BreadcrumbTrail breadcrumb);
+                                                    BreadcrumbTrail breadcrumb,
+                                                    dev.vepo.contraponto.seo.SeoMetadata seo);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -53,18 +55,21 @@ public class SeriePageEndpoint {
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
+    private final SeoService seoService;
 
     @Inject
     public SeriePageEndpoint(SerieRepository serieRepository,
                              PostRepository postRepository,
                              CustomPageRepository customPageRepository,
                              LoggedUser loggedUser,
-                             BreadcrumbService breadcrumbService) {
+                             BreadcrumbService breadcrumbService,
+                             SeoService seoService) {
         this.serieRepository = serieRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.seoService = seoService;
     }
 
     @GET
@@ -81,7 +86,13 @@ public class SeriePageEndpoint {
         List<Post> posts = postRepository.findPublishedBySerieOrdered(serie.getId());
         Links links = serie.getBlog().isMain() ? customPageRepository.loadLinks()
                                                : customPageRepository.loadLinks(serie.getBlog().getId());
-        return Response.ok(Templates.serie(serie, posts, links, loggedUser, breadcrumbService.forSerie(serie))).build();
+        return Response.ok(Templates.serie(serie,
+                                           posts,
+                                           links,
+                                           loggedUser,
+                                           breadcrumbService.forSerie(serie),
+                                           seoService.forSerie(serie)))
+                       .build();
     }
 
     @GET

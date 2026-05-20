@@ -232,6 +232,7 @@ class MainManager {
         this.setupErrorHandler();
         this.setupCsrfHeader();
         this.setupMainNavigationSwap();
+        this.setupSeoSync();
         this.setupSearchModalSubmit();
         this.updateUIElements();
     }
@@ -276,6 +277,45 @@ class MainManager {
         });
 
         patchMainNavigationSwaps();
+    }
+
+    setupSeoSync() {
+        const fetchSeo = (path) => {
+            const seoHead = document.getElementById('seo-head');
+            if (!seoHead) {
+                return;
+            }
+            const targetPath = path || window.location.pathname + window.location.search;
+            htmx.ajax('GET', '/components/seo?path=' + encodeURIComponent(targetPath), {
+                swap: 'none'
+            });
+        };
+
+        document.body.addEventListener('htmx:afterSettle', (evt) => {
+            const target = evt.detail?.target;
+            if (!target || target.tagName !== 'MAIN') {
+                return;
+            }
+            // Always refresh: hx-select="main" may skip OOB #seo-head even when present in the response.
+            fetchSeo(window.location.pathname + window.location.search);
+        });
+
+        document.body.addEventListener('htmx:historyRestore', () => {
+            fetchSeo(window.location.pathname + window.location.search);
+        });
+
+        document.body.addEventListener('htmx:afterSwap', (evt) => {
+            const target = evt.detail?.target;
+            if (!target) {
+                return;
+            }
+            if (target.id === 'page-title' || target.id === 'seo-head') {
+                const titleEl = document.getElementById('page-title');
+                if (titleEl?.textContent) {
+                    document.title = titleEl.textContent.trim();
+                }
+            }
+        });
     }
 
     repairNestedMain() {

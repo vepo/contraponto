@@ -28,6 +28,14 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 - User clicks nav: `data-hx-get` + `hx-select="main"` + `hx-target="main"` + `hx-swap="outerHTML"` + `hx-push-url`. Default `innerHTML` would nest `<main>` inside `<main>`; `main.js` enforces `outerHTML` when both select and target are `main`.
 - **`loggedOut`** on a **protected path**: `main.js` redirects to `/` (documented exception).
 
+### SEO head sync (HTMX navigation)
+
+Public full-page responses include `{#include components/seo-oob seo=seo /}` so HTMX can OOB-swap `#seo-head` (title, description, canonical, Open Graph, JSON-LD) when `main` is replaced.
+
+On every `main` swap, `main.js` (`setupSeoSync`) refetches `GET /components/seo?path={pathname}` (OOB response updates `#page-title` and `#seo-head`; `hx-select="main"` does not apply OOB from the navigation response itself). **History back/forward** also refetches SEO (`htmx:historyRestore`) because `hx-history-elt` restores body only, not `<head>`.
+
+Manage/auth surfaces pass `noindex` metadata via `SeoService.forPrivatePage(...)`.
+
 ---
 
 ## 2. Auth session change (login / signup / logout)

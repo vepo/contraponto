@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    {#include components/head seo=seo /}
+    <body hx-history-elt>
+        {#include components/header /}
+        <main id="main-content" class="directory-page">
+            <div class="container">
+                <h1 class="directory-page__title" data-i18n="directory.blogsTitle">Blogs</h1>
+                <ul class="directory-page__list">
+                    {#for blog in blogs}
+                    <li class="directory-page__item">
+                        <a data-hx-get="{blog.url}"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-push-url="{blog.url}"
+                           class="directory-page__link">
+                            {#if blog.main}{blog.owner.name}{#else}{blog.name}{/if}
+                        </a>
+                        <span class="directory-page__meta">@{blog.owner.username}{#if !blog.main} / {blog.slug}{/if}</span>
+                    </li>
+                    {/for}
+                </ul>
+            </div>
+        </main>
+        {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
+    </body>
+</html>

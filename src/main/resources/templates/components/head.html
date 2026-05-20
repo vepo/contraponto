@@ -41,9 +41,16 @@
     <script src="/js/third-party/languages/dockerfile.min.js"></script>
     <script src="/js/third-party/marked.min.js"></script>
     <script src="/js/third-party/asciidoctor.min.js"></script>
+    {#if seo??}
+    <title id="page-title">{seo.title}</title>
+    <div id="seo-head">
+        {#include components/seo-meta-tags seo=seo /}
+    </div>
+    {#else}
     <title>
     {#insert}{/insert}
     </title>
+    {/if}
 </head>
 <div id="modal-container"></div>
 <div id="image-lightbox" class="image-lightbox" hidden aria-hidden="true">

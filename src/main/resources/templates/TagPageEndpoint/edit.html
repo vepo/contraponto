@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head}
-    Edit tag: {tag.name} — contraponto
-    {/include}
+    {#include components/head seo=seo /}
     <body hx-history-elt>
         {#include components/header /}
         <main id="main-content" class="write-main">
@@ -48,5 +46,6 @@
             </div>
         </main>
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

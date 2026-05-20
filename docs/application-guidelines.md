@@ -25,6 +25,7 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
   - The newest featured post gets a **hero** section (large cover + excerpt).  
   - Remaining featured posts appear in a three‑column grid below.  
 - **Pagination:** An HTMX “Load more” button loads further pages via `GET /components/home/grid?page=X`.  
+- **Discovery links:** **Ver autores** (`GET /authors`) and **Ver blogs** (`GET /explore/blogs`) in the home `page-meta` row (beside the site RSS link).  
 - **Empty state:** If no featured posts exist, a friendly message is shown (no special restrictions – visibility of featured flag is controlled by editors).
 
 ### 2.2 Blog Pages

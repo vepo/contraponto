@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head rssAlternateUrl=siteRssFeedUrl rssAlternateTitle='Contraponto'}
-    contraponto
-    {/include}
+    {#include components/head seo=seo rssAlternateUrl=siteRssFeedUrl rssAlternateTitle='Contraponto' /}
     <body hx-history-elt>
         {#include components/header /}
         <main id="main-content">
@@ -12,6 +10,20 @@
             {/if}
 
             <div class="container page-meta">
+                <a data-hx-get="/authors"
+                   hx-select="main"
+                   hx-target="main"
+                   hx-push-url="/authors"
+                   class="page-meta__link"
+                   data-i18n="home.browseAuthors">Ver autores</a>
+                <span class="page-meta__dot" aria-hidden="true">•</span>
+                <a data-hx-get="/explore/blogs"
+                   hx-select="main"
+                   hx-target="main"
+                   hx-push-url="/explore/blogs"
+                   class="page-meta__link"
+                   data-i18n="home.browseBlogs">Ver blogs</a>
+                <span class="page-meta__dot" aria-hidden="true">•</span>
                 {#include components/rss-feed-link feedUrl=siteRssFeedUrl /}
             </div>
             <div class="container">
@@ -21,5 +33,6 @@
             </div>
         </main>
         {#include components/footer /}
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>

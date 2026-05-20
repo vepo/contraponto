@@ -61,6 +61,20 @@ public class UserRepository {
         return typedQuery.getSingleResult() > 0;
     }
 
+    public List<User> findAuthorsWithPublishedPosts() {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT u FROM User u
+                                         JOIN Blog b ON b.owner = u
+                                         WHERE b.active = true AND
+                                               EXISTS (
+                                                   SELECT 1 FROM Post p
+                                                   WHERE p.blog = b AND p.published = true
+                                               )
+                                         ORDER BY u.username ASC
+                                         """, User.class)
+                            .getResultList();
+    }
+
     public Optional<User> findByEmail(String email) {
         return entityManager.createQuery("FROM User WHERE email = :email", User.class)
                             .setParameter("email", email)

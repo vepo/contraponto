@@ -10,6 +10,8 @@ import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -46,7 +48,8 @@ public class BlogEndpoint {
                                                    Links links,
                                                    LoggedUser user,
                                                    BlogAudienceView audience,
-                                                   BreadcrumbTrail breadcrumb);
+                                                   BreadcrumbTrail breadcrumb,
+                                                   SeoMetadata seo);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -68,6 +71,7 @@ public class BlogEndpoint {
     private final LoggedUser loggedUser;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
+    private final SeoService seoService;
 
     @Inject
     public BlogEndpoint(UserRepository userRepository,
@@ -76,7 +80,8 @@ public class BlogEndpoint {
                         BlogRepository blogRepository,
                         BlogAudienceComponentEndpoint audienceComponentEndpoint,
                         BreadcrumbService breadcrumbService,
-                        LoggedUser loggedUser) {
+                        LoggedUser loggedUser,
+                        SeoService seoService) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
@@ -84,6 +89,7 @@ public class BlogEndpoint {
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.breadcrumbService = breadcrumbService;
         this.loggedUser = loggedUser;
+        this.seoService = seoService;
     }
 
     @GET
@@ -123,7 +129,8 @@ public class BlogEndpoint {
                               customPageRepository.loadLinks(blog.getId()),
                               loggedUser,
                               audienceComponentEndpoint.buildView(blog),
-                              breadcrumb);
+                              breadcrumb,
+                              seoService.forBlogHome(user, blog));
     }
 
     @GET

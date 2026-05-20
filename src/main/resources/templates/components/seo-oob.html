@@ -1,0 +1,6 @@
+{#if seo??}
+<title id="page-title" hx-swap-oob="true">{seo.title}</title>
+<div id="seo-head" hx-swap-oob="innerHTML">
+    {#include components/seo-meta-tags seo=seo /}
+</div>
+{/if}

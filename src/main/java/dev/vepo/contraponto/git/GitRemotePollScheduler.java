@@ -5,6 +5,7 @@ import io.quarkus.scheduler.Scheduled;
 import io.quarkus.scheduler.Scheduled.ConcurrentExecution;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class GitRemotePollScheduler {
@@ -22,6 +23,7 @@ public class GitRemotePollScheduler {
         this.blogGitIntegrationService = blogGitIntegrationService;
     }
 
+    @Transactional
     @Scheduled(every = "${contraponto.git.poll-interval}", concurrentExecution = ConcurrentExecution.SKIP)
     void synchronizeEnabledBlogsFromGit() {
         if (!gitSettings.pollEnabled()) {

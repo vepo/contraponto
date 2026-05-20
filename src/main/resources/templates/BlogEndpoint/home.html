@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-    {#include components/head rssAlternateUrl=mainBlog.rssFeedUrl rssAlternateTitle=(mainBlog.main ? author.name : mainBlog.name)}
-    {author.name} - contraponto
-    {/include}
+    {#include components/head seo=seo rssAlternateUrl=mainBlog.rssFeedUrl rssAlternateTitle=(mainBlog.main ? author.name : mainBlog.name) /}
     <body hx-history-elt>
         {#include components/header /}
         <main id="main-content">
@@ -35,6 +33,6 @@
         </main>
 
         {#include components/footer /}
-
+        {#include components/seo-oob seo=seo /}
     </body>
 </html>
