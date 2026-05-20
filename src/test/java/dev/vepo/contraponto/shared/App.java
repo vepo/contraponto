@@ -1027,6 +1027,11 @@ public class App {
 
         private PostPage() {}
 
+        public PostPage assertAuthModalOpen() {
+            wait.until(visibilityOfElementLocated(By.id("authModal")));
+            return this;
+        }
+
         public PostPage assertChangeDiffVisible() {
             var modal = driver.findElement(By.id("postHistoryModal"));
             wait.until(d -> !modal.findElements(cssSelector(".post-history__diff-ins")).isEmpty());
@@ -1100,6 +1105,42 @@ public class App {
             return this;
         }
 
+        public PostPage assertHighlightActionBarVisible(String action) {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var bars = driver.findElements(By.id("highlights-action-bar"));
+                if (bars.isEmpty()) {
+                    return false;
+                }
+                var bar = bars.get(0);
+                if (!bar.isDisplayed() || bar.getDomAttribute("hidden") != null) {
+                    return false;
+                }
+                var buttons = bar.findElements(cssSelector("[data-highlight-action='" + action + "']"));
+                return !buttons.isEmpty() && buttons.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertHighlightAffectsDropCap() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                var marks = driver.findElements(
+                                                cssSelector(".article-page__content mark.post-highlight--affects-drop-cap"));
+                return !marks.isEmpty() && marks.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertHighlightNoteCardAbsent(String body) {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                return driver.findElements(cssSelector(".highlight-note-card"))
+                             .stream()
+                             .noneMatch(card -> card.getText().contains(body));
+            });
+            return this;
+        }
+
         public PostPage assertHighlightNoteCardVisible(String body) {
             await().atMost(Duration.ofSeconds(10)).until(() -> {
                 var cards = driver.findElements(cssSelector(".highlight-note-card"));
@@ -1159,6 +1200,25 @@ public class App {
             var enlarged = lightbox.findElement(cssSelector(".image-lightbox__image"));
             assertThat(enlarged.isDisplayed()).isTrue();
             assertThat(enlarged.getAttribute("src")).isNotBlank();
+            return this;
+        }
+
+        public PostPage assertNotedHighlightMarkPresent() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                var marks = driver.findElements(cssSelector(".article-page__content mark.post-highlight--noted"));
+                return !marks.isEmpty() && marks.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertPersonalHighlightMarkAbsent() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                return ((Long) ((JavascriptExecutor) driver).executeScript("""
+                                                                           return document.querySelectorAll('.article-page__content mark.post-highlight--personal').length;
+                                                                           """)) == 0L;
+            });
             return this;
         }
 
@@ -1253,6 +1313,39 @@ public class App {
             return this;
         }
 
+        public PostPage clickHighlightActionBar(String action) {
+            assertHighlightActionBarVisible(action);
+            if ("remove-mark".equals(action)) {
+                ((JavascriptExecutor) driver).executeScript("""
+                                                            const bar = document.getElementById('highlights-action-bar');
+                                                            PostHighlightManager.instance().removeHighlight(bar.dataset.removeHighlightId);
+                                                            """);
+            } else if ("remove-note".equals(action)) {
+                ((JavascriptExecutor) driver).executeScript("""
+                                                            const bar = document.getElementById('highlights-action-bar');
+                                                            PostHighlightManager.instance().removeNote(bar.dataset.removeNoteHighlightId, bar.dataset.removeNoteId);
+                                                            """);
+            } else {
+                var bar = driver.findElement(By.id("highlights-action-bar"));
+                reliableClick(bar.findElement(cssSelector("[data-highlight-action='" + action + "']")));
+            }
+            waitForReady();
+            return this;
+        }
+
+        public PostPage clickHighlightNoteCard(String body) {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var cards = driver.findElements(cssSelector(".highlight-note-card--interactive"));
+                return cards.stream().anyMatch(card -> card.isDisplayed() && card.getText().contains(body));
+            });
+            var card = driver.findElements(cssSelector(".highlight-note-card--interactive")).stream()
+                             .filter(c -> c.isDisplayed() && c.getText().contains(body))
+                             .findFirst()
+                             .orElseThrow();
+            reliableClick(card);
+            return assertHighlightActionBarVisible("remove-note");
+        }
+
         public PostPage clickHighlightSelectionAction(String action) {
             var bar = wait.until(visibilityOfElementLocated(By.id("highlights-selection-bar")));
             var button = bar.findElement(cssSelector("[data-highlight-action='" + action + "']"));
@@ -1265,6 +1358,13 @@ public class App {
                 });
             }
             return this;
+        }
+
+        public PostPage clickPersonalHighlightMark() {
+            var mark = wait.until(visibilityOfElementLocated(
+                                                             cssSelector(".article-page__content mark.post-highlight--interactive[data-highlight-id]")));
+            reliableClick(mark);
+            return assertHighlightActionBarVisible("remove-mark");
         }
 
         public PostPage closeChangeHistoryModal() {

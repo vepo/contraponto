@@ -318,6 +318,7 @@
   "highlight.signInToHighlight": "Sign in to highlight",
   "highlight.remove": "Remove highlight",
   "highlight.note.add": "Add note",
+  "highlight.note.remove": "Remove note",
   "highlight.note.bodyLabel": "Note text",
   "highlight.note.placeholder": "Your note on this passage…",
   "highlight.note.makePublic": "Make note public (subject to author approval)",
@@ -346,6 +347,8 @@
   "toast.highlight.created": "Passage highlighted.",
   "toast.highlight.notePending": "Note sent for approval.",
   "toast.highlight.noteSaved": "Note saved.",
+  "toast.highlight.noteRemoved": "Note removed.",
+  "toast.highlight.removed": "Highlight removed.",
   "toast.highlight.officialApproved": "Highlight published on the post.",
   "toast.postResponse.pending": "Response published. The author can approve it on the original post."
 }

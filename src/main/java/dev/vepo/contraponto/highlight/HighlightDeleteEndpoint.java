@@ -4,6 +4,8 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,7 +46,7 @@ public class HighlightDeleteEndpoint {
         Post post = postRepository.findById(postId).orElseThrow(NotFoundException::new);
         highlightService.remove(postId, highlightId, loggedUser.getId());
         return Toast.ok()
-                    .message("Highlight removed.")
+                    .i18nKey(I18nKeys.TOAST_HIGHLIGHT_REMOVED, I18nDefaults.HIGHLIGHT_REMOVED)
                     .type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .page(componentEndpoint.renderHighlights(post))

@@ -1,5 +1,11 @@
-<article class="highlight-note-card {#if note.approvedPublic}highlight-note-card--approved-public{/if}"
-         id="highlight-note-{note.noteId}">
+<article class="highlight-note-card {#if note.approvedPublic}highlight-note-card--approved-public{/if}{#if removable.or(false)} highlight-note-card--interactive{/if}"
+         id="highlight-note-{note.noteId}"
+         {#if removable.or(false)}
+         data-highlight-note-id="{note.noteId}"
+         data-highlight-id="{note.highlightId}"
+         tabindex="0"
+         role="button"
+         {/if}>
     {#if note.passageExcerpt}
     <blockquote class="highlight-note-card__passage">{note.passageExcerpt}</blockquote>
     {/if}

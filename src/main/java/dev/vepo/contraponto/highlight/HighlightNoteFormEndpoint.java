@@ -12,6 +12,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -78,6 +79,21 @@ public class HighlightNoteFormEndpoint {
     public TemplateInstance modal(@PathParam("highlightId") long highlightId) {
         PostTextHighlight highlight = loadOwnedHighlight(highlightId);
         return Templates.highlightNoteDialog(highlightId, excerpt(highlight.getPassage()));
+    }
+
+    @DELETE
+    @Path("{noteId}")
+    @Transactional
+    @Produces(MediaType.TEXT_HTML)
+    public Response remove(@PathParam("highlightId") long highlightId, @PathParam("noteId") long noteId) {
+        PostTextHighlight highlight = loadOwnedHighlight(highlightId);
+        noteService.remove(noteId, loggedUser.getId());
+        return Toast.ok()
+                    .i18nKey(I18nKeys.TOAST_HIGHLIGHT_NOTE_REMOVED, I18nDefaults.HIGHLIGHT_NOTE_REMOVED)
+                    .type(Toast.Type.SUCCESS)
+                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                    .page(componentEndpoint.renderHighlights(highlight.getPost()))
+                    .build();
     }
 
     @POST

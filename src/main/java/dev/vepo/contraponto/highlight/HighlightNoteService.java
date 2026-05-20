@@ -66,6 +66,15 @@ public class HighlightNoteService {
     }
 
     @Transactional
+    public void remove(long noteId, long userId) {
+        HighlightNote note = noteRepository.findById(noteId).orElseThrow(NotFoundException::new);
+        if (!note.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You can only remove your own notes.");
+        }
+        noteRepository.delete(note);
+    }
+
+    @Transactional
     public HighlightNote saveNote(long highlightId, long userId, String body, boolean makePublic) {
         PostTextHighlight highlight = highlightRepository.findById(highlightId)
                                                          .orElseThrow(NotFoundException::new);

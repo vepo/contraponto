@@ -3,6 +3,7 @@ package dev.vepo.contraponto.highlight;
 import java.time.LocalDateTime;
 
 public record HighlightNoteCardView(long noteId,
+                                    long highlightId,
                                     String passageExcerpt,
                                     String body,
                                     String ownerName,

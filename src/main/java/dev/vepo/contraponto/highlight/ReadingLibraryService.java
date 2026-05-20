@@ -51,6 +51,7 @@ public class ReadingLibraryService {
 
     private HighlightNoteCardView toNoteCard(HighlightNote note) {
         return new HighlightNoteCardView(note.getId(),
+                                         note.getHighlight().getId(),
                                          note.getHighlight().getPassage(),
                                          note.getBody(),
                                          note.getUser().getName(),

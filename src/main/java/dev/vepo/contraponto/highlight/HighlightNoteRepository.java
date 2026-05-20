@@ -43,6 +43,12 @@ public class HighlightNoteRepository {
                             .getSingleResult();
     }
 
+    @Transactional
+    public void delete(HighlightNote note) {
+        HighlightNote managed = entityManager.contains(note) ? note : entityManager.merge(note);
+        entityManager.remove(managed);
+    }
+
     public List<HighlightNote> findApprovedPublicForCluster(long postId, String anchorClusterHash) {
         return entityManager.createQuery("""
                                          SELECT n FROM HighlightNote n

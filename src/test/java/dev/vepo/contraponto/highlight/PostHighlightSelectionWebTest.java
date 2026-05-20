@@ -28,6 +28,27 @@ class PostHighlightSelectionWebTest {
     }
 
     @Test
+    void guest_sign_in_from_selection_bar_opens_auth_modal(App app) {
+        app.access().goTo(post)
+           .waitForPostHighlights()
+           .selectPassageInArticle(PASSAGE)
+           .assertHighlightSelectionBarShowsSignIn()
+           .clickHighlightSelectionAction("sign-in")
+           .assertAuthModalOpen();
+    }
+
+    @Test
+    void highlight_at_paragraph_start_affects_drop_cap(App app) {
+        app.login(reader).goTo(post)
+           .waitForPostHighlights()
+           .selectPassageInArticle("Introduction")
+           .assertHighlightSelectionBarVisible()
+           .clickHighlightSelectionAction("create")
+           .assertPersonalHighlightMarkPresent()
+           .assertHighlightAffectsDropCap();
+    }
+
+    @Test
     void note_modal_opens_from_fresh_selection(App app) {
         app.login(reader).goTo(post)
            .waitForPostHighlights()
@@ -52,6 +73,42 @@ class PostHighlightSelectionWebTest {
            .clickHighlightSelectionAction("note")
            .assertHighlightNoteModalVisible()
            .submitHighlightNote("My private note on this passage");
+    }
+
+    @Test
+    void noted_highlight_uses_distinct_mark_style(App app) {
+        app.login(reader).goTo(post)
+           .waitForPostHighlights()
+           .selectPassageInArticle(PASSAGE)
+           .clickHighlightSelectionAction("note")
+           .submitHighlightNote("Distinct noted passage")
+           .waitForPostHighlights()
+           .assertNotedHighlightMarkPresent();
+    }
+
+    @Test
+    void remove_highlight_from_mark_click(App app) {
+        app.login(reader).goTo(post)
+           .waitForPostHighlights()
+           .selectPassageInArticle(PASSAGE)
+           .clickHighlightSelectionAction("create")
+           .assertPersonalHighlightMarkPresent()
+           .waitForPostHighlights()
+           .clickPersonalHighlightMark()
+           .clickHighlightActionBar("remove-mark")
+           .assertPersonalHighlightMarkAbsent();
+    }
+
+    @Test
+    void remove_note_from_note_card_click(App app) {
+        app.login(reader).goTo(post)
+           .waitForPostHighlights()
+           .selectPassageInArticle(PASSAGE)
+           .clickHighlightSelectionAction("note")
+           .submitHighlightNote("Note to remove")
+           .clickHighlightNoteCard("Note to remove")
+           .clickHighlightActionBar("remove-note")
+           .assertHighlightNoteCardAbsent("Note to remove");
     }
 
     @Test

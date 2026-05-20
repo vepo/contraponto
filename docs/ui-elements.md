@@ -151,7 +151,11 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `comment`, `comment-list`, `comment-form`, `comment-replies` | Comment components | On-post only |
 | `post-highlights`, `post-highlights__actions` | `HighlightComponentEndpoint/highlights.html` | Lazy-loaded below article; respond / my highlights actions |
 | `highlights-selection-bar` | `HighlightComponentEndpoint/highlights.html` | Fixed popover on text selection (**Highlight**, **Add note**, **Remove highlight**); moved to `document.body` while visible |
-| `post-highlight`, `post-highlight--personal`, `post-highlight--official`, `post-highlight__badge` | Applied by `highlight.js` | Inline marks in `.article-page__content` |
+| `highlights-action-bar` | `HighlightComponentEndpoint/highlights.html` | Fixed popover when clicking owned highlight mark or note card (**Remove highlight**, **Remove note**) |
+| `post-highlight--interactive` | Applied by `highlight.js` | Clickable personal highlight marks (`data-highlight-id`) |
+| `highlight-note-card--interactive` | `HighlightComponentEndpoint/highlightNoteCard.html` | Clickable owned note cards in **My notes on this post** |
+| `post-highlight`, `post-highlight--personal`, `post-highlight--official`, `post-highlight--noted`, `post-highlight--affects-drop-cap`, `post-highlight__badge` | Applied by `highlight.js` | Inline marks in `.article-page__content`; `--noted` when the mark has a reader note; `--affects-drop-cap` when the mark starts at the first letter of a drop-cap paragraph |
+| `post-highlight-note-tooltip` | Applied by `highlight.js` on hover/focus | Note preview for `.post-highlight--noted` |
 | `highlights-note-dialog`, `highlights-note-dialog__*` | `HighlightNoteFormEndpoint/highlightNoteDialog.html` | Floating note dialog (text, public flag, OK/Cancel) appended to `document.body` near selection |
 | `highlight-note-card`, `highlight-note-card__*` | `HighlightComponentEndpoint/highlightNoteCard.html` | Note display: body, owner, status, timestamp |
 | `post-highlight-notes`, `post-highlight-notes__*` | `HighlightComponentEndpoint/highlights.html` | Reader's notes on current post |

@@ -146,6 +146,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Highlight passage | signed in | `POST /forms/posts/{postId}/highlights` | 3 | Home → blog → post → select text in body → **Highlight**. |
 | Highlight passage (guest) | guest | via login modal | 4 | Post → select text → **Sign in to highlight**. |
 | Add note to highlight | signed in | `GET /forms/highlights/{id}/notes/modal`, `POST …/notes` | 4 | Post → select text → **Add note** → dialog → **OK**. |
+| Remove highlight | signed in | `DELETE /forms/posts/{postId}/highlights/{id}` | 4 | Post → click owned highlight mark → **Remove highlight**. |
+| Remove note | signed in | `DELETE /forms/highlights/{id}/notes/{noteId}` | 4 | Post → click owned note card → **Remove note**. |
 | My highlights library | signed in | `GET /reading/highlights` | 2 | Open user menu → **Reading** **or** post highlights section → **My highlights**. |
 | Reply to comment | signed in | `POST …/comments/{parentId}/replies` | 4 | Post → **Reply** on comment → submit. |
 | Version history modal | author | `GET …/components/history/modal` | 4 | Home → own published post → **Version N** control. |

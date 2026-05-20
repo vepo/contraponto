@@ -51,11 +51,18 @@
         <h2 class="post-highlight-notes__title" data-i18n="highlight.note.myNotesSectionTitle">Minhas notas neste post</h2>
         <div class="post-highlight-notes__list">
             {#for note in section.readerNotes}
-            {#include HighlightComponentEndpoint/highlightNoteCard note=note /}
+            {#include HighlightComponentEndpoint/highlightNoteCard note=note removable=true /}
             {/for}
         </div>
     </section>
     {/if}
+
+    <div id="highlights-action-bar" class="highlights-selection-bar u-hidden" hidden>
+        <button type="button" class="btn btn--small btn--outline u-hidden" data-highlight-action="remove-mark"
+                data-i18n="highlight.remove">Remover destaque</button>
+        <button type="button" class="btn btn--small btn--outline u-hidden" data-highlight-action="remove-note"
+                data-i18n="highlight.note.remove">Remover nota</button>
+    </div>
 
     <div id="highlights-selection-bar" class="highlights-selection-bar u-hidden" hidden>
         {#if section.authenticated}

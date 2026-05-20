@@ -18,6 +18,7 @@ public record HighlightNoteLibraryRow(long noteId,
 
     public HighlightNoteCardView noteCard() {
         return new HighlightNoteCardView(noteId,
+                                         highlightId,
                                          passageExcerpt,
                                          body,
                                          ownerName,

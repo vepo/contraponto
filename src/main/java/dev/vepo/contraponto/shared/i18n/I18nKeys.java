@@ -53,6 +53,8 @@ public final class I18nKeys {
 
     public static final String TOAST_HIGHLIGHT_NOTE_PENDING = "toast.highlight.notePending";
     public static final String TOAST_HIGHLIGHT_NOTE_SAVED = "toast.highlight.noteSaved";
+    public static final String TOAST_HIGHLIGHT_NOTE_REMOVED = "toast.highlight.noteRemoved";
+    public static final String TOAST_HIGHLIGHT_REMOVED = "toast.highlight.removed";
     public static final String TOAST_HIGHLIGHT_OFFICIAL_APPROVED = "toast.highlight.officialApproved";
     public static final String TOAST_HIGHLIGHT_PROPOSAL_REJECTED = "toast.highlight.proposalRejected";
     public static final String TOAST_POST_RESPONSE_PENDING = "toast.postResponse.pending";

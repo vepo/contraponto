@@ -166,8 +166,14 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Private highlight note** | Note visible only to the highlight author (default). | `HighlightNoteStatus.PRIVATE` |
 | **Public highlight note** | Reader marks note **public**; requires **author approval** before display on post. | `HighlightNoteStatus.PENDING` → `APPROVED` |
 | **Add note button** | Opens **highlight note dialog** on post page. | `data-highlight-action="note"` |
+| **Remove highlight button** | Removes the reader's **post text highlight** from the post. | `data-highlight-action="remove-mark"` |
+| **Remove note button** | Removes the reader's **highlight note**. | `data-highlight-action="remove-note"` |
+| **Highlight action bar** | Floating options when clicking an owned highlight or note. | `#highlights-action-bar` |
 | **Highlight note dialog** | Floating panel near selected text with note text, public checkbox, **OK** / **Cancel**. | `#highlightNoteDialog` |
 | **Highlight note card** | Shows note body, owner, status badge, timestamp after save. | `.highlight-note-card` |
+| **Noted highlight mark** | Inline mark with a **highlight note**; distinct color from a plain personal highlight. | `.post-highlight--noted` |
+| **Drop-cap highlight mark** | Highlight that starts at the first letter of the opening paragraph; suppresses the drop cap so the letter is covered by the mark. | `.post-highlight--affects-drop-cap` |
+| **Highlight note tooltip** | Hover preview of the reader's note on a **noted highlight mark**. | `#post-highlight-note-tooltip` |
 | **Text selection bar** | Floating UI after text selection in `.article-page__content`. | `PostHighlightManager` |
 | **Highlights library** | Reader's list of own highlights and notes. | Reading hub — `GET /reading/highlights` (`GET /highlights` redirects) |
 | **Reading hub** | Signed-in reader hub for highlights and notes. | `ReadingHubEndpoint` — `GET /reading`; user menu **Reading** |

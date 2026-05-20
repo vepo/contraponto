@@ -126,6 +126,11 @@ public class PostTextHighlightService {
         List<HighlightMarkView> marks = new ArrayList<>();
         List<HighlightNoteCardView> readerNotes = new ArrayList<>();
         if (currentUserId != null) {
+            List<HighlightNote> userNotes = noteRepository.findByUserAndPost(currentUserId, post.getId());
+            java.util.Map<Long, String> notePreviewByHighlight = new java.util.HashMap<>();
+            for (HighlightNote note : userNotes) {
+                notePreviewByHighlight.putIfAbsent(note.getHighlight().getId(), excerptNote(note.getBody()));
+            }
             for (PostTextHighlight h : highlightRepository.findByPostForUser(post.getId(), currentUserId)) {
                 boolean isOfficial = officialClusters.contains(h.getAnchorClusterHash());
                 marks.add(new HighlightMarkView(h.getId(),
@@ -134,12 +139,12 @@ public class PostTextHighlightService {
                                                 h.getAnchorClusterHash(),
                                                 !isOfficial,
                                                 isOfficial,
-                                                true));
+                                                true,
+                                                notePreviewByHighlight.get(h.getId())));
             }
-            readerNotes = noteRepository.findByUserAndPost(currentUserId, post.getId())
-                                        .stream()
-                                        .map(n -> toNoteCard(n, excerptPassage(n.getHighlight().getPassage())))
-                                        .toList();
+            readerNotes = userNotes.stream()
+                                   .map(n -> toNoteCard(n, excerptPassage(n.getHighlight().getPassage())))
+                                   .toList();
         }
 
         List<PostResponseCardView> responses = postResponseRepository.findApprovedForSourcePost(post.getId())
@@ -218,6 +223,17 @@ public class PostTextHighlightService {
 
         maybeCreateOrRefreshProposal(post, clusterHash, trimmedPassage);
         return highlight;
+    }
+
+    private String excerptNote(String body) {
+        if (body == null) {
+            return "";
+        }
+        String trimmed = body.trim();
+        if (trimmed.length() <= 200) {
+            return trimmed;
+        }
+        return trimmed.substring(0, 199) + "…";
     }
 
     private String excerptPassage(String passage) {
@@ -308,6 +324,7 @@ public class PostTextHighlightService {
 
     private HighlightNoteCardView toNoteCard(HighlightNote note, String passageExcerpt) {
         return new HighlightNoteCardView(note.getId(),
+                                         note.getHighlight().getId(),
                                          passageExcerpt,
                                          note.getBody(),
                                          note.getUser().getName(),

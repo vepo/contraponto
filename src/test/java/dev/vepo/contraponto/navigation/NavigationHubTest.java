@@ -89,11 +89,19 @@ class NavigationHubTest {
                         .withPublished(true)
                         .persist();
         String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        var highlightResponse = TestHttp.authenticated(reader)
+                                        .contentType("application/x-www-form-urlencoded")
+                                        .formParam("passage", "Content")
+                                        .formParam("anchorJson", anchor)
+                                        .post("/forms/posts/" + post.getId() + "/highlights")
+                                        .then()
+                                        .statusCode(200)
+                                        .extract();
+        String highlightId = highlightResponse.header("X-Highlight-Id");
         TestHttp.authenticated(reader)
                 .contentType("application/x-www-form-urlencoded")
-                .formParam("passage", "Content")
-                .formParam("anchorJson", anchor)
-                .post("/forms/posts/" + post.getId() + "/highlights")
+                .formParam("body", "Reading hub note")
+                .post("/forms/highlights/" + highlightId + "/notes")
                 .then()
                 .statusCode(200);
 
@@ -104,7 +112,8 @@ class NavigationHubTest {
            .assertBreadcrumb("Reading", "Highlights")
            .clickHubSection("/reading", "notes")
            .assertUrl("/reading/notes")
-           .assertBreadcrumb("Reading", "Notes");
+           .assertBreadcrumb("Reading", "Notes")
+           .assertPageSourceContains("Reading hub note");
     }
 
     @BeforeEach

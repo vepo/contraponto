@@ -35,6 +35,9 @@ class PostTextHighlightTest {
     @Inject
     PostResponseRepository postResponseRepository;
 
+    @Inject
+    HighlightNoteRepository noteRepository;
+
     private User author;
     private User reader;
     private User reader2;
@@ -197,6 +200,54 @@ class PostTextHighlightTest {
                 .statusCode(200);
 
         assertEquals(1, highlightRepository.countByUserAndPost(reader.getId(), post.getId()));
+    }
+
+    @Test
+    void reader_can_remove_own_highlight() {
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("passage", "hello")
+                .formParam("anchorJson", anchor)
+                .post("/forms/posts/" + post.getId() + "/highlights")
+                .then()
+                .statusCode(200);
+
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+        TestHttp.authenticated(reader)
+                .delete("/forms/posts/" + post.getId() + "/highlights/" + highlightId)
+                .then()
+                .statusCode(200);
+
+        assertEquals(0, highlightRepository.countByUserAndPost(reader.getId(), post.getId()));
+    }
+
+    @Test
+    void reader_can_remove_own_note() {
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("passage", "hello")
+                .formParam("anchorJson", anchor)
+                .post("/forms/posts/" + post.getId() + "/highlights")
+                .then()
+                .statusCode(200);
+
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("body", "Temporary note")
+                .post("/forms/highlights/" + highlightId + "/notes")
+                .then()
+                .statusCode(200);
+
+        long noteId = noteRepository.findByUserAndPost(reader.getId(), post.getId()).getFirst().getId();
+        TestHttp.authenticated(reader)
+                .delete("/forms/highlights/" + highlightId + "/notes/" + noteId)
+                .then()
+                .statusCode(200);
+
+        assertTrue(noteRepository.findByUserAndPost(reader.getId(), post.getId()).isEmpty());
     }
 
     @Test

@@ -1,12 +1,14 @@
 /**
- * Post text highlights: selection bar, create/remove, note dialog.
+ * Post text highlights: selection bar, create/remove, note dialog, action bar.
  */
 class PostHighlightManager {
     static ARTICLE_SELECTOR = '.article-page__content';
     static ROOT_SELECTOR = '#post-highlights-root';
     static DATA_SCRIPT_ID = 'post-highlights-data';
     static BAR_ID = 'highlights-selection-bar';
+    static ACTION_BAR_ID = 'highlights-action-bar';
     static NOTE_DIALOG_ID = 'highlightNoteDialog';
+    static NOTE_TOOLTIP_ID = 'post-highlight-note-tooltip';
 
     constructor() {
         this.root = null;
@@ -16,13 +18,21 @@ class PostHighlightManager {
         this.official = [];
         this.selection = null;
         this.selectionRect = null;
+        this.actionContext = null;
+        this.selectionBar = null;
+        this.actionBar = null;
         this.barHome = null;
+        this.actionBarHome = null;
         this.boundSelectionChange = this.onSelectionChange.bind(this);
         this.boundBarClick = this.onBarClick.bind(this);
+        this.boundArticleClick = this.onArticleClick.bind(this);
+        this.boundRootClick = this.onRootClick.bind(this);
         this.boundDocumentMouseDown = this.onDocumentMouseDown.bind(this);
         this.boundDocumentKeyDown = this.onDocumentKeyDown.bind(this);
         this.boundHtmxAfterRequest = this.onHtmxAfterRequest.bind(this);
         this.boundHtmxAfterSettle = this.onHtmxAfterSettle.bind(this);
+        this.boundHtmxBeforeSwap = this.onHtmxBeforeSwap.bind(this);
+        this.boundScroll = this.onScroll.bind(this);
         this.pendingNoteAfterCreate = false;
     }
 
@@ -36,11 +46,77 @@ class PostHighlightManager {
             return;
         }
         this.postId = this.root.dataset.postId;
+        this.resetFloatingBars();
+        this.refreshBarRefs();
         this.loadData();
         this.applyMarks();
         this.bindSelection();
-        this.bindBar();
+        this.bindBars();
+        this.bindSignInActions();
+        this.bindInteractive();
         this.bindGlobalHandlers();
+    }
+
+    resetFloatingBars() {
+        for (const barId of [PostHighlightManager.BAR_ID, PostHighlightManager.ACTION_BAR_ID]) {
+            document.querySelectorAll('#' + barId).forEach(el => {
+                if (el.parentElement === document.body) {
+                    el.remove();
+                }
+            });
+        }
+        this.hideNoteTooltip();
+        this.barHome = null;
+        this.actionBarHome = null;
+        this.selectionBar = null;
+        this.actionBar = null;
+    }
+
+    refreshBarRefs() {
+        if (!this.root) {
+            return;
+        }
+        this.selectionBar = this.root.querySelector('#' + PostHighlightManager.BAR_ID);
+        this.actionBar = this.root.querySelector('#' + PostHighlightManager.ACTION_BAR_ID);
+    }
+
+    resolveBar(barId) {
+        const bars = [...document.querySelectorAll('#' + barId)];
+        if (bars.length === 0) {
+            return null;
+        }
+        if (bars.length === 1) {
+            return bars[0];
+        }
+        const rootBar = this.root?.querySelector('#' + barId);
+        const active = bars.find(bar => !bar.hidden) ?? rootBar ?? bars[bars.length - 1];
+        for (const bar of bars) {
+            if (bar !== active && bar.parentElement === document.body) {
+                bar.remove();
+            }
+        }
+        if (barId === PostHighlightManager.BAR_ID) {
+            this.selectionBar = active;
+        } else if (barId === PostHighlightManager.ACTION_BAR_ID) {
+            this.actionBar = active;
+        }
+        return active;
+    }
+
+    selectionBarElement() {
+        if (this.selectionBar?.isConnected) {
+            return this.selectionBar;
+        }
+        this.selectionBar = this.resolveBar(PostHighlightManager.BAR_ID);
+        return this.selectionBar;
+    }
+
+    actionBarElement() {
+        if (this.actionBar?.isConnected) {
+            return this.actionBar;
+        }
+        this.actionBar = this.resolveBar(PostHighlightManager.ACTION_BAR_ID);
+        return this.actionBar;
     }
 
     loadData() {
@@ -62,13 +138,48 @@ class PostHighlightManager {
         document.addEventListener('mouseup', this.boundSelectionChange);
     }
 
-    bindBar() {
-        const bar = document.getElementById(PostHighlightManager.BAR_ID);
-        if (!bar || bar.dataset.highlightBarBound === 'true') {
+    bindBars() {
+        for (const bar of [this.selectionBarElement(), this.actionBarElement()]) {
+            if (!bar || bar.dataset.highlightBarBound === 'true') {
+                continue;
+            }
+            bar.dataset.highlightBarBound = 'true';
+            bar.addEventListener('click', this.boundBarClick);
+        }
+    }
+
+    bindSignInActions() {
+        if (!this.root || this.root.dataset.highlightSignInBound === 'true') {
             return;
         }
-        bar.dataset.highlightBarBound = 'true';
-        bar.addEventListener('click', this.boundBarClick);
+        this.root.dataset.highlightSignInBound = 'true';
+        this.root.addEventListener('click', evt => {
+            const btn = evt.target.closest('[data-highlight-action="sign-in"]');
+            if (!btn || !this.root.contains(btn)) {
+                return;
+            }
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.openSignInModal();
+        });
+    }
+
+    bindInteractive() {
+        if (this.article && this.article.dataset.highlightArticleBound !== 'true') {
+            this.article.dataset.highlightArticleBound = 'true';
+            this.article.addEventListener('click', this.boundArticleClick);
+        }
+        if (this.root && this.root.dataset.highlightRootBound !== 'true') {
+            this.root.dataset.highlightRootBound = 'true';
+            this.root.addEventListener('click', this.boundRootClick);
+        }
+        this.root?.querySelectorAll('.highlight-note-card--interactive').forEach(card => {
+            if (card.dataset.highlightNoteBound === 'true') {
+                return;
+            }
+            card.dataset.highlightNoteBound = 'true';
+            card.addEventListener('click', evt => this.onNoteCardClick(evt, card));
+        });
     }
 
     bindGlobalHandlers() {
@@ -80,6 +191,46 @@ class PostHighlightManager {
         document.addEventListener('htmx:afterRequest', this.boundHtmxAfterRequest);
         document.removeEventListener('htmx:afterSettle', this.boundHtmxAfterSettle);
         document.addEventListener('htmx:afterSettle', this.boundHtmxAfterSettle);
+        document.removeEventListener('htmx:beforeSwap', this.boundHtmxBeforeSwap);
+        document.addEventListener('htmx:beforeSwap', this.boundHtmxBeforeSwap);
+        window.removeEventListener('scroll', this.boundScroll, true);
+        window.addEventListener('scroll', this.boundScroll, true);
+    }
+
+    onHtmxBeforeSwap(evt) {
+        const target = evt.detail?.target;
+        if (!target) {
+            return;
+        }
+        if (target.id === 'post-highlights' || target.tagName === 'MAIN') {
+            this.hideBar(false, false);
+            this.hideActionBar();
+            this.hideNoteTooltip();
+            this.closeNoteDialog();
+            this.resetFloatingBars();
+        }
+    }
+
+    onScroll() {
+        const bar = this.selectionBarElement();
+        if (bar && !bar.hidden) {
+            this.hideBar(false, false);
+        }
+    }
+
+    openSignInModal() {
+        this.hideBar(false, false);
+        const headerLogin = document.querySelector('button.btn--auth-login');
+        if (headerLogin) {
+            headerLogin.click();
+            return;
+        }
+        if (typeof htmx !== 'undefined') {
+            htmx.ajax('GET', '/auth/modal?mode=login', {
+                target: '#modal-container',
+                swap: 'innerHTML'
+            });
+        }
     }
 
     onDocumentMouseDown(evt) {
@@ -91,7 +242,18 @@ class PostHighlightManager {
             this.closeNoteDialog();
         }
 
-        const bar = document.getElementById(PostHighlightManager.BAR_ID);
+        const actionBar = this.actionBarElement();
+        if (actionBar && !actionBar.hidden) {
+            if (actionBar.contains(evt.target)) {
+                return;
+            }
+            if (evt.target.closest?.('mark.post-highlight--interactive, .highlight-note-card--interactive')) {
+                return;
+            }
+            this.hideActionBar();
+        }
+
+        const bar = this.selectionBarElement();
         if (!bar || bar.hidden) {
             return;
         }
@@ -106,19 +268,66 @@ class PostHighlightManager {
     }
 
     onDocumentKeyDown(evt) {
-        if (evt.key === 'Escape') {
-            if (document.getElementById(PostHighlightManager.NOTE_DIALOG_ID)) {
-                this.closeNoteDialog();
-                return;
-            }
-            this.hideBar();
+        if (evt.key !== 'Escape') {
+            return;
         }
+        if (document.getElementById(PostHighlightManager.NOTE_DIALOG_ID)) {
+            this.closeNoteDialog();
+            return;
+        }
+        if (!this.actionBarElement()?.hidden) {
+            this.hideActionBar();
+            return;
+        }
+        this.hideBar();
     }
 
-    onSelectionChange() {
+    onMarkClick(evt, mark) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        this.hideNoteTooltip();
+        window.getSelection()?.removeAllRanges();
+        this.hideBar(false);
+        this.closeNoteDialog();
+        this.showActionBar('mark', mark.getBoundingClientRect(), { highlightId: mark.dataset.highlightId });
+    }
+
+    onArticleClick(evt) {
+        const mark = evt.target.closest('mark.post-highlight--interactive[data-highlight-id]');
+        if (!mark) {
+            return;
+        }
+        this.onMarkClick(evt, mark);
+    }
+
+    onNoteCardClick(evt, card) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        window.getSelection()?.removeAllRanges();
+        this.hideBar(false);
+        this.closeNoteDialog();
+        this.showActionBar('note', card.getBoundingClientRect(), {
+            highlightId: card.dataset.highlightId,
+            noteId: card.dataset.highlightNoteId
+        });
+    }
+
+    onRootClick(evt) {
+        const card = evt.target.closest('.highlight-note-card--interactive');
+        if (!card) {
+            return;
+        }
+        this.onNoteCardClick(evt, card);
+    }
+
+    onSelectionChange(evt) {
         if (document.getElementById(PostHighlightManager.NOTE_DIALOG_ID)) {
             return;
         }
+        if (evt?.target?.closest?.('mark.post-highlight--interactive, .highlight-note-card--interactive')) {
+            return;
+        }
+        this.hideActionBar();
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || !this.article) {
             this.hideBar();
@@ -161,10 +370,13 @@ class PostHighlightManager {
         if (!action) {
             return;
         }
+        if (action === 'remove-mark' || action === 'remove-note') {
+            return;
+        }
         evt.preventDefault();
         evt.stopPropagation();
         if (action === 'sign-in') {
-            document.getElementById('loginBtn')?.click();
+            this.openSignInModal();
             return;
         }
         if (action === 'create') {
@@ -184,6 +396,7 @@ class PostHighlightManager {
         const highlightId = this.resolveHighlightId();
         if (highlightId) {
             this.hideBar(false, false);
+            this.hideActionBar();
             this.openNoteDialog(highlightId);
             return;
         }
@@ -215,7 +428,8 @@ class PostHighlightManager {
         htmx.ajax('POST', '/forms/posts/' + this.postId + '/highlights', {
             target: '#post-highlights',
             swap: 'innerHTML',
-            values: Object.fromEntries(form)
+            values: Object.fromEntries(form),
+            headers: this.csrfHeaders()
         });
         if (!this.pendingNoteAfterCreate) {
             this.hideBar();
@@ -230,13 +444,23 @@ class PostHighlightManager {
             return;
         }
         const verb = (evt.detail?.requestConfig?.verb || '').toLowerCase();
-        if (path.includes('/notes') && evt.detail.successful) {
+        if (!evt.detail.successful) {
+            return;
+        }
+        if (verb === 'delete') {
             this.closeNoteDialog();
             this.hideBar();
+            this.hideActionBar();
             window.getSelection()?.removeAllRanges();
             return;
         }
-        if (verb === 'post' && path.includes('/forms/posts/') && path.includes('/highlights') && evt.detail.successful) {
+        if (path.includes('/notes')) {
+            this.closeNoteDialog();
+            this.hideBar();
+            this.hideActionBar();
+            window.getSelection()?.removeAllRanges();
+        }
+        if (verb === 'post' && path.includes('/forms/posts/') && path.includes('/highlights')) {
             const highlightId = xhr.getResponseHeader('X-Highlight-Id');
             if (this.pendingNoteAfterCreate && highlightId) {
                 this.finishPendingNote(highlightId);
@@ -288,13 +512,27 @@ class PostHighlightManager {
     removeHighlight(id) {
         htmx.ajax('DELETE', '/forms/posts/' + this.postId + '/highlights/' + id, {
             target: '#post-highlights',
-            swap: 'innerHTML'
+            swap: 'innerHTML',
+            headers: this.csrfHeaders()
         });
-        this.hideBar();
+    }
+
+    removeNote(highlightId, noteId) {
+        htmx.ajax('DELETE', '/forms/highlights/' + highlightId + '/notes/' + noteId, {
+            target: '#post-highlights',
+            swap: 'innerHTML',
+            headers: this.csrfHeaders()
+        });
+    }
+
+    csrfHeaders() {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        return csrf ? { 'X-CSRF-Token': csrf } : {};
     }
 
     openNoteDialog(highlightId) {
         this.closeNoteDialog();
+        this.hideActionBar();
         const headers = {};
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
         if (csrf) {
@@ -365,7 +603,8 @@ class PostHighlightManager {
         let top = anchorRect.bottom + margin;
         let left = anchorRect.left;
         element.style.visibility = 'hidden';
-        element.style.display = 'block';
+        const display = element.classList.contains('highlights-selection-bar') ? 'flex' : 'block';
+        element.style.display = display;
         const elementRect = element.getBoundingClientRect();
         const maxLeft = window.innerWidth - elementRect.width - margin;
         left = Math.max(margin, Math.min(left, maxLeft));
@@ -378,26 +617,87 @@ class PostHighlightManager {
         element.style.visibility = 'visible';
     }
 
+    showActionBar(type, anchorRect, context) {
+        const bar = this.actionBarElement();
+        if (!bar) {
+            return;
+        }
+        this.actionContext = context;
+        if (!this.actionBarHome) {
+            this.actionBarHome = bar.parentElement;
+        }
+        if (bar.parentElement !== document.body) {
+            document.body.appendChild(bar);
+        }
+        bar.dataset.removeHighlightId = context.highlightId || '';
+        bar.dataset.removeNoteId = context.noteId || '';
+        bar.dataset.removeNoteHighlightId = context.highlightId || '';
+        bar.hidden = false;
+        bar.classList.remove('u-hidden');
+        const markBtn = bar.querySelector('[data-highlight-action="remove-mark"]');
+        const noteBtn = bar.querySelector('[data-highlight-action="remove-note"]');
+        if (markBtn) {
+            markBtn.classList.toggle('u-hidden', type !== 'mark');
+            markBtn.onclick = type === 'mark'
+                ? evt => {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    this.removeHighlight(context.highlightId);
+                    this.hideActionBar();
+                }
+                : null;
+        }
+        if (noteBtn) {
+            noteBtn.classList.toggle('u-hidden', type !== 'note');
+            noteBtn.onclick = type === 'note'
+                ? evt => {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    this.removeNote(context.highlightId, context.noteId);
+                    this.hideActionBar();
+                }
+                : null;
+        }
+        this.positionFloatingElement(bar, anchorRect);
+    }
+
+    hideActionBar() {
+        const bar = this.actionBarElement();
+        if (bar) {
+            bar.hidden = true;
+            bar.classList.add('u-hidden');
+            bar.style.visibility = '';
+            bar.style.display = '';
+            if (this.actionBarHome && bar.parentElement === document.body) {
+                this.actionBarHome.appendChild(bar);
+            }
+        }
+        this.actionContext = null;
+    }
+
     applyMarks() {
         this.clearMarks();
         const all = [];
         for (const o of this.official) {
-            all.push({ ...o, official: true });
+            all.push({ ...o, official: true, interactive: false });
         }
-        for (const m of this.marks.filter(m => !m.official)) {
-            all.push({ ...m, official: false });
+        for (const m of this.marks) {
+            if (m.official || !m.ownHighlight) {
+                continue;
+            }
+            all.push({ ...m, official: false, interactive: true });
         }
         for (const item of all) {
             try {
                 const anchor = typeof item.anchorJson === 'string' ? JSON.parse(item.anchorJson) : item.anchorJson;
-                this.wrapRange(anchor.start, anchor.end, item.official);
+                this.wrapRange(anchor.start, anchor.end, item.official, item.interactive ? item.id : null, item.notePreview);
             } catch (_) {
                 /* anchor may be stale */
             }
         }
     }
 
-    wrapRange(start, end, official) {
+    wrapRange(start, end, official, highlightId, notePreview) {
         const text = this.article.textContent;
         if (start < 0 || end > text.length || start >= end) {
             return;
@@ -429,18 +729,80 @@ class PostHighlightManager {
         range.setStart(startNode, startOff);
         range.setEnd(endNode, endOff);
         const mark = document.createElement('mark');
-        mark.className = official ? 'post-highlight post-highlight--official' : 'post-highlight post-highlight--personal';
+        const hasNote = notePreview && String(notePreview).trim();
+        if (official) {
+            mark.className = 'post-highlight post-highlight--official';
+        } else if (hasNote) {
+            mark.className = 'post-highlight post-highlight--noted';
+        } else {
+            mark.className = 'post-highlight post-highlight--personal';
+        }
         if (official) {
             const badge = document.createElement('span');
             badge.className = 'post-highlight__badge';
             badge.textContent = window.i18n?.t('highlight.official.badge') || 'Destaque do autor';
             mark.appendChild(badge);
         }
+        if (highlightId) {
+            mark.dataset.highlightId = String(highlightId);
+            mark.classList.add('post-highlight--interactive');
+            mark.tabIndex = 0;
+            mark.setAttribute('role', 'button');
+            mark.addEventListener('click', evt => this.onMarkClick(evt, mark));
+            if (hasNote) {
+                mark.addEventListener('mouseenter', () => this.showNoteTooltip(mark, notePreview));
+                mark.addEventListener('mouseleave', () => this.hideNoteTooltip());
+                mark.addEventListener('focus', () => this.showNoteTooltip(mark, notePreview));
+                mark.addEventListener('blur', () => this.hideNoteTooltip());
+            }
+        }
         try {
             range.surroundContents(mark);
+            this.tagDropCapIfNeeded(mark);
         } catch (_) {
             /* overlapping marks */
         }
+    }
+
+    tagDropCapIfNeeded(mark) {
+        if (this.markAffectsDropCap(mark)) {
+            mark.classList.add('post-highlight--affects-drop-cap');
+        }
+    }
+
+    markAffectsDropCap(mark) {
+        const paragraph = mark.closest('p');
+        if (!paragraph || !this.article?.contains(paragraph)) {
+            return false;
+        }
+        const dropCapParagraph = this.article.querySelector(':scope > p:first-of-type')
+            ?? this.article.querySelector(':scope > .paragraph:first-of-type > p:first-of-type');
+        if (paragraph !== dropCapParagraph) {
+            return false;
+        }
+        const range = document.createRange();
+        range.setStart(paragraph, 0);
+        range.setEnd(mark, 0);
+        return range.toString().trim().length === 0;
+    }
+
+    showNoteTooltip(mark, notePreview) {
+        this.hideNoteTooltip();
+        const text = String(notePreview || '').trim();
+        if (!text) {
+            return;
+        }
+        const tooltip = document.createElement('div');
+        tooltip.id = PostHighlightManager.NOTE_TOOLTIP_ID;
+        tooltip.className = 'post-highlight-note-tooltip';
+        tooltip.setAttribute('role', 'tooltip');
+        tooltip.textContent = text;
+        document.body.appendChild(tooltip);
+        this.positionFloatingElement(tooltip, mark.getBoundingClientRect());
+    }
+
+    hideNoteTooltip() {
+        document.getElementById(PostHighlightManager.NOTE_TOOLTIP_ID)?.remove();
     }
 
     clearMarks() {
@@ -465,7 +827,8 @@ class PostHighlightManager {
     }
 
     showBar(hasHighlight) {
-        const bar = document.getElementById(PostHighlightManager.BAR_ID);
+        this.hideActionBar();
+        const bar = this.selectionBarElement();
         if (!bar) {
             return;
         }
@@ -490,12 +853,11 @@ class PostHighlightManager {
             const rect = sel.getRangeAt(0).getBoundingClientRect();
             this.selectionRect = rect;
             this.positionFloatingElement(bar, rect);
-            bar.style.display = 'flex';
         }
     }
 
     hideBar(clearPending = true, clearSelection = true) {
-        const bar = document.getElementById(PostHighlightManager.BAR_ID);
+        const bar = this.selectionBarElement();
         if (bar) {
             bar.hidden = true;
             bar.classList.add('u-hidden');

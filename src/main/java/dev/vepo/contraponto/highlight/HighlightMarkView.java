@@ -6,4 +6,10 @@ public record HighlightMarkView(long id,
                                 String anchorClusterHash,
                                 boolean personal,
                                 boolean official,
-                                boolean ownHighlight) {}
+                                boolean ownHighlight,
+                                String notePreview) {
+
+    public boolean noted() {
+        return notePreview != null && !notePreview.isBlank();
+    }
+}
