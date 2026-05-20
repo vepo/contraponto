@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/vepo/contraponto/blob/main/ARCHITECTURE.md
+    about: Architecture, URLs, and how to add features
+  - name: Deployment guide
+    url: https://github.com/vepo/contraponto/blob/main/docs/deployment.md
+    about: Production configuration checklist

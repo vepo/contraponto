@@ -1,0 +1,19 @@
+# JVM mode (default `mvn package` output). Build with:
+#   mvn package -DskipTests
+#   docker build -f src/main/docker/Dockerfile.jvm -t contraponto .
+FROM eclipse-temurin:25-jre-jammy
+
+WORKDIR /deployments/
+RUN groupadd -r quarkus && useradd -r -g quarkus -u 1001 quarkus \
+    && chown quarkus:quarkus /deployments
+
+COPY --chown=quarkus:quarkus target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=quarkus:quarkus target/quarkus-app/*.jar /deployments/
+COPY --chown=quarkus:quarkus target/quarkus-app/app/ /deployments/app/
+COPY --chown=quarkus:quarkus target/quarkus-app/quarkus/ /deployments/quarkus/
+
+USER 1001
+EXPOSE 8080
+
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENTRYPOINT ["java", "-jar", "/deployments/quarkus-run.jar"]

@@ -4,7 +4,7 @@ Greenfield production setup for Contraponto. The application is feature-complete
 
 ## Prerequisites
 
-- Java 25 runtime (or use the [Dockerfile](../src/main/docker/Dockerfile) after `./mvnw package`)
+- Java 25 runtime (or use [Dockerfile.jvm](../src/main/docker/Dockerfile.jvm) after `mvn package`; native image uses [Dockerfile](../src/main/docker/Dockerfile) with `mvn package -Pnative`)
 - PostgreSQL 14+
 - HTTPS termination (reverse proxy or platform ingress)
 - SMTP server for transactional and notification email
@@ -76,8 +76,8 @@ For multiple app instances, set `app.session.store=redis` and configure `quarkus
 ## 7. Build and run
 
 ```bash
-./mvnw package -DskipTests
-docker build -f src/main/docker/Dockerfile -t contraponto .
+mvn package -DskipTests
+docker build -f src/main/docker/Dockerfile.jvm -t contraponto .
 docker run -p 8080:8080 \
   -e QUARKUS_PROFILE=prod \
   -e APP_PUBLIC_URL=https://your.domain \
