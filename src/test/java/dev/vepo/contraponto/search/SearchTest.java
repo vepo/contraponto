@@ -90,7 +90,7 @@ class SearchTest {
     @Test
     void searchPageLoadsWithEmptyQuery(App app) {
         app.searchPage()
-           .assertPageTitleContains("Search");
+           .assertPageTitleContains("Busca");
     }
 
     @Test

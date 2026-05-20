@@ -92,7 +92,7 @@ class BlogGitIntegrationTransactionAsyncTest {
     private User persistUserLinkedToUpstream(Path upstream, String branch) {
         int token = java.util.concurrent.ThreadLocalRandom.current().nextInt();
         User u = Given.user()
-                      .withUsername("g_async_%06x".formatted(Integer.toUnsignedLong(token)))
+                      .withUsername("g_async_%06x".formatted(Integer.toUnsignedLong(token) & 0xFFFFFFL))
                       .withEmail("g_async_%08x@t.st".formatted(Integer.toUnsignedLong(token)))
                       .withName("Git Async Tester")
                       .withPassword("Password123!")
