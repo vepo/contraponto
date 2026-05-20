@@ -1,22 +1,28 @@
 /**
- * Post text highlights: selection bar, create/remove, inline marks.
+ * Post text highlights: selection bar, create/remove, note modal.
  */
 class PostHighlightManager {
     static ARTICLE_SELECTOR = '.article-page__content';
     static ROOT_SELECTOR = '#post-highlights-root';
     static DATA_SCRIPT_ID = 'post-highlights-data';
     static BAR_ID = 'highlights-selection-bar';
+    static MODAL_CONTAINER_ID = 'modal-container';
 
     constructor() {
         this.root = null;
         this.article = null;
         this.postId = null;
-        this.highlightsUrl = null;
         this.marks = [];
         this.official = [];
         this.selection = null;
+        this.barHome = null;
         this.boundSelectionChange = this.onSelectionChange.bind(this);
         this.boundBarClick = this.onBarClick.bind(this);
+        this.boundDocumentMouseDown = this.onDocumentMouseDown.bind(this);
+        this.boundDocumentKeyDown = this.onDocumentKeyDown.bind(this);
+        this.boundHtmxAfterRequest = this.onHtmxAfterRequest.bind(this);
+        this.boundHtmxAfterSettle = this.onHtmxAfterSettle.bind(this);
+        this.pendingNoteAfterCreate = false;
     }
 
     init() {
@@ -29,11 +35,11 @@ class PostHighlightManager {
             return;
         }
         this.postId = this.root.dataset.postId;
-        this.highlightsUrl = this.root.dataset.highlightsUrl;
         this.loadData();
         this.applyMarks();
         this.bindSelection();
         this.bindBar();
+        this.bindGlobalHandlers();
     }
 
     loadData() {
@@ -64,6 +70,39 @@ class PostHighlightManager {
         bar.addEventListener('click', this.boundBarClick);
     }
 
+    bindGlobalHandlers() {
+        document.removeEventListener('mousedown', this.boundDocumentMouseDown);
+        document.addEventListener('mousedown', this.boundDocumentMouseDown);
+        document.removeEventListener('keydown', this.boundDocumentKeyDown);
+        document.addEventListener('keydown', this.boundDocumentKeyDown);
+        document.removeEventListener('htmx:afterRequest', this.boundHtmxAfterRequest);
+        document.addEventListener('htmx:afterRequest', this.boundHtmxAfterRequest);
+        document.removeEventListener('htmx:afterSettle', this.boundHtmxAfterSettle);
+        document.addEventListener('htmx:afterSettle', this.boundHtmxAfterSettle);
+    }
+
+    onDocumentMouseDown(evt) {
+        const bar = document.getElementById(PostHighlightManager.BAR_ID);
+        if (!bar || bar.hidden) {
+            return;
+        }
+        if (bar.contains(evt.target)) {
+            return;
+        }
+        const article = this.article;
+        if (article && article.contains(evt.target)) {
+            return;
+        }
+        this.hideBar();
+    }
+
+    onDocumentKeyDown(evt) {
+        if (evt.key === 'Escape') {
+            this.hideBar();
+            this.closeNoteModal();
+        }
+    }
+
     onSelectionChange() {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || !this.article) {
@@ -89,8 +128,16 @@ class PostHighlightManager {
         const prefix = this.article.textContent.substring(Math.max(0, start - 32), start);
         const suffix = this.article.textContent.substring(end, Math.min(this.article.textContent.length, end + 32));
         const cluster = this.normalizePassage(passage);
-        const existing = this.marks.find(m => m.cluster === cluster || m.passage === passage);
-        this.selection = { passage, start, end, prefix, suffix, anchorJson: JSON.stringify({ start, end, prefix, suffix }), highlightId: existing?.id };
+        const existing = this.marks.find(m => m.passage === passage || this.normalizePassage(m.passage) === cluster);
+        this.selection = {
+            passage,
+            start,
+            end,
+            prefix,
+            suffix,
+            anchorJson: JSON.stringify({ start, end, prefix, suffix }),
+            highlightId: existing?.id
+        };
         this.showBar(!!existing);
     }
 
@@ -100,25 +147,48 @@ class PostHighlightManager {
             return;
         }
         evt.preventDefault();
+        evt.stopPropagation();
         if (action === 'sign-in') {
             document.getElementById('loginBtn')?.click();
             return;
         }
         if (action === 'create') {
-            this.createHighlight();
+            this.createHighlight(false);
         } else if (action === 'remove' && this.selection?.highlightId) {
             this.removeHighlight(this.selection.highlightId);
-        } else if (action === 'note' && this.selection?.highlightId) {
-            const body = window.prompt(window.i18n?.t('highlight.note.prompt') || 'Nota (opcional):');
-            if (body === null) {
-                return;
-            }
-            const makePublic = window.confirm(window.i18n?.t('highlight.note.makePublic') || 'Tornar nota pública?');
-            this.saveNote(this.selection.highlightId, body, makePublic);
+        } else if (action === 'note') {
+            this.openNoteFlow();
         }
     }
 
-    createHighlight() {
+    openNoteFlow() {
+        if (!this.selection) {
+            return;
+        }
+        const highlightId = this.resolveHighlightId();
+        if (highlightId) {
+            this.openNoteModal(highlightId);
+            return;
+        }
+        this.pendingNoteAfterCreate = true;
+        this.createHighlight(true);
+    }
+
+    resolveHighlightId() {
+        if (this.selection?.highlightId) {
+            return this.selection.highlightId;
+        }
+        if (!this.selection?.passage) {
+            return null;
+        }
+        this.loadData();
+        const passage = this.selection.passage;
+        const cluster = this.normalizePassage(passage);
+        const existing = this.marks.find(m => m.passage === passage || this.normalizePassage(m.passage) === cluster);
+        return existing?.id ?? null;
+    }
+
+    createHighlight(_silentToast) {
         if (!this.selection) {
             return;
         }
@@ -130,8 +200,73 @@ class PostHighlightManager {
             swap: 'innerHTML',
             values: Object.fromEntries(form)
         });
+        if (!this.pendingNoteAfterCreate) {
+            this.hideBar();
+            window.getSelection()?.removeAllRanges();
+        }
+    }
+
+    onHtmxAfterRequest(evt) {
+        const xhr = evt.detail?.xhr;
+        const path = evt.detail?.pathInfo?.requestPath || '';
+        if (!xhr || !path.includes('/highlights')) {
+            return;
+        }
+        if (path.includes('/notes') && evt.detail.successful) {
+            this.closeNoteModal();
+            this.hideBar();
+            return;
+        }
+        if (evt.detail.verb === 'post' && path.includes('/forms/posts/') && path.includes('/highlights')) {
+            const highlightId = xhr.getResponseHeader('X-Highlight-Id');
+            if (this.pendingNoteAfterCreate && highlightId) {
+                this.finishPendingNote(highlightId);
+            }
+        }
+    }
+
+    onHtmxAfterSettle(evt) {
+        const highlightsUpdated = evt.detail?.target?.id === 'post-highlights'
+            || evt.detail?.target?.querySelector?.(PostHighlightManager.ROOT_SELECTOR);
+        if (highlightsUpdated) {
+            const pendingPassage = this.pendingNoteAfterCreate ? this.selection?.passage : null;
+            this.init();
+            if (this.pendingNoteAfterCreate && pendingPassage) {
+                this.selection = { passage: pendingPassage };
+                this.openPendingNoteFromFragment();
+            }
+        }
+        if (evt.detail?.target?.id === PostHighlightManager.MODAL_CONTAINER_ID) {
+            this.bindNoteModalClose();
+        }
+    }
+
+    finishPendingNote(highlightId) {
+        this.pendingNoteAfterCreate = false;
+        this.openNoteModal(highlightId);
         this.hideBar();
         window.getSelection()?.removeAllRanges();
+    }
+
+    openPendingNoteFromFragment() {
+        if (!this.selection) {
+            return;
+        }
+        const passage = this.selection.passage;
+        const cluster = this.normalizePassage(passage);
+        const script = document.getElementById(PostHighlightManager.DATA_SCRIPT_ID);
+        if (!script) {
+            return;
+        }
+        try {
+            const data = JSON.parse(script.textContent);
+            const match = (data.marks || []).find(m => m.passage === passage || this.normalizePassage(m.passage) === cluster);
+            if (match?.id) {
+                this.finishPendingNote(String(match.id));
+            }
+        } catch (_) {
+            /* ignore */
+        }
     }
 
     removeHighlight(id) {
@@ -142,13 +277,48 @@ class PostHighlightManager {
         this.hideBar();
     }
 
-    saveNote(highlightId, body, makePublic) {
-        const form = new URLSearchParams();
-        form.set('body', body);
-        form.set('makePublic', makePublic ? 'true' : 'false');
-        htmx.ajax('POST', '/forms/highlights/' + highlightId + '/notes', {
-            swap: 'none',
-            values: Object.fromEntries(form)
+    openNoteModal(highlightId) {
+        const container = document.getElementById(PostHighlightManager.MODAL_CONTAINER_ID);
+        if (!container) {
+            return;
+        }
+        const headers = {};
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (csrf) {
+            headers['X-CSRF-Token'] = csrf;
+        }
+        fetch('/forms/highlights/' + highlightId + '/notes/modal', { headers })
+            .then(response => response.text())
+            .then(html => {
+                container.innerHTML = html;
+                if (typeof htmx !== 'undefined') {
+                    htmx.process(container);
+                }
+                window.i18n?.apply(container);
+                this.bindNoteModalClose();
+            });
+    }
+
+    closeNoteModal() {
+        const container = document.getElementById(PostHighlightManager.MODAL_CONTAINER_ID);
+        if (container) {
+            container.innerHTML = '';
+        }
+    }
+
+    bindNoteModalClose() {
+        const modal = document.getElementById('highlightNoteModal');
+        if (!modal || modal.dataset.noteModalBound === 'true') {
+            return;
+        }
+        modal.dataset.noteModalBound = 'true';
+        modal.querySelectorAll('[data-highlight-note-close]').forEach(btn => {
+            btn.addEventListener('click', () => this.closeNoteModal());
+        });
+        modal.addEventListener('click', evt => {
+            if (evt.target === modal) {
+                this.closeNoteModal();
+            }
         });
     }
 
@@ -243,8 +413,18 @@ class PostHighlightManager {
         if (!bar) {
             return;
         }
+        if (!this.barHome) {
+            this.barHome = bar.parentElement;
+        }
+        if (bar.parentElement !== document.body) {
+            document.body.appendChild(bar);
+        }
         bar.hidden = false;
         bar.classList.remove('u-hidden');
+        const createBtn = bar.querySelector('[data-highlight-action="create"]');
+        if (createBtn) {
+            createBtn.classList.toggle('u-hidden', hasHighlight);
+        }
         const removeBtn = bar.querySelector('[data-highlight-action="remove"]');
         if (removeBtn) {
             removeBtn.classList.toggle('u-hidden', !hasHighlight);
@@ -252,29 +432,59 @@ class PostHighlightManager {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
             const rect = sel.getRangeAt(0).getBoundingClientRect();
-            bar.style.top = (window.scrollY + rect.bottom + 8) + 'px';
-            bar.style.left = (window.scrollX + rect.left) + 'px';
+            const margin = 8;
+            let top = rect.bottom + margin;
+            let left = rect.left;
+            bar.style.visibility = 'hidden';
+            bar.style.display = 'flex';
+            const barRect = bar.getBoundingClientRect();
+            const maxLeft = window.innerWidth - barRect.width - margin;
+            left = Math.max(margin, Math.min(left, maxLeft));
+            const maxTop = window.innerHeight - barRect.height - margin;
+            if (top > maxTop) {
+                top = Math.max(margin, rect.top - barRect.height - margin);
+            }
+            bar.style.top = top + 'px';
+            bar.style.left = left + 'px';
+            bar.style.visibility = 'visible';
         }
     }
 
-    hideBar() {
+    hideBar(clearPending = true) {
         const bar = document.getElementById(PostHighlightManager.BAR_ID);
         if (!bar) {
             return;
         }
         bar.hidden = true;
         bar.classList.add('u-hidden');
+        bar.style.visibility = '';
+        bar.style.display = '';
+        if (this.barHome && bar.parentElement === document.body) {
+            this.barHome.appendChild(bar);
+        }
         this.selection = null;
+        if (clearPending) {
+            this.pendingNoteAfterCreate = false;
+        }
     }
 
     static onAfterSettle(evt) {
         if (evt.detail?.target?.querySelector?.(PostHighlightManager.ROOT_SELECTOR)
             || evt.detail?.target?.id === 'post-highlights'
             || document.querySelector(PostHighlightManager.ROOT_SELECTOR)) {
-            new PostHighlightManager().init();
+            PostHighlightManager.instance().init();
         }
+    }
+
+    static instance() {
+        if (!PostHighlightManager._instance) {
+            PostHighlightManager._instance = new PostHighlightManager();
+        }
+        return PostHighlightManager._instance;
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => new PostHighlightManager().init());
-document.body.addEventListener('htmx:afterSettle', PostHighlightManager.onAfterSettle);
+PostHighlightManager._instance = null;
+
+document.addEventListener('DOMContentLoaded', () => PostHighlightManager.instance().init());
+document.addEventListener('htmx:afterSettle', PostHighlightManager.onAfterSettle);

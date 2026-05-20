@@ -138,6 +138,10 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Email subscribe (guest) | guest | via login modal | 3 | Blog/post → **Subscribe by email** → **Sign in**. |
 | Post comment | signed in | `POST /forms/posts/{postId}/comments` | 3 | Home → blog → post → submit comment form. |
 | Post comment (guest) | guest | via login modal | 4 | Post → **Sign in** → submit comment. |
+| Highlight passage | signed in | `POST /forms/posts/{postId}/highlights` | 3 | Home → blog → post → select text in body → **Highlight**. |
+| Highlight passage (guest) | guest | via login modal | 4 | Post → select text → **Sign in to highlight**. |
+| Add note to highlight | signed in | `GET /forms/highlights/{id}/notes/modal`, `POST …/notes` | 4 | Post → select text → **Add note** → modal → **Save**. |
+| My highlights library | signed in | `GET /highlights` | 2 | Post (highlights section) → **My highlights** **or** direct URL. |
 | Reply to comment | signed in | `POST …/comments/{parentId}/replies` | 4 | Post → **Reply** on comment → submit. |
 | Version history modal | author | `GET …/components/history/modal` | 4 | Home → own published post → **Version N** control. |
 | Approve/reject comment (on post) | post owner | `POST /forms/posts/…/comments/…` | — | Post page pending section (author viewing own post). |

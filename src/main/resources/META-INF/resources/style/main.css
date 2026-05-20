@@ -3343,8 +3343,8 @@ a:focus:not(:focus-visible) {
 /* ========== POST HIGHLIGHTS ========== */
 
 .highlights-selection-bar {
-  position: absolute;
-  z-index: 50;
+  position: fixed;
+  z-index: 100;
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-xs);
@@ -3353,6 +3353,7 @@ a:focus:not(:focus-visible) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
+  max-width: min(100vw - var(--spacing-md), 24rem);
 }
 
 .post-highlight--personal {
@@ -3410,5 +3411,29 @@ a:focus:not(:focus-visible) {
   padding-left: var(--spacing-md);
   margin: var(--spacing-sm) 0;
   color: var(--color-text-muted);
+}
+
+.highlight-note-modal .modal__container {
+  max-width: 28rem;
+}
+
+.highlight-note-modal__field {
+  margin-bottom: var(--spacing-md);
+}
+
+.highlight-note-modal__checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.highlight-note-modal__passage {
+  margin: 0 0 var(--spacing-md);
+  padding-left: var(--spacing-sm);
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
 }
 

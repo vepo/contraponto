@@ -50,13 +50,16 @@ public class HighlightCreateEndpoint {
                            @FormParam("anchorJson") String anchorJson) {
         try {
             Post post = loadPost(postId);
-            highlightService.create(postId, loggedUser.getId(), passage, anchorJson);
-            return Toast.ok()
-                        .i18nKey(I18nKeys.TOAST_HIGHLIGHT_CREATED, I18nDefaults.HIGHLIGHT_CREATED)
-                        .type(Toast.Type.SUCCESS)
-                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                        .page(componentEndpoint.renderHighlights(post))
-                        .build();
+            PostTextHighlight highlight = highlightService.create(postId, loggedUser.getId(), passage, anchorJson);
+            Response response = Toast.ok()
+                                     .i18nKey(I18nKeys.TOAST_HIGHLIGHT_CREATED, I18nDefaults.HIGHLIGHT_CREATED)
+                                     .type(Toast.Type.SUCCESS)
+                                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                                     .page(componentEndpoint.renderHighlights(post))
+                                     .build();
+            return Response.fromResponse(response)
+                           .header("X-Highlight-Id", Long.toString(highlight.getId()))
+                           .build();
         } catch (BadRequestException e) {
             return Toast.response(Status.BAD_REQUEST).message(e.getMessage()).type(Toast.Type.ERROR).build();
         } catch (NotFoundException _) {

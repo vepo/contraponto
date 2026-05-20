@@ -316,6 +316,7 @@
   "highlight.signInToHighlight": "Sign in to highlight",
   "highlight.remove": "Remove highlight",
   "highlight.note.add": "Add note",
+  "highlight.note.placeholder": "Your note on this passage…",
   "highlight.note.makePublic": "Make note public (subject to author approval)",
   "highlight.official.badge": "Author highlight",
   "highlight.proposal.approve": "Approve highlight",

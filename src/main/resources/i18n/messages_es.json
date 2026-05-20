@@ -313,6 +313,7 @@
   "highlight.signInToHighlight": "Inicia sesión para destacar",
   "highlight.remove": "Quitar destacado",
   "highlight.note.add": "Añadir nota",
+  "highlight.note.placeholder": "Tu nota sobre este pasaje…",
   "highlight.note.makePublic": "Hacer nota pública (sujeta a aprobación del autor)",
   "highlight.official.badge": "Destacado del autor",
   "highlight.proposal.approve": "Aprobar destacado",

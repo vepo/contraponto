@@ -3,6 +3,7 @@ package dev.vepo.contraponto.highlight;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,6 +58,38 @@ class PostTextHighlightTest {
         var proposals = proposalRepository.findPendingForPost(post.getId());
         assertEquals(1, proposals.size());
         assertEquals(ProposalStatus.PENDING, proposals.getFirst().getStatus());
+    }
+
+    @Test
+    void create_highlight_returns_highlight_id_header() {
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("passage", "hello")
+                .formParam("anchorJson", anchor)
+                .post("/forms/posts/" + post.getId() + "/highlights")
+                .then()
+                .statusCode(200)
+                .header("X-Highlight-Id", notNullValue());
+    }
+
+    @Test
+    void highlight_note_modal_returns_form() {
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("passage", "hello")
+                .formParam("anchorJson", anchor)
+                .post("/forms/posts/" + post.getId() + "/highlights")
+                .then()
+                .statusCode(200);
+
+        long highlightId = highlightRepository.findByPostForUser(post.getId(), reader.getId()).getFirst().getId();
+        TestHttp.authenticated(reader)
+                .get("/forms/highlights/" + highlightId + "/notes/modal")
+                .then()
+                .statusCode(200)
+                .body(containsString("highlightNoteModal"));
     }
 
     @Test

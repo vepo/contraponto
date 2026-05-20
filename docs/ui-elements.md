@@ -149,6 +149,11 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `modal__container--history` | `PostEndpoint/historyModal.html` | Wider change-history dialog |
 | `post-tags`, `post-tags__*` | `components/post-tags*.html` | |
 | `comment`, `comment-list`, `comment-form`, `comment-replies` | Comment components | On-post only |
+| `post-highlights`, `post-highlights__actions` | `HighlightComponentEndpoint/highlights.html` | Lazy-loaded below article; respond / my highlights actions |
+| `highlights-selection-bar` | `HighlightComponentEndpoint/highlights.html` | Fixed popover on text selection (**Highlight**, **Add note**, **Remove highlight**); moved to `document.body` while visible |
+| `post-highlight`, `post-highlight--personal`, `post-highlight--official`, `post-highlight__badge` | Applied by `highlight.js` | Inline marks in `.article-page__content` |
+| `highlight-note-modal`, `highlight-note-modal__*` | `HighlightNoteFormEndpoint/highlightNoteModal.html` | Note dialog loaded into `#modal-container` |
+| `post-response-banner`, `post-responses-section`, `post-responses-section__*` | `HighlightComponentEndpoint/highlights.html` | Post response link-back and approved responses list |
 | `blog-audience` | `BlogAudienceComponentEndpoint/audienceControls.html` | Follow / subscribe; no top margin inside `article-page__actions` (blog header keeps spacing below title) |
 | `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header bell + unread count |
 | `notification-menu`, `notification-menu__dropdown` | `NotificationBadgeEndpoint/badge.html` | Overlay shell |
