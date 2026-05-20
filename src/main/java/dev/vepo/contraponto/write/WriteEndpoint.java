@@ -14,6 +14,7 @@ import dev.vepo.contraponto.image.ContentImageMarkerService;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.tag.TagService;
@@ -30,6 +31,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 @Logged
@@ -80,6 +82,8 @@ public class WriteEndpoint {
         this.seoService = seoService;
     }
 
+    private record ResponseContext(Long postId, String title, String url) {}
+
     private Long findDefaultBlogId(List<Blog> blogs) {
         return blogs.stream()
                     .filter(Blog::isMain)
@@ -88,20 +92,38 @@ public class WriteEndpoint {
                     .getId();
     }
 
+    private ResponseContext resolveResponseContext(Long respondsToPostId) {
+        if (respondsToPostId == null) {
+            return new ResponseContext(null, null, null);
+        }
+        Post source = postRepository.findById(respondsToPostId).orElseThrow(NotFoundException::new);
+        if (!source.isPublished()) {
+            throw new NotFoundException("Source post not found.");
+        }
+        if (source.getAuthor().getId().equals(loggedUser.getId())) {
+            throw new NotFoundException("Cannot respond to your own post.");
+        }
+        return new ResponseContext(source.getId(), source.getTitle(), PostEndpoint.extractUrl(source));
+    }
+
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance write() {
+    public TemplateInstance write(@QueryParam("respondsTo") Long respondsToPostId) {
         var blogs = blogRepository.findActiveBlogs(loggedUser.getId());
         Long selectedBlogId = findDefaultBlogId(blogs);
         var links = customPageRepository.loadLinks();
+        var responseContext = resolveResponseContext(respondsToPostId);
         return Templates.write(new WritePage(Optional.empty(),
                                              "",
                                              blogs,
                                              selectedBlogId,
                                              "[]",
                                              "",
-                                             false),
+                                             false,
+                                             responseContext.postId(),
+                                             responseContext.title(),
+                                             responseContext.url()),
                                links,
                                loggedUser,
                                breadcrumbService.writingWrite(),
@@ -112,7 +134,7 @@ public class WriteEndpoint {
     @Path("draft/{draftId}")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance write(@PathParam("draftId") Long draftId) {
+    public TemplateInstance writeDraft(@PathParam("draftId") Long draftId) {
         var maybePost = Optional.ofNullable(draftId)
                                 .flatMap(postRepository::findByIdWithTags)
                                 .filter(post -> Objects.equals(post.getAuthor().getId(), loggedUser.getId()));
@@ -133,7 +155,10 @@ public class WriteEndpoint {
                                              selectedBlogId,
                                              initialTagsJson,
                                              initialSerieTitle,
-                                             hasUnpublishedChanges),
+                                             hasUnpublishedChanges,
+                                             null,
+                                             null,
+                                             null),
                                links,
                                loggedUser,
                                breadcrumbService.writingDraft(post.getTitle()),

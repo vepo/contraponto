@@ -375,6 +375,20 @@ public class TemplateExtensions {
                 }
                 yield actor + " commented on " + title;
             }
+            case COMMON_HIGHLIGHT_PROPOSAL -> {
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                yield "Readers often highlighted a passage on " + title;
+            }
+            case PUBLIC_HIGHLIGHT_NOTE -> {
+                String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                yield actor + " submitted a public highlight note on " + title;
+            }
+            case POST_RESPONSE -> {
+                String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                yield actor + " published a response to " + title;
+            }
             case GIT_SYNC_SUCCEEDED -> "Git sync succeeded for " + blogName;
             case GIT_SYNC_FAILED -> "Git sync failed for " + blogName;
         };
@@ -389,11 +403,19 @@ public class TemplateExtensions {
             return "/blogs/" + run.getBlog().getId() + "/git-sync/" + run.getId();
         }
         if ((notification.getType() == NotificationType.NEW_POST
-                || notification.getType() == NotificationType.NEW_COMMENT)
+                || notification.getType() == NotificationType.NEW_COMMENT
+                || notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
+                || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
+                || notification.getType() == NotificationType.POST_RESPONSE)
                 && notification.getPost() != null) {
             String url = PostEndpoint.extractUrl(notification.getPost());
             if (notification.getType() == NotificationType.NEW_COMMENT) {
                 return url + "#comments";
+            }
+            if (notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
+                    || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
+                    || notification.getType() == NotificationType.POST_RESPONSE) {
+                return "/writing/highlights";
             }
             return url;
         }

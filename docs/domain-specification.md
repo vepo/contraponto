@@ -137,7 +137,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Dismiss notification** | Mark one notification read from the overlay. | `DismissNotificationEndpoint` — button: "Dismiss" |
 | **Close notification overlay** | Hide the dropdown without changing read state. | Close control (`data-notification-close`) |
 | **Notifications changed** | HTMX event; refreshes badge and open overlay. | `HtmxTriggers.NOTIFICATIONS_CHANGED_ON_BODY` |
-| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`. | `NotificationType` |
+| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`, `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`, `GIT_SYNC_*`. | `NotificationType` |
 | **Follow after login** | Guest clicks Follow, signs in via modal, then clicks Follow again. | Post page / audience widget |
 | **Subscriptions page** | Authenticated list of blogs the user follows/subscribes to. | `SubscriptionEndpoint` |
 
@@ -151,6 +151,45 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Moderation** | Post owner approves or rejects pending comments. | `PostCommentService` |
 | **Root comment** | Top-level comment (`parent = null`). | `PostComment.isRoot` |
 | **Reply** | Comment whose parent must be **Approved**. | `createReply` |
+
+### Highlights & post responses
+
+| Term | Meaning | Code / notes |
+|------|---------|--------------|
+| **Post text highlight** | Reader's saved passage on a **published post** (**live publication**). Private on the post body unless part of an **official highlight**. | `PostTextHighlight` |
+| **Highlight passage** | Selected plain text (trimmed), max 500 characters. | `PostTextHighlight.passage` |
+| **Highlight anchor** | Locator for the passage within a **publication snapshot** (character offsets in article plain text). | `PostTextHighlight.anchorJson` |
+| **Highlight passage cluster** | Highlights on the same post with the same `anchor_cluster_hash`. | `HighlightAnchorClusterer` |
+| **Common highlight proposal** | Inbox item for the **author** when distinct readers reach the cluster threshold. | `CommonHighlightProposal` |
+| **Official highlight** | **Author-approved** passage shown on the post for all readers. | `OfficialHighlight` |
+| **Highlight note** | Optional text on a **post text highlight** (max 1000 characters). | `HighlightNote` |
+| **Private highlight note** | Note visible only to the highlight author (default). | `HighlightNoteStatus.PRIVATE` |
+| **Public highlight note** | Reader marks note **public**; requires **author approval** before display on post. | `HighlightNoteStatus.PENDING` → `APPROVED` |
+| **Add note button** | Opens **highlight note dialog** on post page. | `data-highlight-action="note"` |
+| **Remove highlight button** | Removes the reader's **post text highlight** from the post. | `data-highlight-action="remove-mark"` |
+| **Remove note button** | Removes the reader's **highlight note**. | `data-highlight-action="remove-note"` |
+| **Highlight action bar** | Floating options when clicking an owned highlight or note. | `#highlights-action-bar` |
+| **Highlight note dialog** | Floating panel near selected text with note text, public checkbox, **OK** / **Cancel**. | `#highlightNoteDialog` |
+| **Highlight note card** | Shows note body, owner, status badge, timestamp after save. | `.highlight-note-card` |
+| **Noted highlight mark** | Inline mark with a **highlight note**; distinct color from a plain personal highlight. | `.post-highlight--noted` |
+| **Drop-cap highlight mark** | Highlight that starts at the first letter of the opening paragraph; suppresses the drop cap so the letter is covered by the mark. | `.post-highlight--affects-drop-cap` |
+| **Highlight note tooltip** | Hover preview of the reader's note on a **noted highlight mark**. | `#post-highlight-note-tooltip` |
+| **Text selection bar** | Floating UI after text selection in `.article-page__content`. | `PostHighlightManager` |
+| **Highlights library** | Reader's list of own highlights and notes. | Reading hub — `GET /reading/highlights` (`GET /highlights` redirects) |
+| **Reading hub** | Signed-in reader hub for highlights and notes. | `ReadingHubEndpoint` — `GET /reading`; user menu **Reading** |
+| **Highlight moderation** | Author queue: proposals, public notes, post responses. | `HighlightManageEndpoint` — `GET /writing/highlights` |
+| **Post response** | **Published post** on responder's blog that responds to another **published post**. | `PostResponse` |
+| **Source post** | Post being responded to. | `PostResponse.sourcePost` |
+| **Response post** | New post; always links to **source post**. | `PostResponse.responsePost` |
+| **Response link-back** | Link from **source post** to **response post**; shown when **Approved**. | `PostResponseLinkBackStatus` |
+| **Destacar** | Create highlight action (PT-BR). | `highlight.create` |
+| **Entre para destacar** | Guest gate on highlight. | `highlight.signInToHighlight` |
+| **Destaques e respostas** | Writing hub moderation nav label. | `highlight.moderation.title` |
+| **Responder com post** | Start **post response** from source post. | `postResponse.create` |
+| **Em resposta a** | Banner on **response post**. | `postResponse.inResponseTo` |
+| **Respostas** | Section on **source post** for approved link-backs. | `postResponse.sectionTitle` |
+
+**Notification types (highlights):** `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`.
 
 ### Git sync
 
@@ -229,6 +268,7 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Auth — register | `auth.signUp` | Cadastrar-se | Sign up | Modal |
 | Auth — logout | `auth.signOut` | Sair | Sign out | Menu |
 | Menu — writing hub | `menu.writing` | Escrita | Writing | User menu → `/writing` |
+| Menu — reading hub | `menu.reading` | Leitura | Reading | User menu → `/reading` |
 | Menu — manage hub | `menu.manage` | Gerenciar | Manage | User menu → `/manage` |
 | Menu — account hub | `menu.account` | Conta | Account | User menu → `/account` |
 | Menu — review hub | `menu.review` | Revisão | Review | User menu (editor) → `/editor` |

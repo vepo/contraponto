@@ -14,6 +14,7 @@ public class NavigationHubRegistry {
     public List<HubNavGroup> groups(NavigationHub hub, LoggedUser user) {
         return switch (hub) {
             case WRITING -> writingGroups();
+            case READING -> readingGroups();
             case MANAGE -> manageGroups(user);
             case ACCOUNT -> accountGroups();
             case REVIEW -> editorGroups();
@@ -24,6 +25,7 @@ public class NavigationHubRegistry {
     public String defaultSectionSlug(NavigationHub hub) {
         return switch (hub) {
             case WRITING -> "library";
+            case READING -> "highlights";
             case MANAGE -> "dashboard";
             case ACCOUNT -> "notifications";
             case REVIEW -> "review";
@@ -55,11 +57,18 @@ public class NavigationHubRegistry {
         return groups.size() == 1 && groups.get(0).sections().size() == 1;
     }
 
+    private List<HubNavGroup> readingGroups() {
+        return List.of(new HubNavGroup("Reading",
+                                       List.of(new HubSectionNav("highlights", "Highlights"),
+                                               new HubSectionNav("notes", "Notes"))));
+    }
+
     private List<HubNavGroup> writingGroups() {
         return List.of(new HubNavGroup("Writing",
                                        List.of(new HubSectionNav("library", "Library"),
                                                new HubSectionNav("images", "Images"),
-                                               new HubSectionNav("blogs", "Blogs"))),
+                                               new HubSectionNav("blogs", "Blogs"),
+                                               new HubSectionNav("highlights", "Destaques e respostas"))),
                        new HubNavGroup("Author", List.of(new HubSectionNav("appearance", "Appearance"))));
     }
 

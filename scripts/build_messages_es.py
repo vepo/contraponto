@@ -184,6 +184,7 @@ ES_VALUES = {
     "menu.featuredPosts": "Publicaciones destacadas",
     "menu.manage": "Administrar",
     "menu.myBlog": "Mi blog",
+    "menu.reading": "Lectura",
     "menu.review": "Revisión",
     "menu.userMenu": "Menú de usuario",
     "menu.writing": "Escritura",

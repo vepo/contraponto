@@ -11,10 +11,10 @@ import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class PostContentRendererTest {
 
     @Inject

@@ -14,11 +14,11 @@ import dev.vepo.contraponto.shared.security.CsrfTokenService;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class ReadingTimeEndpointTest {
 
     @TestHTTPResource("/")

@@ -2,6 +2,7 @@ package dev.vepo.contraponto.navigation;
 
 public enum NavigationHub {
     WRITING("Writing", "/writing"),
+    READING("Reading", "/reading"),
     MANAGE("Manage", "/manage"),
     ACCOUNT("Account", "/account"),
     REVIEW("Review", "/editor"),

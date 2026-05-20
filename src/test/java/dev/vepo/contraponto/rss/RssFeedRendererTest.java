@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.rss;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
@@ -17,6 +19,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class RssFeedRendererTest {
 
     private static final DateTimeFormatter RFC1123 =

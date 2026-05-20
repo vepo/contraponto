@@ -12,4 +12,7 @@ public record WritePage(Optional<Post> post,
                         Long selectedBlogId,
                         String initialTagsJson,
                         String initialSerieTitle,
-                        boolean hasUnpublishedChanges) {}
+                        boolean hasUnpublishedChanges,
+                        Long respondsToPostId,
+                        String respondsToTitle,
+                        String respondsToUrl) {}

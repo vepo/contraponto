@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.rss;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,7 @@ import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class RssFeedPathsTest {
 
     @Test

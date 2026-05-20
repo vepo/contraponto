@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.containsString;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class StaticResourcesFilterTest {
 
     @Test

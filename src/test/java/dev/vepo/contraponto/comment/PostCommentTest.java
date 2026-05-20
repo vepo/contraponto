@@ -11,9 +11,9 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class PostCommentTest {
 
     private User author;

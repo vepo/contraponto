@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import io.restassured.RestAssured;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class I18nMessagesEndpointTest {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();

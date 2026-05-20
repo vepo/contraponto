@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.shared.infra;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class AvatarUrlsTest {
 
     @Test

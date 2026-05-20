@@ -36,7 +36,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Header: Search, Sign In/Up | yes | — | — | — |
 | Header: Write, Publish, Save draft | — | on `/write` only | on `/write` only | on `/write` only |
 | Header: Notifications bell | — | yes | yes | yes |
-| My Blog, Writing, Manage, Account | — | yes | yes | yes |
+| My Blog, Writing, Reading, Manage, Account | — | yes | yes | yes |
 | Review hub (editor) | — | — | yes | yes |
 | Administration hub | — | — | — | yes |
 
@@ -90,6 +90,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
 | Writing hub (library) | `USER` | `GET /writing` | 2 | Open user menu → **Writing** (library panel default). |
+| Reading hub (highlights) | `USER` | `GET /reading` | 2 | Open user menu → **Reading** (highlights panel default). |
+| Reading hub — notes | `USER` | `GET /reading/notes` | 2 | Open user menu → **Reading** → **Notes** in left nav. |
 | New post (from hub) | `USER` | `GET /write` | 3 | Open user menu → **Writing** → **Write** in left nav. |
 | New post | `USER` | `GET /write` | 1 | Header **Escrever** (Write) button. |
 | Edit draft/post | `USER` | `GET /write/draft/{id}` | 3 | Open user menu → **Writing** → **Edit** on library row. |
@@ -141,6 +143,12 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Email subscribe (guest) | guest | via login modal | 3 | Blog/post → **Subscribe by email** → **Sign in**. |
 | Post comment | signed in | `POST /forms/posts/{postId}/comments` | 3 | Home → blog → post → submit comment form. |
 | Post comment (guest) | guest | via login modal | 4 | Post → **Sign in** → submit comment. |
+| Highlight passage | signed in | `POST /forms/posts/{postId}/highlights` | 3 | Home → blog → post → select text in body → **Highlight**. |
+| Highlight passage (guest) | guest | via login modal | 4 | Post → select text → **Sign in to highlight**. |
+| Add note to highlight | signed in | `GET /forms/highlights/{id}/notes/modal`, `POST …/notes` | 4 | Post → select text → **Add note** → dialog → **OK**. |
+| Remove highlight | signed in | `DELETE /forms/posts/{postId}/highlights/{id}` | 4 | Post → click owned highlight mark → **Remove highlight**. |
+| Remove note | signed in | `DELETE /forms/highlights/{id}/notes/{noteId}` | 4 | Post → click owned note card → **Remove note**. |
+| My highlights library | signed in | `GET /reading/highlights` | 2 | Open user menu → **Reading** **or** post highlights section → **My highlights**. |
 | Reply to comment | signed in | `POST …/comments/{parentId}/replies` | 4 | Post → **Reply** on comment → submit. |
 | Version history modal | author | `GET …/components/history/modal` | 4 | Home → own published post → **Version N** control. |
 | Approve/reject comment (on post) | post owner | `POST /forms/posts/…/comments/…` | — | Post page pending section (author viewing own post). |

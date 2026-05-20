@@ -19,11 +19,11 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class BlogGitIntegrationServiceTest {
 
     private static void addUpstreamMarkdown(Path upstream, String relativeRepoPath, String body) throws Exception {

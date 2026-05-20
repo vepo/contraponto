@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.shared.security.CsrfTokenService;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class CsrfBootstrapTest {
 
     @Test

@@ -1,0 +1,28 @@
+<h2 class="hub-panel__title" data-i18n="reading.highlights.title">My highlights</h2>
+<p class="hub-panel__subtitle" data-i18n="reading.highlights.subtitle">Passages you highlighted across posts.</p>
+
+{#if highlights.isEmpty()}
+<p class="highlights-library-page__empty" data-i18n="reading.highlights.empty">You have not highlighted any passages yet.</p>
+{#else}
+<div class="highlights-library-page__list">
+    {#for entry in highlights.data}
+    <article class="highlights-library-page__row">
+        <h3 class="highlights-library-page__post-title">
+            <a data-hx-get="/{entry.highlight.authorUsername}/post/{entry.highlight.postSlug}"
+               hx-select="main" hx-target="main"
+               hx-push-url="/{entry.highlight.authorUsername}/post/{entry.highlight.postSlug}">{entry.highlight.postTitle}</a>
+        </h3>
+        <blockquote class="highlights-library-page__passage">{entry.highlight.passage}</blockquote>
+        <time class="highlights-library-page__date">{entry.highlight.createdAt.format('dd/MM/yyyy')}</time>
+        {#if !entry.notes.isEmpty}
+        <div class="post-highlight-notes__list">
+            {#for note in entry.notes}
+            {#include HighlightComponentEndpoint/highlightNoteCard note=note /}
+            {/for}
+        </div>
+        {/if}
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=highlights basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

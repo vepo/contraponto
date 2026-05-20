@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.App;
+import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
 import dev.vepo.contraponto.user.Role;
@@ -70,6 +71,49 @@ class NavigationHubTest {
            .clickMenuLink("/manage")
            .assertUrl("/manage")
            .assertBreadcrumb("Manage", "Dashboard");
+    }
+
+    @Test
+    void readingHubShowsHighlightsAndNotes(App app) {
+        var reader = Given.user()
+                          .withUsername("hubreader")
+                          .withEmail("hubreader@test.com")
+                          .withName("Hub Reader")
+                          .withPassword("password123")
+                          .persist();
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Reading Hub Post")
+                        .withSlug("reading-hub-post")
+                        .withContent("Content for reading hub highlights.")
+                        .withPublished(true)
+                        .persist();
+        String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
+        var highlightResponse = TestHttp.authenticated(reader)
+                                        .contentType("application/x-www-form-urlencoded")
+                                        .formParam("passage", "Content")
+                                        .formParam("anchorJson", anchor)
+                                        .post("/forms/posts/" + post.getId() + "/highlights")
+                                        .then()
+                                        .statusCode(200)
+                                        .extract();
+        String highlightId = highlightResponse.header("X-Highlight-Id");
+        TestHttp.authenticated(reader)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("body", "Reading hub note")
+                .post("/forms/highlights/" + highlightId + "/notes")
+                .then()
+                .statusCode(200);
+
+        app.login(reader)
+           .openUserMenu()
+           .clickMenuLink("/reading")
+           .assertUrl("/reading")
+           .assertBreadcrumb("Reading", "Highlights")
+           .clickHubSection("/reading", "notes")
+           .assertUrl("/reading/notes")
+           .assertBreadcrumb("Reading", "Notes")
+           .assertPageSourceContains("Reading hub note");
     }
 
     @BeforeEach

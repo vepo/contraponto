@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.git;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
@@ -12,6 +14,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+@UnitTest
 class PostGitMarkdownCodecTest {
 
     private final PostGitMarkdownCodec codec = new PostGitMarkdownCodec();

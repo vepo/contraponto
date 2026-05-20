@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class ReadingTimeRepositoryTest {
 
     @Inject

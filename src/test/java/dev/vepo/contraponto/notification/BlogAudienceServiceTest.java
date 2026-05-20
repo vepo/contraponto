@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class BlogAudienceServiceTest {
 
     @Inject

@@ -9,16 +9,19 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublicationRepository;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.postresponse.PostResponseLinkBackStatus;
+import dev.vepo.contraponto.postresponse.PostResponseRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class PublishEndpointTest {
 
     @TestHTTPResource("/")
@@ -29,6 +32,9 @@ class PublishEndpointTest {
 
     @Inject
     PostPublicationRepository publicationRepository;
+
+    @Inject
+    PostResponseRepository postResponseRepository;
 
     private User author;
 
@@ -81,6 +87,44 @@ class PublishEndpointTest {
         reloaded = postRepository.findByIdWithTags(post.getId()).orElseThrow();
         assertThat(reloaded.getLivePublication().getId()).isEqualTo(versions.getFirst().getId());
         assertThat(reloaded.getLivePublication().getContent()).isEqualTo("Live body v2");
+    }
+
+    @Test
+    void publish_with_respondsTo_creates_pending_post_response() {
+        User responder = Given.user()
+                              .withUsername("responseauthor")
+                              .withEmail("responseauthor@example.com")
+                              .withPassword("pw123456789")
+                              .withName("Response Author")
+                              .persist();
+        Post source = Given.post()
+                           .withAuthor(author)
+                           .withTitle("Source for response")
+                           .withSlug("source-for-response")
+                           .withContent("Source body")
+                           .withPublished(true)
+                           .persist();
+
+        TestHttp.authenticated(responder)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("blogId", responder.getDefaultBlog().getId())
+                .formParam("title", "My response essay")
+                .formParam("slug", "my-response-essay")
+                .formParam("description", "Response summary")
+                .formParam("content", "Response essay body")
+                .formParam("respondsTo", source.getId())
+                .post("/forms/write/publish")
+                .then()
+                .statusCode(200)
+                .body(containsString("Response essay body"));
+
+        Post responsePost = postRepository.findMainBlogPost(responder.getUsername(), "my-response-essay").orElseThrow();
+        assertThat(responsePost.isPublished()).isTrue();
+
+        var response = postResponseRepository.findByResponsePostId(responsePost.getId()).orElseThrow();
+        assertThat(response.getSourcePost().getId()).isEqualTo(source.getId());
+        assertThat(response.getResponder().getId()).isEqualTo(responder.getId());
+        assertThat(response.getLinkBackStatus()).isEqualTo(PostResponseLinkBackStatus.PENDING);
     }
 
     @BeforeEach

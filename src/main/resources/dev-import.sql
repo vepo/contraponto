@@ -10,6 +10,11 @@
 -- ============================================
 DELETE FROM tb_custom_page_image_dependencies;
 DELETE FROM tb_custom_pages WHERE slug NOT IN ('/sobre', '/contato', '/privacidade', '/termos');
+TRUNCATE TABLE tb_highlight_notes CASCADE;
+TRUNCATE TABLE tb_post_text_highlights CASCADE;
+TRUNCATE TABLE tb_official_highlights CASCADE;
+TRUNCATE TABLE tb_common_highlight_proposals CASCADE;
+TRUNCATE TABLE tb_post_responses CASCADE;
 TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
 TRUNCATE TABLE tb_notifications CASCADE;
@@ -1060,4 +1065,66 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     WHERE r.blog_id = v_alice_blog AND r.operation = 'IMPORT' AND r.outcome = 'FAILED'
     ORDER BY r.started_at DESC LIMIT 1;
 
+END $$;
+
+-- ============================================
+-- 6. Highlights, official highlights, notes, post responses
+-- ============================================
+DO $$
+DECLARE
+    v_post_intro BIGINT;
+    v_pub_intro BIGINT;
+    v_cluster_hash VARCHAR(64) := '6df3e3d1e756a20615a7b933f686233be5091235ecd82ce159190b26dc0c0081';
+    v_h_dave BIGINT;
+    v_h_bob BIGINT;
+BEGIN
+    SELECT p.id, p.live_publication_id INTO v_post_intro, v_pub_intro
+    FROM tb_posts p
+    WHERE p.slug = 'introduction-to-distributed-systems-java';
+
+    INSERT INTO tb_post_text_highlights (post_id, publication_id, user_id, passage, anchor_json, anchor_cluster_hash, created_at)
+    SELECT v_post_intro, v_pub_intro, u.id,
+           'distributed systems are the foundation of modern backends',
+           '{"start":0,"end":58,"prefix":"","suffix":""}',
+           v_cluster_hash, NOW() - INTERVAL '3 days'
+    FROM tb_users u WHERE u.username = 'dave';
+
+    INSERT INTO tb_post_text_highlights (post_id, publication_id, user_id, passage, anchor_json, anchor_cluster_hash, created_at)
+    SELECT v_post_intro, v_pub_intro, u.id,
+           'distributed systems are the foundation of modern backends',
+           '{"start":0,"end":58,"prefix":"","suffix":""}',
+           v_cluster_hash, NOW() - INTERVAL '2 days'
+    FROM tb_users u WHERE u.username = 'bob';
+
+    INSERT INTO tb_post_text_highlights (post_id, publication_id, user_id, passage, anchor_json, anchor_cluster_hash, created_at)
+    SELECT v_post_intro, v_pub_intro, u.id,
+           'distributed systems are the foundation of modern backends',
+           '{"start":0,"end":58,"prefix":"","suffix":""}',
+           v_cluster_hash, NOW() - INTERVAL '1 day'
+    FROM tb_users u WHERE u.username = 'carol';
+
+    INSERT INTO tb_common_highlight_proposals (post_id, anchor_cluster_hash, passage, reader_count, status, created_at, resolved_at)
+    VALUES (v_post_intro, v_cluster_hash,
+            'distributed systems are the foundation of modern backends', 3, 'APPROVED', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '6 hours');
+
+    INSERT INTO tb_official_highlights (post_id, publication_id, anchor_cluster_hash, passage, anchor_json, approved_at, approved_by_user_id, needs_review)
+    SELECT v_post_intro, v_pub_intro, v_cluster_hash,
+           'distributed systems are the foundation of modern backends',
+           '{"start":0,"end":58,"prefix":"","suffix":""}',
+           NOW() - INTERVAL '6 hours', u.id, FALSE
+    FROM tb_users u WHERE u.username = 'alice';
+
+    SELECT h.id INTO v_h_dave FROM tb_post_text_highlights h
+    JOIN tb_users u ON u.id = h.user_id WHERE h.post_id = v_post_intro AND u.username = 'dave' LIMIT 1;
+
+    SELECT h.id INTO v_h_bob FROM tb_post_text_highlights h
+    JOIN tb_users u ON u.id = h.user_id WHERE h.post_id = v_post_intro AND u.username = 'bob' LIMIT 1;
+
+    INSERT INTO tb_highlight_notes (highlight_id, user_id, body, public_note, status, created_at, updated_at)
+    SELECT v_h_dave, u.id, 'This framing helped me explain CAP to my team.', TRUE, 'APPROVED', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '4 hours'
+    FROM tb_users u WHERE u.username = 'dave';
+
+    INSERT INTO tb_highlight_notes (highlight_id, user_id, body, public_note, status, created_at, updated_at)
+    SELECT v_h_bob, u.id, 'Would love a follow-up on consensus.', TRUE, 'PENDING', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours'
+    FROM tb_users u WHERE u.username = 'bob';
 END $$;

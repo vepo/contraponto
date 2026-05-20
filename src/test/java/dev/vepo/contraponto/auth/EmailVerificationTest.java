@@ -12,10 +12,10 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.mailer.MockMailbox;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class EmailVerificationTest {
 
     private static final Pattern TOKEN_IN_LINK = Pattern.compile("/account/verify-email\\?token=([^\"'&\\s]+)");

@@ -1,0 +1,20 @@
+<h2 class="hub-panel__title" data-i18n="reading.notes.title">My notes</h2>
+<p class="hub-panel__subtitle" data-i18n="reading.notes.subtitle">Notes you added to highlighted passages.</p>
+
+{#if notes.isEmpty()}
+<p class="highlights-library-page__empty" data-i18n="reading.notes.empty">You have not added any notes yet.</p>
+{#else}
+<div class="highlights-library-page__list">
+    {#for row in notes.data}
+    <article class="highlights-library-page__row">
+        <h3 class="highlights-library-page__post-title">
+            <a data-hx-get="/{row.authorUsername}/post/{row.postSlug}"
+               hx-select="main" hx-target="main"
+               hx-push-url="/{row.authorUsername}/post/{row.postSlug}">{row.postTitle}</a>
+        </h3>
+        {#include HighlightComponentEndpoint/highlightNoteCard note=row.noteCard /}
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=notes basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

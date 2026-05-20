@@ -10,10 +10,10 @@ import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.mailer.MockMailbox;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class AccountEmailsTest {
 
     @Inject

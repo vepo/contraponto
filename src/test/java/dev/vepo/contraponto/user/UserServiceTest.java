@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.Given;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class UserServiceTest {
 
     @Inject

@@ -13,11 +13,11 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class BlogSaveEndpointTest {
 
     @TestHTTPResource("/")

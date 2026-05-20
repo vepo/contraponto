@@ -1,0 +1,34 @@
+<article class="highlight-note-card {#if note.approvedPublic}highlight-note-card--approved-public{/if}{#if removable.or(false)} highlight-note-card--interactive{/if}"
+         id="highlight-note-{note.noteId}"
+         {#if removable.or(false)}
+         data-highlight-note-id="{note.noteId}"
+         data-highlight-id="{note.highlightId}"
+         tabindex="0"
+         role="button"
+         {/if}>
+    {#if note.passageExcerpt}
+    <blockquote class="highlight-note-card__passage">{note.passageExcerpt}</blockquote>
+    {/if}
+    <p class="highlight-note-card__body">{note.body}</p>
+    <footer class="highlight-note-card__meta">
+        <span class="highlight-note-card__owner">{note.ownerName}</span>
+        {#if note.publicNote}
+            {#if note.approvedPublic}
+            <span class="highlight-note-card__status highlight-note-card__status--approved"
+                  data-i18n="highlight.note.status.approvedPublic">Nota pública aprovada</span>
+            {#else if note.status.name() == 'PENDING'}
+            <span class="highlight-note-card__status highlight-note-card__status--pending"
+                  data-i18n="highlight.note.status.pending">Aguardando aprovação</span>
+            {#else if note.status.name() == 'REJECTED'}
+            <span class="highlight-note-card__status highlight-note-card__status--rejected"
+                  data-i18n="highlight.note.status.rejected">Nota recusada</span>
+            {/if}
+        {#else}
+        <span class="highlight-note-card__status highlight-note-card__status--private"
+              data-i18n="highlight.note.status.private">Nota privada</span>
+        {/if}
+        <time class="highlight-note-card__time" datetime="{note.createdAt}">
+            {note.createdAt.format('dd/MM/yyyy HH:mm')}
+        </time>
+    </footer>
+</article>

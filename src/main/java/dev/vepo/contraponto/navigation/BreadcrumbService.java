@@ -314,6 +314,10 @@ public class BreadcrumbService {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)), current(label));
     }
 
+    public BreadcrumbTrail writingHighlights() {
+        return hubSection(NavigationHub.WRITING, "Destaques e respostas");
+    }
+
     public BreadcrumbTrail writingLibrary() {
         return hubSection(NavigationHub.WRITING, "Library");
     }

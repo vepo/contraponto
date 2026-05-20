@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.git;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,6 +12,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class JekyllLayoutConventionTest {
 
     @Test

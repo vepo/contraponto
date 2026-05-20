@@ -1027,6 +1027,11 @@ public class App {
 
         private PostPage() {}
 
+        public PostPage assertAuthModalOpen() {
+            wait.until(visibilityOfElementLocated(By.id("authModal")));
+            return this;
+        }
+
         public PostPage assertChangeDiffVisible() {
             var modal = driver.findElement(By.id("postHistoryModal"));
             wait.until(d -> !modal.findElements(cssSelector(".post-history__diff-ins")).isEmpty());
@@ -1100,6 +1105,81 @@ public class App {
             return this;
         }
 
+        public PostPage assertHighlightActionBarVisible(String action) {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var bars = driver.findElements(By.id("highlights-action-bar"));
+                if (bars.isEmpty()) {
+                    return false;
+                }
+                var bar = bars.get(0);
+                if (!bar.isDisplayed() || bar.getDomAttribute("hidden") != null) {
+                    return false;
+                }
+                var buttons = bar.findElements(cssSelector("[data-highlight-action='" + action + "']"));
+                return !buttons.isEmpty() && buttons.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertHighlightAffectsDropCap() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                var marks = driver.findElements(
+                                                cssSelector(".article-page__content mark.post-highlight--affects-drop-cap"));
+                return !marks.isEmpty() && marks.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertHighlightNoteCardAbsent(String body) {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                return driver.findElements(cssSelector(".highlight-note-card"))
+                             .stream()
+                             .noneMatch(card -> card.getText().contains(body));
+            });
+            return this;
+        }
+
+        public PostPage assertHighlightNoteCardVisible(String body) {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var cards = driver.findElements(cssSelector(".highlight-note-card"));
+                return cards.stream().anyMatch(card -> card.isDisplayed() && card.getText().contains(body));
+            });
+            return this;
+        }
+
+        public PostPage assertHighlightNoteDialogVisible() {
+            var dialog = wait.until(visibilityOfElementLocated(By.id("highlightNoteDialog")));
+            assertThat(dialog.findElement(By.id("highlightNoteBody")).isDisplayed()).isTrue();
+            return this;
+        }
+
+        /** @deprecated use {@link #assertHighlightNoteDialogVisible()} */
+        public PostPage assertHighlightNoteModalVisible() {
+            return assertHighlightNoteDialogVisible();
+        }
+
+        public PostPage assertHighlightSelectionBarShowsSignIn() {
+            assertHighlightSelectionBarVisible();
+            var bar = driver.findElement(By.id("highlights-selection-bar"));
+            assertThat(bar.findElement(cssSelector("[data-highlight-action='sign-in']")).getText())
+                                                                                                   .containsIgnoringCase("Sign in");
+            return this;
+        }
+
+        public PostPage assertHighlightSelectionBarVisible() {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var bars = driver.findElements(By.id("highlights-selection-bar"));
+                if (bars.isEmpty()) {
+                    return false;
+                }
+                var bar = bars.get(0);
+                return bar.isDisplayed() && bar.getDomAttribute("hidden") == null;
+            });
+            return this;
+        }
+
         public PostPage assertImageLightboxCaption(String text) {
             var caption = wait.until(visibilityOfElementLocated(cssSelector(".image-lightbox__caption")));
             assertThat(caption.getText()).contains(text);
@@ -1120,6 +1200,33 @@ public class App {
             var enlarged = lightbox.findElement(cssSelector(".image-lightbox__image"));
             assertThat(enlarged.isDisplayed()).isTrue();
             assertThat(enlarged.getAttribute("src")).isNotBlank();
+            return this;
+        }
+
+        public PostPage assertNotedHighlightMarkPresent() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                var marks = driver.findElements(cssSelector(".article-page__content mark.post-highlight--noted"));
+                return !marks.isEmpty() && marks.get(0).isDisplayed();
+            });
+            return this;
+        }
+
+        public PostPage assertPersonalHighlightMarkAbsent() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                ((JavascriptExecutor) driver).executeScript("PostHighlightManager.instance().init();");
+                return ((Long) ((JavascriptExecutor) driver).executeScript("""
+                                                                           return document.querySelectorAll('.article-page__content mark.post-highlight--personal').length;
+                                                                           """)) == 0L;
+            });
+            return this;
+        }
+
+        public PostPage assertPersonalHighlightMarkPresent() {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var marks = driver.findElements(cssSelector(".article-page__content mark.post-highlight--personal"));
+                return !marks.isEmpty() && marks.get(0).isDisplayed();
+            });
             return this;
         }
 
@@ -1206,6 +1313,60 @@ public class App {
             return this;
         }
 
+        public PostPage clickHighlightActionBar(String action) {
+            assertHighlightActionBarVisible(action);
+            if ("remove-mark".equals(action)) {
+                ((JavascriptExecutor) driver).executeScript("""
+                                                            const bar = document.getElementById('highlights-action-bar');
+                                                            PostHighlightManager.instance().removeHighlight(bar.dataset.removeHighlightId);
+                                                            """);
+            } else if ("remove-note".equals(action)) {
+                ((JavascriptExecutor) driver).executeScript("""
+                                                            const bar = document.getElementById('highlights-action-bar');
+                                                            PostHighlightManager.instance().removeNote(bar.dataset.removeNoteHighlightId, bar.dataset.removeNoteId);
+                                                            """);
+            } else {
+                var bar = driver.findElement(By.id("highlights-action-bar"));
+                reliableClick(bar.findElement(cssSelector("[data-highlight-action='" + action + "']")));
+            }
+            waitForReady();
+            return this;
+        }
+
+        public PostPage clickHighlightNoteCard(String body) {
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var cards = driver.findElements(cssSelector(".highlight-note-card--interactive"));
+                return cards.stream().anyMatch(card -> card.isDisplayed() && card.getText().contains(body));
+            });
+            var card = driver.findElements(cssSelector(".highlight-note-card--interactive")).stream()
+                             .filter(c -> c.isDisplayed() && c.getText().contains(body))
+                             .findFirst()
+                             .orElseThrow();
+            reliableClick(card);
+            return assertHighlightActionBarVisible("remove-note");
+        }
+
+        public PostPage clickHighlightSelectionAction(String action) {
+            var bar = wait.until(visibilityOfElementLocated(By.id("highlights-selection-bar")));
+            var button = bar.findElement(cssSelector("[data-highlight-action='" + action + "']"));
+            reliableClick(button);
+            waitForReady();
+            if ("note".equals(action)) {
+                await().atMost(Duration.ofSeconds(15)).until(() -> {
+                    var dialogs = driver.findElements(By.id("highlightNoteDialog"));
+                    return !dialogs.isEmpty() && dialogs.get(0).isDisplayed();
+                });
+            }
+            return this;
+        }
+
+        public PostPage clickPersonalHighlightMark() {
+            var mark = wait.until(visibilityOfElementLocated(
+                                                             cssSelector(".article-page__content mark.post-highlight--interactive[data-highlight-id]")));
+            reliableClick(mark);
+            return assertHighlightActionBarVisible("remove-mark");
+        }
+
         public PostPage closeChangeHistoryModal() {
             var modal = wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
             var closeBtn = modal.findElement(cssSelector(".modal__close"));
@@ -1235,9 +1396,82 @@ public class App {
             return this;
         }
 
+        public PostPage openHighlightNoteDialogFromPageData() {
+            var status =
+                    (Long) ((JavascriptExecutor) driver).executeScript("""
+                                                                       const data = JSON.parse(document.getElementById('post-highlights-data').textContent);
+                                                                       const id = data.marks?.[0]?.id;
+                                                                       if (!id) {
+                                                                           throw new Error('No highlight id in page data');
+                                                                       }
+                                                                       const mgr = PostHighlightManager.instance();
+                                                                       mgr.selectionRect = { top: 120, left: 24, bottom: 140, right: 200, width: 176, height: 20 };
+                                                                       mgr.openNoteDialog(id);
+                                                                       return 200;
+                                                                       """);
+            assertThat(status).isEqualTo(200L);
+            return assertHighlightNoteDialogVisible();
+        }
+
+        /** @deprecated use {@link #openHighlightNoteDialogFromPageData()} */
+        public PostPage openHighlightNoteModalFromPageData() {
+            return openHighlightNoteDialogFromPageData();
+        }
+
+        public PostPage selectPassageInArticle(String passage) {
+            var article = wait.until(visibilityOfElementLocated(cssSelector(".article-page__content")));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", article);
+            var selected = (Boolean) ((JavascriptExecutor) driver).executeScript("""
+                                                                                 const article = document.querySelector('.article-page__content');
+                                                                                 const target = arguments[0];
+                                                                                 if (!article) {
+                                                                                     return false;
+                                                                                 }
+                                                                                 const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
+                                                                                 let node;
+                                                                                 while ((node = walker.nextNode())) {
+                                                                                     const idx = node.textContent.indexOf(target);
+                                                                                     if (idx >= 0) {
+                                                                                         const range = document.createRange();
+                                                                                         range.setStart(node, idx);
+                                                                                         range.setEnd(node, idx + target.length);
+                                                                                         const sel = window.getSelection();
+                                                                                         sel.removeAllRanges();
+                                                                                         sel.addRange(range);
+                                                                                         document.dispatchEvent(new MouseEvent('mouseup', {
+                                                                                             bubbles: true,
+                                                                                             cancelable: true,
+                                                                                             view: window
+                                                                                         }));
+                                                                                         return true;
+                                                                                     }
+                                                                                 }
+                                                                                 return false;
+                                                                                 """, passage);
+            assertThat(selected).isTrue();
+            return this;
+        }
+
+        public PostPage submitHighlightNote(String body) {
+            assertHighlightNoteDialogVisible();
+            var dialog = driver.findElement(By.id("highlightNoteDialog"));
+            var textarea = dialog.findElement(By.id("highlightNoteBody"));
+            textarea.clear();
+            textarea.sendKeys(body);
+            reliableClick(dialog.findElement(cssSelector("[data-highlight-note-form] button[type='submit']")));
+            waitForReady();
+            return assertHighlightNoteCardVisible(body);
+        }
+
         public PostPage toggleFeatured() {
             var postFeaturedButton = driver.findElement(By.cssSelector("#post-featured-toggle"));
             reliableClick(postFeaturedButton);
+            return this;
+        }
+
+        public PostPage waitForPostHighlights() {
+            wait.until(presenceOfElementLocated(By.id("post-highlights-root")));
+            waitForReady();
             return this;
         }
     }

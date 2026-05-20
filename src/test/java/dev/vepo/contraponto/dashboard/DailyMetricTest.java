@@ -1,11 +1,14 @@
 package dev.vepo.contraponto.dashboard;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class DailyMetricTest {
 
     @Test

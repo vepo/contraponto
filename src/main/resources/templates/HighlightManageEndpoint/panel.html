@@ -1,0 +1,92 @@
+<h2 class="hub-panel__title" data-i18n="highlight.moderation.title">Destaques e respostas</h2>
+
+<h3 class="hub-panel__subtitle">Propostas de destaque</h3>
+{#if proposals.isEmpty()}
+<p data-i18n="highlight.proposals.empty">Nenhuma proposta pendente.</p>
+{#else}
+<div class="pages-manage__list">
+    {#for row in proposals.data}
+    <article class="pages-manage__row">
+        <div class="pages-manage__row-main">
+            <h4 class="pages-manage__row-title">{row.postTitle}</h4>
+            <p class="pages-manage__row-description">{row.passage}</p>
+            <p class="pages-manage__row-meta">{row.readerCount} leitores</p>
+        </div>
+        <div class="pages-manage__row-actions">
+            <button type="button" class="btn btn--secondary btn--small"
+                    hx-post="/forms/posts/{row.postId}/highlight-proposals/{row.proposalId}/approve?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    data-i18n="highlight.proposal.approve">Aprovar destaque</button>
+            <button type="button" class="btn btn--small btn--danger"
+                    hx-post="/forms/posts/{row.postId}/highlight-proposals/{row.proposalId}/reject?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    data-i18n="highlight.proposal.reject">Recusar</button>
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=proposals basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}
+
+<h3 class="hub-panel__subtitle">Notas públicas</h3>
+{#if notes.isEmpty()}
+<p data-i18n="highlight.notes.empty">Nenhuma nota pendente.</p>
+{#else}
+<div class="pages-manage__list">
+    {#for row in notes.data}
+    <article class="pages-manage__row">
+        <div class="pages-manage__row-main">
+            <h4 class="pages-manage__row-title">{row.postTitle}</h4>
+            <p class="pages-manage__row-description">{row.passageExcerpt}</p>
+            <p class="pages-manage__row-meta">{row.readerName}</p>
+            <p>{row.noteBody}</p>
+        </div>
+        <div class="pages-manage__row-actions">
+            <button type="button" class="btn btn--secondary btn--small"
+                    hx-post="/forms/highlight-notes/{row.noteId}/approve?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    data-i18n="highlight.note.approve">Aprovar nota</button>
+            <button type="button" class="btn btn--small btn--danger"
+                    hx-post="/forms/highlight-notes/{row.noteId}/reject?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    data-i18n="highlight.proposal.reject">Recusar</button>
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=notes basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}
+
+<h3 class="hub-panel__subtitle">Respostas</h3>
+{#if responses.isEmpty()}
+<p data-i18n="highlight.responses.empty">Nenhuma resposta pendente ou aprovada.</p>
+{#else}
+<div class="pages-manage__list">
+    {#for row in responses.data}
+    <article class="pages-manage__row">
+        <div class="pages-manage__row-main">
+            <h4 class="pages-manage__row-title">{row.responsePostTitle}</h4>
+            <p class="pages-manage__row-meta">{row.responderName} · {row.responseBlogName} · {row.linkBackStatus}</p>
+            <p class="pages-manage__row-description">Em resposta a: {row.sourcePostTitle}</p>
+        </div>
+        <div class="pages-manage__row-actions">
+            {#if row.linkBackStatus.name() == 'PENDING'}
+            <button type="button" class="btn btn--secondary btn--small"
+                    hx-post="/forms/post-responses/{row.responseId}/approve?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    data-i18n="postResponse.approve">Aprovar resposta</button>
+            <button type="button" class="btn btn--small btn--danger"
+                    hx-post="/forms/post-responses/{row.responseId}/reject?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    data-i18n="highlight.proposal.reject">Recusar</button>
+            {#else if row.linkBackStatus.name() == 'APPROVED'}
+            <button type="button" class="btn btn--small btn--outline"
+                    hx-post="/forms/post-responses/{row.responseId}/revoke?from=writing"
+                    hx-select="main" hx-target="main" hx-swap="outerHTML">Revogar</button>
+            {/if}
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=responses basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

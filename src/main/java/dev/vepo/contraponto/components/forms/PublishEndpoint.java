@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.PostWriteService;
+import dev.vepo.contraponto.postresponse.PostResponseService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.git.GitSyncTrigger;
@@ -74,6 +75,7 @@ public class PublishEndpoint {
     private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
+    private final PostResponseService postResponseService;
     private final SeoService seoService;
 
     @Inject
@@ -89,6 +91,7 @@ public class PublishEndpoint {
                            BlogAudienceComponentEndpoint audienceComponentEndpoint,
                            LoggedUser loggedUser,
                            BreadcrumbService breadcrumbService,
+                           PostResponseService postResponseService,
                            SeoService seoService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
@@ -102,6 +105,7 @@ public class PublishEndpoint {
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
+        this.postResponseService = postResponseService;
         this.seoService = seoService;
     }
 
@@ -191,6 +195,10 @@ public class PublishEndpoint {
         tagService.syncPostTags(post, request.tagsJson());
         postImageDependencyService.syncPostDependencies(post);
         PostPublication published = publicationService.publish(post);
+
+        if (request.respondsTo() != null) {
+            postResponseService.createOnPublish(post, request.respondsTo(), loggedUser.getId());
+        }
 
         postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.PUBLISH));
 

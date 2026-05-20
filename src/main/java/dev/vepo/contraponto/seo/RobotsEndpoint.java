@@ -27,6 +27,8 @@ public class RobotsEndpoint {
                       Allow: /
                       Disallow: /write
                       Disallow: /writing
+                      Disallow: /reading
+                      Disallow: /highlights
                       Disallow: /manage
                       Disallow: /account
                       Disallow: /administration
