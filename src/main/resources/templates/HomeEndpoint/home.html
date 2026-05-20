@@ -1,36 +1,22 @@
 <!DOCTYPE html>
 <html>
     {#include components/head seo=seo rssAlternateUrl=siteRssFeedUrl rssAlternateTitle='Contraponto' /}
-    <body hx-history-elt>
+    <body>
         {#include components/header /}
-        <main id="main-content">
-            {#if !posts.isEmpty}
-            {#let post = posts.data.get(0)}
-                {#include HomeEndpoint/featured post=post /}
-            {/if}
-
-            <div class="container page-meta">
-                <a data-hx-get="/authors"
-                   hx-select="main"
-                   hx-target="main"
-                   hx-push-url="/authors"
-                   class="page-meta__link"
-                   data-i18n="home.browseAuthors">Ver autores</a>
-                <span class="page-meta__dot" aria-hidden="true">•</span>
-                <a data-hx-get="/explore/blogs"
-                   hx-select="main"
-                   hx-target="main"
-                   hx-push-url="/explore/blogs"
-                   class="page-meta__link"
-                   data-i18n="home.browseBlogs">Ver blogs</a>
-                <span class="page-meta__dot" aria-hidden="true">•</span>
-                {#include components/rss-feed-link feedUrl=siteRssFeedUrl /}
-            </div>
-            <div class="container">
-                <div class="posts-grid">
-                    {#include HomeEndpoint/grid ignoreFirst=true /}
+        <main hx-history-elt id="main-content" class="browse-page">
+            {#include components/browse-sidebar-nav links=links /}
+            <div class="browse-page-shell">
+                <div class="browse-page-shell__main">
+                    {#if !posts.isEmpty}
+                    {#let post = posts.data.get(0)}
+                        {#include HomeEndpoint/featured post=post /}
+                    {/if}
+                    <div class="posts-grid">
+                        {#include HomeEndpoint/grid ignoreFirst=true /}
+                    </div>
                 </div>
             </div>
+            {#include components/browse-explore-aside topTags=topTags mainAuthors=mainAuthors totalAuthors=totalAuthors rssFeedUrl=siteRssFeedUrl /}
         </main>
         {#include components/footer /}
         {#include components/seo-oob seo=seo /}

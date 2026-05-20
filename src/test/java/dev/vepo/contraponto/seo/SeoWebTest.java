@@ -27,6 +27,7 @@ class SeoWebTest {
              .persist();
 
         app.access()
+           .assertPageSourceContains("browse-explore-aside__link")
            .assertPageSourceContains("data-hx-get=\"/authors\"")
            .assertPageSourceContains("data-hx-get=\"/explore/blogs\"");
     }

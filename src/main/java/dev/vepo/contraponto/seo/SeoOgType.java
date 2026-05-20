@@ -2,7 +2,8 @@ package dev.vepo.contraponto.seo;
 
 public enum SeoOgType {
     WEBSITE("website"),
-    ARTICLE("article");
+    ARTICLE("article"),
+    PROFILE("profile");
 
     private final String value;
 

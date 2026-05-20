@@ -274,6 +274,10 @@ class MainManager {
         document.body.addEventListener('htmx:afterSettle', () => {
             this.repairNestedMain();
             patchMainNavigationSwaps();
+            document.body.style.removeProperty('min-height');
+            document.body.style.removeProperty('height');
+            document.documentElement.style.removeProperty('min-height');
+            document.documentElement.style.removeProperty('height');
         });
 
         patchMainNavigationSwaps();

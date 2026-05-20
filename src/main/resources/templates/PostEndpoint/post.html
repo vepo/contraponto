@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
     {#include components/head seo=seo /}
-    <body hx-history-elt>
+    <body>
         {#include components/header /}
-        <main class="article-page" id="main-content"
+        <main hx-history-elt class="article-page" id="main-content"
               data-reading-time-post-id="{view.post.id}"
               data-reading-time-url="/forms/posts/{view.post.id}/reading-time">
             <div class="container-narrow">

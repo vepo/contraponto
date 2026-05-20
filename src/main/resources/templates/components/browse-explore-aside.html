@@ -1,0 +1,55 @@
+<aside class="browse-page-shell__aside browse-explore-aside" aria-label="Explorar">
+    <h2 class="browse-explore-aside__title" data-i18n="home.explore.title">Explorar</h2>
+
+    <div class="browse-explore-aside__links">
+        <a data-hx-get="/authors"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/authors"
+           class="browse-explore-aside__link">
+            <span class="browse-explore-aside__link-label" data-i18n="home.explore.authors">Autores</span>
+            <span class="browse-explore-aside__link-hint" data-i18n="home.explore.authorsHint">Perfis e publicações</span>
+        </a>
+        <a data-hx-get="/explore/blogs"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/explore/blogs"
+           class="browse-explore-aside__link">
+            <span class="browse-explore-aside__link-label" data-i18n="home.explore.blogs">Blogs</span>
+            <span class="browse-explore-aside__link-hint" data-i18n="home.explore.blogsHint">Temas e autores</span>
+        </a>
+    </div>
+
+    {#if !topTags.isEmpty}
+    <section class="browse-explore-aside__block">
+        <h3 class="browse-explore-aside__block-title" data-i18n="authorProfile.topTags">Principais tags</h3>
+        {#include components/profile-tag-list topTags=topTags /}
+    </section>
+    {/if}
+
+    {#if !mainAuthors.isEmpty}
+    <section class="browse-explore-aside__block">
+        <h3 class="browse-explore-aside__block-title" data-i18n="tag.mainAuthors">Principais autores</h3>
+        <div class="browse-explore-aside__authors">
+            {#for usage in mainAuthors}
+            {#include components/tag-page-author usage=usage /}
+            {/for}
+        </div>
+        {#if totalAuthors > mainAuthors.size}
+        <p class="browse-explore-aside__more">
+            <a data-hx-get="/authors"
+               hx-select="main"
+               hx-target="main"
+               hx-push-url="/authors"
+               data-i18n="tag.allAuthors">Ver todos os autores</a>
+        </p>
+        {/if}
+    </section>
+    {/if}
+
+    {#if rssFeedUrl}
+    <div class="browse-explore-aside__rss">
+        {#include components/rss-feed-link feedUrl=rssFeedUrl /}
+    </div>
+    {/if}
+</aside>

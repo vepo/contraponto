@@ -86,7 +86,7 @@ public class PostRepository {
                             .getSingleResult();
     }
 
-    private long countPublishedByBlog(long blogId) {
+    public long countPublishedByBlog(long blogId) {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
                                          FROM Post p

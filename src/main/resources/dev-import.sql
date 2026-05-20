@@ -71,6 +71,25 @@ FROM (VALUES
 ) AS v(username, role)
 JOIN tb_users u ON u.username = v.username;
 
+UPDATE tb_users SET
+    profile_description = 'Engenheira de software escrevendo sobre sistemas distribuídos e Java.',
+    website_url = 'https://alice.example.dev',
+    github_url = 'https://github.com/alice'
+WHERE username = 'alice';
+
+UPDATE tb_users SET
+    profile_description = 'Arquiteto de software e autor de notas sobre DDD e backends.',
+    website_url = 'https://bob.example.dev',
+    mastodon_url = 'https://mastodon.social/@bob',
+    github_url = 'https://github.com/bob'
+WHERE username = 'bob';
+
+UPDATE tb_users SET
+    profile_description = 'Victor Osório — software, sistemas e ofício de engenharia.',
+    website_url = 'https://vepo.github.io',
+    github_url = 'https://github.com/vepo'
+WHERE username = 'vepo';
+
 -- ============================================
 -- 3. Blogs
 -- ============================================

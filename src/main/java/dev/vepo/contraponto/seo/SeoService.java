@@ -22,6 +22,8 @@ import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
+import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
+import dev.vepo.contraponto.tag.AuthorTagUsage;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagPageEndpoint;
 import dev.vepo.contraponto.tag.TagRepository;
@@ -146,6 +148,25 @@ public class SeoService {
                           .build();
     }
 
+    public SeoMetadata forAuthorProfile(User author, Blog mainBlog) {
+        String description = author.getProfileDescription();
+        if (description == null || description.isBlank()) {
+            description = mainBlog.getDescription();
+        }
+        String plain = SeoDescription.toPlainText(description);
+        if (plain.isBlank()) {
+            plain = "Perfil de " + author.getName() + " no Contraponto.";
+        }
+        String profilePath = AuthorProfileEndpoint.url(author);
+        return SeoMetadata.builder()
+                          .title(author.getName() + " · Autores · " + SITE_NAME)
+                          .description(plain)
+                          .canonicalUrl(publicSiteUrl.absolute(profilePath))
+                          .ogType(SeoOgType.PROFILE)
+                          .jsonLd(structuredData.person(author, profilePath))
+                          .build();
+    }
+
     public SeoMetadata forBlogDirectory() {
         return SeoMetadata.builder()
                           .title("Blogs · " + SITE_NAME)
@@ -249,14 +270,23 @@ public class SeoService {
     }
 
     public SeoMetadata forTag(Tag tag) {
+        return forTag(tag, List.of());
+    }
+
+    public SeoMetadata forTag(Tag tag, List<AuthorTagUsage> mainAuthors) {
         String description = tag.getDescription() != null && !tag.getDescription().isBlank()
                                                                                              ? SeoDescription.toPlainText(tag.getDescription())
                                                                                              : "Artigos com a tag " + tag.getName() + " no Contraponto.";
+        String tagPath = TagPageEndpoint.url(tag);
+        List<String> authorUrls = mainAuthors.stream()
+                                             .map(usage -> publicSiteUrl.absolute(AuthorProfileEndpoint.url(usage.author())))
+                                             .toList();
         return SeoMetadata.builder()
                           .title(tag.getName() + " · " + SITE_NAME)
                           .description(description)
-                          .canonicalUrl(publicSiteUrl.absolute(TagPageEndpoint.url(tag)))
+                          .canonicalUrl(publicSiteUrl.absolute(tagPath))
                           .ogType(SeoOgType.WEBSITE)
+                          .jsonLd(structuredData.tagPage(tag, tagPath, authorUrls))
                           .build();
     }
 
@@ -288,6 +318,16 @@ public class SeoService {
 
         if ("/authors".equals(pathOnly)) {
             return forAuthorDirectory();
+        }
+        if (pathOnly.startsWith("/authors/")) {
+            String username = pathOnly.substring("/authors/".length());
+            if (username.contains("/")) {
+                username = username.substring(0, username.indexOf('/'));
+            }
+            return userRepository.findPublicAuthorByUsername(username)
+                                 .flatMap(user -> blogRepository.findMainByOwnerId(user.getId())
+                                                                .map(blog -> forAuthorProfile(user, blog)))
+                                 .orElseGet(() -> forPrivatePage("Autor"));
         }
         if ("/explore/blogs".equals(pathOnly)) {
             return forBlogDirectory();

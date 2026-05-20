@@ -7,8 +7,8 @@ import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.seo.SeoMetadata;
 import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
-import dev.vepo.contraponto.user.User;
-import dev.vepo.contraponto.user.UserRepository;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -24,9 +24,10 @@ public class AuthorDirectoryEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance authors(java.util.List<User> authors,
+        public static native TemplateInstance authors(java.util.List<AuthorDirectoryRow> rows,
                                                       Links links,
                                                       LoggedUser user,
+                                                      BreadcrumbTrail breadcrumb,
                                                       SeoMetadata seo);
 
         private Templates() {
@@ -34,19 +35,22 @@ public class AuthorDirectoryEndpoint {
         }
     }
 
-    private final UserRepository userRepository;
+    private final AuthorDirectoryService authorDirectoryService;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
     private final SeoService seoService;
 
     @Inject
-    public AuthorDirectoryEndpoint(UserRepository userRepository,
+    public AuthorDirectoryEndpoint(AuthorDirectoryService authorDirectoryService,
                                    CustomPageRepository customPageRepository,
                                    LoggedUser loggedUser,
+                                   BreadcrumbService breadcrumbService,
                                    SeoService seoService) {
-        this.userRepository = userRepository;
+        this.authorDirectoryService = authorDirectoryService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
         this.seoService = seoService;
     }
 
@@ -54,9 +58,10 @@ public class AuthorDirectoryEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance authors() {
-        return Templates.authors(userRepository.findAuthorsWithPublishedPosts(),
+        return Templates.authors(authorDirectoryService.buildRows(),
                                  customPageRepository.loadLinks(),
                                  loggedUser,
+                                 breadcrumbService.forAuthorDirectory(),
                                  seoService.forAuthorDirectory());
     }
 }

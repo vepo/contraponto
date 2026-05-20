@@ -1,23 +1,20 @@
 <!DOCTYPE html>
 <html>
     {#include components/head seo=seo /}
-    <body hx-history-elt>
+    <body>
         {#include components/header /}
-        <main id="main-content" class="directory-page">
+        <main hx-history-elt id="main-content" class="directory-page">
             <div class="container">
-                <h1 class="directory-page__title" data-i18n="directory.authorsTitle">Autores</h1>
-                <ul class="directory-page__list">
-                    {#for author in authors}
-                    <li class="directory-page__item">
-                        <a data-hx-get="/{author.username}"
-                           hx-select="main"
-                           hx-target="main"
-                           hx-push-url="/{author.username}"
-                           class="directory-page__link">{author.name}</a>
-                        <span class="directory-page__meta">@{author.username}</span>
-                    </li>
+                {#include components/breadcrumb trail=breadcrumb /}
+                <header class="directory-header">
+                    <h1 class="directory-header__title" data-i18n="directory.authorsTitle">Autores</h1>
+                    <p class="directory-header__lead" data-i18n="directory.authorsLead">Autores com publicações ativas no Contraponto.</p>
+                </header>
+                <div class="directory-grid">
+                    {#for row in rows}
+                    {#include components/author-directory-card row=row /}
                     {/for}
-                </ul>
+                </div>
             </div>
         </main>
         {#include components/footer /}

@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-19 · SEO metadata, author/blog directories, sitemap/robots
+**Last verified:** 2026-05-19 · Author profiles, explore strip, directory cards, tag main authors
 
 ---
 
@@ -47,8 +47,9 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
 | Featured homepage | anyone | `GET /` | 0 | Land on `/` (or click logo). |
-| Author directory | anyone | `GET /authors` | 1 | On `/` → **Ver autores** in page meta. |
-| Blog directory | anyone | `GET /explore/blogs` | 1 | On `/` → **Ver blogs** in page meta. |
+| Author directory | anyone | `GET /authors` | 1 | On `/` → **Autores** in home right margin (wide screens). |
+| Author profile | anyone | `GET /authors/{username}` | 2 | Home → **Autores** card → author card. |
+| Blog directory | anyone | `GET /explore/blogs` | 1 | On `/` → **Blogs** in home right margin (wide screens). |
 | Featured homepage (return) | anyone | `GET /` | 1 | Click **contraponto** logo in header. |
 | Load more featured posts | anyone | `GET /components/home/grid?page=` | 1 | On `/` → **Load more**. |
 | Blog home (default blog) | anyone | `GET /{username}` | 2 | Home → open a post author byline **or** search result **or** **My Blog** (signed in). |
@@ -57,7 +58,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Read post (main blog) | anyone | `GET /{username}/post/{slug}` | 3 | Home → blog → post card. |
 | Read post (secondary blog) | anyone | `GET /{username}/{blogSlug}/post/{slug}` | 4 | Home → profile → secondary blog → post. |
 | Serie listing | anyone | `GET /{username}/serie/{slug}` or `…/{blogSlug}/serie/{slug}` | 3–4 | Open post in serie → serie title link in serie nav. |
-| Tag listing | anyone | `GET /tags/{slug}` | 3 | Open post → click tag chip. |
+| Tag listing | anyone | `GET /tags/{slug}` | 3 | Open post → click tag chip (shows **Principais autores** when applicable). |
 | Custom page (global) | anyone | `GET /page/{slug}` | 2 | Home → footer/sidebar custom page link. |
 | Custom page (user/blog) | anyone | `GET /{username}/page/{slug}` etc. | 2–3 | Footer/sidebar link (depends on placement). |
 | Sidebar navigation | anyone | varies | 2 | Home → header **menu** icon (left) → sidebar link. |

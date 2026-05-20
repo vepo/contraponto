@@ -1,0 +1,20 @@
+<article class="author-directory-card">
+    <a data-hx-get="/authors/{row.author.username}"
+       hx-select="main"
+       hx-target="main"
+       hx-push-url="/authors/{row.author.username}"
+       class="author-directory-card__link">
+        <img src="{row.author.avatarUrl}" alt="" class="author-directory-card__avatar" width="64" height="64"/>
+        <div class="author-directory-card__body">
+            <h2 class="author-directory-card__name">{row.author.name}</h2>
+            <p class="author-directory-card__username">@{row.author.username}</p>
+            {#if row.excerpt}
+            <p class="author-directory-card__excerpt">{row.excerpt}</p>
+            {/if}
+            {#include components/profile-tag-list topTags=row.topTags /}
+        </div>
+    </a>
+    <div class="author-directory-card__footer">
+        <p class="author-directory-card__meta">{row.postCount} publicações</p>
+    </div>
+</article>

@@ -41,7 +41,15 @@ public class TagPageEndpoint {
 
         public static native TemplateInstance grid(String tagSlug, Page<Post> posts);
 
-        public static native TemplateInstance tag(Tag tag, Page<Post> posts, Links links, LoggedUser user, BreadcrumbTrail breadcrumb, SeoMetadata seo);
+        public static native TemplateInstance tag(Tag tag,
+                                                  Page<Post> posts,
+                                                  java.util.List<TagUsage> topTags,
+                                                  java.util.List<AuthorTagUsage> mainAuthors,
+                                                  long totalAuthors,
+                                                  Links links,
+                                                  LoggedUser user,
+                                                  BreadcrumbTrail breadcrumb,
+                                                  SeoMetadata seo);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -49,6 +57,8 @@ public class TagPageEndpoint {
     }
 
     private static final String TAG_NOT_FOUND_PREFIX = "Tag not found: ";
+
+    private static final int MAIN_AUTHOR_LIMIT = 6;
 
     public static String url(Tag tag) {
         return "/tags/%s".formatted(tag.getSlug());
@@ -62,6 +72,8 @@ public class TagPageEndpoint {
     private final RssFeedService rssFeedService;
     private final SeoService seoService;
 
+    private final TagProfileService tagProfileService;
+
     @Inject
     public TagPageEndpoint(TagRepository tagRepository,
                            PostRepository postRepository,
@@ -69,7 +81,8 @@ public class TagPageEndpoint {
                            LoggedUser loggedUser,
                            BreadcrumbService breadcrumbService,
                            RssFeedService rssFeedService,
-                           SeoService seoService) {
+                           SeoService seoService,
+                           TagProfileService tagProfileService) {
         this.tagRepository = tagRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
@@ -77,6 +90,7 @@ public class TagPageEndpoint {
         this.breadcrumbService = breadcrumbService;
         this.rssFeedService = rssFeedService;
         this.seoService = seoService;
+        this.tagProfileService = tagProfileService;
     }
 
     @GET
@@ -114,12 +128,17 @@ public class TagPageEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance tag(@PathParam("slug") String slug, @QueryParam("limit") @DefaultValue("12") int limit) {
         Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
+        var mainAuthors = tagProfileService.mainAuthorsForTag(tag.getSlug(), MAIN_AUTHOR_LIMIT);
+        long totalAuthors = tagProfileService.countDistinctAuthorsForTag(tag.getSlug());
         return Templates.tag(tag,
                              postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, 1)),
+                             java.util.List.of(),
+                             mainAuthors,
+                             totalAuthors,
                              customPageRepository.loadLinks(),
                              loggedUser,
                              breadcrumbService.forTag(tag),
-                             seoService.forTag(tag));
+                             seoService.forTag(tag, mainAuthors));
     }
 
     @GET

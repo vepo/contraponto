@@ -8,6 +8,10 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.seo.SeoMetadata;
 import dev.vepo.contraponto.seo.SeoService;
+import dev.vepo.contraponto.tag.AuthorTagUsage;
+import dev.vepo.contraponto.tag.TagUsage;
+import java.util.Collections;
+import java.util.List;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -32,7 +36,13 @@ public class HomeEndpoint {
 
         static native TemplateInstance grid(Page<Post> posts, boolean ignoreFirst);
 
-        static native TemplateInstance home(Page<Post> posts, Links links, LoggedUser user, SeoMetadata seo);
+        static native TemplateInstance home(Page<Post> posts,
+                                            Links links,
+                                            LoggedUser user,
+                                            SeoMetadata seo,
+                                            List<TagUsage> topTags,
+                                            List<AuthorTagUsage> mainAuthors,
+                                            long totalAuthors);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -70,6 +80,9 @@ public class HomeEndpoint {
         return Templates.home(this.postRepository.findFeatured(PageQuery.forFeaturedGrid(limit, 1)),
                               customPageRepository.loadLinks(),
                               loggedUser,
-                              seoService.forHome());
+                              seoService.forHome(),
+                              Collections.emptyList(),
+                              Collections.emptyList(),
+                              0L);
     }
 }

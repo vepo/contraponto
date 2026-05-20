@@ -68,6 +68,11 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Secondary blog** | Additional blog owned by the same user (`main = false`). | `Blog` |
 | **Blog owner** | User who owns the blog; sole writer for that blog's posts and the only role that may edit blog settings. | `Blog.owner` |
 | **Profile picture** | Optional image on the user; shown in the menu and wherever the author is displayed. When absent, a **generated avatar** shows the user's initials on a brand-colored SVG (`GET /components/avatar`). | `User.profilePicture`, `AvatarEndpoint` |
+| **Author profile** | Public page at `/authors/{username}` with bio, social links, top tags, and blog list. | `AuthorProfileEndpoint` |
+| **Author profile description** | Optional Markdown bio on the user (`User.profileDescription`); distinct from **blog description**. Edited in **Author appearance**. | `User.profileDescription` |
+| **Author social links** | Optional https URLs (website, X, Mastodon, GitHub, LinkedIn) shown on the author profile and in JSON-LD `sameAs`. | `User.websiteUrl`, etc., `AuthorSocialUrls` |
+| **Top tags** | Tags most often used on an author's or blog's published posts; shown on profiles and directory cards. | `TagProfileService.topTagsForAuthor`, `topTagsForBlog` |
+| **Main authors (for a tag)** | Authors with the most published posts carrying a tag; shown on the **tag page**. | `TagProfileService.mainAuthorsForTag` |
 | **Default blog banner** | Optional image on the user used when a blog has no own **blog banner**. | `User.defaultBlogBanner` |
 | **Blog banner** | Optional hero image on a blog; overrides the owner's default for that blog's public home. | `Blog.banner` |
 | **Effective blog banner** | `blog.banner` if set, else `user.defaultBlogBanner`. | `BlogBannerService.resolveEffectiveBanner` |
@@ -174,8 +179,9 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **RSS feed** | Syndication for site, blog, serie, or tag. | `rss` package |
 | **RSS feed link** | Public control that opens the matching feed URL in a new tab. | `components/rss-feed-link.html`, `RssFeedPaths` |
 | **Page metadata** | Per-route SEO bundle: document title, description, canonical URL, `noindex`, Open Graph / Twitter Card fields, optional JSON-LD. | `SeoMetadata`, `SeoService`, `components/seo-metadata.html` |
-| **Author directory** | Public index of authors with at least one published post on an active blog. | `GET /authors`, `AuthorDirectoryEndpoint` |
-| **Blog directory** | Public index of active blogs. | `GET /explore/blogs`, `BlogDirectoryEndpoint` |
+| **Author directory** | Public card index of authors; links to **author profile**. | `GET /authors`, `AuthorDirectoryEndpoint` |
+| **Blog directory** | Public card index of active blogs with description, author, and top tags. | `GET /explore/blogs`, `BlogDirectoryEndpoint` |
+| **Browse page shell** | Home and blog listing layout: main column at **reading width** (`container-narrow`); **SIDEBAR** custom pages in the left margin; explore + RSS in the right margin. Sidebars do not shrink the main column. Post pages have no sidebars. | `browse-page-shell`, `components/browse-sidebar-nav.html`, `components/home-explore-aside.html` |
 | **Sitemap** | Machine-readable list of public URLs for crawlers. | `GET /sitemap.xml`, `SitemapEndpoint` |
 | **Robots policy** | Crawl rules and sitemap reference for crawlers. | `GET /robots.txt`, `RobotsEndpoint` |
 | **View count** | Read metric per post load (one row per page GET per session). | `View` |
@@ -194,7 +200,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Dashboard** | Author overview per selected blog: analytics (daily views, daily reading time, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily reading time, daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
 | **Account security** | Update email (with verification) and password. | `AccountSecurityEndpoint`, `AccountSecurityUpdateEndpoint` |
-| **Author appearance** | Update display name, profile picture, and default blog banner. | `AuthorAppearanceEndpoint`, `AuthorAppearanceUpdateEndpoint` |
+| **Author appearance** | Update display name, **author profile description**, **author social links**, profile picture, and default blog banner. | `AuthorAppearanceEndpoint`, `AuthorAppearanceUpdateEndpoint` |
 | **Author blogs** | List, create, and edit own blogs (name, slug, banner) in the Writing hub. Extended settings (description, active, Git) on the blog settings form. | `BlogManageEndpoint`, Writing hub `blogs` section |
 | **Platform blog management** | Editors list all blogs and deactivate others’ secondary blogs. | `BlogManageEndpoint`, Manage hub `blogs` section (`EDITOR`+) |
 | **User management** | Administrators create and edit users, roles, and passwords. | `UserManageEndpoint`, `UserSaveEndpoint` |
@@ -269,10 +275,13 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Notifications empty | No notifications yet. Follow blogs to see new posts here. | Notifications page |
 | Notifications overlay empty | No notification | Notification overlay |
 | RSS feed link | RSS | Blog, tag, serie, home, footer |
-| Home — browse authors | Ver autores | Browse authors | Home `page-meta` → `/authors` |
-| Home — browse blogs | Ver blogs | Browse blogs | Home `page-meta` → `/explore/blogs` |
+| Home — explore authors card | Autores | Authors | Home **aside** → `/authors` |
+| Home — explore blogs card | Blogs | Blogs | Home **aside** → `/explore/blogs` |
 | Author directory — title | Autores | Authors | `/authors` page heading |
 | Blog directory — title | Blogs | Blogs | `/explore/blogs` page heading |
+| Author profile — main blog CTA | Ver blog principal | View main blog | `/authors/{username}` |
+| Tag page — main authors | Principais autores | Main authors | `/tags/{slug}` |
+| Author appearance — profile description | Descrição do perfil | Author profile description | Appearance form |
 | Dismiss notification (button) | Dismiss | Notification overlay row |
 | Close notification overlay (button) | Close (×, aria-label) | Notification overlay header |
 | View all notifications (link) | View all notifications | Notification overlay footer |

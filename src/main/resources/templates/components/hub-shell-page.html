@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
     {#include components/head seo=seo /}
-    <body hx-history-elt>
+    <body>
         {#include components/header /}
-        <main class="pages-manage hub-shell-page" id="main-content">
+        <main hx-history-elt class="pages-manage hub-shell-page" id="main-content">
             <div class="container-narrow">
                 {#include components/hub-shell hubTitle=hubTitle hubBasePath=hubBasePath breadcrumb=breadcrumb navGroups=navGroups singleSectionNav=singleSectionNav activeSlug=activeSlug panelContent=panelContent /}
             </div>

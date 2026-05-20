@@ -1,0 +1,59 @@
+package dev.vepo.contraponto.directory;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import dev.vepo.contraponto.shared.App;
+import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.user.User;
+
+@WebTest
+class ExploreDirectoryWebTest {
+
+    @Test
+    void authorDirectoryLinksToProfile(App app) {
+        User author = Given.user()
+                           .withUsername("dir-profile")
+                           .withEmail("dir-profile@example.com")
+                           .withName("Directory Profile")
+                           .withPassword("pass12345")
+                           .persist();
+        Given.post()
+             .withTitle("Dir Post")
+             .withSlug("dir-post")
+             .withContent("Body")
+             .withAuthor(author)
+             .persist();
+
+        app.goToPath("/authors")
+           .assertPageSourceContains("author-directory-card")
+           .assertPageSourceContains("/authors/dir-profile");
+    }
+
+    @Test
+    void homeShowsExploreCards(App app) {
+        User author = Given.user()
+                           .withUsername("explore-user")
+                           .withEmail("explore@example.com")
+                           .withName("Explore User")
+                           .withPassword("pass12345")
+                           .persist();
+        Given.post()
+             .withTitle("Explore Seed")
+             .withSlug("explore-seed")
+             .withContent("Body")
+             .withAuthor(author)
+             .persist();
+
+        app.access()
+           .assertPageSourceContains("browse-explore-aside__link")
+           .assertPageSourceContains("data-hx-get=\"/authors\"")
+           .assertPageSourceContains("data-hx-get=\"/explore/blogs\"");
+    }
+
+    @BeforeEach
+    void setup() {
+        Given.cleanup();
+    }
+}

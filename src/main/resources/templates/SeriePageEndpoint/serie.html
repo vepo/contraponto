@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
     {#include components/head seo=seo rssAlternateUrl=serie.rssFeedUrl rssAlternateTitle=serie.title /}
-    <body hx-history-elt>
+    <body>
         {#include components/header /}
-        <main id="main-content" class="user-blog-page">
+        <main hx-history-elt id="main-content" class="user-blog-page">
             <div class="container">
                 {#include components/breadcrumb trail=breadcrumb /}
             </div>

@@ -17,8 +17,11 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.tag.Tag;
+import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
 import dev.vepo.contraponto.tag.TagPageEndpoint;
 import dev.vepo.contraponto.tag.TagRepository;
+import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -41,6 +44,7 @@ public class SitemapService {
     private final CustomPageRepository customPageRepository;
 
     private final EntityManager entityManager;
+    private final UserRepository userRepository;
 
     @Inject
     public SitemapService(PublicSiteUrl publicSiteUrl,
@@ -48,12 +52,14 @@ public class SitemapService {
                           BlogRepository blogRepository,
                           TagRepository tagRepository,
                           CustomPageRepository customPageRepository,
+                          UserRepository userRepository,
                           EntityManager entityManager) {
         this.publicSiteUrl = publicSiteUrl;
         this.postRepository = postRepository;
         this.blogRepository = blogRepository;
         this.tagRepository = tagRepository;
         this.customPageRepository = customPageRepository;
+        this.userRepository = userRepository;
         this.entityManager = entityManager;
     }
 
@@ -62,6 +68,9 @@ public class SitemapService {
         urls.add(new SitemapUrl("/", Optional.empty()));
         urls.add(new SitemapUrl("/authors", Optional.empty()));
         urls.add(new SitemapUrl("/explore/blogs", Optional.empty()));
+        for (User author : userRepository.findAuthorsWithPublishedPosts()) {
+            urls.add(new SitemapUrl(AuthorProfileEndpoint.url(author), Optional.ofNullable(author.getUpdatedAt())));
+        }
 
         for (Post post : postRepository.findPublishedForSitemap()) {
             urls.add(new SitemapUrl(PostEndpoint.extractUrl(post), lastModified(post)));

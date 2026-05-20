@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
     {#include components/head seo=seo /}
-    <body hx-history-elt class="write-page">
+    <body class="write-page">
         {#include components/header /}
-        <main class="write-main">
+        <main hx-history-elt class="write-main">
             <div class="write-container">
                 {#include components/breadcrumb trail=breadcrumb /}
                 {#if writePage.hasUnpublishedChanges}

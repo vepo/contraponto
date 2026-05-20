@@ -2,8 +2,8 @@ package dev.vepo.contraponto.directory;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.seo.SeoMetadata;
@@ -24,9 +24,10 @@ public class BlogDirectoryEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance blogs(java.util.List<Blog> blogs,
+        public static native TemplateInstance blogs(java.util.List<BlogDirectoryRow> rows,
                                                     Links links,
                                                     LoggedUser user,
+                                                    BreadcrumbTrail breadcrumb,
                                                     SeoMetadata seo);
 
         private Templates() {
@@ -34,19 +35,22 @@ public class BlogDirectoryEndpoint {
         }
     }
 
-    private final BlogRepository blogRepository;
+    private final BlogDirectoryService blogDirectoryService;
     private final CustomPageRepository customPageRepository;
     private final LoggedUser loggedUser;
+    private final BreadcrumbService breadcrumbService;
     private final SeoService seoService;
 
     @Inject
-    public BlogDirectoryEndpoint(BlogRepository blogRepository,
+    public BlogDirectoryEndpoint(BlogDirectoryService blogDirectoryService,
                                  CustomPageRepository customPageRepository,
                                  LoggedUser loggedUser,
+                                 BreadcrumbService breadcrumbService,
                                  SeoService seoService) {
-        this.blogRepository = blogRepository;
+        this.blogDirectoryService = blogDirectoryService;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
+        this.breadcrumbService = breadcrumbService;
         this.seoService = seoService;
     }
 
@@ -55,9 +59,10 @@ public class BlogDirectoryEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance blogs() {
-        return Templates.blogs(blogRepository.findAllActiveWithOwner(),
+        return Templates.blogs(blogDirectoryService.buildRows(),
                                customPageRepository.loadLinks(),
                                loggedUser,
+                               breadcrumbService.forBlogDirectory(),
                                seoService.forBlogDirectory());
     }
 }
