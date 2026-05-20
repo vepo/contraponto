@@ -16,10 +16,10 @@ import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class GitImageSyncServiceTest {
 
     private static final String UUID = "550e8400-e29b-41d4-a716-446655440000";

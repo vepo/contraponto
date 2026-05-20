@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.shared.infra;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class TemplateExtensionsTest {
 
     @Test

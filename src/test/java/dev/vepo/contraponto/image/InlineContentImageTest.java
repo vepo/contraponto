@@ -22,10 +22,10 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class InlineContentImageTest {
 
     private static final String BLOCK_TITLE_CAPTION = "Tipos de armazenamentos possíveis para bases de dados";

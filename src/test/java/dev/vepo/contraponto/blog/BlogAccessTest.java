@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.blog;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -8,6 +10,7 @@ import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class BlogAccessTest {
 
     private static Blog blog(long id, User owner, boolean main) {

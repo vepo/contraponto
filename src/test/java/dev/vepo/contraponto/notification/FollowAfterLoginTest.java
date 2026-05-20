@@ -19,10 +19,10 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class FollowAfterLoginRestTest {
 
     private static final String LOGGED_IN_BODY_TRIGGER = HtmxTriggers.LOGGED_IN_ON_BODY;

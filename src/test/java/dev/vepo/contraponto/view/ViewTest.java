@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.view;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class ViewTest {
 
     @Test

@@ -11,10 +11,10 @@ import java.net.URL;
 
 import dev.vepo.contraponto.shared.Given;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import io.restassured.RestAssured;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class RssFeedLinkWebTest {
 
     @TestHTTPResource("/")

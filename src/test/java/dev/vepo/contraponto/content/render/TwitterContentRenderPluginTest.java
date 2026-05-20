@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.content.render;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetSocketAddress;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import com.sun.net.httpserver.HttpServer;
 
+@UnitTest
 class TwitterContentRenderPluginTest {
 
     private static String jsonString(String value) {

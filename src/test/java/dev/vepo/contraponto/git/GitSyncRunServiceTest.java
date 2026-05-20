@@ -9,13 +9,13 @@ import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class GitSyncRunServiceTest {
 
     private static GitSyncRunResult successResult(String summary) {

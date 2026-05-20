@@ -12,9 +12,9 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class SeoEndpointTest {
 
     @TestHTTPResource

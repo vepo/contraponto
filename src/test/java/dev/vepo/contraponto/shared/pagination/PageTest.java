@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.shared.pagination;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class PageTest {
     @Test
     void lastPageTest() {

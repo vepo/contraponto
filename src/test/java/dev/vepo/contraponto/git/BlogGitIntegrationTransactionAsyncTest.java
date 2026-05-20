@@ -18,7 +18,7 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
@@ -27,7 +27,7 @@ import jakarta.persistence.EntityManager;
  * outer test {@code @Transactional}, matching the async Git sync thread (no
  * request transaction).
  */
-@QuarkusTest
+@QuarkusIntegrationTest
 class BlogGitIntegrationTransactionAsyncTest {
 
     private static Long blogId(User user) {

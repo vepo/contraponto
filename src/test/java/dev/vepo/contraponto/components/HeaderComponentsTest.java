@@ -12,9 +12,9 @@ import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class HeaderComponentsTest {
 
     @TestHTTPResource("/")

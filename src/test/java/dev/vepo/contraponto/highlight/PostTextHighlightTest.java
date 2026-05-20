@@ -19,11 +19,11 @@ import dev.vepo.contraponto.postresponse.PostResponseRepository;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class PostTextHighlightTest {
 
     @Inject

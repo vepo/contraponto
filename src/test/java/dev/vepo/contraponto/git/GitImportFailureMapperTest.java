@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class GitImportFailureMapperTest {
 
     @Inject

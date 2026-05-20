@@ -8,10 +8,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.renderer.Format;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class PostChangeDiffServiceTest {
 
     private static PostPublication publication(int version, String title, String content) {

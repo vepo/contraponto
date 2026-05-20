@@ -16,10 +16,10 @@ import dev.vepo.contraponto.shared.TestHttp;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class NotificationEndpointTest {
 
     @TestHTTPResource("/")

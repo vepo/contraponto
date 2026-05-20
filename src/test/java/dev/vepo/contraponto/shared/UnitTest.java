@@ -6,12 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.quarkus.test.junit.QuarkusTestExtension;
-
-@Target({ ElementType.TYPE, ElementType.METHOD })
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Tag(TestTags.WEB)
-@ExtendWith({ QuarkusTestExtension.class, WebTestExtension.class })
-public @interface WebTest {}
+@Tag(TestTags.UNIT)
+public @interface UnitTest {}

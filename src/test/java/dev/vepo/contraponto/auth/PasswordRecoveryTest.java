@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.Given;
 import io.quarkus.mailer.MockMailbox;
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class PasswordRecoveryTest {
 
     private static final Pattern TOKEN_IN_LINK = Pattern.compile("/password-recovery/reset\\?token=([^\"'&\\s]+)");

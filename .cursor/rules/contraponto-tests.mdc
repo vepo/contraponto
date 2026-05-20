@@ -8,8 +8,10 @@ alwaysApply: false
 
 ## Annotations
 
-- `@WebTest` on browser tests (Quarkus + Selenium via `WebTestExtension`).
-- `@QuarkusTest` for unit/integration tests without a browser.
+- `@WebTest` on browser tests (Quarkus + Selenium via `WebTestExtension`); tagged `web`.
+- `@QuarkusIntegrationTest` for HTTP/DB integration tests without a browser; tagged `quarkus`.
+- `@UnitTest` on plain JUnit tests with no Quarkus boot; tagged `unit`.
+- `mvn clean test` runs all tags; `mvn test -Ptest-unit|test-quarkus|test-web` runs one tag (CI runs these in parallel).
 
 ## App DSL
 

@@ -1,9 +1,12 @@
 package dev.vepo.contraponto.tag;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class TagSlugTest {
 
     @Test

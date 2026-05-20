@@ -8,17 +8,43 @@ Follow this exact loop – **do not ask for confirmation** and **do not invent w
 
 **Test runs:** Always set `GITHUB_ACTIONS=true` when invoking Maven tests (e.g. `GITHUB_ACTIONS=true mvn clean test`). `WebTestExtension` uses this to run Chrome headless, which matches CI and avoids failures when no display is available.
 
-1. **Run all tests**  
-   Execute `GITHUB_ACTIONS=true mvn clean test` and capture the full output.
+## Test tags (parallel execution)
+
+Tests are grouped with JUnit 5 tags (`unit`, `quarkus`, `web`) via `@UnitTest`, `@QuarkusIntegrationTest`, and `@WebTest` in `dev.vepo.contraponto.shared`.
+
+| Tag | Profile | Scope |
+|-----|---------|-------|
+| `unit` | `-Ptest-unit` | Plain JUnit tests (no Quarkus boot) |
+| `quarkus` | `-Ptest-quarkus` | `@QuarkusIntegrationTest` HTTP/DB integration tests |
+| `web` | `-Ptest-web` | `@WebTest` browser tests (Chrome headless) |
+
+- **`mvn clean test`** (no profile) runs **all tags** sequentially in one JVM.
+- **Parallel run** (same as CI): compile once, then run each tag in a separate Maven process:
+
+```bash
+GITHUB_ACTIONS=true mvn -B clean test-compile
+GITHUB_ACTIONS=true mvn -B test -Ptest-unit &
+GITHUB_ACTIONS=true mvn -B test -Ptest-quarkus &
+GITHUB_ACTIONS=true mvn -B test -Ptest-web &
+wait
+```
+
+Do **not** run `mvn clean` in parallel — it races on `target/`. After code changes, run `mvn test-compile` once, then repeat the parallel `test -P…` block.
+
+Surefire reports for parallel runs land in the same `target/surefire-reports/` directory; parse all `*.txt` files there after `wait`.
+
+1. **Run all tests (parallel)**  
+   Execute the parallel block above and capture output from all three processes.
 
 2. **Check for failures**  
-   - If the build succeeds and there are **no test failures**, print `✅ All tests pass!` and stop.  
-   - If there are failures, proceed to step 3.
+   - If every process exits 0 and there are **no test failures**, print `✅ All tests pass!` and stop.  
+   - If any process fails, proceed to step 3.
 
 3. **List each failing test with the reason**  
    Parse the Surefire reports in `target/surefire-reports/*.txt` or the console output.  
    For each failure, output:
    - Test class & method name  
+   - Tag (`unit`, `quarkus`, or `web`) if known from the class annotation  
    - Exception type and stack trace  
    - Assertion error details (expected vs actual, etc.)  
 
@@ -36,7 +62,7 @@ Follow this exact loop – **do not ask for confirmation** and **do not invent w
    - If it still fails, try a different fix strategy (e.g., change the production logic instead of the test).  
 
 5. **Repeat from step 1**  
-   After fixing all failures identified in the current iteration, run `GITHUB_ACTIONS=true mvn clean test` again.  
+   After fixing all failures identified in the current iteration, run the parallel test block again (with `test-compile` if sources changed).  
    - If new failures appear (or old ones persist), loop back to step 2.  
    - If no failures → stop and report success.
 

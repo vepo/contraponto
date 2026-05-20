@@ -1,9 +1,12 @@
 package dev.vepo.contraponto.git;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class GitImportedAssetIdTest {
 
     private static final String CANONICAL = "550e8400-e29b-41d4-a716-446655440000";

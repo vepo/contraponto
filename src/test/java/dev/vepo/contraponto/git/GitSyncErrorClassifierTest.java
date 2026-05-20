@@ -7,10 +7,10 @@ import java.io.IOException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.test.junit.QuarkusTest;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 class GitSyncErrorClassifierTest {
 
     @Inject

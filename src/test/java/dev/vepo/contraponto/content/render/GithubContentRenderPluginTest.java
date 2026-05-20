@@ -1,11 +1,14 @@
 package dev.vepo.contraponto.content.render;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class GithubContentRenderPluginTest {
 
     private final GithubContentRenderPlugin plugin = new GithubContentRenderPlugin();

@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.git;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.User;
 
+@UnitTest
 class BlogGitMarkdownMapperTest {
 
     private static Tag tag(String slug, String name) {

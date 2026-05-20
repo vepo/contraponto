@@ -1,10 +1,13 @@
 package dev.vepo.contraponto.shared.security;
 
+import dev.vepo.contraponto.shared.UnitTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 class InMemorySessionStoreTest {
 
     private InMemorySessionStore sessionStore;
