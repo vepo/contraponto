@@ -1,0 +1,18 @@
+---
+description: Design palette tokens — check before any UI/CSS work
+alwaysApply: true
+---
+
+# UI palette (always check first)
+
+Before adding or changing **templates**, **CSS**, or **visual** UI copy:
+
+1. Read [docs/ui-palette.md](../../docs/ui-palette.md) for allowed colors, spacing, and typography tokens.
+2. Confirm the token exists in `:root` in [main.css](../../src/main/resources/META-INF/resources/style/main.css).
+3. Use `var(--…)` in stylesheets — **never** add raw hex in `main.css` or `manage.css`.
+4. If a new semantic color or spacing step is needed, add it to **both** `ui-palette.md` and `:root` in the same change.
+5. Reuse existing `.btn` modifiers and BEM blocks per [ui-elements.md](../../docs/ui-elements.md).
+
+**Preview changes:** `./mvnw quarkus:dev` → home, post, Manage hub, write toolbar.
+
+**write.css** may still contain legacy hex; prefer tokens when editing that file.

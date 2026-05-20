@@ -10,6 +10,7 @@ Read these before changing code or tests:
 | [docs/application-guidelines.md](docs/application-guidelines.md) | Route-level UX flows (update when routes change) |
 | [docs/feature-catalog.md](docs/feature-catalog.md) | UI feature index with step counts and navigation paths (update when routes/menu change) |
 | [docs/ui-guidelines.md](docs/ui-guidelines.md) | Visual design system (UX, page flows) |
+| [docs/ui-palette.md](docs/ui-palette.md) | Design tokens (colors, spacing, typography) — check before UI/CSS changes |
 | [docs/ui-elements.md](docs/ui-elements.md) | CSS class catalog and main/manage/write bundles |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git ↔ Jekyll sync layout |
 | [docs/deployment.md](docs/deployment.md) | Production checklist (DB, SMTP, URL, secrets) |
