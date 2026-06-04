@@ -168,16 +168,6 @@ class PostTextHighlightTest {
         assertEquals(ProposalStatus.PENDING, proposals.getFirst().getStatus());
     }
 
-    private void createHighlight(User user, String passage, String anchor) {
-        TestHttp.authenticated(user)
-                .contentType("application/x-www-form-urlencoded")
-                .formParam("passage", passage)
-                .formParam("anchorJson", anchor)
-                .post("/forms/posts/" + post.getId() + "/highlights")
-                .then()
-                .statusCode(200);
-    }
-
     @Test
     void create_highlight_returns_highlight_id_header() {
         String anchor = "{\"start\":0,\"end\":5,\"prefix\":\"\",\"suffix\":\"\"}";
@@ -189,6 +179,16 @@ class PostTextHighlightTest {
                 .then()
                 .statusCode(200)
                 .header("X-Highlight-Id", notNullValue());
+    }
+
+    private void createHighlight(User user, String passage, String anchor) {
+        TestHttp.authenticated(user)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("passage", passage)
+                .formParam("anchorJson", anchor)
+                .post("/forms/posts/" + post.getId() + "/highlights")
+                .then()
+                .statusCode(200);
     }
 
     @Test

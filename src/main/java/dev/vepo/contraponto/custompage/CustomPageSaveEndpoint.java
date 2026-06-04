@@ -31,14 +31,24 @@ import jakarta.ws.rs.core.Response;
 @Path("/forms/pages")
 public class CustomPageSaveEndpoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(CustomPageSaveEndpoint.class);
+    private record PageSaveResolution(CustomPage page, Long blogIdForSlug, Response errorResponse) {
+        static PageSaveResolution ok(CustomPage page, Long blogIdForSlug) {
+            return new PageSaveResolution(page, blogIdForSlug, null);
+        }
 
+        static PageSaveResolution error(Response errorResponse) {
+            return new PageSaveResolution(null, null, errorResponse);
+        }
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomPageSaveEndpoint.class);
     private final CustomPageRepository customPageRepository;
     private final CustomPageAccess customPageAccess;
     private final BlogRepository blogRepository;
     private final CustomPageImageDependencyService customPageImageDependencyService;
     private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
+
     private final Event<CustomPageChangedEvent> customPageChangedEvents;
 
     @Inject
@@ -135,6 +145,46 @@ public class CustomPageSaveEndpoint {
         return currentBlog != null ? currentBlog.getId() : null;
     }
 
+    private PageSaveResolution resolvePageForSave(CustomPageForm form) {
+        if (form.getId() != null) {
+            var page = customPageRepository.findByIdForManagement(form.getId()).orElse(null);
+            if (page == null) {
+                return PageSaveResolution.error(notFound());
+            }
+            if (!customPageAccess.canEdit(page, loggedUser)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            Long blogIdForSlug = resolveBlogId(form, page.getBlog());
+            if (!applyScope(page, form, blogIdForSlug)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            return PageSaveResolution.ok(page, blogIdForSlug);
+        }
+
+        Long blogIdForSlug = resolveBlogId(form, null);
+        if (blogIdForSlug == null && !form.isApplicationScope()) {
+            return PageSaveResolution.error(Toast.response(Response.Status.BAD_REQUEST)
+                                                 .i18nKey(I18nKeys.TOAST_PAGE_BLOG_REQUIRED, I18nDefaults.PAGE_BLOG_REQUIRED)
+                                                 .type(Toast.Type.ERROR)
+                                                 .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                                                 .build());
+        }
+        if (!form.isApplicationScope() && blogIdForSlug != null) {
+            var blog = blogRepository.findById(blogIdForSlug).orElse(null);
+            if (blog == null || !customPageAccess.canEditBlog(blog, loggedUser)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            return PageSaveResolution.ok(customPageRepository.newPage(blog), blogIdForSlug);
+        }
+        if (form.isApplicationScope()) {
+            if (!customPageAccess.canManageApplicationPages(loggedUser)) {
+                return PageSaveResolution.error(forbidden());
+            }
+            return PageSaveResolution.ok(customPageRepository.newPage(null), blogIdForSlug);
+        }
+        return PageSaveResolution.error(forbidden());
+    }
+
     @POST
     @Transactional
     @Produces(MediaType.TEXT_HTML)
@@ -187,56 +237,6 @@ public class CustomPageSaveEndpoint {
                     .url("/manage/pages")
                     .page(navigationHubService.shell(NavigationHub.MANAGE, "pages", 1))
                     .build();
-    }
-
-    private PageSaveResolution resolvePageForSave(CustomPageForm form) {
-        if (form.getId() != null) {
-            var page = customPageRepository.findByIdForManagement(form.getId()).orElse(null);
-            if (page == null) {
-                return PageSaveResolution.error(notFound());
-            }
-            if (!customPageAccess.canEdit(page, loggedUser)) {
-                return PageSaveResolution.error(forbidden());
-            }
-            Long blogIdForSlug = resolveBlogId(form, page.getBlog());
-            if (!applyScope(page, form, blogIdForSlug)) {
-                return PageSaveResolution.error(forbidden());
-            }
-            return PageSaveResolution.ok(page, blogIdForSlug);
-        }
-
-        Long blogIdForSlug = resolveBlogId(form, null);
-        if (blogIdForSlug == null && !form.isApplicationScope()) {
-            return PageSaveResolution.error(Toast.response(Response.Status.BAD_REQUEST)
-                                                 .i18nKey(I18nKeys.TOAST_PAGE_BLOG_REQUIRED, I18nDefaults.PAGE_BLOG_REQUIRED)
-                                                 .type(Toast.Type.ERROR)
-                                                 .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                                                 .build());
-        }
-        if (!form.isApplicationScope() && blogIdForSlug != null) {
-            var blog = blogRepository.findById(blogIdForSlug).orElse(null);
-            if (blog == null || !customPageAccess.canEditBlog(blog, loggedUser)) {
-                return PageSaveResolution.error(forbidden());
-            }
-            return PageSaveResolution.ok(customPageRepository.newPage(blog), blogIdForSlug);
-        }
-        if (form.isApplicationScope()) {
-            if (!customPageAccess.canManageApplicationPages(loggedUser)) {
-                return PageSaveResolution.error(forbidden());
-            }
-            return PageSaveResolution.ok(customPageRepository.newPage(null), blogIdForSlug);
-        }
-        return PageSaveResolution.error(forbidden());
-    }
-
-    private record PageSaveResolution(CustomPage page, Long blogIdForSlug, Response errorResponse) {
-        static PageSaveResolution ok(CustomPage page, Long blogIdForSlug) {
-            return new PageSaveResolution(page, blogIdForSlug, null);
-        }
-
-        static PageSaveResolution error(Response errorResponse) {
-            return new PageSaveResolution(null, null, errorResponse);
-        }
     }
 
     private String validate(CustomPageForm form) {

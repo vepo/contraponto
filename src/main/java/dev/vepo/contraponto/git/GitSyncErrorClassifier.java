@@ -9,6 +9,33 @@ public class GitSyncErrorClassifier {
 
     public record ClassifiedError(GitErrorKind kind, String message, String remediation) {}
 
+    public static String defaultRemediation(GitErrorKind kind) {
+        return switch (kind) {
+            case AUTHENTICATION -> "Configure server Git credentials or use a token in the HTTPS URL.";
+            case NETWORK -> "Retry when the network and Git host are available.";
+            case REPOSITORY -> "Verify remote URL and branch on the blog settings page.";
+            case WORKSPACE -> "Ask an administrator to reset the Git workspace directory.";
+            case CONVENTION -> "Review _contraponto.yml and the Jekyll layout convention.";
+            case POST -> "Open the sync log entry for the affected post and follow How to fix.";
+            case NONE -> null;
+            case UNKNOWN -> "Open Git sync history for details or contact support.";
+        };
+    }
+
+    private static boolean isAuthMessage(String text) {
+        return text.contains("authentication") || text.contains("not authorized")
+                || text.contains("401") || text.contains("403")
+                || text.contains("invalid credentials") || text.contains("access denied");
+    }
+
+    private static Throwable rootCause(Throwable t) {
+        Throwable current = t;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current;
+    }
+
     public ClassifiedError classify(Throwable throwable) {
         if (throwable == null) {
             return new ClassifiedError(GitErrorKind.UNKNOWN, "Unknown error", defaultRemediation(GitErrorKind.UNKNOWN));
@@ -57,32 +84,5 @@ public class GitSyncErrorClassifier {
         return new ClassifiedError(GitErrorKind.UNKNOWN,
                                    root.getMessage() != null ? root.getMessage() : "Git sync failed.",
                                    defaultRemediation(GitErrorKind.UNKNOWN));
-    }
-
-    public static String defaultRemediation(GitErrorKind kind) {
-        return switch (kind) {
-            case AUTHENTICATION -> "Configure server Git credentials or use a token in the HTTPS URL.";
-            case NETWORK -> "Retry when the network and Git host are available.";
-            case REPOSITORY -> "Verify remote URL and branch on the blog settings page.";
-            case WORKSPACE -> "Ask an administrator to reset the Git workspace directory.";
-            case CONVENTION -> "Review _contraponto.yml and the Jekyll layout convention.";
-            case POST -> "Open the sync log entry for the affected post and follow How to fix.";
-            case NONE -> null;
-            case UNKNOWN -> "Open Git sync history for details or contact support.";
-        };
-    }
-
-    private static boolean isAuthMessage(String text) {
-        return text.contains("authentication") || text.contains("not authorized")
-                || text.contains("401") || text.contains("403")
-                || text.contains("invalid credentials") || text.contains("access denied");
-    }
-
-    private static Throwable rootCause(Throwable t) {
-        Throwable current = t;
-        while (current.getCause() != null && current.getCause() != current) {
-            current = current.getCause();
-        }
-        return current;
     }
 }

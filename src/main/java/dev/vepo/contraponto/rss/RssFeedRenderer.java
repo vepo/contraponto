@@ -14,6 +14,8 @@ import dev.vepo.contraponto.post.PostPublication;
 
 public final class RssFeedRenderer {
 
+    public record Channel(String title, String linkPath, String description) {}
+
     private static final DateTimeFormatter RFC1123 =
             DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
@@ -116,6 +118,4 @@ public final class RssFeedRenderer {
     private RssFeedRenderer() {
         throw new UnsupportedOperationException("Utility class");
     }
-
-    public record Channel(String title, String linkPath, String description) {}
 }

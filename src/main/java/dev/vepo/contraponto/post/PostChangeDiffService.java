@@ -15,6 +15,54 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class PostChangeDiffService {
 
+    public record PublicationDiff(boolean titleChanged,
+                                  boolean descriptionChanged,
+                                  boolean contentChanged,
+                                  String contentDiffHtml,
+                                  String titleChangeSummary,
+                                  String descriptionChangeSummary) {
+
+        public boolean hasChanges() {
+            return titleChanged || descriptionChanged || contentChanged;
+        }
+    }
+
+    public record VersionDiff(PostPublication publication, PublicationDiff diffFromPrevious) {
+
+        public boolean isFirstVersion() {
+            return diffFromPrevious == null;
+        }
+    }
+
+    private static String descriptionLine(boolean changed) {
+        if (!changed) {
+            return "";
+        }
+        return "Description changed";
+    }
+
+    private static String escape(String value) {
+        return TemplateExtensions.escapeHtml(value == null ? "" : value);
+    }
+
+    private static String nullToEmpty(String value) {
+        return value == null ? "" : value;
+    }
+
+    private static String previousTitleLine(PostPublication previous, PostPublication current, boolean changed) {
+        if (!changed) {
+            return "";
+        }
+        return "Title: \"%s\" → \"%s\"".formatted(escape(previous.getTitle()), escape(current.getTitle()));
+    }
+
+    private static List<String> splitLines(String text) {
+        if (text == null || text.isEmpty()) {
+            return List.of("");
+        }
+        return List.of(text.split("\\R", -1));
+    }
+
     public List<VersionDiff> buildVersionDiffs(List<PostPublication> newestFirst) {
         if (newestFirst == null || newestFirst.isEmpty()) {
             return List.of();
@@ -45,20 +93,6 @@ public class PostChangeDiffService {
                                    descriptionLine(descriptionChanged));
     }
 
-    private static String previousTitleLine(PostPublication previous, PostPublication current, boolean changed) {
-        if (!changed) {
-            return "";
-        }
-        return "Title: \"%s\" → \"%s\"".formatted(escape(previous.getTitle()), escape(current.getTitle()));
-    }
-
-    private static String descriptionLine(boolean changed) {
-        if (!changed) {
-            return "";
-        }
-        return "Description changed";
-    }
-
     public String renderContentDiff(String before, String after) {
         List<String> beforeLines = splitLines(before);
         List<String> afterLines = splitLines(after);
@@ -87,39 +121,5 @@ public class PostChangeDiffService {
         }
         html.append("</pre>");
         return html.toString();
-    }
-
-    private static List<String> splitLines(String text) {
-        if (text == null || text.isEmpty()) {
-            return List.of("");
-        }
-        return List.of(text.split("\\R", -1));
-    }
-
-    private static String escape(String value) {
-        return TemplateExtensions.escapeHtml(value == null ? "" : value);
-    }
-
-    private static String nullToEmpty(String value) {
-        return value == null ? "" : value;
-    }
-
-    public record PublicationDiff(boolean titleChanged,
-                                  boolean descriptionChanged,
-                                  boolean contentChanged,
-                                  String contentDiffHtml,
-                                  String titleChangeSummary,
-                                  String descriptionChangeSummary) {
-
-        public boolean hasChanges() {
-            return titleChanged || descriptionChanged || contentChanged;
-        }
-    }
-
-    public record VersionDiff(PostPublication publication, PublicationDiff diffFromPrevious) {
-
-        public boolean isFirstVersion() {
-            return diffFromPrevious == null;
-        }
     }
 }

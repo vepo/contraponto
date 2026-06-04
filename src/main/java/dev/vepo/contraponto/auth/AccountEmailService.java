@@ -43,6 +43,13 @@ public class AccountEmailService {
         this.emailChangeHours = emailChangeHours;
     }
 
+    public void sendEmailChangedNotice(String previousEmail, String newEmail) {
+        String html = emailChangedNoticeEmail.data("newEmail", newEmail)
+                                             .data("baseUrl", baseUrl)
+                                             .render();
+        mailer.send(Mail.withHtml(previousEmail, "Your contraponto email address was changed", html).setFrom(mailFrom));
+    }
+
     public void sendEmailChangeVerification(User user, String pendingEmail, String rawToken) {
         String verifyUrl = baseUrl + "/account/verify-email?token=" + rawToken;
         String html = emailChangeVerificationEmail.data("verifyUrl", verifyUrl)
@@ -51,13 +58,6 @@ public class AccountEmailService {
                                                   .data("expiresHours", emailChangeHours)
                                                   .render();
         mailer.send(Mail.withHtml(pendingEmail, "Confirm your new email address", html).setFrom(mailFrom));
-    }
-
-    public void sendEmailChangedNotice(String previousEmail, String newEmail) {
-        String html = emailChangedNoticeEmail.data("newEmail", newEmail)
-                                             .data("baseUrl", baseUrl)
-                                             .render();
-        mailer.send(Mail.withHtml(previousEmail, "Your contraponto email address was changed", html).setFrom(mailFrom));
     }
 
     public void sendPasswordChanged(User user) {

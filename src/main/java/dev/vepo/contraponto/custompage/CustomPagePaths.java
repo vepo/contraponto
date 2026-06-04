@@ -4,35 +4,8 @@ import dev.vepo.contraponto.blog.Blog;
 
 public final class CustomPagePaths {
 
-    private CustomPagePaths() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
-
-    public static String pathSlug(String storedSlug) {
-        if (storedSlug == null || storedSlug.isBlank()) {
-            return storedSlug;
-        }
-        return storedSlug.startsWith("/") ? storedSlug.substring(1) : storedSlug;
-    }
-
-    public static String storedSlug(String pathSlug) {
-        if (pathSlug == null || pathSlug.isBlank()) {
-            return pathSlug;
-        }
-        return pathSlug.startsWith("/") ? pathSlug : "/" + pathSlug;
-    }
-
-    public static String publicUrl(CustomPage page) {
-        var slug = pathSlug(page.getSlug());
-        var blog = page.getBlog();
-        if (blog == null) {
-            return "/page/%s".formatted(slug);
-        }
-        var owner = blog.getOwner();
-        if (blog.isMain()) {
-            return "/%s/page/%s".formatted(owner.getUsername(), slug);
-        }
-        return "/%s/%s/page/%s".formatted(owner.getUsername(), blog.getSlug(), slug);
+    public static String blogSlug(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
+        return segments.get(1).getPath();
     }
 
     public static String internalUrl(PageType type, String... segments) {
@@ -49,6 +22,11 @@ public final class CustomPagePaths {
             default -> throw new IllegalArgumentException("Unsupported page type: " + type);
         }
         return builder.toString();
+    }
+
+    public static boolean isMainBlogPage(CustomPage page) {
+        Blog blog = page.getBlog();
+        return blog != null && blog.isMain();
     }
 
     public static boolean isReservedSegment(String segment) {
@@ -83,6 +61,14 @@ public final class CustomPagePaths {
                 || segment.equals("_custom_page");
     }
 
+    public static long linksBlogId(CustomPage page) {
+        var blog = page.getBlog();
+        if (blog == null) {
+            throw new IllegalStateException("Application pages do not have a blog");
+        }
+        return blog.getId();
+    }
+
     public static PageType matchPageType(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
         if (segments == null || segments.isEmpty()) {
             return PageType.NONE;
@@ -110,12 +96,24 @@ public final class CustomPagePaths {
         return PageType.NONE;
     }
 
-    public static String username(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
-        return segments.get(0).getPath();
+    public static String pathSlug(String storedSlug) {
+        if (storedSlug == null || storedSlug.isBlank()) {
+            return storedSlug;
+        }
+        return storedSlug.startsWith("/") ? storedSlug.substring(1) : storedSlug;
     }
 
-    public static String blogSlug(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
-        return segments.get(1).getPath();
+    public static String publicUrl(CustomPage page) {
+        var slug = pathSlug(page.getSlug());
+        var blog = page.getBlog();
+        if (blog == null) {
+            return "/page/%s".formatted(slug);
+        }
+        var owner = blog.getOwner();
+        if (blog.isMain()) {
+            return "/%s/page/%s".formatted(owner.getUsername(), slug);
+        }
+        return "/%s/%s/page/%s".formatted(owner.getUsername(), blog.getSlug(), slug);
     }
 
     public static String slug(java.util.List<jakarta.ws.rs.core.PathSegment> segments, PageType type) {
@@ -127,16 +125,18 @@ public final class CustomPagePaths {
         };
     }
 
-    public static long linksBlogId(CustomPage page) {
-        var blog = page.getBlog();
-        if (blog == null) {
-            throw new IllegalStateException("Application pages do not have a blog");
+    public static String storedSlug(String pathSlug) {
+        if (pathSlug == null || pathSlug.isBlank()) {
+            return pathSlug;
         }
-        return blog.getId();
+        return pathSlug.startsWith("/") ? pathSlug : "/" + pathSlug;
     }
 
-    public static boolean isMainBlogPage(CustomPage page) {
-        Blog blog = page.getBlog();
-        return blog != null && blog.isMain();
+    public static String username(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
+        return segments.get(0).getPath();
+    }
+
+    private CustomPagePaths() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 }

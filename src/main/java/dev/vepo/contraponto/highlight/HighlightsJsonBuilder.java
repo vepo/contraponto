@@ -9,10 +9,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class HighlightsJsonBuilder {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
-
     private record HighlightsPayload(java.util.List<HighlightMarkView> marks,
                                      java.util.List<OfficialHighlightView> official) {}
+
+    private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public String build(HighlightsSectionView section) {
         try {

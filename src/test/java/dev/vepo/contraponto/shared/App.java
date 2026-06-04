@@ -583,17 +583,17 @@ public class App {
             return this;
         }
 
+        public DashboardPage assertRecentDraftsCount(int expected) {
+            var items = driver.findElements(cssSelector(".recent-section:first-child .recent-list__item"));
+            assertThat(items).hasSize(expected);
+            return this;
+        }
+
         public DashboardPage assertRecentDraftTitle(int index, String expectedTitle) {
             var items = driver.findElements(cssSelector(".recent-section:first-child .recent-list__item"));
             assertThat(items).hasSizeGreaterThan(index);
             var title = items.get(index).findElement(cssSelector(".recent-list__title"));
             assertThat(title.getText()).contains(expectedTitle);
-            return this;
-        }
-
-        public DashboardPage assertRecentDraftsCount(int expected) {
-            var items = driver.findElements(cssSelector(".recent-section:first-child .recent-list__item"));
-            assertThat(items).hasSize(expected);
             return this;
         }
 
@@ -2248,12 +2248,6 @@ public class App {
         return this;
     }
 
-    public App assertNotPostMessage() {
-        var emptyMessage = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__empty")));
-        assertThat(emptyMessage.getText()).contains("No posts published yet");
-        return this;
-    }
-
     public App assertNotificationOverlayOpen() {
         var overlay = wait.until(visibilityOfElementLocated(By.id("notificationOverlay")));
         assertThat(overlay.getAttribute("class")).contains("notification-menu__dropdown--open");
@@ -2263,6 +2257,12 @@ public class App {
     public App assertNotificationOverlayShows(String text) {
         assertNotificationOverlayOpen();
         wait.until(d -> d.findElement(By.id("notificationOverlay")).getText().contains(text));
+        return this;
+    }
+
+    public App assertNotPostMessage() {
+        var emptyMessage = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__empty")));
+        assertThat(emptyMessage.getText()).contains("No posts published yet");
         return this;
     }
 
@@ -2374,6 +2374,11 @@ public class App {
         return this;
     }
 
+    public CommentManagePage comments() {
+        _goTo("/manage/comments");
+        return new CommentManagePage();
+    }
+
     public String commentTextareaPlaceholder() {
         return (String) ((JavascriptExecutor) driver).executeScript("""
                                                                     const textarea = document.querySelector('#comments .comment-form__input');
@@ -2386,11 +2391,6 @@ public class App {
                                                                     const textarea = document.querySelector('#comments .comment-form__input');
                                                                     return textarea ? textarea.value : '';
                                                                     """);
-    }
-
-    public CommentManagePage comments() {
-        _goTo("/manage/comments");
-        return new CommentManagePage();
     }
 
     public CustomPageManagePage customPages() {

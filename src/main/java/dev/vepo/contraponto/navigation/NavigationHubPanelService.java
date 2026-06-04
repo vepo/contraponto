@@ -125,41 +125,24 @@ public class NavigationHubPanelService {
         };
     }
 
-    private TemplateInstance renderReading(String sectionSlug, int page) {
-        String basePath = registry.sectionPath(NavigationHub.READING, sectionSlug);
+    private TemplateInstance renderAccount(String sectionSlug,
+                                           int page,
+                                           boolean emailVerified,
+                                           String profileError) {
+        String basePath = registry.sectionPath(NavigationHub.ACCOUNT, sectionSlug);
         return switch (sectionSlug) {
-            case "highlights" -> highlightsLibraryEndpoint.renderHighlightsHubPanel(page, basePath);
-            case "notes" -> highlightsLibraryEndpoint.renderNotesHubPanel(page, basePath);
-            default -> throw new NotFoundException("Unknown reading section: " + sectionSlug);
+            case "notifications" -> notificationEndpoint.renderHubPanel(page, basePath);
+            case "subscriptions" -> subscriptionEndpoint.renderHubPanel(page, basePath);
+            case "security" -> accountSecurityEndpoint.renderHubPanel(emailVerified, profileError);
+            default -> throw new NotFoundException("Unknown account section: " + sectionSlug);
         };
     }
 
-    private TemplateInstance renderWriting(String sectionSlug, int page, Long blogId) {
-        String basePath = registry.sectionPath(NavigationHub.WRITING, sectionSlug);
-        return switch (sectionSlug) {
-            case "library" -> libraryEndpoint.renderHubPanel();
-            case "images" -> imageControlEndpoint.renderHubPanel(blogId, page);
-            case "blogs" -> blogManageEndpoint.renderAuthorHubPanel(page, basePath);
-            case "appearance" -> authorAppearanceEndpoint.renderHubPanel();
-            case "highlights" -> highlightManageEndpoint.renderHubPanel(page, basePath, "proposals");
-            default -> throw new NotFoundException("Unknown writing section: " + sectionSlug);
-        };
-    }
-
-    private TemplateInstance renderManage(String sectionSlug, int page) {
-        String basePath = registry.sectionPath(NavigationHub.MANAGE, sectionSlug);
-        return switch (sectionSlug) {
-            case "dashboard" -> renderDashboardPanel();
-            case "blogs" -> {
-                if (!blogAccess.canListAll(loggedUser)) {
-                    throw new NotFoundException("Unknown manage section: blogs");
-                }
-                yield blogManageEndpoint.renderPlatformHubPanel(page, basePath);
-            }
-            case "pages" -> customPageManageEndpoint.renderHubPanel(page, basePath);
-            case "comments" -> commentManageEndpoint.renderHubPanel(page, basePath);
-            default -> throw new NotFoundException("Unknown manage section: " + sectionSlug);
-        };
+    private TemplateInstance renderAdministration(String sectionSlug, int page) {
+        if ("users".equals(sectionSlug)) {
+            return userManageEndpoint.renderHubPanel(page, registry.sectionPath(NavigationHub.ADMINISTRATION, sectionSlug));
+        }
+        throw new NotFoundException("Unknown administration section: " + sectionSlug);
     }
 
     private TemplateInstance renderDashboardPanel() {
@@ -179,16 +162,28 @@ public class NavigationHubPanelService {
                                                                    selectedBlogId));
     }
 
-    private TemplateInstance renderAccount(String sectionSlug,
-                                           int page,
-                                           boolean emailVerified,
-                                           String profileError) {
-        String basePath = registry.sectionPath(NavigationHub.ACCOUNT, sectionSlug);
+    private TemplateInstance renderManage(String sectionSlug, int page) {
+        String basePath = registry.sectionPath(NavigationHub.MANAGE, sectionSlug);
         return switch (sectionSlug) {
-            case "notifications" -> notificationEndpoint.renderHubPanel(page, basePath);
-            case "subscriptions" -> subscriptionEndpoint.renderHubPanel(page, basePath);
-            case "security" -> accountSecurityEndpoint.renderHubPanel(emailVerified, profileError);
-            default -> throw new NotFoundException("Unknown account section: " + sectionSlug);
+            case "dashboard" -> renderDashboardPanel();
+            case "blogs" -> {
+                if (!blogAccess.canListAll(loggedUser)) {
+                    throw new NotFoundException("Unknown manage section: blogs");
+                }
+                yield blogManageEndpoint.renderPlatformHubPanel(page, basePath);
+            }
+            case "pages" -> customPageManageEndpoint.renderHubPanel(page, basePath);
+            case "comments" -> commentManageEndpoint.renderHubPanel(page, basePath);
+            default -> throw new NotFoundException("Unknown manage section: " + sectionSlug);
+        };
+    }
+
+    private TemplateInstance renderReading(String sectionSlug, int page) {
+        String basePath = registry.sectionPath(NavigationHub.READING, sectionSlug);
+        return switch (sectionSlug) {
+            case "highlights" -> highlightsLibraryEndpoint.renderHighlightsHubPanel(page, basePath);
+            case "notes" -> highlightsLibraryEndpoint.renderNotesHubPanel(page, basePath);
+            default -> throw new NotFoundException("Unknown reading section: " + sectionSlug);
         };
     }
 
@@ -201,10 +196,15 @@ public class NavigationHubPanelService {
         };
     }
 
-    private TemplateInstance renderAdministration(String sectionSlug, int page) {
-        if ("users".equals(sectionSlug)) {
-            return userManageEndpoint.renderHubPanel(page, registry.sectionPath(NavigationHub.ADMINISTRATION, sectionSlug));
-        }
-        throw new NotFoundException("Unknown administration section: " + sectionSlug);
+    private TemplateInstance renderWriting(String sectionSlug, int page, Long blogId) {
+        String basePath = registry.sectionPath(NavigationHub.WRITING, sectionSlug);
+        return switch (sectionSlug) {
+            case "library" -> libraryEndpoint.renderHubPanel();
+            case "images" -> imageControlEndpoint.renderHubPanel(blogId, page);
+            case "blogs" -> blogManageEndpoint.renderAuthorHubPanel(page, basePath);
+            case "appearance" -> authorAppearanceEndpoint.renderHubPanel();
+            case "highlights" -> highlightManageEndpoint.renderHubPanel(page, basePath, "proposals");
+            default -> throw new NotFoundException("Unknown writing section: " + sectionSlug);
+        };
     }
 }

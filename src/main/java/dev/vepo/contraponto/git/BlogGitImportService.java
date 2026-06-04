@@ -38,6 +38,38 @@ import jakarta.transaction.Transactional.TxType;
 @ApplicationScoped
 public class BlogGitImportService {
 
+    private record IngestedPostDraft(Post post,
+                                     boolean existedBefore,
+                                     String slug,
+                                     String title,
+                                     boolean published,
+                                     ParsedPathStem stem) {}
+
+    private record ParsedPathStem(String slug, Optional<LocalDate> optionalPublishedDay) {
+        static ParsedPathStem from(String fileName, SourceKind kind) {
+            if (kind == SourceKind.DRAFTS_FOLDER) {
+                return new ParsedPathStem(stripExt(fileName), Optional.empty());
+            }
+            var m = PostGitMarkdownCodec.PUBLISHED_POST_FILENAME.matcher(fileName);
+            if (!m.matches()) {
+                return new ParsedPathStem("", Optional.empty());
+            }
+            String slugStem = m.group("slug");
+            String dateStem = m.group("date");
+            try {
+                LocalDate d = LocalDate.parse(dateStem, DateTimeFormatter.ISO_LOCAL_DATE);
+                return new ParsedPathStem(slugStem, Optional.of(d));
+            } catch (DateTimeParseException _) {
+                return new ParsedPathStem(slugStem, Optional.empty());
+            }
+        }
+
+        static String stripExt(String name) {
+            int dot = name.lastIndexOf('.');
+            return dot > 0 ? name.substring(0, dot) : name;
+        }
+    }
+
     /** Matches {@linkplain JekyllLayoutConvention#postsRelative()} vs drafts. */
     public enum SourceKind {
         POSTS_FOLDER,
@@ -46,12 +78,89 @@ public class BlogGitImportService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BlogGitImportService.class);
 
+    private static Optional<Boolean> parseBoolean(Object raw) {
+        if (raw == null) {
+            return Optional.empty();
+        }
+        if (raw instanceof Boolean b) {
+            return Optional.of(b);
+        }
+        String s = raw.toString().strip().toLowerCase(Locale.ROOT);
+        return switch (s) {
+            case "true", "yes", "on" -> Optional.of(true);
+            case "false", "no", "off" -> Optional.of(false);
+            default -> Optional.empty();
+        };
+    }
+
+    private static Long parseLong(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Number n) {
+            return n.longValue();
+        }
+        try {
+            String s = raw.toString().strip();
+            if (s.isEmpty()) {
+                return null;
+            }
+            return Long.parseLong(s);
+        } catch (NumberFormatException _) {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> readYamlTags(Object rawYamlTags) {
+        if (rawYamlTags == null) {
+            return List.of();
+        }
+        if (rawYamlTags instanceof List<?> lst) {
+            List<String> out = new ArrayList<>();
+            for (Object o : lst) {
+                if (o != null && !o.toString().isBlank()) {
+                    out.add(o.toString().strip());
+                }
+            }
+            return out;
+        }
+        if (rawYamlTags instanceof String s) {
+            if (s.isBlank()) {
+                return List.of();
+            }
+            List<String> out = new ArrayList<>();
+            for (String p : s.split(",")) {
+                String t = p.strip();
+                if (!t.isEmpty()) {
+                    out.add(t);
+                }
+            }
+            return out;
+        }
+        return List.of();
+    }
+
+    private static String trimToNull(Object o) {
+        if (o == null) {
+            return null;
+        }
+        String s = o.toString().strip();
+        return s.isEmpty() ? null : s;
+    }
+
     private final PostRepository postRepository;
+
     private final PostPublicationService publicationService;
+
     private final TagService tagService;
+
     private final SerieService serieService;
+
     private final EntityManager entityManager;
+
     private final ObjectMapper objectMapper;
+
     private final PostGitMarkdownCodec markdownCodec;
 
     private final GitImageSyncService gitImageSyncService;
@@ -91,70 +200,24 @@ public class BlogGitImportService {
         this.gitImportFailureMapper = gitImportFailureMapper;
     }
 
-    @Transactional(value = TxType.REQUIRES_NEW)
-    public GitSyncPostResult ingest(long blogId,
-                                    Path workspace,
-                                    JekyllLayoutConvention convention,
-                                    Path markdownPath,
-                                    SourceKind sourceKind) {
-        String pathLabel = markdownPath.toString();
-        try {
-            Blog blog = entityManager.find(Blog.class, blogId);
-            if (blog == null) {
-                return GitSyncPostResult.skipped(pathLabel, "Blog was not found.", null);
-            }
-            Path fileNamePath = markdownPath.getFileName();
-            if (fileNamePath == null) {
-                return GitSyncPostResult.skipped(pathLabel, "Markdown file has no name.", null);
-            }
-
-            ParsedPathStem stem = ParsedPathStem.from(fileNamePath.toString(), sourceKind);
-            PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
-            String slug = GitFrontMatterResolver.resolveSlug(doc.frontMatter(), stem.slug());
-            if (slug.isBlank()) {
-                String remediation = sourceKind == SourceKind.POSTS_FOLDER
-                                                                           ? "Add slug or permalink in front matter, or rename to yyyy-MM-dd-slug.md under _posts/."
-                                                                           : "Add slug or permalink in front matter, or rename to slug.md under _drafts/.";
-                return GitSyncPostResult.skipped(pathLabel,
-                                                 "Could not read a slug from front matter or the file name.",
-                                                 remediation);
-            }
-
-            IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog, slug);
-            applyPostFields(draft, doc, blog, workspace, convention, markdownPath);
-            finalizeIngestion(draft, doc, pathLabel);
-            return GitSyncPostResult.success(draft.post().getId(), pathLabel,
-                                             "Imported post \"" + draft.slug() + "\".");
-        } catch (Exception ex) {
-            LOG.warn("Import failed markdown={}: {}", markdownPath, ex.toString());
-            GitImportFailureMapper.ClassifiedImportFailure classified = gitImportFailureMapper.classify(ex);
-            return GitSyncPostResult.failed(pathLabel,
-                                            classified.message(),
-                                            classified.remediation(),
-                                            ex.toString());
+    private void applyCoverFromFrontMatter(Post post,
+                                           String coverPath,
+                                           JekyllLayoutConvention convention,
+                                           Path workspace,
+                                           Blog blog) {
+        if (coverPath == null || coverPath.isBlank()) {
+            return;
         }
-    }
-
-    private PostGitMarkdownCodec.ParsedFrontMatterMarkdown readMarkdown(Path markdownPath) throws IOException {
-        return markdownCodec.parseMarkdownDocument(Files.readString(markdownPath));
-    }
-
-    private IngestedPostDraft resolvePostDraft(PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
-                                               ParsedPathStem stem,
-                                               SourceKind sourceKind,
-                                               Blog blog,
-                                               String slug) {
-        String title = trimToNull(doc.frontMatter().get("title"));
-        if (title == null || title.isBlank()) {
-            String titleStem = stem.slug().isBlank() ? slug : stem.slug();
-            title = titleStem.replace('-', ' ');
+        Matcher m = GitImageSyncService.relativeAssetPattern(convention).matcher(coverPath);
+        if (!m.find()) {
+            return;
         }
-
-        boolean folderDefault = sourceKind == SourceKind.POSTS_FOLDER;
-        boolean published = GitFrontMatterResolver.resolvePublished(doc.frontMatter(), folderDefault);
-        Optional<Post> existing = locateExisting(doc, slug, blog);
-        Post post = existing.orElseGet(() -> wireNewDraftPostStub(blog));
-        return new IngestedPostDraft(post, existing.isPresent(), slug, title, published, stem);
+        String assetRel = m.group(1);
+        String ext = m.group(2);
+        String basename = GitFrontMatterResolver.assetBasename(assetRel);
+        String uuid = GitImportedAssetId.normalize(basename, ext);
+        gitImageSyncService.importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
+        imageRepository.findByUuid(uuid).ifPresent(post::setCover);
     }
 
     private void applyPostFields(IngestedPostDraft draft,
@@ -213,6 +276,12 @@ public class BlogGitImportService {
         }
     }
 
+    private void attachTags(Object rawYamlTags, Post post) throws IOException {
+        List<String> tags = readYamlTags(rawYamlTags);
+        String json = tags.isEmpty() ? "[]" : objectMapper.writeValueAsString(tags);
+        tagService.syncPostTags(post, json);
+    }
+
     private void finalizeIngestion(IngestedPostDraft draft,
                                    PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
                                    String markdownPath)
@@ -241,37 +310,48 @@ public class BlogGitImportService {
         }
     }
 
-    private record IngestedPostDraft(Post post,
-                                     boolean existedBefore,
-                                     String slug,
-                                     String title,
-                                     boolean published,
-                                     ParsedPathStem stem) {}
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public GitSyncPostResult ingest(long blogId,
+                                    Path workspace,
+                                    JekyllLayoutConvention convention,
+                                    Path markdownPath,
+                                    SourceKind sourceKind) {
+        String pathLabel = markdownPath.toString();
+        try {
+            Blog blog = entityManager.find(Blog.class, blogId);
+            if (blog == null) {
+                return GitSyncPostResult.skipped(pathLabel, "Blog was not found.", null);
+            }
+            Path fileNamePath = markdownPath.getFileName();
+            if (fileNamePath == null) {
+                return GitSyncPostResult.skipped(pathLabel, "Markdown file has no name.", null);
+            }
 
-    private void applyCoverFromFrontMatter(Post post,
-                                           String coverPath,
-                                           JekyllLayoutConvention convention,
-                                           Path workspace,
-                                           Blog blog) {
-        if (coverPath == null || coverPath.isBlank()) {
-            return;
-        }
-        Matcher m = GitImageSyncService.relativeAssetPattern(convention).matcher(coverPath);
-        if (!m.find()) {
-            return;
-        }
-        String assetRel = m.group(1);
-        String ext = m.group(2);
-        String basename = GitFrontMatterResolver.assetBasename(assetRel);
-        String uuid = GitImportedAssetId.normalize(basename, ext);
-        gitImageSyncService.importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
-        imageRepository.findByUuid(uuid).ifPresent(post::setCover);
-    }
+            ParsedPathStem stem = ParsedPathStem.from(fileNamePath.toString(), sourceKind);
+            PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc = readMarkdown(markdownPath);
+            String slug = GitFrontMatterResolver.resolveSlug(doc.frontMatter(), stem.slug());
+            if (slug.isBlank()) {
+                String remediation = sourceKind == SourceKind.POSTS_FOLDER
+                                                                           ? "Add slug or permalink in front matter, or rename to yyyy-MM-dd-slug.md under _posts/."
+                                                                           : "Add slug or permalink in front matter, or rename to slug.md under _drafts/.";
+                return GitSyncPostResult.skipped(pathLabel,
+                                                 "Could not read a slug from front matter or the file name.",
+                                                 remediation);
+            }
 
-    private Post wireNewDraftPostStub(Blog blog) {
-        Post post = new Post();
-        post.setBlog(blog);
-        return post;
+            IngestedPostDraft draft = resolvePostDraft(doc, stem, sourceKind, blog, slug);
+            applyPostFields(draft, doc, blog, workspace, convention, markdownPath);
+            finalizeIngestion(draft, doc, pathLabel);
+            return GitSyncPostResult.success(draft.post().getId(), pathLabel,
+                                             "Imported post \"" + draft.slug() + "\".");
+        } catch (Exception ex) {
+            LOG.warn("Import failed markdown={}: {}", markdownPath, ex.toString());
+            GitImportFailureMapper.ClassifiedImportFailure classified = gitImportFailureMapper.classify(ex);
+            return GitSyncPostResult.failed(pathLabel,
+                                            classified.message(),
+                                            classified.remediation(),
+                                            ex.toString());
+        }
     }
 
     private Optional<Post> locateExisting(PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc, String slug, Blog blog) {
@@ -285,105 +365,31 @@ public class BlogGitImportService {
         return postRepository.findByBlogIdAndSlugWithTags(blog.getId(), slug);
     }
 
-    private void attachTags(Object rawYamlTags, Post post) throws IOException {
-        List<String> tags = readYamlTags(rawYamlTags);
-        String json = tags.isEmpty() ? "[]" : objectMapper.writeValueAsString(tags);
-        tagService.syncPostTags(post, json);
+    private PostGitMarkdownCodec.ParsedFrontMatterMarkdown readMarkdown(Path markdownPath) throws IOException {
+        return markdownCodec.parseMarkdownDocument(Files.readString(markdownPath));
     }
 
-    private static Optional<Boolean> parseBoolean(Object raw) {
-        if (raw == null) {
-            return Optional.empty();
+    private IngestedPostDraft resolvePostDraft(PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
+                                               ParsedPathStem stem,
+                                               SourceKind sourceKind,
+                                               Blog blog,
+                                               String slug) {
+        String title = trimToNull(doc.frontMatter().get("title"));
+        if (title == null || title.isBlank()) {
+            String titleStem = stem.slug().isBlank() ? slug : stem.slug();
+            title = titleStem.replace('-', ' ');
         }
-        if (raw instanceof Boolean b) {
-            return Optional.of(b);
-        }
-        String s = raw.toString().strip().toLowerCase(Locale.ROOT);
-        return switch (s) {
-            case "true", "yes", "on" -> Optional.of(true);
-            case "false", "no", "off" -> Optional.of(false);
-            default -> Optional.empty();
-        };
+
+        boolean folderDefault = sourceKind == SourceKind.POSTS_FOLDER;
+        boolean published = GitFrontMatterResolver.resolvePublished(doc.frontMatter(), folderDefault);
+        Optional<Post> existing = locateExisting(doc, slug, blog);
+        Post post = existing.orElseGet(() -> wireNewDraftPostStub(blog));
+        return new IngestedPostDraft(post, existing.isPresent(), slug, title, published, stem);
     }
 
-    private static Long parseLong(Object raw) {
-        if (raw == null) {
-            return null;
-        }
-        if (raw instanceof Number n) {
-            return n.longValue();
-        }
-        try {
-            String s = raw.toString().strip();
-            if (s.isEmpty()) {
-                return null;
-            }
-            return Long.parseLong(s);
-        } catch (NumberFormatException _) {
-            return null;
-        }
-    }
-
-    private static String trimToNull(Object o) {
-        if (o == null) {
-            return null;
-        }
-        String s = o.toString().strip();
-        return s.isEmpty() ? null : s;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<String> readYamlTags(Object rawYamlTags) {
-        if (rawYamlTags == null) {
-            return List.of();
-        }
-        if (rawYamlTags instanceof List<?> lst) {
-            List<String> out = new ArrayList<>();
-            for (Object o : lst) {
-                if (o != null && !o.toString().isBlank()) {
-                    out.add(o.toString().strip());
-                }
-            }
-            return out;
-        }
-        if (rawYamlTags instanceof String s) {
-            if (s.isBlank()) {
-                return List.of();
-            }
-            List<String> out = new ArrayList<>();
-            for (String p : s.split(",")) {
-                String t = p.strip();
-                if (!t.isEmpty()) {
-                    out.add(t);
-                }
-            }
-            return out;
-        }
-        return List.of();
-    }
-
-    private record ParsedPathStem(String slug, Optional<LocalDate> optionalPublishedDay) {
-        static ParsedPathStem from(String fileName, SourceKind kind) {
-            if (kind == SourceKind.DRAFTS_FOLDER) {
-                return new ParsedPathStem(stripExt(fileName), Optional.empty());
-            }
-            var m = PostGitMarkdownCodec.PUBLISHED_POST_FILENAME.matcher(fileName);
-            if (!m.matches()) {
-                return new ParsedPathStem("", Optional.empty());
-            }
-            String slugStem = m.group("slug");
-            String dateStem = m.group("date");
-            try {
-                LocalDate d = LocalDate.parse(dateStem, DateTimeFormatter.ISO_LOCAL_DATE);
-                return new ParsedPathStem(slugStem, Optional.of(d));
-            } catch (DateTimeParseException _) {
-                return new ParsedPathStem(slugStem, Optional.empty());
-            }
-        }
-
-        static String stripExt(String name) {
-            int dot = name.lastIndexOf('.');
-            return dot > 0 ? name.substring(0, dot) : name;
-        }
+    private Post wireNewDraftPostStub(Blog blog) {
+        Post post = new Post();
+        post.setBlog(blog);
+        return post;
     }
 }

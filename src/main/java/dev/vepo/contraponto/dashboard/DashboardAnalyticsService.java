@@ -22,12 +22,15 @@ import jakarta.ws.rs.NotFoundException;
 @ApplicationScoped
 public class DashboardAnalyticsService {
 
+    private record MonthRange(LocalDateTime start, LocalDateTime end) {}
+
     private final BlogRepository blogRepository;
     private final BlogAccess blogAccess;
     private final ViewRepository viewRepository;
     private final ReadingTimeRepository readingTimeRepository;
     private final NotificationRepository notificationRepository;
     private final BlogAudienceRepository audienceRepository;
+
     private final LoggedUser loggedUser;
 
     @Inject
@@ -46,8 +49,6 @@ public class DashboardAnalyticsService {
         this.audienceRepository = audienceRepository;
         this.loggedUser = loggedUser;
     }
-
-    private record MonthRange(LocalDateTime start, LocalDateTime end) {}
 
     private MonthSeries buildNotificationSeries(Blog blog, NotificationType type, YearMonth yearMonth) {
         var range = monthRange(yearMonth);
