@@ -3,6 +3,7 @@ package dev.vepo.contraponto.shared.infra;
 import java.net.URI;
 import java.util.Optional;
 
+import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -14,6 +15,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * {@code APP_SITE_INTEGRATION_SCRIPT_DATA_TOKEN}.
  */
 @ApplicationScoped
+@Unremovable
 public class SiteIntegration {
 
     static Optional<String> resolveDataToken(Optional<String> raw) {

@@ -26,7 +26,12 @@ class I18nMessagesEndpointTest {
                                                                "locale.name.es",
                                                                "locale.name.ptBr",
                                                                "dashboard.blogSelector",
-                                                               "hub.blogs");
+                                                               "hub.blogs",
+                                                               "appearance.social.bluesky",
+                                                               "appearance.social.github",
+                                                               "appearance.social.linkedin",
+                                                               "appearance.social.mastodon",
+                                                               "appearance.social.twitter");
 
     @Test
     void shouldNotServeDefaultLocaleBundle() {
