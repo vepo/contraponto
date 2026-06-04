@@ -37,6 +37,12 @@ class GithubContentRenderPluginTest {
     }
 
     @Test
+    void rendersOwnerAvatar() {
+        assertThat(plugin.render(List.of("https://github.com/owner/repo"))).contains("github-repo__avatar")
+                                                                           .contains("src=\"https://github.com/owner.png\"");
+    }
+
+    @Test
     void rendersRepoLinkForValidUrl() {
         assertThat(plugin.render(List.of("https://github.com/owner/repo"))).contains("content-render--github")
                                                                            .contains("href=\"https://github.com/owner/repo\"")

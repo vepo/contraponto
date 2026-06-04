@@ -38,6 +38,30 @@ class PostImageLightboxTest {
     }
 
     @Test
+    void githubEmbedAvatarDoesNotOpenLightbox(App app) {
+        var image = Given.randomCover(author.getDefaultBlog());
+        var githubPost = Given.post()
+                              .withAuthor(author)
+                              .withTitle("Post with GitHub embed")
+                              .withSlug("post-with-github-embed")
+                              .withContent("""
+                                           ![Diagram alt](%s)
+
+                                           {%% github https://github.com/vepo/contraponto %%}
+                                           """.formatted(image.getUrl()))
+                              .withPublished(true)
+                              .persist();
+        app.access()
+           .goTo(githubPost)
+           .clickGithubRepoAvatar()
+           .assertImageLightboxClosed()
+           .clickFirstContentImage()
+           .assertImageLightboxOpen()
+           .assertImageLightboxCaption("Diagram alt")
+           .closeImageLightboxWithEscape();
+    }
+
+    @Test
     void publishedPostContentImageOpensAndClosesLightbox(App app) {
         app.access()
            .goTo(post)

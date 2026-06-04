@@ -10,16 +10,17 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class SecurityHeadersFilter implements ContainerResponseFilter {
 
-    private static final String CSP = """
-                                      default-src 'self'; \
-                                      script-src 'self' 'unsafe-inline' https://platform.twitter.com; \
-                                      style-src 'self' 'unsafe-inline' https://platform.twitter.com; \
-                                      img-src 'self' data: https://pbs.twimg.com https://abs.twimg.com https://syndication.twitter.com; \
-                                      font-src 'self' https://platform.twitter.com; \
-                                      frame-src https://platform.twitter.com; \
-                                      connect-src 'self'; \
-                                      form-action 'self'; \
-                                      frame-ancestors 'none'""";
+    private static final String CSP =
+            """
+            default-src 'self'; \
+            script-src 'self' 'unsafe-inline' https://platform.twitter.com; \
+            style-src 'self' 'unsafe-inline' https://platform.twitter.com; \
+            img-src 'self' data: https://pbs.twimg.com https://abs.twimg.com https://syndication.twitter.com https://github.com https://avatars.githubusercontent.com; \
+            font-src 'self' https://platform.twitter.com; \
+            frame-src https://platform.twitter.com; \
+            connect-src 'self'; \
+            form-action 'self'; \
+            frame-ancestors 'none'""";
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {

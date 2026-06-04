@@ -167,7 +167,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `notification-overlay__*` | `NotificationOverlayService/overlay.html` | Overlay list, dismiss, footer |
 | `search-page`, `search-form`, `search-result`, `search-modal__*` | Search endpoints | |
 | `user-blog-page`, `user-blog__*` | `BlogEndpoint/home.html` | Author blog |
-| `content-render`, `content-render--youtube`, `content-render--gist`, `content-render--github`, `content-render--twitter`, `content-render--error` | Post body render plugins | YouTube, Gist, GitHub, Twitter embeds |
+| `content-render`, `content-render--youtube`, `content-render--gist`, `content-render--github`, `content-render--twitter`, `content-render--error`, `github-repo`, `github-repo__logo`, `github-repo__avatar`, `github-repo__path` | Post body render plugins | YouTube, Gist, GitHub (logo + owner avatar + owner/repo links), Twitter embeds |
 | `tag-page-*`, `serie-page-*` | Tag/serie pages | |
 | `custom-page`, `custom-page__*` | `CustomPageEndpoint/page.html` | Static pages |
 | `error-page`, `error-*` | `error.html` | |
