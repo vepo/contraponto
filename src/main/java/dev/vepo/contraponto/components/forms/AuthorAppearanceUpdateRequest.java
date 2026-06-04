@@ -10,5 +10,6 @@ public record AuthorAppearanceUpdateRequest(@FormParam("name") String name,
                                             @FormParam("websiteUrl") String websiteUrl,
                                             @FormParam("twitterUrl") String twitterUrl,
                                             @FormParam("mastodonUrl") String mastodonUrl,
+                                            @FormParam("blueskyUrl") String blueskyUrl,
                                             @FormParam("githubUrl") String githubUrl,
                                             @FormParam("linkedinUrl") String linkedinUrl) {}

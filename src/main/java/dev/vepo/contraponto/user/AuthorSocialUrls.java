@@ -51,6 +51,7 @@ public final class AuthorSocialUrls {
         addIfValid(urls, user.getMastodonUrl());
         addIfValid(urls, user.getGithubUrl());
         addIfValid(urls, user.getLinkedinUrl());
+        addIfValid(urls, user.getBlueskyUrl());
         return urls;
     }
 
@@ -65,6 +66,7 @@ public final class AuthorSocialUrls {
         addLink(links, "mastodon", "Mastodon", user.getMastodonUrl());
         addLink(links, "github", "GitHub", user.getGithubUrl());
         addLink(links, "linkedin", "LinkedIn", user.getLinkedinUrl());
+        addLink(links, "bluesky", "Bluesky", user.getBlueskyUrl());
         return links;
     }
 

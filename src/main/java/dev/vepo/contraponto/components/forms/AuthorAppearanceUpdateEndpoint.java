@@ -137,6 +137,10 @@ public class AuthorAppearanceUpdateEndpoint {
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
+        socialError = applySocialUrl(user, request.blueskyUrl(), user::setBlueskyUrl);
+        if (socialError != null) {
+            return Response.ok(buildErrorResponseBody(socialError)).build();
+        }
         socialError = applySocialUrl(user, request.githubUrl(), user::setGithubUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
@@ -146,7 +150,7 @@ public class AuthorAppearanceUpdateEndpoint {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
         if (request.websiteUrl() != null || request.twitterUrl() != null || request.mastodonUrl() != null
-                || request.githubUrl() != null || request.linkedinUrl() != null) {
+                || request.blueskyUrl() != null || request.githubUrl() != null || request.linkedinUrl() != null) {
             updated = true;
         }
 

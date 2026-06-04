@@ -70,7 +70,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Profile picture** | Optional image on the user; shown in the menu and wherever the author is displayed. When absent, a **generated avatar** shows the user's initials on a brand-colored SVG (`GET /components/avatar`). | `User.profilePicture`, `AvatarEndpoint` |
 | **Author profile** | Public page at `/authors/{username}` with bio, social links, top tags, and blog list. | `AuthorProfileEndpoint` |
 | **Author profile description** | Optional Markdown bio on the user (`User.profileDescription`); distinct from **blog description**. Edited in **Author appearance**. | `User.profileDescription` |
-| **Author social links** | Optional https URLs (website, X, Mastodon, GitHub, LinkedIn) shown on the author profile and in JSON-LD `sameAs`. | `User.websiteUrl`, etc., `AuthorSocialUrls` |
+| **Author social links** | Optional https URLs (website, X, Mastodon, Bluesky, GitHub, LinkedIn) shown on the author profile and in JSON-LD `sameAs`. | `User.websiteUrl`, etc., `AuthorSocialUrls` |
 | **Top tags** | Tags most often used on an author's or blog's published posts; shown on profiles and directory cards. | `TagProfileService.topTagsForAuthor`, `topTagsForBlog` |
 | **Main authors (for a tag)** | Authors with the most published posts carrying a tag; shown on the **tag page**. | `TagProfileService.mainAuthorsForTag` |
 | **Default blog banner** | Optional image on the user used when a blog has no own **blog banner**. | `User.defaultBlogBanner` |
@@ -361,6 +361,15 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Author appearance — picture field | Profile picture | Author appearance |
 | Author appearance — default banner field | Default blog banner | Author appearance |
 | Author appearance — display name field | Display name | Author appearance |
+| Author appearance — Bluesky field | Bluesky | Author appearance social links |
+| Author appearance — profile section | Perfil | Author appearance |
+| Author appearance — public profile section | Perfil público | Author appearance |
+| Author appearance — profile description field | Descrição do perfil | Author appearance |
+| Author appearance — social website field | Site | Author appearance |
+| Author appearance — social X field | X (Twitter) | Author appearance |
+| Author appearance — social Mastodon field | Mastodon | Author appearance |
+| Author appearance — social GitHub field | GitHub | Author appearance |
+| Author appearance — social LinkedIn field | LinkedIn | Author appearance |
 | Writing hub — blogs nav | Blogs | Writing left nav |
 | Manage hub — blogs nav | Blogs | Manage left nav (editors) |
 | Blog manage — banner field | Blog banner | Blog edit form |

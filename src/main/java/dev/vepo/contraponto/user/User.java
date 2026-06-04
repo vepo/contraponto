@@ -87,6 +87,9 @@ public class User {
     @Column(name = "linkedin_url", length = 2048)
     private String linkedinUrl;
 
+    @Column(name = "bluesky_url", length = 2048)
+    private String blueskyUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -130,6 +133,10 @@ public class User {
 
     public Set<Blog> getBlogs() {
         return blogs;
+    }
+
+    public String getBlueskyUrl() {
+        return blueskyUrl;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -226,6 +233,10 @@ public class User {
 
     public void setBlogs(Set<Blog> blogs) {
         this.blogs = blogs;
+    }
+
+    public void setBlueskyUrl(String blueskyUrl) {
+        this.blueskyUrl = blueskyUrl;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

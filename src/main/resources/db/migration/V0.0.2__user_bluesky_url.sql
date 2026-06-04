@@ -1,0 +1,1 @@
+ALTER TABLE tb_users ADD COLUMN bluesky_url VARCHAR(2048);
