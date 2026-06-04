@@ -59,7 +59,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
         with:
-          images: vepo/visita
+          images: vepo/contraponto
           tags: |
             type=ref,event=branch
             type=ref,event=pr
