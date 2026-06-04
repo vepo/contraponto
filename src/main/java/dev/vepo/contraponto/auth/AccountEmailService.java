@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.auth;
 
+import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -21,6 +22,7 @@ public class AccountEmailService {
     private final String baseUrl;
     private final int passwordResetHours;
     private final int emailChangeHours;
+    private final SiteBranding siteBranding;
 
     @Inject
     public AccountEmailService(Mailer mailer,
@@ -31,7 +33,8 @@ public class AccountEmailService {
                                @ConfigProperty(name = "quarkus.mailer.from", defaultValue = "noreply@contraponto.blog") String mailFrom,
                                @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl,
                                @ConfigProperty(name = "app.account-token.password-reset-hours", defaultValue = "1") int passwordResetHours,
-                               @ConfigProperty(name = "app.account-token.email-change-hours", defaultValue = "24") int emailChangeHours) {
+                               @ConfigProperty(name = "app.account-token.email-change-hours", defaultValue = "24") int emailChangeHours,
+                               SiteBranding siteBranding) {
         this.mailer = mailer;
         this.passwordResetEmail = passwordResetEmail;
         this.passwordChangedEmail = passwordChangedEmail;
@@ -41,13 +44,19 @@ public class AccountEmailService {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.passwordResetHours = passwordResetHours;
         this.emailChangeHours = emailChangeHours;
+        this.siteBranding = siteBranding;
     }
 
     public void sendEmailChangedNotice(String previousEmail, String newEmail) {
         String html = emailChangedNoticeEmail.data("newEmail", newEmail)
                                              .data("baseUrl", baseUrl)
+                                             .data("siteName", siteBranding.displayName())
+                                             .data("siteSeoName", siteBranding.seoName())
                                              .render();
-        mailer.send(Mail.withHtml(previousEmail, "Your contraponto email address was changed", html).setFrom(mailFrom));
+        mailer.send(Mail.withHtml(previousEmail,
+                                  "Your " + siteBranding.displayName() + " email address was changed",
+                                  html)
+                        .setFrom(mailFrom));
     }
 
     public void sendEmailChangeVerification(User user, String pendingEmail, String rawToken) {
@@ -56,13 +65,21 @@ public class AccountEmailService {
                                                   .data("newEmail", pendingEmail)
                                                   .data("baseUrl", baseUrl)
                                                   .data("expiresHours", emailChangeHours)
+                                                  .data("siteName", siteBranding.displayName())
+                                                  .data("siteSeoName", siteBranding.seoName())
                                                   .render();
         mailer.send(Mail.withHtml(pendingEmail, "Confirm your new email address", html).setFrom(mailFrom));
     }
 
     public void sendPasswordChanged(User user) {
-        String html = passwordChangedEmail.data("baseUrl", baseUrl).render();
-        mailer.send(Mail.withHtml(user.getEmail(), "Your contraponto password was changed", html).setFrom(mailFrom));
+        String html = passwordChangedEmail.data("baseUrl", baseUrl)
+                                          .data("siteName", siteBranding.displayName())
+                                          .data("siteSeoName", siteBranding.seoName())
+                                          .render();
+        mailer.send(Mail.withHtml(user.getEmail(),
+                                  "Your " + siteBranding.displayName() + " password was changed",
+                                  html)
+                        .setFrom(mailFrom));
     }
 
     public void sendPasswordReset(User user, String rawToken) {
@@ -70,7 +87,12 @@ public class AccountEmailService {
         String html = passwordResetEmail.data("resetUrl", resetUrl)
                                         .data("baseUrl", baseUrl)
                                         .data("expiresHours", passwordResetHours)
+                                        .data("siteName", siteBranding.displayName())
+                                        .data("siteSeoName", siteBranding.seoName())
                                         .render();
-        mailer.send(Mail.withHtml(user.getEmail(), "Reset your contraponto password", html).setFrom(mailFrom));
+        mailer.send(Mail.withHtml(user.getEmail(),
+                                  "Reset your " + siteBranding.displayName() + " password",
+                                  html)
+                        .setFrom(mailFrom));
     }
 }

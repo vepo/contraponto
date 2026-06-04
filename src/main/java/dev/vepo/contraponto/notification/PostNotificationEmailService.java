@@ -4,6 +4,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -22,18 +23,21 @@ public class PostNotificationEmailService {
     private final Template postPublishedEmail;
     private final String mailFrom;
     private final String baseUrl;
+    private final SiteBranding siteBranding;
 
     @Inject
     public PostNotificationEmailService(Mailer mailer,
                                         EmailNotificationLogRepository logRepository,
                                         @Location("notification/post-published-email") Template postPublishedEmail,
                                         @ConfigProperty(name = "quarkus.mailer.from", defaultValue = "noreply@contraponto.blog") String mailFrom,
-                                        @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl) {
+                                        @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl,
+                                        SiteBranding siteBranding) {
         this.mailer = mailer;
         this.logRepository = logRepository;
         this.postPublishedEmail = postPublishedEmail;
         this.mailFrom = mailFrom;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        this.siteBranding = siteBranding;
     }
 
     @Transactional
@@ -55,6 +59,8 @@ public class PostNotificationEmailService {
                                         .data("baseUrl", baseUrl)
                                         .data("excerpt", excerpt)
                                         .data("blogId", blog.getId())
+                                        .data("siteName", siteBranding.displayName())
+                                        .data("siteSeoName", siteBranding.seoName())
                                         .render();
 
         String subject = blog.getName() + ": " + title;

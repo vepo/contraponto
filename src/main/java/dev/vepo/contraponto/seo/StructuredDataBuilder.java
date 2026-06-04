@@ -15,6 +15,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
+import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.AuthorSocialUrls;
@@ -28,10 +29,12 @@ public class StructuredDataBuilder {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+    private final SiteBranding siteBranding;
     private final PublicSiteUrl publicSiteUrl;
 
     @Inject
-    public StructuredDataBuilder(PublicSiteUrl publicSiteUrl) {
+    public StructuredDataBuilder(SiteBranding siteBranding, PublicSiteUrl publicSiteUrl) {
+        this.siteBranding = siteBranding;
         this.publicSiteUrl = publicSiteUrl;
     }
 
@@ -128,7 +131,7 @@ public class StructuredDataBuilder {
         var data = Map.<String, Object>of(
                                           "@context", "https://schema.org",
                                           "@type", "WebSite",
-                                          "name", "Contraponto",
+                                          "name", siteBranding.seoName(),
                                           "url", publicSiteUrl.absolute("/"));
         return toJson(data);
     }

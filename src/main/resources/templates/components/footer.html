@@ -20,7 +20,7 @@
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="/">
-                    contraponto
+                    {siteName}
                 </a>
             </div>
             
@@ -44,7 +44,7 @@
             {/if}
         </div>
         <div class="footer__bottom">
-            <p>&copy; {currentYear} contraponto. <span data-i18n="footer.rights">Todos os direitos reservados.</span></p>
+            <p>&copy; {currentYear} {siteName}. <span data-i18n="footer.rights">Todos os direitos reservados.</span></p>
             {#include components/locale-switcher /}
             {#include components/rss-feed-link feedUrl=siteRssFeedUrl /}
         </div>

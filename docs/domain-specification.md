@@ -41,6 +41,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Contraponto** | The publishing platform (product). | — |
+| **Platform display name** | White-label name shown in header, footer, page titles, SEO, RSS, and transactional email (default `contraponto`). | `app.site.name` / `APP_SITE_NAME`, `SiteBranding`, Qute globals `siteName` / `siteSeoName` |
 | **Guest** | Unauthenticated visitor; may read public content. | No session |
 | **User** | Registered account (`tb_users`): username, email, display name, password, roles, active flag; optional **profile picture** and **default blog banner**. | `User` |
 | **Author** | User who owns at least one blog and writes posts. Implied by blog ownership, not a separate role. | `Post.getAuthor()` → blog owner |

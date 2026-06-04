@@ -76,9 +76,19 @@ public class Globals {
         return loggedUser.get();
     }
 
+    @TemplateGlobal(name = "siteName")
+    public static String siteName() {
+        return CDI.current().select(SiteBranding.class).get().displayName();
+    }
+
     @TemplateGlobal(name = "siteRssFeedUrl")
     public static String siteRssFeedUrl() {
         return RssFeedPaths.siteFeed();
+    }
+
+    @TemplateGlobal(name = "siteSeoName")
+    public static String siteSeoName() {
+        return CDI.current().select(SiteBranding.class).get().seoName();
     }
 
     private Globals() {

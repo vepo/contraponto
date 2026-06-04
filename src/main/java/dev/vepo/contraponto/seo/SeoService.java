@@ -21,6 +21,7 @@ import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
 import dev.vepo.contraponto.serie.SerieRepository;
+import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
 import dev.vepo.contraponto.tag.AuthorTagUsage;
@@ -34,10 +35,6 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class SeoService {
-
-    private static final String SITE_NAME = "Contraponto";
-    private static final String HOME_DESCRIPTION =
-            "Descubra artigos em destaque e explore blogs e autores na plataforma Contraponto.";
 
     private static String extractQueryParam(String rawPath, String name) {
         int queryStart = rawPath.indexOf('?');
@@ -82,34 +79,13 @@ public class SeoService {
                 || path.startsWith("/_custom_page");
     }
 
-    private static String privateTitle(String path) {
-        if (path.startsWith("/write")) {
-            return "Escrever";
-        }
-        if (path.startsWith("/writing")) {
-            return "Escrita";
-        }
-        if (path.startsWith("/reading") || path.startsWith("/highlights")) {
-            return "Reading";
-        }
-        if (path.startsWith("/manage")) {
-            return "Gerenciar";
-        }
-        if (path.startsWith("/account")) {
-            return "Conta";
-        }
-        if (path.startsWith("/search")) {
-            return "Busca";
-        }
-        return SITE_NAME;
-    }
+    private final SiteBranding siteBranding;
 
     private final PublicSiteUrl publicSiteUrl;
     private final StructuredDataBuilder structuredData;
     private final PostRepository postRepository;
     private final BlogRepository blogRepository;
     private final UserRepository userRepository;
-
     private final TagRepository tagRepository;
 
     private final SerieRepository serieRepository;
@@ -117,7 +93,8 @@ public class SeoService {
     private final CustomPageCache customPageCache;
 
     @Inject
-    public SeoService(PublicSiteUrl publicSiteUrl,
+    public SeoService(SiteBranding siteBranding,
+                      PublicSiteUrl publicSiteUrl,
                       StructuredDataBuilder structuredData,
                       PostRepository postRepository,
                       BlogRepository blogRepository,
@@ -125,6 +102,7 @@ public class SeoService {
                       TagRepository tagRepository,
                       SerieRepository serieRepository,
                       CustomPageCache customPageCache) {
+        this.siteBranding = siteBranding;
         this.publicSiteUrl = publicSiteUrl;
         this.structuredData = structuredData;
         this.postRepository = postRepository;
@@ -146,8 +124,8 @@ public class SeoService {
 
     public SeoMetadata forAuthorDirectory() {
         return SeoMetadata.builder()
-                          .title("Autores · " + SITE_NAME)
-                          .description("Lista de autores com publicações no Contraponto.")
+                          .title("Autores · " + siteBranding.seoName())
+                          .description("Lista de autores com publicações no " + siteBranding.seoName() + ".")
                           .canonicalUrl(publicSiteUrl.absolute("/authors"))
                           .ogType(SeoOgType.WEBSITE)
                           .build();
@@ -160,11 +138,11 @@ public class SeoService {
         }
         String plain = SeoDescription.toPlainText(description);
         if (plain.isBlank()) {
-            plain = "Perfil de " + author.getName() + " no Contraponto.";
+            plain = "Perfil de " + author.getName() + " no " + siteBranding.seoName() + ".";
         }
         String profilePath = AuthorProfileEndpoint.url(author);
         return SeoMetadata.builder()
-                          .title(author.getName() + " · Autores · " + SITE_NAME)
+                          .title(author.getName() + " · Autores · " + siteBranding.seoName())
                           .description(plain)
                           .canonicalUrl(publicSiteUrl.absolute(profilePath))
                           .ogType(SeoOgType.PROFILE)
@@ -174,8 +152,8 @@ public class SeoService {
 
     public SeoMetadata forBlogDirectory() {
         return SeoMetadata.builder()
-                          .title("Blogs · " + SITE_NAME)
-                          .description("Explore todos os blogs ativos no Contraponto.")
+                          .title("Blogs · " + siteBranding.seoName())
+                          .description("Explore todos os blogs ativos no " + siteBranding.seoName() + ".")
                           .canonicalUrl(publicSiteUrl.absolute("/explore/blogs"))
                           .ogType(SeoOgType.WEBSITE)
                           .build();
@@ -183,10 +161,10 @@ public class SeoService {
 
     public SeoMetadata forBlogHome(User author, Blog blog) {
         String blogLabel = blog.isMain() ? author.getName() : blog.getName();
-        String title = blogLabel + " · " + SITE_NAME;
+        String title = blogLabel + " · " + siteBranding.seoName();
         String description = SeoDescription.toPlainText(blog.getDescription());
         if (description.isBlank()) {
-            description = "Publicações de " + blogLabel + " no Contraponto.";
+            description = "Publicações de " + blogLabel + " no " + siteBranding.seoName() + ".";
         }
         return SeoMetadata.builder()
                           .title(title)
@@ -199,7 +177,7 @@ public class SeoService {
     public SeoMetadata forCustomPage(CustomPage page) {
         String description = SeoDescription.toPlainText(page.getTitle());
         return SeoMetadata.builder()
-                          .title(page.getTitle() + " · " + SITE_NAME)
+                          .title(page.getTitle() + " · " + siteBranding.seoName())
                           .description(description.isBlank() ? page.getTitle() : description)
                           .canonicalUrl(publicSiteUrl.absolute(CustomPagePaths.publicUrl(page)))
                           .ogType(SeoOgType.WEBSITE)
@@ -208,8 +186,10 @@ public class SeoService {
 
     public SeoMetadata forHome() {
         return SeoMetadata.builder()
-                          .title(SITE_NAME)
-                          .description(HOME_DESCRIPTION)
+                          .title(siteBranding.seoName())
+                          .description("Descubra artigos em destaque e explore blogs e autores na plataforma "
+                                  + siteBranding.seoName()
+                                  + ".")
                           .canonicalUrl(publicSiteUrl.absolute("/"))
                           .ogType(SeoOgType.WEBSITE)
                           .jsonLd(structuredData.webSite())
@@ -219,7 +199,7 @@ public class SeoService {
     public SeoMetadata forPost(PublishedPostView view) {
         Post post = view.post();
         User author = post.getAuthor();
-        String title = TemplateExtensions.liveTitle(view) + " · " + author.getName() + " · " + SITE_NAME;
+        String title = TemplateExtensions.liveTitle(view) + " · " + author.getName() + " · " + siteBranding.seoName();
         String description = describePost(view);
         String path = PostEndpoint.extractUrl(post);
         PostPublication live = view.live();
@@ -243,7 +223,7 @@ public class SeoService {
 
     public SeoMetadata forPrivatePage(String pageTitle) {
         return SeoMetadata.builder()
-                          .title(pageTitle + " · " + SITE_NAME)
+                          .title(pageTitle + " · " + siteBranding.seoName())
                           .description("")
                           .canonicalUrl(publicSiteUrl.absolute("/"))
                           .ogType(SeoOgType.WEBSITE)
@@ -253,11 +233,11 @@ public class SeoService {
 
     public SeoMetadata forSearch(String query) {
         String title = query != null && !query.isBlank()
-                                                         ? "Busca: " + query + " · " + SITE_NAME
-                                                         : "Busca · " + SITE_NAME;
+                                                         ? "Busca: " + query + " · " + siteBranding.seoName()
+                                                         : "Busca · " + siteBranding.seoName();
         return SeoMetadata.builder()
                           .title(title)
-                          .description("Resultados de busca no Contraponto.")
+                          .description("Resultados de busca no " + siteBranding.seoName() + ".")
                           .canonicalUrl(publicSiteUrl.absolute("/search"))
                           .ogType(SeoOgType.WEBSITE)
                           .noindex(true)
@@ -265,9 +245,9 @@ public class SeoService {
     }
 
     public SeoMetadata forSerie(Serie serie) {
-        String description = "Série " + serie.getTitle() + " no Contraponto.";
+        String description = "Série " + serie.getTitle() + " no " + siteBranding.seoName() + ".";
         return SeoMetadata.builder()
-                          .title(serie.getTitle() + " · " + SITE_NAME)
+                          .title(serie.getTitle() + " · " + siteBranding.seoName())
                           .description(description)
                           .canonicalUrl(publicSiteUrl.absolute(SeriePageEndpoint.extractUrl(serie)))
                           .ogType(SeoOgType.WEBSITE)
@@ -281,18 +261,41 @@ public class SeoService {
     public SeoMetadata forTag(Tag tag, List<AuthorTagUsage> mainAuthors) {
         String description = tag.getDescription() != null && !tag.getDescription().isBlank()
                                                                                              ? SeoDescription.toPlainText(tag.getDescription())
-                                                                                             : "Artigos com a tag " + tag.getName() + " no Contraponto.";
+                                                                                             : "Artigos com a tag " + tag.getName() + " no "
+                                                                                                     + siteBranding.seoName() + ".";
         String tagPath = TagPageEndpoint.url(tag);
         List<String> authorUrls = mainAuthors.stream()
                                              .map(usage -> publicSiteUrl.absolute(AuthorProfileEndpoint.url(usage.author())))
                                              .toList();
         return SeoMetadata.builder()
-                          .title(tag.getName() + " · " + SITE_NAME)
+                          .title(tag.getName() + " · " + siteBranding.seoName())
                           .description(description)
                           .canonicalUrl(publicSiteUrl.absolute(tagPath))
                           .ogType(SeoOgType.WEBSITE)
                           .jsonLd(structuredData.tagPage(tag, tagPath, authorUrls))
                           .build();
+    }
+
+    private String privateTitle(String path) {
+        if (path.startsWith("/write")) {
+            return "Escrever";
+        }
+        if (path.startsWith("/writing")) {
+            return "Escrita";
+        }
+        if (path.startsWith("/reading") || path.startsWith("/highlights")) {
+            return "Reading";
+        }
+        if (path.startsWith("/manage")) {
+            return "Gerenciar";
+        }
+        if (path.startsWith("/account")) {
+            return "Conta";
+        }
+        if (path.startsWith("/search")) {
+            return "Busca";
+        }
+        return siteBranding.seoName();
     }
 
     private SeoMetadata resolveAuthorBlogHome(String username) {
@@ -359,7 +362,7 @@ public class SeoService {
 
         String username = segments.get(0);
         if (CustomPagePaths.isReservedSegment(username)) {
-            return forPrivatePage(SITE_NAME);
+            return forPrivatePage(siteBranding.seoName());
         }
 
         if (segments.size() == 1) {
@@ -390,7 +393,7 @@ public class SeoService {
             return resolveSecondaryBlogHome(username, segments.get(1));
         }
 
-        return forPrivatePage(SITE_NAME);
+        return forPrivatePage(siteBranding.seoName());
     }
 
     private SeoMetadata resolveGlobalCustomPage(String pathOnly) {

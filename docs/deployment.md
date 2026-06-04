@@ -36,6 +36,7 @@ export QUARKUS_PROFILE=prod
 | Variable | Required | Purpose |
 |----------|:--------:|---------|
 | `APP_PUBLIC_URL` | yes | HTTPS origin, e.g. `https://contraponto.example` — used in emails, RSS links, HTML sanitization, SEO canonical/Open Graph URLs, and `Sitemap:` in `robots.txt` (`image.base.url`) |
+| `APP_SITE_NAME` | no | White-label display name for header, footer, page titles, SEO, and emails (default `contraponto`; title-case derived for SEO, e.g. `commit-mestre` → Commit Mestre) |
 
 ## 3. SMTP (mailer)
 

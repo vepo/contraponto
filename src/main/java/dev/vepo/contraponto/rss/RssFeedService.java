@@ -14,6 +14,7 @@ import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.user.UserRepository;
 import io.quarkus.cache.CacheResult;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,18 +37,21 @@ public class RssFeedService {
     private final SerieRepository serieRepository;
 
     private final TagRepository tagRepository;
+    private final SiteBranding siteBranding;
 
     @Inject
     public RssFeedService(PostRepository postRepository,
                           UserRepository userRepository,
                           BlogRepository blogRepository,
                           SerieRepository serieRepository,
-                          TagRepository tagRepository) {
+                          TagRepository tagRepository,
+                          SiteBranding siteBranding) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
         this.serieRepository = serieRepository;
         this.tagRepository = tagRepository;
+        this.siteBranding = siteBranding;
     }
 
     @CacheResult(cacheName = "rss-feeds")
@@ -100,7 +104,7 @@ public class RssFeedService {
     @CacheResult(cacheName = "rss-feeds")
     public String siteWideFeed(String baseUri) {
         var posts = postRepository.findPublishedFeedGlobal(SiteWideFeedEndpoint.FEED_LIMIT);
-        var channel = new RssFeedRenderer.Channel("Contraponto", "/", "Recently published posts");
+        var channel = new RssFeedRenderer.Channel(siteBranding.seoName(), "/", "Recently published posts");
         return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
     }
 
