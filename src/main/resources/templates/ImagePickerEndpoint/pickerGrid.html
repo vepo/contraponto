@@ -1,0 +1,24 @@
+<div id="imagePickerGrid" class="image-picker__grid-panel">
+    {#if images.isEmpty()}
+    <p class="image-picker__empty" data-i18n="image.picker.empty">No images in your library yet. Upload one above.</p>
+    {#else}
+    <p class="image-picker__hint" data-i18n="image.picker.hint">Clique em uma imagem para selecioná-la.</p>
+    <div class="image-picker__grid" role="listbox" aria-label="Your images" data-i18n="image.picker.select" data-i18n-attr="aria-label">
+        {#for item in images.data}
+        <button type="button"
+                class="image-picker__item"
+                role="option"
+                data-image-uuid="{item.uuid}"
+                data-image-url="{item.url}"
+                title="{item.displayFilename}">
+            <img src="{item.url}" alt="{item.altText}" class="image-picker__thumb" loading="lazy" width="52" height="52"/>
+            <span class="image-picker__caption">{item.displayFilename}</span>
+            {#if item.altText}
+            <span class="image-picker__alt">{item.altText}</span>
+            {/if}
+        </button>
+        {/for}
+    </div>
+    {#include components/manage-pagination page=images basePath=gridBasePath extraQuery=extraQuery fragmentTarget='#imagePickerGrid' /}
+    {/if}
+</div>

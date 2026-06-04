@@ -13,7 +13,8 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ImageRepository {
 
-    private static final String PARAM_BLOG_ID = "blogId";
+    private static final String PARAM_OWNER_ID = "ownerId";
+    private static final String PARAM_SEARCH = "search";
 
     private final EntityManager entityManager;
 
@@ -33,27 +34,54 @@ public class ImageRepository {
                             .findFirst();
     }
 
-    public Optional<Image> findByUuidAndBlogId(String uuid, long blogId) {
-        return entityManager.createQuery("FROM Image WHERE uuid = :uuid AND active = true AND blog.id = :blogId", Image.class)
+    public Optional<Image> findByUuidAndOwnerId(String uuid, long ownerId) {
+        return entityManager.createQuery("""
+                                         FROM Image
+                                         WHERE uuid = :uuid AND active = true AND owner.id = :ownerId
+                                         """, Image.class)
                             .setParameter("uuid", uuid)
-                            .setParameter(PARAM_BLOG_ID, blogId)
+                            .setParameter(PARAM_OWNER_ID, ownerId)
                             .getResultStream()
                             .findFirst();
     }
 
-    public Page<Image> findPageByBlogId(long blogId, PageQuery query) {
-        long total = entityManager.createQuery("SELECT COUNT(i) FROM Image i WHERE i.blog.id = :blogId AND i.active = true", Long.class)
-                                  .setParameter(PARAM_BLOG_ID, blogId)
-                                  .getSingleResult();
-        List<Image> data = entityManager.createQuery("""
-                                                     SELECT i FROM Image i
-                                                     WHERE i.blog.id = :blogId AND i.active = true
-                                                     ORDER BY i.createdAt DESC
-                                                     """, Image.class)
-                                        .setParameter(PARAM_BLOG_ID, blogId)
-                                        .setFirstResult(query.skip())
-                                        .setMaxResults(query.limit())
-                                        .getResultList();
+    public Page<Image> findPageByOwnerId(long ownerId, String searchQuery, PageQuery query) {
+        boolean hasSearch = searchQuery != null && !searchQuery.isBlank();
+        String searchTerm = hasSearch ? "%" + searchQuery.trim().toLowerCase() + "%" : null;
+
+        String countJpql = """
+                           SELECT COUNT(i) FROM Image i
+                           WHERE i.owner.id = :ownerId AND i.active = true
+                           """;
+        String dataJpql = """
+                          SELECT i FROM Image i
+                          WHERE i.owner.id = :ownerId AND i.active = true
+                          """;
+        if (hasSearch) {
+            String searchClause = """
+                                  AND (
+                                      LOWER(i.altText) LIKE :search
+                                      OR LOWER(i.filename) LIKE :search
+                                      OR LOWER(i.gitAssetRelativePath) LIKE :search
+                                  )
+                                  """;
+            countJpql += searchClause;
+            dataJpql += searchClause;
+        }
+        dataJpql += " ORDER BY i.createdAt DESC";
+
+        var countQuery = entityManager.createQuery(countJpql, Long.class).setParameter(PARAM_OWNER_ID, ownerId);
+        var dataQuery = entityManager.createQuery(dataJpql, Image.class)
+                                     .setParameter(PARAM_OWNER_ID, ownerId)
+                                     .setFirstResult(query.skip())
+                                     .setMaxResults(query.limit());
+        if (hasSearch) {
+            countQuery.setParameter(PARAM_SEARCH, searchTerm);
+            dataQuery.setParameter(PARAM_SEARCH, searchTerm);
+        }
+
+        long total = countQuery.getSingleResult();
+        List<Image> data = dataQuery.getResultList();
         return new Page<>(data, query.page(), query.limit(), total);
     }
 

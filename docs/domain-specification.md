@@ -103,13 +103,17 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Version history** | Diff of publication snapshots; metadata shows live version; full list in a modal on the post page (all readers). | `PostChangeDiffService` |
 | **Serie** | Ordered collection of posts within one blog. | `Serie` |
 | **Tag** | Global taxonomy label; posts link via join table; snapshots copy tags at publish. | `Tag` |
-| **Uploaded image** | Blog-scoped image: metadata in `tb_images`, bytes in `tb_image_content` (PostgreSQL `BYTEA`), optional **alt text**, optional **Git asset path** (relative path under the blog's assets directory, without extension, set on Git import). Served at `/api/images/{uuid}{ext}` regardless of Git path. | `Image`, `ImageContent` |
+| **Uploaded image** | User-scoped image owned by the **image owner** (`owner_user_id`): metadata in `tb_images`, bytes in `tb_image_content` (PostgreSQL `BYTEA`), optional **alt text**, optional **Git asset path** (relative path under the blog's assets directory, without extension, set on Git import). One library per author, usable on any of their blogs. Served at `/api/images/{uuid}{ext}` regardless of Git path. | `Image`, `ImageContent` |
+| **Image owner** | The user who owns an uploaded image library entry; uploader may differ (`uploaded_by_user_id`). | `Image.owner` |
 | **Git asset path** | Original relative path of an image file in the Git/Jekyll assets tree (e.g. `capas/photo`). Used for Git export filenames and Images hub display; Contraponto content still references `/api/images/{uuid}.ext`. | `Image.gitAssetRelativePath` |
 | **Image marker** | HTML comment in stored body: `<!-- contraponto:image uuid="…" -->` immediately before an image reference; hidden in the Write editor and stripped when rendering published post content (markers remain in stored content). | `ContentImageMarkerService` |
 | **Image lightbox** | Reader expands an inline post-body image in an on-page overlay (larger view, same image URL); caption prefers AsciiDoc **image block title**, then **alt text**; omits caption when only a filename is available. Closed with ESC, close control, or backdrop click. | `#image-lightbox`, `ImageLightboxManager` in `main.js` |
 | **Code block copy** | Reader copies the plain source from a fenced or listing code block via a **Copy** control; label briefly shows **Copied**. | `CodeCopyManager` in `main.js`, `.code-block__copy` |
 | **Image dependency** | Record that a post, publication snapshot, or custom page uses an uploaded image (`INLINE` or `COVER`). | `PostImageDependency`, `CustomPageImageDependency` |
-| **Image control** | Manage screen listing a blog's uploaded images, where each is used, and alt text editing. | `ImageControlEndpoint` |
+| **Image control** | Manage screen listing the author's uploaded images (all blogs), where each is used, and alt text editing. | `ImageControlEndpoint` |
+| **Image library search** | Filter the Images hub list by alt text, stored filename, or Git asset path (`GET /writing/images?q=…`). | `ImageControlEndpoint`, Writing hub `images` section |
+| **Image picker** | Modal to choose one **uploaded image** from the author's library, filter by alt/path (`q`), or upload a new file (upload zone above the grid); used for post cover, inline post images, and profile/blog banner fields. Shares search UI with the Images hub (`image-library-search`). | `ImagePickerEndpoint`, `ImagePickerManager` in `image-picker.js` |
+| **Choose image** | Action that opens the image picker (replaces opening the native file dialog directly). | Cover area, `data-image-upload` areas, Write toolbar image control |
 
 ### Custom pages
 
@@ -234,7 +238,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Write** | Editor for creating or editing a post (`/write`, `/write/draft/{id}`). | `WriteEndpoint` |
-| **Image control** | Per-blog list of uploaded images, usages, and alt text. Reachable from Writing hub **Images** (`/writing/images`) with a blog switcher, or directly at `/blogs/{id}/images`. | `ImageControlEndpoint`, Writing hub `images` section |
+| **Image control** | Per-author image library (all owned blogs), usages, alt text, and search. Writing hub **Images** at `/writing/images` (`q`, `page`); legacy `/blogs/{id}/images` redirects to the hub. | `ImageControlEndpoint`, Writing hub `images` section |
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
 | **Dashboard** | Author overview per selected blog: analytics (daily views, daily reading time, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily reading time, daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
@@ -341,8 +345,11 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Dashboard summary | +{n} new this month · {m} subscribers total | Subscribers chart |
 | Comment moderation | Approve / Reject | Post owner (implicit in moderation UI) |
 | Custom page — published badge | Published | Manage list |
-| Image control — page title | Images | `/blogs/{id}/images` |
-| Image control — empty | No images uploaded for this blog yet. | Image list |
+| Image control — page title | Images | `/writing/images` |
+| Image control — empty | No images in your library yet. | Image list |
+| Image control — search label | Search images | Images hub search field |
+| Image control — search placeholder | Search by alt text or path… | Images hub search field |
+| Image picker — owner subtitle | Library: {name} | Picker modal header |
 | Image control — alt field | Alt text | Image row form |
 | Image control — updated toast | Image updated. | Alt save |
 | Post — version (metadata) | Version {n} | Post page metadata trigger |

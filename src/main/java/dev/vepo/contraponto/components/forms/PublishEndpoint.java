@@ -230,7 +230,7 @@ public class PublishEndpoint {
 
     private void updateCoverImage(Post post, SaveDraftRequest request, Blog blog) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuidAndBlogId(request.coverId(), blog.getId()).ifPresent(post::setCover);
+            imageRepository.findByUuidAndOwnerId(request.coverId(), blog.getOwner().getId()).ifPresent(post::setCover);
         } else if (post.getCover() != null) {
             post.setCover(null);
         }

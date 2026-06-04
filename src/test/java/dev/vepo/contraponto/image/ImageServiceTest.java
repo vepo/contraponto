@@ -49,17 +49,17 @@ class ImageServiceTest {
         Given.transaction(() -> {
             dependencyRepository.persistPostDependency(new PostImageDependency(post, image, ImageRole.INLINE));
         });
-        assertThatThrownBy(() -> imageService.deleteImage(image.getUuid(), blog.getId()))
-                                                                                         .isInstanceOf(WebApplicationException.class)
-                                                                                         .extracting(ex -> ((WebApplicationException) ex).getResponse()
-                                                                                                                                         .getStatus())
-                                                                                         .isEqualTo(409);
+        assertThatThrownBy(() -> imageService.deleteImage(image.getUuid(), author.getId()))
+                                                                                           .isInstanceOf(WebApplicationException.class)
+                                                                                           .extracting(ex -> ((WebApplicationException) ex).getResponse()
+                                                                                                                                           .getStatus())
+                                                                                           .isEqualTo(409);
     }
 
     @Test
     void deleteImageRemovesUnreferencedImage() {
         var image = Given.randomCover(blog);
-        imageService.deleteImage(image.getUuid(), blog.getId());
+        imageService.deleteImage(image.getUuid(), author.getId());
         assertThat(imageRepository.findByUuid(image.getUuid())).isEmpty();
     }
 
@@ -121,7 +121,7 @@ class ImageServiceTest {
                                                     "image/png",
                                                     stream,
                                                     Files.size(file),
-                                                    blog,
+                                                    author,
                                                     author);
             assertThat(response.id()).isNotBlank();
             assertThat(response.url()).startsWith("/api/images/");
@@ -139,7 +139,7 @@ class ImageServiceTest {
                                                               "text/plain",
                                                               stream,
                                                               Files.size(file),
-                                                              blog,
+                                                              author,
                                                               author))
                                                                       .isInstanceOf(WebApplicationException.class)
                                                                       .extracting(ex -> ((WebApplicationException) ex).getResponse().getStatus())

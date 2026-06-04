@@ -79,8 +79,8 @@ public class ImageService {
     }
 
     @Transactional
-    public void deleteImage(String uuid, long blogId) {
-        Image image = imageRepository.findByUuidAndBlogId(uuid, blogId)
+    public void deleteImage(String uuid, long ownerId) {
+        Image image = imageRepository.findByUuidAndOwnerId(uuid, ownerId)
                                      .orElseThrow(() -> new WebApplicationException("Image not found",
                                                                                     Response.Status.NOT_FOUND));
 
@@ -128,14 +128,18 @@ public class ImageService {
                                     String gitAssetRelativePath) {
         validateImage(contentType, content.length);
         String filename = uuid + ext;
+        User owner = blog.getOwner();
         var image = new Image(uuid,
                               filename,
                               contentType,
                               (long) content.length,
                               "/api/images/" + filename,
-                              blog);
+                              owner);
         if (gitAssetRelativePath != null && !gitAssetRelativePath.isBlank()) {
             image.setGitAssetRelativePath(gitAssetRelativePath);
+        }
+        if (owner != null) {
+            image.setUploadedBy(owner);
         }
         imageRepository.save(image);
         imageContentRepository.save(image, content);
@@ -147,7 +151,7 @@ public class ImageService {
                                      String contentType,
                                      InputStream data,
                                      long size,
-                                     Blog blog,
+                                     User owner,
                                      User uploadedBy) {
         try {
             validateImage(contentType, size);
@@ -168,8 +172,8 @@ public class ImageService {
                                   contentType,
                                   size,
                                   url,
-                                  blog);
-            image.setUploadedBy(uploadedBy);
+                                  owner);
+            image.setUploadedBy(uploadedBy != null ? uploadedBy : owner);
             imageRepository.save(image);
             imageContentRepository.save(image, content);
 

@@ -287,12 +287,6 @@ public class BreadcrumbService {
                      current(runLabel));
     }
 
-    public BreadcrumbTrail writingBlogImages(Blog blog) {
-        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
-                     link("Images", hubRegistry.sectionPath(NavigationHub.WRITING, "images")),
-                     current(blog.getName()));
-    }
-
     public BreadcrumbTrail writingBlogNew() {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
@@ -316,6 +310,11 @@ public class BreadcrumbService {
 
     public BreadcrumbTrail writingHighlights() {
         return hubSection(NavigationHub.WRITING, "Destaques e respostas");
+    }
+
+    public BreadcrumbTrail writingImages() {
+        return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
+                     current("Images"));
     }
 
     public BreadcrumbTrail writingLibrary() {

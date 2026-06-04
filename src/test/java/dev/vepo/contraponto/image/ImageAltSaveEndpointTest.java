@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.image;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,7 +35,7 @@ class ImageAltSaveEndpointTest {
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("altText", "Accessible caption")
                 .formParam("page", "1")
-                .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), image.getUuid()))
+                .put("/forms/images/%s/alt".formatted(image.getUuid()))
                 .then()
                 .statusCode(200)
                 .header("X-Toast-Message", equalTo("Image updated."))
@@ -47,6 +46,20 @@ class ImageAltSaveEndpointTest {
             assertThat(updated).isPresent();
             assertThat(updated.get().getAltText()).isEqualTo("Accessible caption");
         });
+    }
+
+    @Test
+    void ownerCanSaveAltTextWithSearchQuery() {
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("altText", "Capas cover")
+                .formParam("page", "1")
+                .formParam("q", "capas")
+                .formParam("hub", "writing")
+                .put("/forms/images/%s/alt".formatted(image.getUuid()))
+                .then()
+                .statusCode(200)
+                .body(containsString("image-library-search"));
     }
 
     @BeforeEach
@@ -64,6 +77,11 @@ class ImageAltSaveEndpointTest {
                      .persist();
         blog = owner.getDefaultBlog();
         image = Given.randomCover(blog);
+        Given.transaction(() -> {
+            var managed = imageRepository.findByUuid(image.getUuid()).orElseThrow();
+            managed.setAltText("Capas illustration");
+            imageRepository.update(managed);
+        });
     }
 
     @Test
@@ -77,9 +95,9 @@ class ImageAltSaveEndpointTest {
         TestHttp.authenticated(stranger)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("altText", "Hijack")
-                .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), image.getUuid()))
+                .put("/forms/images/%s/alt".formatted(image.getUuid()))
                 .then()
-                .statusCode(403);
+                .statusCode(404);
     }
 
     @Test
@@ -87,7 +105,7 @@ class ImageAltSaveEndpointTest {
         TestHttp.authenticated(owner)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("altText", "Missing")
-                .put("/forms/blogs/%d/images/%s/alt".formatted(blog.getId(), "00000000-0000-0000-0000-000000000099"))
+                .put("/forms/images/%s/alt".formatted("00000000-0000-0000-0000-000000000099"))
                 .then()
                 .statusCode(404);
     }

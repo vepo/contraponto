@@ -64,21 +64,21 @@ CREATE TABLE tb_images (
     content_type         VARCHAR(100) NOT NULL,
     size                 BIGINT NOT NULL,
     url                  VARCHAR(500) NOT NULL,
-    blog_id              BIGINT NOT NULL,
+    owner_user_id             BIGINT NOT NULL,
     alt_text                  VARCHAR(512),
     git_asset_relative_path   VARCHAR(512),
     uploaded_by_user_id       BIGINT,
     active                    BOOLEAN NOT NULL DEFAULT TRUE,
     created_at                TIMESTAMP(6) NOT NULL,
 
-    CONSTRAINT fk_images_blog FOREIGN KEY (blog_id) REFERENCES tb_blogs(id),
+    CONSTRAINT fk_images_owner_user FOREIGN KEY (owner_user_id) REFERENCES tb_users(id),
     CONSTRAINT fk_images_uploaded_by FOREIGN KEY (uploaded_by_user_id) REFERENCES tb_users(id)
 );
 
 CREATE INDEX idx_images_uuid ON tb_images(uuid);
 CREATE INDEX idx_images_active ON tb_images(active);
 CREATE INDEX idx_images_created_at ON tb_images(created_at);
-CREATE INDEX idx_images_blog ON tb_images(blog_id);
+CREATE INDEX idx_images_owner_user ON tb_images(owner_user_id);
 
 ALTER TABLE tb_users
     ADD COLUMN profile_picture_id BIGINT,

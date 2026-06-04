@@ -1,28 +1,15 @@
-{#include components/hub-panel-header title='Images' subtitle='Uploaded images for each blog. Switch blog to manage alt text and see where images are used.' /}
+{#include components/hub-panel-header title='Images' subtitle='Your uploaded images across all blogs. Search by alt text or path, edit alt text, and see where each image is used.' subtitleKey='image.hub.subtitle' /}
 
-{#if ownedBlogs.isEmpty()}
-<div class="pages-manage__empty">
-    <p data-i18n="blog.manageEmpty">Nenhum blog encontrado.</p>
-</div>
-{#else}
-<div class="image-control-hub__blog-select">
-    <label class="write-form__label" for="imageControlBlogSelect">Blog</label>
-    <select id="imageControlBlogSelect"
-            name="blogId"
-            class="dashboard-analytics__select"
-            data-hx-get="/writing/images"
-            hx-select="main"
-            hx-target="main"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-            hx-trigger="change">
-        {#for ownedBlog in ownedBlogs}
-        <option value="{ownedBlog.id}" {#if ownedBlog.id == blog.id}selected{/if}>{ownedBlog.name}</option>
-        {/for}
-    </select>
-</div>
+{#include components/image-library-search
+    hxGet='/writing/images'
+    hxTarget='main'
+    hxSelect='main'
+    hxPushUrl='true'
+    hxSwap='outerHTML'
+    searchQuery=searchQuery
+    inputId='imageControlSearch'
+    spinnerId='image-control-search-indicator'
+    modifierClass='image-library-search--hub'
+    pickerToolbar=false /}
 
-<p class="image-control-hub__blog-name">{blog.name}</p>
-
-{#include ImageControlEndpoint/image-list blog=blog images=images hubMode=true basePath=basePath extraQuery=extraQuery fragmentTarget='' /}
-{/if}
+{#include ImageControlEndpoint/image-list owner=owner images=images searchQuery=searchQuery hubMode=true basePath='/writing/images' extraQuery=extraQuery fragmentTarget='' /}

@@ -8,9 +8,6 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogAccess;
-import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.user.UserRepository;
@@ -22,7 +19,6 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.WebApplicationException;
@@ -36,21 +32,12 @@ public class ImageEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageEndpoint.class);
     private final ImageService imageService;
-    private final BlogRepository blogRepository;
-    private final BlogAccess blogAccess;
     private final LoggedUser loggedUser;
-
     private final UserRepository userRepository;
 
     @Inject
-    public ImageEndpoint(ImageService imageService,
-                         BlogRepository blogRepository,
-                         BlogAccess blogAccess,
-                         LoggedUser loggedUser,
-                         UserRepository userRepository) {
+    public ImageEndpoint(ImageService imageService, LoggedUser loggedUser, UserRepository userRepository) {
         this.imageService = imageService;
-        this.blogRepository = blogRepository;
-        this.blogAccess = blogAccess;
         this.loggedUser = loggedUser;
         this.userRepository = userRepository;
     }
@@ -58,20 +45,9 @@ public class ImageEndpoint {
     @DELETE
     @Path("/{uuid}")
     @Logged
-    public Response deleteImage(@PathParam("uuid") String uuid, @QueryParam("blogId") Long blogId) {
+    public Response deleteImage(@PathParam("uuid") String uuid) {
         try {
-            if (blogId == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                               .entity(new ErrorResponse("blogId is required"))
-                               .build();
-            }
-            Blog blog = blogRepository.findById(blogId).orElse(null);
-            if (blog == null || !blogAccess.canEdit(blog, loggedUser)) {
-                return Response.status(Response.Status.FORBIDDEN)
-                               .entity(new ErrorResponse("Blog not found or access denied"))
-                               .build();
-            }
-            imageService.deleteImage(uuid, blog.getId());
+            imageService.deleteImage(uuid, loggedUser.getId());
             return Response.noContent().build();
         } catch (WebApplicationException e) {
             return Response.status(e.getResponse().getStatus())
@@ -110,33 +86,27 @@ public class ImageEndpoint {
     @POST
     @Logged
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadImage(@RestForm("file") FileUpload fileUpload, @QueryParam("blogId") Long blogId) {
+    public Response uploadImage(@RestForm("file") FileUpload fileUpload) {
         try {
-            if (blogId == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                               .entity(new ErrorResponse("blogId is required"))
-                               .build();
-            }
-            Blog blog = blogRepository.findById(blogId).orElse(null);
-            if (blog == null || !blogAccess.canEdit(blog, loggedUser)) {
-                return Response.status(Response.Status.FORBIDDEN)
-                               .entity(new ErrorResponse("Blog not found or access denied"))
-                               .build();
-            }
             if (fileUpload == null || fileUpload.fileName() == null || fileUpload.fileName().isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                                .entity(new ErrorResponse("File is required"))
                                .build();
             }
 
-            var user = userRepository.findById(loggedUser.getId()).orElse(null);
+            var owner = userRepository.findById(loggedUser.getId()).orElse(null);
+            if (owner == null) {
+                return Response.status(Response.Status.FORBIDDEN)
+                               .entity(new ErrorResponse("Access denied"))
+                               .build();
+            }
             try (InputStream data = fileUpload.filePath().toFile().toURI().toURL().openStream()) {
                 return Response.ok(imageService.uploadImage(fileUpload.fileName(),
                                                             fileUpload.contentType(),
                                                             data,
                                                             fileUpload.size(),
-                                                            blog,
-                                                            user))
+                                                            owner,
+                                                            owner))
                                .build();
             }
         } catch (IOException e) {

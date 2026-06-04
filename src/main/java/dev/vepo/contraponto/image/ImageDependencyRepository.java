@@ -11,8 +11,6 @@ import jakarta.transaction.Transactional;
 public class ImageDependencyRepository {
 
     private static final String PARAM_IMAGE_ID = "imageId";
-    private static final String PARAM_BLOG_ID = "blogId";
-
     private final EntityManager entityManager;
 
     @Inject
@@ -42,24 +40,22 @@ public class ImageDependencyRepository {
     }
 
     @SuppressWarnings("unchecked")
-    public List<ImageUsageRow> findUsagesForImage(long imageId, long blogId) {
+    public List<ImageUsageRow> findUsagesForImage(long imageId) {
         var postUsages = entityManager.createNativeQuery("""
                                                          SELECT p.id, p.title, d.role, 'POST' AS kind
                                                          FROM tb_post_image_dependencies d
                                                          JOIN tb_posts p ON p.id = d.post_id
-                                                         WHERE d.image_id = :imageId AND p.blog_id = :blogId
+                                                         WHERE d.image_id = :imageId
                                                          """)
                                       .setParameter(PARAM_IMAGE_ID, imageId)
-                                      .setParameter(PARAM_BLOG_ID, blogId)
                                       .getResultList();
         var pageUsages = entityManager.createNativeQuery("""
                                                          SELECT cp.id, cp.title, d.role, 'CUSTOM_PAGE' AS kind
                                                          FROM tb_custom_page_image_dependencies d
                                                          JOIN tb_custom_pages cp ON cp.id = d.custom_page_id
-                                                         WHERE d.image_id = :imageId AND cp.blog_id = :blogId
+                                                         WHERE d.image_id = :imageId
                                                          """)
                                       .setParameter(PARAM_IMAGE_ID, imageId)
-                                      .setParameter(PARAM_BLOG_ID, blogId)
                                       .getResultList();
         var rows = new java.util.ArrayList<ImageUsageRow>();
         for (Object row : postUsages) {

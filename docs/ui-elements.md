@@ -199,7 +199,9 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `rss-feed-link`, `rss-feed-link__icon` | `components/rss-feed-link.html`, `main.css` | RSS syndication link (opens feed in new tab) |
 | `page-meta` | `HomeEndpoint/home.html`, `main.css` | Right-aligned meta row (e.g. site RSS on home) |
 | `user-blog-header__actions` | `BlogEndpoint/home.html`, `main.css` | Blog header row: audience controls + RSS |
-| `image-control-hub__blog-select`, `image-control-hub__blog-name` | `ImageControlEndpoint/panel.html`, `manage.css` | Writing hub Images blog switcher |
+| `image-library-search`, `image-library-search--hub`, `image-library-search--picker` | `components/image-library-search.html`, hub panel, picker dialog, `manage.css` | Image library search (reuses `search-form__input`; alt text or path) |
+| `image-picker__library`, `image-picker__library-toolbar`, `image-picker__library-title`, `image-library-search__control`, `image-library-search__icon` | `ImagePickerEndpoint/pickerDialog.html`, `components/image-library-search.html`, `main.css` | Picker library panel (toolbar search + grid) |
+| `image-picker`, `image-picker__grid`, `image-picker__item`, `image-picker__thumb`, `image-picker__caption`, `image-picker__alt`, `image-picker__hint`, `image-picker__subtitle`, `image-picker__body`, `image-picker__footer`, `image-picker__upload`, `modal__container--image-picker` | `ImagePickerEndpoint/pickerDialog.html`, `main.css` | User image picker modal (upload above grid, cancel in footer) |
 | `nav-hub-page`, `nav-hub__*` | (deprecated) | Replaced by hub shell; remove when card templates are deleted |
 
 ---
