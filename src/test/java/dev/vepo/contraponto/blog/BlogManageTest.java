@@ -90,31 +90,6 @@ class BlogManageTest {
     }
 
     @Test
-    void editSecondaryBlog(App app) {
-        Given.blog()
-             .withUser(testUser)
-             .withSlug("tech")
-             .withName("Tech Blog")
-             .withDescription("Old description")
-             .persist();
-
-        app.login(testUser)
-           .blogs()
-           .clickEdit("Tech Blog")
-           .fillName("Tech and Code")
-           .assertSubmitEnabled()
-           .submit()
-           .assertUrl("/writing/blogs")
-           .clickSettings("Tech and Code")
-           .fillDescription("Updated description")
-           .assertSubmitEnabled()
-           .submit()
-           .assertUrl("/writing/blogs")
-           .assertToastSuccess("Blog saved successfully")
-           .assertBlogListed("Tech and Code", "/" + USER_USERNAME + "/tech");
-    }
-
-    @Test
     void editorCannotEditOthersBlogButCanDeactivateSecondary(App app) {
         var owner = Given.user()
                          .withUsername("blogowner")
@@ -144,6 +119,31 @@ class BlogManageTest {
            .clickDeactivate("Travel Blog")
            .assertUrl("/manage/blogs")
            .assertToastSuccess("Blog saved successfully");
+    }
+
+    @Test
+    void editSecondaryBlog(App app) {
+        Given.blog()
+             .withUser(testUser)
+             .withSlug("tech")
+             .withName("Tech Blog")
+             .withDescription("Old description")
+             .persist();
+
+        app.login(testUser)
+           .blogs()
+           .clickEdit("Tech Blog")
+           .fillName("Tech and Code")
+           .assertSubmitEnabled()
+           .submit()
+           .assertUrl("/writing/blogs")
+           .clickSettings("Tech and Code")
+           .fillDescription("Updated description")
+           .assertSubmitEnabled()
+           .submit()
+           .assertUrl("/writing/blogs")
+           .assertToastSuccess("Blog saved successfully")
+           .assertBlogListed("Tech and Code", "/" + USER_USERNAME + "/tech");
     }
 
     @Test

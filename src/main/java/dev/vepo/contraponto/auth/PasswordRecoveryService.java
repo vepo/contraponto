@@ -10,10 +10,25 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class PasswordRecoveryService {
 
+    public record ResetResult(boolean success, boolean invalidToken, String errorMessage) {
+        static ResetResult succeeded() {
+            return new ResetResult(true, false, null);
+        }
+
+        static ResetResult tokenInvalid() {
+            return new ResetResult(false, true, null);
+        }
+
+        static ResetResult failed(String message) {
+            return new ResetResult(false, false, message);
+        }
+    }
+
     private final UserRepository userRepository;
     private final UserAccountTokenService tokenService;
     private final AccountEmailService accountEmailService;
     private final PasswordService passwordService;
+
     private final LoggedUserProvider loggedUserProvider;
 
     @Inject
@@ -71,19 +86,5 @@ public class PasswordRecoveryService {
         accountEmailService.sendPasswordChanged(user);
 
         return ResetResult.succeeded();
-    }
-
-    public record ResetResult(boolean success, boolean invalidToken, String errorMessage) {
-        static ResetResult succeeded() {
-            return new ResetResult(true, false, null);
-        }
-
-        static ResetResult tokenInvalid() {
-            return new ResetResult(false, true, null);
-        }
-
-        static ResetResult failed(String message) {
-            return new ResetResult(false, false, message);
-        }
     }
 }

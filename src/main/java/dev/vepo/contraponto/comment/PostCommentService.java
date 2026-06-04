@@ -39,12 +39,45 @@ public class PostCommentService {
         this.notificationService = notificationService;
     }
 
+    private void appendChildren(List<CommentView> result,
+                                Map<Long, List<PostComment>> childrenByParent,
+                                long parentId,
+                                CommentViewerContext viewer,
+                                int depth) {
+        List<PostComment> children = childrenByParent.getOrDefault(parentId, List.of());
+        for (PostComment child : children) {
+            result.add(toView(child, viewer, depth));
+            appendChildren(result, childrenByParent, child.getId(), viewer, depth + 1);
+        }
+    }
+
+    private void applyInitialStatus(PostComment comment, Post post, User author) {
+        if (post.getAuthor().getId().equals(author.getId())) {
+            comment.setStatus(CommentStatus.APPROVED);
+            comment.setApprovedAt(LocalDateTime.now());
+        } else {
+            comment.setStatus(CommentStatus.PENDING);
+        }
+    }
+
     @Transactional
     public PostComment approve(long postId, long commentId, long ownerUserId) {
         PostComment comment = loadForModeration(postId, commentId, ownerUserId);
         comment.setStatus(CommentStatus.APPROVED);
         comment.setApprovedAt(LocalDateTime.now());
         return commentRepository.save(comment);
+    }
+
+    private List<CommentView> buildNestedViews(List<PostComment> replies, long rootId, CommentViewerContext viewer, int baseDepth) {
+        Map<Long, List<PostComment>> childrenByParent = new HashMap<>();
+        for (PostComment reply : replies) {
+            long parentId = reply.getParent().getId();
+            childrenByParent.computeIfAbsent(parentId, k -> new ArrayList<>()).add(reply);
+        }
+
+        List<CommentView> result = new ArrayList<>();
+        appendChildren(result, childrenByParent, rootId, viewer, baseDepth);
+        return result;
     }
 
     public List<CommentView> buildReplyViews(long rootId, CommentViewerContext viewer) {
@@ -118,56 +151,6 @@ public class PostCommentService {
         return comment;
     }
 
-    public List<CommentView> findPendingViews(long postId, CommentViewerContext viewer) {
-        if (!viewer.postOwner()) {
-            return List.of();
-        }
-        return commentRepository.findPendingForPost(postId).stream()
-                                .map(c -> toView(c, viewer, depthForPending(c)))
-                                .toList();
-    }
-
-    @Transactional
-    public PostComment reject(long postId, long commentId, long ownerUserId) {
-        PostComment comment = loadForModeration(postId, commentId, ownerUserId);
-        comment.setStatus(CommentStatus.REJECTED);
-        comment.setApprovedAt(null);
-        return commentRepository.save(comment);
-    }
-
-    private void applyInitialStatus(PostComment comment, Post post, User author) {
-        if (post.getAuthor().getId().equals(author.getId())) {
-            comment.setStatus(CommentStatus.APPROVED);
-            comment.setApprovedAt(LocalDateTime.now());
-        } else {
-            comment.setStatus(CommentStatus.PENDING);
-        }
-    }
-
-    private List<CommentView> buildNestedViews(List<PostComment> replies, long rootId, CommentViewerContext viewer, int baseDepth) {
-        Map<Long, List<PostComment>> childrenByParent = new HashMap<>();
-        for (PostComment reply : replies) {
-            long parentId = reply.getParent().getId();
-            childrenByParent.computeIfAbsent(parentId, k -> new ArrayList<>()).add(reply);
-        }
-
-        List<CommentView> result = new ArrayList<>();
-        appendChildren(result, childrenByParent, rootId, viewer, baseDepth);
-        return result;
-    }
-
-    private void appendChildren(List<CommentView> result,
-                                Map<Long, List<PostComment>> childrenByParent,
-                                long parentId,
-                                CommentViewerContext viewer,
-                                int depth) {
-        List<PostComment> children = childrenByParent.getOrDefault(parentId, List.of());
-        for (PostComment child : children) {
-            result.add(toView(child, viewer, depth));
-            appendChildren(result, childrenByParent, child.getId(), viewer, depth + 1);
-        }
-    }
-
     private int depthForPending(PostComment comment) {
         if (comment.isRoot()) {
             return 0;
@@ -179,6 +162,15 @@ public class PostCommentService {
             current = current.getParent();
         }
         return depth;
+    }
+
+    public List<CommentView> findPendingViews(long postId, CommentViewerContext viewer) {
+        if (!viewer.postOwner()) {
+            return List.of();
+        }
+        return commentRepository.findPendingForPost(postId).stream()
+                                .map(c -> toView(c, viewer, depthForPending(c)))
+                                .toList();
     }
 
     private boolean isVisible(PostComment comment, CommentViewerContext viewer) {
@@ -208,6 +200,14 @@ public class PostCommentService {
             throw new NotFoundException("Post not found.");
         }
         return post;
+    }
+
+    @Transactional
+    public PostComment reject(long postId, long commentId, long ownerUserId) {
+        PostComment comment = loadForModeration(postId, commentId, ownerUserId);
+        comment.setStatus(CommentStatus.REJECTED);
+        comment.setApprovedAt(null);
+        return commentRepository.save(comment);
     }
 
     private CommentView toView(PostComment comment, CommentViewerContext viewer, int depth) {

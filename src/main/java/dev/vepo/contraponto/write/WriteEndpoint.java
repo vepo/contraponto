@@ -38,6 +38,8 @@ import jakarta.ws.rs.core.MediaType;
 @Path("/write")
 @ApplicationScoped
 public class WriteEndpoint {
+    private record ResponseContext(Long postId, String title, String url) {}
+
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance write(WritePage writePage,
@@ -59,6 +61,7 @@ public class WriteEndpoint {
     private final ContentImageMarkerService contentImageMarkerService;
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
+
     private final SeoService seoService;
 
     @Inject
@@ -81,8 +84,6 @@ public class WriteEndpoint {
         this.breadcrumbService = breadcrumbService;
         this.seoService = seoService;
     }
-
-    private record ResponseContext(Long postId, String title, String url) {}
 
     private Long findDefaultBlogId(List<Blog> blogs) {
         return blogs.stream()

@@ -18,6 +18,8 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class UserAccountTokenService {
 
+    public record IssuedToken(String rawToken, UserAccountToken token) {}
+
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private static String generateRawToken() {
@@ -27,6 +29,7 @@ public class UserAccountTokenService {
     }
 
     private final UserAccountTokenRepository tokenRepository;
+
     private final int passwordResetHours;
 
     private final int emailChangeHours;
@@ -39,8 +42,6 @@ public class UserAccountTokenService {
         this.passwordResetHours = passwordResetHours;
         this.emailChangeHours = emailChangeHours;
     }
-
-    public record IssuedToken(String rawToken, UserAccountToken token) {}
 
     @Transactional
     public Optional<UserAccountToken> consume(String rawToken) {

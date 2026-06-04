@@ -72,6 +72,19 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String blogGridLoadMorePath(Blog blog) {
+        if (blog.isMain()) {
+            return blogGridLoadMorePath(blog.getOwner().getUsername());
+        }
+        return "/%s/%s/components/grid".formatted(blog.getOwner().getUsername(), blog.getSlug());
+    }
+
+    @TemplateExtension
+    public static String blogGridLoadMorePath(String username) {
+        return "/%s/components/grid".formatted(username);
+    }
+
+    @TemplateExtension
     public static String coverUrl(Post post) {
         if (post == null) {
             return null;
@@ -113,9 +126,86 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
+    public static String formatReadingDuration(long seconds) {
+        if (seconds <= 0) {
+            return "< 1 min";
+        }
+        if (seconds < 60) {
+            return "< 1 min";
+        }
+        long minutes = seconds / 60;
+        if (minutes < 60) {
+            return minutes + " min";
+        }
+        long hours = minutes / 60;
+        long remainingMinutes = minutes % 60;
+        if (remainingMinutes == 0) {
+            return hours + "h";
+        }
+        return hours + "h " + remainingMinutes + "m";
+    }
+
+    @TemplateExtension
+    public static String formatReadingTimeTotal(long totalSeconds) {
+        if (totalSeconds <= 0) {
+            return "0 min";
+        }
+        long minutes = totalSeconds / 60;
+        if (minutes < 60) {
+            return minutes + " min";
+        }
+        long hours = minutes / 60;
+        long remainingMinutes = minutes % 60;
+        if (remainingMinutes == 0) {
+            return hours + "h";
+        }
+        return hours + "h " + remainingMinutes + "m";
+    }
+
+    @TemplateExtension
+    public static String linkUrl(Notification notification) {
+        if ((notification.getType() == NotificationType.GIT_SYNC_SUCCEEDED
+                || notification.getType() == NotificationType.GIT_SYNC_FAILED)
+                && notification.getGitSyncRun() != null) {
+            GitSyncRun run = notification.getGitSyncRun();
+            return "/blogs/" + run.getBlog().getId() + "/git-sync/" + run.getId();
+        }
+        if ((notification.getType() == NotificationType.NEW_POST
+                || notification.getType() == NotificationType.NEW_COMMENT
+                || notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
+                || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
+                || notification.getType() == NotificationType.POST_RESPONSE)
+                && notification.getPost() != null) {
+            String url = PostEndpoint.extractUrl(notification.getPost());
+            if (notification.getType() == NotificationType.NEW_COMMENT) {
+                return url + "#comments";
+            }
+            if (notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
+                    || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
+                    || notification.getType() == NotificationType.POST_RESPONSE) {
+                return "/writing/highlights";
+            }
+            return url;
+        }
+        return BlogEndpoint.extractUrl(notification.getBlog());
+    }
+
+    @TemplateExtension
     public static String liveContent(Post post) {
         PostPublication live = liveOf(post);
         return live != null && live.getContent() != null ? live.getContent() : post.getContent();
+    }
+
+    @TemplateExtension
+    public static String liveDescription(Post post) {
+        if (post == null) {
+            return "";
+        }
+        PostPublication live = liveOf(post);
+        if (live != null && live.getDescription() != null && !live.getDescription().isBlank()) {
+            return live.getDescription();
+        }
+        return post.getDescription() != null ? post.getDescription() : "";
     }
 
     private static PostPublication liveOf(Post post) {
@@ -161,191 +251,9 @@ public class TemplateExtensions {
     }
 
     @TemplateExtension
-    public static String readTime(String content) {
-        if (content == null || content.trim().isEmpty()) {
-            return "0 min read";
-        }
-
-        String[] words = content.trim().split("\\s+");
-        int wordCount = words.length;
-        int wordsPerMinute = 200; // average reading speed
-        int minutes = (int) Math.ceil((double) wordCount / wordsPerMinute);
-
-        if (minutes < 1) {
-            return "< 1 min read";
-        }
-        return minutes + " min read";
-    }
-
-    @TemplateExtension
-    public static String formatReadingDuration(long seconds) {
-        if (seconds <= 0) {
-            return "< 1 min";
-        }
-        if (seconds < 60) {
-            return "< 1 min";
-        }
-        long minutes = seconds / 60;
-        if (minutes < 60) {
-            return minutes + " min";
-        }
-        long hours = minutes / 60;
-        long remainingMinutes = minutes % 60;
-        if (remainingMinutes == 0) {
-            return hours + "h";
-        }
-        return hours + "h " + remainingMinutes + "m";
-    }
-
-    @TemplateExtension
-    public static String formatReadingTimeTotal(long totalSeconds) {
-        if (totalSeconds <= 0) {
-            return "0 min";
-        }
-        long minutes = totalSeconds / 60;
-        if (minutes < 60) {
-            return minutes + " min";
-        }
-        long hours = minutes / 60;
-        long remainingMinutes = minutes % 60;
-        if (remainingMinutes == 0) {
-            return hours + "h";
-        }
-        return hours + "h " + remainingMinutes + "m";
-    }
-
-    @TemplateExtension
-    public static String liveDescription(Post post) {
-        if (post == null) {
-            return "";
-        }
-        PostPublication live = liveOf(post);
-        if (live != null && live.getDescription() != null && !live.getDescription().isBlank()) {
-            return live.getDescription();
-        }
-        return post.getDescription() != null ? post.getDescription() : "";
-    }
-
-    @TemplateExtension
-    public static String renderedDescription(Blog blog) {
-        if (blog == null || blog.getDescription() == null || blog.getDescription().isBlank()) {
-            return "";
-        }
-        return renderMarkdownDescription(blog.getDescription());
-    }
-
-    @TemplateExtension
-    public static String renderedDescription(Post post) {
-        String description = liveDescription(post);
-        if (description.isBlank()) {
-            return "";
-        }
-        return renderMarkdownDescription(description);
-    }
-
-    private static String renderMarkdownDescription(String description) {
-        var renderer = CDI.current().select(BlogDescriptionRenderer.class);
-        if (!renderer.isResolvable()) {
-            return description;
-        }
-        return renderer.get().render(description);
-    }
-
-    @TemplateExtension
-    public static String render(Post post) {
-        PostPublication live = post != null ? post.getLivePublication() : null;
-        if (live != null) {
-            return render(live);
-        }
-        if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
-            return "";
-        }
-        return postContentRenderer().render(post.getContent(), post.getFormat());
-    }
-
-    @TemplateExtension
-    public static String render(PostPublication publication) {
-        if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
-            return "";
-        }
-        return postContentRenderer().render(publication.getContent(), publication.getFormat());
-    }
-
-    private static PostContentRenderer postContentRenderer() {
-        return CDI.current().select(PostContentRenderer.class).get();
-    }
-
-    @TemplateExtension
-    public static String render(PublishedPostView view) {
-        if (view.live() != null) {
-            return render(view.live());
-        }
-        return render(view.post());
-    }
-
-    @TemplateExtension
-    public static boolean showUpdated(PublishedPostView view) {
-        PostPublication live = liveOf(view);
-        return live != null && live.getVersion() > 1;
-    }
-
-    @TemplateExtension
     public static int liveVersion(PublishedPostView view) {
         PostPublication live = liveOf(view);
         return live != null ? live.getVersion() : 0;
-    }
-
-    @TemplateExtension
-    public static String blogGridLoadMorePath(String username) {
-        return "/%s/components/grid".formatted(username);
-    }
-
-    @TemplateExtension
-    public static String blogGridLoadMorePath(Blog blog) {
-        if (blog.isMain()) {
-            return blogGridLoadMorePath(blog.getOwner().getUsername());
-        }
-        return "/%s/%s/components/grid".formatted(blog.getOwner().getUsername(), blog.getSlug());
-    }
-
-    @TemplateExtension
-    public static String tagGridLoadMorePath(String tagSlug) {
-        return "/tags/%s/components/grid".formatted(tagSlug);
-    }
-
-    @TemplateExtension
-    public static String url(Blog blog) {
-        return BlogEndpoint.extractUrl(blog);
-    }
-
-    @TemplateExtension
-    public static String url(Post post) {
-        return PostEndpoint.extractUrl(post);
-    }
-
-    @TemplateExtension
-    public static String url(Serie serie) {
-        return SeriePageEndpoint.extractUrl(serie);
-    }
-
-    @TemplateExtension
-    public static String url(Tag tag) {
-        return TagPageEndpoint.url(tag);
-    }
-
-    @TemplateExtension
-    public static String rssFeedUrl(Blog blog) {
-        return blog == null ? null : RssFeedPaths.blogFeed(blog);
-    }
-
-    @TemplateExtension
-    public static String rssFeedUrl(Serie serie) {
-        return serie == null ? null : RssFeedPaths.serieFeed(serie);
-    }
-
-    @TemplateExtension
-    public static String rssFeedUrl(Tag tag) {
-        return tag == null ? null : RssFeedPaths.tagFeed(tag);
     }
 
     @TemplateExtension
@@ -394,32 +302,124 @@ public class TemplateExtensions {
         };
     }
 
+    private static PostContentRenderer postContentRenderer() {
+        return CDI.current().select(PostContentRenderer.class).get();
+    }
+
     @TemplateExtension
-    public static String linkUrl(Notification notification) {
-        if ((notification.getType() == NotificationType.GIT_SYNC_SUCCEEDED
-                || notification.getType() == NotificationType.GIT_SYNC_FAILED)
-                && notification.getGitSyncRun() != null) {
-            GitSyncRun run = notification.getGitSyncRun();
-            return "/blogs/" + run.getBlog().getId() + "/git-sync/" + run.getId();
+    public static String readTime(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            return "0 min read";
         }
-        if ((notification.getType() == NotificationType.NEW_POST
-                || notification.getType() == NotificationType.NEW_COMMENT
-                || notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
-                || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
-                || notification.getType() == NotificationType.POST_RESPONSE)
-                && notification.getPost() != null) {
-            String url = PostEndpoint.extractUrl(notification.getPost());
-            if (notification.getType() == NotificationType.NEW_COMMENT) {
-                return url + "#comments";
-            }
-            if (notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
-                    || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
-                    || notification.getType() == NotificationType.POST_RESPONSE) {
-                return "/writing/highlights";
-            }
-            return url;
+
+        String[] words = content.trim().split("\\s+");
+        int wordCount = words.length;
+        int wordsPerMinute = 200; // average reading speed
+        int minutes = (int) Math.ceil((double) wordCount / wordsPerMinute);
+
+        if (minutes < 1) {
+            return "< 1 min read";
         }
-        return BlogEndpoint.extractUrl(notification.getBlog());
+        return minutes + " min read";
+    }
+
+    @TemplateExtension
+    public static String render(Post post) {
+        PostPublication live = post != null ? post.getLivePublication() : null;
+        if (live != null) {
+            return render(live);
+        }
+        if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
+            return "";
+        }
+        return postContentRenderer().render(post.getContent(), post.getFormat());
+    }
+
+    @TemplateExtension
+    public static String render(PostPublication publication) {
+        if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
+            return "";
+        }
+        return postContentRenderer().render(publication.getContent(), publication.getFormat());
+    }
+
+    @TemplateExtension
+    public static String render(PublishedPostView view) {
+        if (view.live() != null) {
+            return render(view.live());
+        }
+        return render(view.post());
+    }
+
+    @TemplateExtension
+    public static String renderedDescription(Blog blog) {
+        if (blog == null || blog.getDescription() == null || blog.getDescription().isBlank()) {
+            return "";
+        }
+        return renderMarkdownDescription(blog.getDescription());
+    }
+
+    @TemplateExtension
+    public static String renderedDescription(Post post) {
+        String description = liveDescription(post);
+        if (description.isBlank()) {
+            return "";
+        }
+        return renderMarkdownDescription(description);
+    }
+
+    private static String renderMarkdownDescription(String description) {
+        var renderer = CDI.current().select(BlogDescriptionRenderer.class);
+        if (!renderer.isResolvable()) {
+            return description;
+        }
+        return renderer.get().render(description);
+    }
+
+    @TemplateExtension
+    public static String rssFeedUrl(Blog blog) {
+        return blog == null ? null : RssFeedPaths.blogFeed(blog);
+    }
+
+    @TemplateExtension
+    public static String rssFeedUrl(Serie serie) {
+        return serie == null ? null : RssFeedPaths.serieFeed(serie);
+    }
+
+    @TemplateExtension
+    public static String rssFeedUrl(Tag tag) {
+        return tag == null ? null : RssFeedPaths.tagFeed(tag);
+    }
+
+    @TemplateExtension
+    public static boolean showUpdated(PublishedPostView view) {
+        PostPublication live = liveOf(view);
+        return live != null && live.getVersion() > 1;
+    }
+
+    @TemplateExtension
+    public static String tagGridLoadMorePath(String tagSlug) {
+        return "/tags/%s/components/grid".formatted(tagSlug);
+    }
+
+    @TemplateExtension
+    public static String url(Blog blog) {
+        return BlogEndpoint.extractUrl(blog);
+    }
+
+    @TemplateExtension
+    public static String url(Post post) {
+        return PostEndpoint.extractUrl(post);
+    }
+
+    @TemplateExtension
+    public static String url(Serie serie) {
+        return SeriePageEndpoint.extractUrl(serie);
+    }
+
+    @TemplateExtension
+    public static String url(Tag tag) {
+        return TagPageEndpoint.url(tag);
     }
 
     private TemplateExtensions() {

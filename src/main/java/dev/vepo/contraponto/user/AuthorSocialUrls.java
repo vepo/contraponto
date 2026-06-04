@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public final class AuthorSocialUrls {
 
+    public record SocialLink(String label, String url, String key) {}
+
     private static void addIfValid(List<String> urls, String raw) {
         normalizeHttpsUrl(raw).filter(AuthorSocialUrls::isUrl).ifPresent(urls::add);
     }
@@ -69,6 +71,4 @@ public final class AuthorSocialUrls {
     private AuthorSocialUrls() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
-
-    public record SocialLink(String label, String url, String key) {}
 }
