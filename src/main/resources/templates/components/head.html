@@ -53,4 +53,7 @@
     {#insert}{/insert}
     </title>
     {/if}
+    {#if siteIntegrationEnabled}
+    <script async src="{siteIntegrationScriptUrl}" data-token="{siteIntegrationScriptDataToken}"></script>
+    {/if}
 </head>

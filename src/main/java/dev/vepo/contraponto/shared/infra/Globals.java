@@ -76,6 +76,21 @@ public class Globals {
         return loggedUser.get();
     }
 
+    @TemplateGlobal(name = "siteIntegrationEnabled")
+    public static boolean siteIntegrationEnabled() {
+        return CDI.current().select(SiteIntegration.class).get().enabled();
+    }
+
+    @TemplateGlobal(name = "siteIntegrationScriptDataToken")
+    public static String siteIntegrationScriptDataToken() {
+        return CDI.current().select(SiteIntegration.class).get().scriptDataToken();
+    }
+
+    @TemplateGlobal(name = "siteIntegrationScriptUrl")
+    public static String siteIntegrationScriptUrl() {
+        return CDI.current().select(SiteIntegration.class).get().scriptUrl();
+    }
+
     @TemplateGlobal(name = "siteName")
     public static String siteName() {
         return CDI.current().select(SiteBranding.class).get().displayName();

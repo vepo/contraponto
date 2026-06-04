@@ -37,6 +37,8 @@ export QUARKUS_PROFILE=prod
 |----------|:--------:|---------|
 | `APP_PUBLIC_URL` | yes | HTTPS origin, e.g. `https://contraponto.example` — used in emails, RSS links, HTML sanitization, SEO canonical/Open Graph URLs, and `Sitemap:` in `robots.txt` (`image.base.url`) |
 | `APP_SITE_NAME` | no | White-label display name for header, footer, page titles, SEO, and emails (default `contraponto`; title-case derived for SEO, e.g. `commit-mestre` → Commit Mestre) |
+| `APP_SITE_INTEGRATION_SCRIPT_URL` | no | HTTPS URL of an optional async script in page `<head>` (e.g. analytics); requires `APP_SITE_INTEGRATION_SCRIPT_DATA_TOKEN` |
+| `APP_SITE_INTEGRATION_SCRIPT_DATA_TOKEN` | no | `data-token` attribute for the integration script; both integration env vars must be set to enable the tag |
 
 ## 3. SMTP (mailer)
 
