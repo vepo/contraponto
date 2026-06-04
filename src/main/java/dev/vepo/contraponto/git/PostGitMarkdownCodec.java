@@ -16,6 +16,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 @ApplicationScoped
 public final class PostGitMarkdownCodec {
 
+    public record ParsedFrontMatterMarkdown(Map<String, Object> frontMatter, String body) {}
+
     /** Jekyll-style published post filename stem after the date segment. */
     public static final Pattern PUBLISHED_POST_FILENAME =
             Pattern.compile("^(?<date>\\d{4}-\\d{2}-\\d{2})-(?<slug>.+)\\.(md|markdown)$", Pattern.CASE_INSENSITIVE);
@@ -30,8 +32,6 @@ public final class PostGitMarkdownCodec {
         mapper.findAndRegisterModules();
         return mapper;
     }
-
-    public record ParsedFrontMatterMarkdown(Map<String, Object> frontMatter, String body) {}
 
     public ParsedFrontMatterMarkdown parseMarkdownDocument(String markdown) throws IOException {
         if (markdown == null) {

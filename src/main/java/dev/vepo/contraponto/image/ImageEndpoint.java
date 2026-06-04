@@ -32,12 +32,14 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class ImageEndpoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageEndpoint.class);
+    record ErrorResponse(String error) {}
 
+    private static final Logger logger = LoggerFactory.getLogger(ImageEndpoint.class);
     private final ImageService imageService;
     private final BlogRepository blogRepository;
     private final BlogAccess blogAccess;
     private final LoggedUser loggedUser;
+
     private final UserRepository userRepository;
 
     @Inject
@@ -52,8 +54,6 @@ public class ImageEndpoint {
         this.loggedUser = loggedUser;
         this.userRepository = userRepository;
     }
-
-    record ErrorResponse(String error) {}
 
     @DELETE
     @Path("/{uuid}")

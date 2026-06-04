@@ -21,17 +21,6 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class StaticResourcesFilter implements ContainerRequestFilter {
 
-    private static final String TYPE_IMAGE = "image";
-    private static final String TYPE_TEXT = "text";
-    private static final String TYPE_APPLICATION = "application";
-    private static final MediaType MEDIA_TYPE_JS = new MediaType(TYPE_APPLICATION, "javascript");
-    private static final MediaType MEDIA_TYPE_CSS = new MediaType(TYPE_TEXT, "css");
-    private static final MediaType MEDIA_TYPE_GIF = new MediaType(TYPE_IMAGE, "gif");
-    private static final MediaType MEDIA_TYPE_JPEG = new MediaType(TYPE_IMAGE, "jpeg");
-    private static final MediaType MEDIA_TYPE_PNG = new MediaType(TYPE_IMAGE, "png");
-    private static final MediaType MEDIA_TYPE_SVG = new MediaType(TYPE_IMAGE, "svg+xml");
-    private static final MediaType MEDIA_TYPE_X_ICON = new MediaType(TYPE_IMAGE, "x-icon");
-
     private static class CachedResource {
         final byte[] content;
         final MediaType mediaType;
@@ -45,6 +34,18 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
             this.lastModified = lastModified;
         }
     }
+
+    private static final String TYPE_IMAGE = "image";
+    private static final String TYPE_TEXT = "text";
+    private static final String TYPE_APPLICATION = "application";
+    private static final MediaType MEDIA_TYPE_JS = new MediaType(TYPE_APPLICATION, "javascript");
+    private static final MediaType MEDIA_TYPE_CSS = new MediaType(TYPE_TEXT, "css");
+    private static final MediaType MEDIA_TYPE_GIF = new MediaType(TYPE_IMAGE, "gif");
+    private static final MediaType MEDIA_TYPE_JPEG = new MediaType(TYPE_IMAGE, "jpeg");
+    private static final MediaType MEDIA_TYPE_PNG = new MediaType(TYPE_IMAGE, "png");
+    private static final MediaType MEDIA_TYPE_SVG = new MediaType(TYPE_IMAGE, "svg+xml");
+
+    private static final MediaType MEDIA_TYPE_X_ICON = new MediaType(TYPE_IMAGE, "x-icon");
 
     // Cache of static files (never changes at runtime)
     private static final ConcurrentMap<String, CachedResource> CACHE = new ConcurrentHashMap<>();

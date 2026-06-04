@@ -48,9 +48,35 @@ import jakarta.persistence.TransactionRequiredException;
 @ApplicationScoped
 public class BlogGitIntegrationService {
 
+    private record ConventionLoad(JekyllLayoutConvention convention, String configSource, String parseWarning) {}
+
     private static final Logger LOG = LoggerFactory.getLogger(BlogGitIntegrationService.class);
 
-    private record ConventionLoad(JekyllLayoutConvention convention, String configSource, String parseWarning) {}
+    private static GitSyncOutcome aggregatePostOutcomes(List<GitSyncPostResult> results) {
+        if (results.isEmpty()) {
+            return GitSyncOutcome.SUCCESS;
+        }
+        long failed = results.stream().filter(GitSyncPostResult::isFailed).count();
+        long ok = results.stream().filter(GitSyncPostResult::isSuccess).count();
+        if (failed == 0) {
+            return GitSyncOutcome.SUCCESS;
+        }
+        if (ok == 0) {
+            return GitSyncOutcome.FAILED;
+        }
+        return GitSyncOutcome.PARTIAL;
+    }
+
+    private static String buildImportSummary(GitSyncOutcome outcome, List<GitSyncPostResult> results) {
+        long failed = results.stream().filter(GitSyncPostResult::isFailed).count();
+        long ok = results.stream().filter(GitSyncPostResult::isSuccess).count();
+        return switch (outcome) {
+            case SUCCESS -> "Git import succeeded. " + ok + " post(s) synced.";
+            case PARTIAL -> "Git import partially completed. " + ok + " succeeded, " + failed + " failed.";
+            case FAILED -> "Git import failed. " + failed + " post(s) could not be imported.";
+            case SKIPPED -> "Git import skipped.";
+        };
+    }
 
     private static boolean directoryHasOccupyingChildren(Path workspace) throws IOException {
         if (!Files.isDirectory(workspace)) {
@@ -61,18 +87,70 @@ public class BlogGitIntegrationService {
         }
     }
 
+    private static boolean isPostPath(String repoRelativePath, JekyllLayoutConvention convention) {
+        String norm = repoRelativePath.replace('\\', '/');
+        String posts = convention.postsRelative() + "/";
+        String drafts = convention.draftsRelative() + "/";
+        return norm.startsWith(posts) || norm.startsWith(drafts);
+    }
+
+    private static boolean isTransactionRequired(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof TransactionRequiredException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private static GitSyncPhase phaseForFailure(Exception e, GitErrorKind kind) {
+        if (isTransactionRequired(e)) {
+            return GitSyncPhase.FETCH;
+        }
+        return switch (kind) {
+            case WORKSPACE -> GitSyncPhase.WORKSPACE;
+            case CONVENTION -> GitSyncPhase.CONVENTION;
+            case POST -> GitSyncPhase.POST_IMPORT;
+            case NETWORK, REPOSITORY, AUTHENTICATION, UNKNOWN, NONE -> GitSyncPhase.FETCH;
+        };
+    }
+
     private static String posixPath(Path relative) {
         return relative.toString().replace('\\', '/');
     }
 
+    private static String postExtension(Post post) {
+        return post.getFormat() == Format.ASCIIDOC ? ".adoc" : ".md";
+    }
+
+    private static AbstractTreeIterator treeParser(Repository repo, ObjectId objectId) throws IOException {
+        try (RevWalk walk = new RevWalk(repo)) {
+            RevCommit commit = walk.parseCommit(objectId);
+            CanonicalTreeParser parser = new CanonicalTreeParser();
+            try (ObjectReader reader = repo.newObjectReader()) {
+                parser.reset(reader, commit.getTree());
+            }
+            return parser;
+        }
+    }
+
     private final ContrapontoGitSettings gitSettings;
     private final BlogRepository blogRepository;
+
     private final PostRepository postRepository;
+
     private final BlogGitImportService blogGitImportService;
+
     private final PostGitMarkdownCodec markdownCodec;
+
     private final GitImageSyncService gitImageSyncService;
+
     private final BlogGitIntegrationTransaction integrationTransaction;
+
     private final GitSyncRunService gitSyncRunService;
+
     private final GitSyncErrorClassifier errorClassifier;
 
     @Inject
@@ -241,29 +319,6 @@ public class BlogGitIntegrationService {
         pullCmd.call();
     }
 
-    private Optional<String> resolveRemoteHead(Blog blog) {
-        try {
-            LsRemoteCommand lsRemote = Git.lsRemoteRepository().setRemote(blog.getGitRemoteUrl()).setHeads(true);
-            CredentialsProvider credentials = credentialsOrNull();
-            if (credentials != null) {
-                lsRemote.setCredentialsProvider(credentials);
-            }
-            Map<String, Ref> refs = lsRemote.callAsMap();
-            String branch = resolveBranch(blog);
-            Ref ref = refs.get(Constants.R_HEADS + branch);
-            if (ref == null) {
-                ref = refs.get("refs/heads/" + branch);
-            }
-            if (ref == null || ref.getObjectId() == null) {
-                return Optional.empty();
-            }
-            return Optional.of(ref.getObjectId().name());
-        } catch (GitAPIException e) {
-            LOG.warn("Could not resolve remote HEAD for blogId={}: {}", blog.getId(), e.toString());
-            return Optional.empty();
-        }
-    }
-
     private void finalizeRun(GitSyncOutcome outcome,
                              GitErrorKind errorKind,
                              boolean repositoryReadable,
@@ -287,29 +342,6 @@ public class BlogGitIntegrationService {
         finalizeRun(GitSyncOutcome.SKIPPED, GitErrorKind.NONE, false, false, null, null, summary);
     }
 
-    private static GitSyncPhase phaseForFailure(Exception e, GitErrorKind kind) {
-        if (isTransactionRequired(e)) {
-            return GitSyncPhase.FETCH;
-        }
-        return switch (kind) {
-            case WORKSPACE -> GitSyncPhase.WORKSPACE;
-            case CONVENTION -> GitSyncPhase.CONVENTION;
-            case POST -> GitSyncPhase.POST_IMPORT;
-            case NETWORK, REPOSITORY, AUTHENTICATION, UNKNOWN, NONE -> GitSyncPhase.FETCH;
-        };
-    }
-
-    private static boolean isTransactionRequired(Throwable throwable) {
-        Throwable current = throwable;
-        while (current != null) {
-            if (current instanceof TransactionRequiredException) {
-                return true;
-            }
-            current = current.getCause();
-        }
-        return false;
-    }
-
     private void handleFailure(Exception e,
                                boolean repositoryReadable,
                                boolean dataLoadable,
@@ -322,6 +354,23 @@ public class BlogGitIntegrationService {
                                                                         e.toString()));
         finalizeRun(GitSyncOutcome.FAILED, classified.kind(), repositoryReadable, dataLoadable,
                     null, conventionSnapshot, classified.message());
+    }
+
+    private List<GitSyncPostResult> ingestPostFiles(long blogId,
+                                                    Path workspace,
+                                                    JekyllLayoutConvention convention,
+                                                    List<Path> postFiles) {
+        List<GitSyncPostResult> results = new ArrayList<>();
+        Path postsRoot = convention.resolvePosts(workspace).toAbsolutePath().normalize();
+        for (Path postFile : postFiles) {
+            BlogGitImportService.SourceKind kind = postFile.startsWith(postsRoot)
+                                                                                  ? BlogGitImportService.SourceKind.POSTS_FOLDER
+                                                                                  : BlogGitImportService.SourceKind.DRAFTS_FOLDER;
+            GitSyncPostResult result = blogGitImportService.ingest(blogId, workspace, convention, postFile, kind);
+            gitSyncRunService.appendPostResult(GitSyncPhase.POST_IMPORT, result);
+            results.add(result);
+        }
+        return results;
     }
 
     private boolean isConfiguredForGit(Blog blog) {
@@ -340,6 +389,69 @@ public class BlogGitIntegrationService {
                 || n.endsWith(".markdown")
                 || n.endsWith(".adoc")
                 || n.endsWith(".asciidoc");
+    }
+
+    private List<Path> listAllPostFiles(Path workspace, JekyllLayoutConvention convention) throws IOException {
+        List<Path> all = new ArrayList<>();
+        all.addAll(listPostFilesInRoot(workspace, convention.resolvePosts(workspace)));
+        all.addAll(listPostFilesInRoot(workspace, convention.resolveDrafts(workspace)));
+        return all;
+    }
+
+    private List<Path> listChangedPostFiles(Path workspace,
+                                            JekyllLayoutConvention convention,
+                                            String lastKnown,
+                                            String head)
+            throws GitAPIException, IOException {
+        if (lastKnown == null || lastKnown.isBlank()) {
+            return listAllPostFiles(workspace, convention);
+        }
+        if (head == null || head.isBlank() || head.equals(lastKnown)) {
+            return List.of();
+        }
+        try (Git git = Git.open(workspace.toFile())) {
+            Repository repo = git.getRepository();
+            ObjectId oldId = repo.resolve(lastKnown);
+            ObjectId newId = repo.resolve(head);
+            if (oldId == null) {
+                LOG.info("Last known commit {} not in workspace; importing all posts.", lastKnown);
+                return listAllPostFiles(workspace, convention);
+            }
+            if (newId == null || oldId.equals(newId)) {
+                return List.of();
+            }
+            List<DiffEntry> diffs = git.diff()
+                                       .setOldTree(treeParser(repo, oldId))
+                                       .setNewTree(treeParser(repo, newId))
+                                       .call();
+            Path repoRoot = workspace.toAbsolutePath().normalize();
+            List<Path> changed = new ArrayList<>();
+            for (DiffEntry entry : diffs) {
+                if (entry.getChangeType() == DiffEntry.ChangeType.DELETE) {
+                    continue;
+                }
+                String rel = entry.getNewPath();
+                if (!isPostPath(rel, convention)) {
+                    continue;
+                }
+                Path file = repoRoot.resolve(rel);
+                if (Files.isRegularFile(file) && isImportablePostFile(file)) {
+                    changed.add(file);
+                }
+            }
+            return changed;
+        }
+    }
+
+    private List<Path> listPostFilesInRoot(Path workspace, Path root) throws IOException {
+        List<Path> files = new ArrayList<>();
+        if (!Files.isDirectory(root)) {
+            return files;
+        }
+        try (Stream<Path> walk = Files.walk(root)) {
+            walk.filter(p -> Files.isRegularFile(p) && isImportablePostFile(p)).forEach(files::add);
+        }
+        return files;
     }
 
     private ConventionLoad loadConvention(Path workspace) {
@@ -368,10 +480,6 @@ public class BlogGitIntegrationService {
                 post.getPublishedAt() != null ? post.getPublishedAt().toLocalDate() : LocalDate.now(java.time.ZoneId.systemDefault());
         String name = "%s-%s%s".formatted(pub.format(DateTimeFormatter.ISO_LOCAL_DATE), post.getSlug(), ext);
         return convention.resolvePosts(repoRoot).resolve(name);
-    }
-
-    private static String postExtension(Post post) {
-        return post.getFormat() == Format.ASCIIDOC ? ".adoc" : ".md";
     }
 
     private boolean prepareWorkspace(Blog blog, Path workspace) throws GitAPIException, IOException {
@@ -423,20 +531,43 @@ public class BlogGitIntegrationService {
         }
     }
 
-    public void scheduleBlogRemoteSync(long blogId, GitSyncTrigger trigger) {
-        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledImport(blogId, trigger));
+    private Optional<String> resolveRemoteHead(Blog blog) {
+        try {
+            LsRemoteCommand lsRemote = Git.lsRemoteRepository().setRemote(blog.getGitRemoteUrl()).setHeads(true);
+            CredentialsProvider credentials = credentialsOrNull();
+            if (credentials != null) {
+                lsRemote.setCredentialsProvider(credentials);
+            }
+            Map<String, Ref> refs = lsRemote.callAsMap();
+            String branch = resolveBranch(blog);
+            Ref ref = refs.get(Constants.R_HEADS + branch);
+            if (ref == null) {
+                ref = refs.get("refs/heads/" + branch);
+            }
+            if (ref == null || ref.getObjectId() == null) {
+                return Optional.empty();
+            }
+            return Optional.of(ref.getObjectId().name());
+        } catch (GitAPIException e) {
+            LOG.warn("Could not resolve remote HEAD for blogId={}: {}", blog.getId(), e.toString());
+            return Optional.empty();
+        }
     }
 
     public void scheduleBlogRemoteSync(long blogId) {
         scheduleBlogRemoteSync(blogId, GitSyncTrigger.REMOTE_POLL);
     }
 
-    public void scheduleExportPost(long postId, GitSyncTrigger trigger) {
-        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledExport(postId, trigger));
+    public void scheduleBlogRemoteSync(long blogId, GitSyncTrigger trigger) {
+        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledImport(blogId, trigger));
     }
 
     public void scheduleExportPost(long postId) {
         scheduleExportPost(postId, GitSyncTrigger.PUBLISH);
+    }
+
+    public void scheduleExportPost(long postId, GitSyncTrigger trigger) {
+        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledExport(postId, trigger));
     }
 
     void syncBlogFromGitTransactional(long blogId) throws IOException, GitAPIException {
@@ -519,130 +650,6 @@ public class BlogGitIntegrationService {
             handleFailure(e, repositoryReadable, dataLoadable, conventionSnapshot);
             throw e;
         }
-    }
-
-    private static GitSyncOutcome aggregatePostOutcomes(List<GitSyncPostResult> results) {
-        if (results.isEmpty()) {
-            return GitSyncOutcome.SUCCESS;
-        }
-        long failed = results.stream().filter(GitSyncPostResult::isFailed).count();
-        long ok = results.stream().filter(GitSyncPostResult::isSuccess).count();
-        if (failed == 0) {
-            return GitSyncOutcome.SUCCESS;
-        }
-        if (ok == 0) {
-            return GitSyncOutcome.FAILED;
-        }
-        return GitSyncOutcome.PARTIAL;
-    }
-
-    private static String buildImportSummary(GitSyncOutcome outcome, List<GitSyncPostResult> results) {
-        long failed = results.stream().filter(GitSyncPostResult::isFailed).count();
-        long ok = results.stream().filter(GitSyncPostResult::isSuccess).count();
-        return switch (outcome) {
-            case SUCCESS -> "Git import succeeded. " + ok + " post(s) synced.";
-            case PARTIAL -> "Git import partially completed. " + ok + " succeeded, " + failed + " failed.";
-            case FAILED -> "Git import failed. " + failed + " post(s) could not be imported.";
-            case SKIPPED -> "Git import skipped.";
-        };
-    }
-
-    private List<Path> listChangedPostFiles(Path workspace,
-                                            JekyllLayoutConvention convention,
-                                            String lastKnown,
-                                            String head)
-            throws GitAPIException, IOException {
-        if (lastKnown == null || lastKnown.isBlank()) {
-            return listAllPostFiles(workspace, convention);
-        }
-        if (head == null || head.isBlank() || head.equals(lastKnown)) {
-            return List.of();
-        }
-        try (Git git = Git.open(workspace.toFile())) {
-            Repository repo = git.getRepository();
-            ObjectId oldId = repo.resolve(lastKnown);
-            ObjectId newId = repo.resolve(head);
-            if (oldId == null) {
-                LOG.info("Last known commit {} not in workspace; importing all posts.", lastKnown);
-                return listAllPostFiles(workspace, convention);
-            }
-            if (newId == null || oldId.equals(newId)) {
-                return List.of();
-            }
-            List<DiffEntry> diffs = git.diff()
-                                       .setOldTree(treeParser(repo, oldId))
-                                       .setNewTree(treeParser(repo, newId))
-                                       .call();
-            Path repoRoot = workspace.toAbsolutePath().normalize();
-            List<Path> changed = new ArrayList<>();
-            for (DiffEntry entry : diffs) {
-                if (entry.getChangeType() == DiffEntry.ChangeType.DELETE) {
-                    continue;
-                }
-                String rel = entry.getNewPath();
-                if (!isPostPath(rel, convention)) {
-                    continue;
-                }
-                Path file = repoRoot.resolve(rel);
-                if (Files.isRegularFile(file) && isImportablePostFile(file)) {
-                    changed.add(file);
-                }
-            }
-            return changed;
-        }
-    }
-
-    private static AbstractTreeIterator treeParser(Repository repo, ObjectId objectId) throws IOException {
-        try (RevWalk walk = new RevWalk(repo)) {
-            RevCommit commit = walk.parseCommit(objectId);
-            CanonicalTreeParser parser = new CanonicalTreeParser();
-            try (ObjectReader reader = repo.newObjectReader()) {
-                parser.reset(reader, commit.getTree());
-            }
-            return parser;
-        }
-    }
-
-    private static boolean isPostPath(String repoRelativePath, JekyllLayoutConvention convention) {
-        String norm = repoRelativePath.replace('\\', '/');
-        String posts = convention.postsRelative() + "/";
-        String drafts = convention.draftsRelative() + "/";
-        return norm.startsWith(posts) || norm.startsWith(drafts);
-    }
-
-    private List<Path> listAllPostFiles(Path workspace, JekyllLayoutConvention convention) throws IOException {
-        List<Path> all = new ArrayList<>();
-        all.addAll(listPostFilesInRoot(workspace, convention.resolvePosts(workspace)));
-        all.addAll(listPostFilesInRoot(workspace, convention.resolveDrafts(workspace)));
-        return all;
-    }
-
-    private List<Path> listPostFilesInRoot(Path workspace, Path root) throws IOException {
-        List<Path> files = new ArrayList<>();
-        if (!Files.isDirectory(root)) {
-            return files;
-        }
-        try (Stream<Path> walk = Files.walk(root)) {
-            walk.filter(p -> Files.isRegularFile(p) && isImportablePostFile(p)).forEach(files::add);
-        }
-        return files;
-    }
-
-    private List<GitSyncPostResult> ingestPostFiles(long blogId,
-                                                    Path workspace,
-                                                    JekyllLayoutConvention convention,
-                                                    List<Path> postFiles) {
-        List<GitSyncPostResult> results = new ArrayList<>();
-        Path postsRoot = convention.resolvePosts(workspace).toAbsolutePath().normalize();
-        for (Path postFile : postFiles) {
-            BlogGitImportService.SourceKind kind = postFile.startsWith(postsRoot)
-                                                                                  ? BlogGitImportService.SourceKind.POSTS_FOLDER
-                                                                                  : BlogGitImportService.SourceKind.DRAFTS_FOLDER;
-            GitSyncPostResult result = blogGitImportService.ingest(blogId, workspace, convention, postFile, kind);
-            gitSyncRunService.appendPostResult(GitSyncPhase.POST_IMPORT, result);
-            results.add(result);
-        }
-        return results;
     }
 
     private Path workspaceForBlog(Long blogId) {

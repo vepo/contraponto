@@ -8,6 +8,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class GitImportFailureMapper {
 
+    public record ClassifiedImportFailure(String message, String remediation) {}
+
     private static final String LAYOUT_CONVENTION_DOC = "See docs/git-jekyll-convention.md.";
 
     private static String firstLine(String message) {
@@ -68,8 +70,6 @@ public class GitImportFailureMapper {
         }
         return current;
     }
-
-    public record ClassifiedImportFailure(String message, String remediation) {}
 
     public ClassifiedImportFailure classify(Throwable throwable) {
         if (throwable == null) {

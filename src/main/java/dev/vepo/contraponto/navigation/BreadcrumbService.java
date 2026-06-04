@@ -299,14 +299,14 @@ public class BreadcrumbService {
                      current("New Blog"));
     }
 
+    public BreadcrumbTrail writingBlogs() {
+        return hubSection(NavigationHub.WRITING, "Blogs");
+    }
+
     public BreadcrumbTrail writingBlogSettings(Blog blog) {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
                      current("Settings — " + blog.getName()));
-    }
-
-    public BreadcrumbTrail writingBlogs() {
-        return hubSection(NavigationHub.WRITING, "Blogs");
     }
 
     public BreadcrumbTrail writingDraft(String draftTitle) {

@@ -66,6 +66,17 @@ public class NavigationHubService {
         return registry.defaultSectionSlug(hub);
     }
 
+    public HubMeta meta(NavigationHub hub) {
+        return switch (hub) {
+            case WRITING -> new HubMeta("Writing", "Writing", "Library, images, your blogs, and author appearance.");
+            case READING -> new HubMeta("Reading", "Reading", "Your highlights and notes across posts.");
+            case MANAGE -> new HubMeta("Manage", "Manage", "Dashboard, custom pages, comments, and platform blogs.");
+            case ACCOUNT -> new HubMeta("Account", "Account", "Notifications, subscriptions, and account security.");
+            case REVIEW -> new HubMeta("Review", "Review", "Editorial tools for featured posts and tags.");
+            case ADMINISTRATION -> new HubMeta("Administration", "Administration", "Platform administration.");
+        };
+    }
+
     public Response redirectToDefault(NavigationHub hub) {
         URI target = UriBuilder.fromPath(registry.defaultSectionPath(hub)).build();
         return Response.seeOther(target).build();
@@ -104,16 +115,5 @@ public class NavigationHubService {
                                    customPageRepository.loadLinks(),
                                    loggedUser,
                                    seoService.forPrivatePage(meta.pageTitle()));
-    }
-
-    public HubMeta meta(NavigationHub hub) {
-        return switch (hub) {
-            case WRITING -> new HubMeta("Writing", "Writing", "Library, images, your blogs, and author appearance.");
-            case READING -> new HubMeta("Reading", "Reading", "Your highlights and notes across posts.");
-            case MANAGE -> new HubMeta("Manage", "Manage", "Dashboard, custom pages, comments, and platform blogs.");
-            case ACCOUNT -> new HubMeta("Account", "Account", "Notifications, subscriptions, and account security.");
-            case REVIEW -> new HubMeta("Review", "Review", "Editorial tools for featured posts and tags.");
-            case ADMINISTRATION -> new HubMeta("Administration", "Administration", "Platform administration.");
-        };
     }
 }

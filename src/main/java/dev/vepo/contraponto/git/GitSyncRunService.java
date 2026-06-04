@@ -92,16 +92,16 @@ public class GitSyncRunService {
         }
     }
 
-    public Page<GitSyncRun> listForBlog(long blogId, PageQuery query) {
-        return gitSyncRunRepository.findPageByBlog(blogId, query);
-    }
-
     public java.util.Optional<GitSyncRun> findForBlog(long blogId, long runId) {
         return gitSyncRunRepository.findByIdAndBlogId(runId, blogId);
     }
 
     public java.util.List<GitSyncRunEntry> listEntries(long runId) {
         return gitSyncRunRepository.listEntries(runId);
+    }
+
+    public Page<GitSyncRun> listForBlog(long blogId, PageQuery query) {
+        return gitSyncRunRepository.findPageByBlog(blogId, query);
     }
 
     private String toJson(Map<String, Object> map) {

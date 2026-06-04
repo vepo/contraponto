@@ -207,13 +207,13 @@ public class User {
         return websiteUrl;
     }
 
-    public boolean hasRole(Role role) {
-        return roles != null && roles.contains(role);
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public boolean hasRole(Role role) {
+        return roles != null && roles.contains(role);
     }
 
     public boolean isActive() {
