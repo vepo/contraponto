@@ -45,11 +45,18 @@ public final class GithubContentRenderPlugin implements ContentRenderPlugin {
         }
         String owner = matcher.group(1);
         String repo = matcher.group(2);
-        String label = owner + "/" + repo;
         return """
                <div class="content-render content-render--github">
-               <a href="%s" rel="noopener noreferrer">%s</a>
+               <h2 class="github-repo">
+               <img class="github-repo__logo" src="/images/plugins/github-logo.png" alt="GitHub" />
+               <img class="github-repo__avatar" src="https://github.com/%1$s.png" alt="" />
+               <span class="github-repo__path">
+               <a href="https://github.com/%1$s" target="_blank" rel="noopener noreferrer">%1$s</a>
+               /
+               <a href="https://github.com/%1$s/%2$s" target="_blank" rel="noopener noreferrer">%2$s</a>
+               </span>
+               </h2>
                </div>
-               """.formatted(url, escape(label));
+               """.formatted(escape(owner), escape(repo));
     }
 }

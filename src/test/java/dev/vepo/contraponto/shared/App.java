@@ -1313,6 +1313,12 @@ public class App {
             return this;
         }
 
+        public PostPage clickGithubRepoAvatar() {
+            var avatar = wait.until(visibilityOfElementLocated(cssSelector(".github-repo__avatar")));
+            reliableClick(avatar);
+            return this;
+        }
+
         public PostPage clickHighlightActionBar(String action) {
             assertHighlightActionBarVisible(action);
             if ("remove-mark".equals(action)) {

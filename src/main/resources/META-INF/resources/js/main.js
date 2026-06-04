@@ -20,7 +20,7 @@ class ImageLightboxManager {
     onDocumentClick(event) {
         if (!this.lightbox || this.lightbox.hidden) {
             const trigger = event.target.closest('article.article-page__content img');
-            if (!trigger) {
+            if (!trigger || trigger.closest('.content-render')) {
                 return;
             }
             event.preventDefault();
