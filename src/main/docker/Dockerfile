@@ -1,3 +1,6 @@
+# Native executable (requires `mvn package -Pnative` before build).
+# GraalJS (Markdown/AsciiDoc renderers) is not supported on Mandrel native-image; use Dockerfile.jvm.
+# For JVM / fast-jar packaging use Dockerfile.jvm instead.
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7
 WORKDIR /work/
 RUN chown 1001 /work \
