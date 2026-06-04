@@ -49,6 +49,7 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
     private static final MediaType MEDIA_TYPE_JPEG = new MediaType(TYPE_IMAGE, "jpeg");
     private static final MediaType MEDIA_TYPE_PNG = new MediaType(TYPE_IMAGE, "png");
     private static final MediaType MEDIA_TYPE_SVG = new MediaType(TYPE_IMAGE, "svg+xml");
+    private static final MediaType MEDIA_TYPE_AVIF = new MediaType(TYPE_IMAGE, "avif");
 
     private static final MediaType MEDIA_TYPE_X_ICON = new MediaType(TYPE_IMAGE, "x-icon");
 
@@ -171,6 +172,7 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
             case String p when p.endsWith(".jpg") || p.endsWith(".jpeg") -> MEDIA_TYPE_JPEG;
             case String p when p.endsWith(".gif") -> MEDIA_TYPE_GIF;
             case String p when p.endsWith(".svg") -> MEDIA_TYPE_SVG;
+            case String p when p.endsWith(".avif") -> MEDIA_TYPE_AVIF;
             case String p when p.endsWith(".css") -> MEDIA_TYPE_CSS;
             case String p when p.endsWith(".js") -> MEDIA_TYPE_JS;
             default -> MediaType.APPLICATION_OCTET_STREAM_TYPE;

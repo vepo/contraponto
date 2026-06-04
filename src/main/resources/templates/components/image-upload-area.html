@@ -9,12 +9,12 @@
             <path d="M21 15L16 10L5 21" />
         </svg>
         <span>Click or drag to upload</span>
-        <small>JPG, PNG, GIF, WebP up to 10MB</small>
+        <small>JPG, PNG, GIF, WebP, AVIF up to 10MB</small>
     </div>
     <div class="write-form__cover-preview{#if !initialUrl} u-hidden{/if}" data-upload-preview>
         <img data-upload-preview-img src="{initialUrl}" alt="{label} preview"/>
         <button type="button" class="write-form__cover-remove" data-upload-remove data-i18n="image.remove">Remover</button>
     </div>
-    <input type="file" class="u-hidden" data-upload-input accept="image/jpeg,image/png,image/gif,image/webp">
+    <input type="file" class="u-hidden" data-upload-input accept="image/jpeg,image/png,image/gif,image/webp,image/avif">
     <input type="hidden" name="{hiddenFieldId}" id="{hiddenFieldId}" value="{initialId}">
 </div>

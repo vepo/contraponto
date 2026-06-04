@@ -1,7 +1,8 @@
 {#if !topTags.isEmpty}
 <div class="profile-tag-list" aria-label="Tags">
     {#for usage in topTags}
-    <a data-hx-get="{usage.tag.url}"
+    <a href="{usage.tag.url}"
+       data-hx-get="{usage.tag.url}"
        hx-select="main"
        hx-target="main"
        hx-push-url="{usage.tag.url}"

@@ -79,13 +79,13 @@
                                         <path d="M21 15L16 10L5 21" />
                                     </svg>
                                     <span>Clique ou arraste para enviar a capa</span>
-                                    <small>JPG, PNG, GIF, WebP até 10 MB</small>
+                                    <small data-i18n="write.cover.formats">JPG, PNG, GIF, WebP, AVIF até 10 MB</small>
                                 </div>
                                 <div id="coverPreview" class="write-form__cover-preview{#if !writePage.post.isPresent || writePage.post.get().getCover() == null} u-hidden{/if}">
                                     <img id="coverPreviewImg" src="{#if writePage.post.isPresent}{writePage.post.get().coverUrl}{/if}" alt="Pré-visualização da capa"/>
                                     <button type="button" id="removeCoverBtn" class="write-form__cover-remove">✕</button>
                                 </div>
-                                <input type="file" id="coverInput" class="u-hidden" accept="image/jpeg,image/png,image/gif,image/webp">
+                                <input type="file" id="coverInput" class="u-hidden" accept="image/jpeg,image/png,image/gif,image/webp,image/avif">
                                 <input type="hidden" name="coverId" id="coverId" value="">
                             </div>
                         </div>

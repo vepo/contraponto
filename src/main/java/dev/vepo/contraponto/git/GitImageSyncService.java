@@ -50,7 +50,7 @@ public class GitImageSyncService {
 
     private static boolean isImageExtension(String ext) {
         return switch (ext.toLowerCase(Locale.ROOT)) {
-            case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg" -> true;
+            case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg" -> true;
             default -> false;
         };
     }

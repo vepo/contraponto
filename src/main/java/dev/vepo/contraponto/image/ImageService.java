@@ -30,6 +30,7 @@ public class ImageService {
             case ".jpg", ".jpeg" -> "image/jpeg";
             case ".gif" -> "image/gif";
             case ".webp" -> "image/webp";
+            case ".avif" -> "image/avif";
             case ".svg" -> "image/svg+xml";
             default -> "image/png";
         };
@@ -60,6 +61,7 @@ public class ImageService {
                 contentType.equals("image/png") ||
                 contentType.equals("image/gif") ||
                 contentType.equals("image/webp") ||
+                contentType.equals("image/avif") ||
                 contentType.equals("image/svg+xml");
     }
 
@@ -193,7 +195,7 @@ public class ImageService {
 
     private void validateImage(String contentType, long size) {
         if (!isValidImageType(contentType)) {
-            throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP, and SVG are allowed.",
+            throw new WebApplicationException("Invalid image type. Only JPEG, PNG, GIF, WebP, AVIF, and SVG are allowed.",
                                               Response.Status.BAD_REQUEST);
         }
         if (size > MAX_SIZE_BYTES) {

@@ -36,6 +36,11 @@ class ImageServiceTest {
     private Blog blog;
 
     @Test
+    void contentTypeForExtensionIncludesAvif() {
+        assertThat(ImageService.contentTypeForExtension(".avif")).isEqualTo("image/avif");
+    }
+
+    @Test
     void deleteImageRejectsReferencedImage() {
         var image = Given.randomCover(blog);
         var post = Given.post()
@@ -94,6 +99,19 @@ class ImageServiceTest {
                       .withPassword("Password123!")
                       .persist();
         blog = author.getDefaultBlog();
+    }
+
+    @Test
+    void storeImportedAvifServesWithAvifContentType() {
+        byte[] payload = new byte[] { 0, 0, 0, 1 };
+        var image = imageService.storeImportedImage(blog,
+                                                    "c3d4e5f6-a7b8-9012-cdef-123456789abc",
+                                                    ".avif",
+                                                    payload,
+                                                    "image/avif",
+                                                    null);
+        var data = imageService.getImage(image.getFilename());
+        assertThat(data.contentType()).isEqualTo("image/avif");
     }
 
     @Test

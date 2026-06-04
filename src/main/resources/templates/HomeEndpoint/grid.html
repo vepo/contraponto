@@ -9,7 +9,8 @@
     <article class="article-card">
         {#if post.cover}
         <div class="article-card__image">
-            <a data-hx-get="{post.url}"
+            <a href="{post.url}"
+                data-hx-get="{post.url}"
                 hx-select="main"
                 hx-target="main"
                 hx-push-url="{post.url}">
@@ -20,7 +21,8 @@
         <div class="article-card__content">
             <div class="article-card__category" data-i18n="grid.articleCategory">Artigo</div>
             <h2 class="article-card__title">
-                <a data-hx-get="{post.url}"
+                <a href="{post.url}"
+                    data-hx-get="{post.url}"
                     hx-select="main"
                     hx-target="main"
                     hx-push-url="{post.url}">{post.liveTitle}</a>
@@ -30,7 +32,8 @@
             {/if}
             {#include components/post-tags post=post /}
             <div class="article-meta">
-                <a data-hx-get="/{post.author.username}"
+                <a href="/{post.author.username}"
+                    data-hx-get="/{post.author.username}"
                     hx-select="main"
                     hx-target="main"
                     hx-push-url="/{post.author.username}">

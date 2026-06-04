@@ -232,6 +232,7 @@ class MainManager {
         this.setupErrorHandler();
         this.setupCsrfHeader();
         this.setupMainNavigationSwap();
+        this.setupModifierKeyNavigation();
         this.setupSeoSync();
         this.setupSearchModalSubmit();
         this.updateUIElements();
@@ -281,6 +282,42 @@ class MainManager {
         });
 
         patchMainNavigationSwaps();
+    }
+
+    /**
+     * Ctrl/Cmd/Shift/middle-click on SPA nav anchors should open href in a new tab,
+     * not run HTMX in the current tab (HTMX only skips modifier clicks for hx-boost).
+     */
+    setupModifierKeyNavigation() {
+        document.body.addEventListener('htmx:configRequest', (evt) => {
+            const triggering = evt.detail?.triggeringEvent;
+            if (!triggering || (triggering.type !== 'click' && triggering.type !== 'auxclick')) {
+                return;
+            }
+            const modifierClick = triggering.ctrlKey
+                || triggering.metaKey
+                || triggering.shiftKey
+                || triggering.button === 1;
+            if (!modifierClick) {
+                return;
+            }
+            if (evt.detail?.verb !== 'get') {
+                return;
+            }
+            const elt = evt.detail?.elt;
+            if (!elt || elt.tagName !== 'A') {
+                return;
+            }
+            if (elt.getAttribute('hx-target') !== 'main' || elt.getAttribute('hx-select') !== 'main') {
+                return;
+            }
+            const url = elt.getAttribute('href') || elt.getAttribute('hx-push-url');
+            if (!url || url.startsWith('#')) {
+                return;
+            }
+            evt.preventDefault();
+            window.open(url, '_blank');
+        });
     }
 
     setupSeoSync() {

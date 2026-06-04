@@ -32,6 +32,27 @@ class ExploreDirectoryWebTest {
     }
 
     @Test
+    void blogsDirectoryCardsExposeHrefForModifierClicks(App app) {
+        User author = Given.user()
+                           .withUsername("blogdir")
+                           .withEmail("blogdir@example.com")
+                           .withName("Blog Dir Author")
+                           .withPassword("pass12345")
+                           .persist();
+        Given.post()
+             .withTitle("Blog Dir Post")
+             .withSlug("blog-dir-post")
+             .withContent("Body")
+             .withAuthor(author)
+             .persist();
+
+        app.goToPath("/explore/blogs")
+           .assertPageSourceContains("blog-directory-card__link")
+           .assertPageSourceContains("href=\"/blogdir\"")
+           .assertPageSourceContains("data-hx-get=\"/blogdir\"");
+    }
+
+    @Test
     void homeShowsExploreCards(App app) {
         User author = Given.user()
                            .withUsername("explore-user")
@@ -48,7 +69,9 @@ class ExploreDirectoryWebTest {
 
         app.access()
            .assertPageSourceContains("browse-explore-aside__link")
+           .assertPageSourceContains("href=\"/authors\"")
            .assertPageSourceContains("data-hx-get=\"/authors\"")
+           .assertPageSourceContains("href=\"/explore/blogs\"")
            .assertPageSourceContains("data-hx-get=\"/explore/blogs\"");
     }
 

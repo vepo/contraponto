@@ -2,7 +2,8 @@
     <h2 class="browse-explore-aside__title" data-i18n="home.explore.title">Explorar</h2>
 
     <div class="browse-explore-aside__links">
-        <a data-hx-get="/authors"
+        <a href="/authors"
+           data-hx-get="/authors"
            hx-select="main"
            hx-target="main"
            hx-push-url="/authors"
@@ -10,7 +11,8 @@
             <span class="browse-explore-aside__link-label" data-i18n="home.explore.authors">Autores</span>
             <span class="browse-explore-aside__link-hint" data-i18n="home.explore.authorsHint">Perfis e publicações</span>
         </a>
-        <a data-hx-get="/explore/blogs"
+        <a href="/explore/blogs"
+           data-hx-get="/explore/blogs"
            hx-select="main"
            hx-target="main"
            hx-push-url="/explore/blogs"
@@ -37,7 +39,8 @@
         </div>
         {#if totalAuthors > mainAuthors.size}
         <p class="browse-explore-aside__more">
-            <a data-hx-get="/authors"
+            <a href="/authors"
+               data-hx-get="/authors"
                hx-select="main"
                hx-target="main"
                hx-push-url="/authors"
