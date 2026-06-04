@@ -11,6 +11,22 @@ import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 class StaticResourcesFilterTest {
 
     @Test
+    void servesMainJavaScriptBundle() {
+        given().get("/js/main.js")
+               .then()
+               .statusCode(200)
+               .header("Content-Type", containsString("javascript"));
+    }
+
+    @Test
+    void servesMainStylesheet() {
+        given().get("/style/main.css")
+               .then()
+               .statusCode(200)
+               .header("Content-Type", containsString("css"));
+    }
+
+    @Test
     void servesSvgWithImageSvgXmlContentType() {
         given().get("/images/search.svg")
                .then()

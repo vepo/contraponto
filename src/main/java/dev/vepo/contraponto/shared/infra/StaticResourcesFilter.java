@@ -11,14 +11,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
+@PreMatching
 @Provider
+@Priority(Priorities.AUTHENTICATION)
 public class StaticResourcesFilter implements ContainerRequestFilter {
 
     private static class CachedResource {
@@ -54,6 +59,24 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
 
     private static final DateTimeFormatter HTTP_DATE_FORMAT = DateTimeFormatter.RFC_1123_DATE_TIME;
 
+    private static boolean isPackagedStaticPath(String path) {
+        return path.startsWith("js/")
+                || path.startsWith("style/")
+                || path.startsWith("images/");
+    }
+
+    private static InputStream openPackagedResource(String path) {
+        String classpathPath = STATIC_ROOT + path;
+        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        if (contextLoader != null) {
+            InputStream fromContext = contextLoader.getResourceAsStream(classpathPath.substring(1));
+            if (fromContext != null) {
+                return fromContext;
+            }
+        }
+        return StaticResourcesFilter.class.getResourceAsStream(classpathPath);
+    }
+
     private String computeETag(byte[] content) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
@@ -81,16 +104,18 @@ public class StaticResourcesFilter implements ContainerRequestFilter {
         if (path == null || path.isEmpty() || path.isBlank() || path.equals("/")) {
             return;
         }
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
 
-        // Build resource path: META-INF/resources/<path>
-        String resourcePath = STATIC_ROOT + path;
         CachedResource cached = CACHE.get(path);
 
         if (cached == null) {
-            // Try to load it from classpath
-            try (InputStream in = getClass().getResourceAsStream(resourcePath)) {
+            try (InputStream in = openPackagedResource(path)) {
                 if (in == null) {
-                    // Resource not found – let the request continue normally
+                    if (isPackagedStaticPath(path)) {
+                        requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).build());
+                    }
                     return;
                 }
 

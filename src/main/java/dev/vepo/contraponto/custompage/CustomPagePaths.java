@@ -1,8 +1,50 @@
 package dev.vepo.contraponto.custompage;
 
+import java.util.Set;
+
 import dev.vepo.contraponto.blog.Blog;
 
 public final class CustomPagePaths {
+
+    /**
+     * First-path segments that must not be used as usernames or blog slugs, and
+     * that must not be mistaken for application routes. Post and custom-page slugs
+     * may still use these words (e.g. {@code /alice/post/js},
+     * {@code /alice/page/style}).
+     */
+    private static final Set<String> RESERVED_SEGMENTS = Set.of("components",
+                                                                "js",
+                                                                "style",
+                                                                "images",
+                                                                "i18n",
+                                                                "explore",
+                                                                "feed",
+                                                                "authors",
+                                                                "main-blog",
+                                                                "forms",
+                                                                "api",
+                                                                "write",
+                                                                "writing",
+                                                                "manage",
+                                                                "account",
+                                                                "editor",
+                                                                "administration",
+                                                                "search",
+                                                                "library",
+                                                                "dashboard",
+                                                                "profile",
+                                                                "review",
+                                                                "pages",
+                                                                "blogs",
+                                                                "users",
+                                                                "comments",
+                                                                "notifications",
+                                                                "subscriptions",
+                                                                "tags",
+                                                                "post",
+                                                                "serie",
+                                                                "auth",
+                                                                "_custom_page");
 
     public static String blogSlug(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
         return segments.get(1).getPath();
@@ -30,35 +72,7 @@ public final class CustomPagePaths {
     }
 
     public static boolean isReservedSegment(String segment) {
-        return segment.equals("components")
-                || segment.equals("explore")
-                || segment.equals("feed")
-                || segment.equals("authors")
-                || segment.equals("main-blog")
-                || segment.equals("forms")
-                || segment.equals("api")
-                || segment.equals("write")
-                || segment.equals("writing")
-                || segment.equals("manage")
-                || segment.equals("account")
-                || segment.equals("editor")
-                || segment.equals("administration")
-                || segment.equals("search")
-                || segment.equals("library")
-                || segment.equals("dashboard")
-                || segment.equals("profile")
-                || segment.equals("review")
-                || segment.equals("pages")
-                || segment.equals("blogs")
-                || segment.equals("users")
-                || segment.equals("comments")
-                || segment.equals("notifications")
-                || segment.equals("subscriptions")
-                || segment.equals("tags")
-                || segment.equals("post")
-                || segment.equals("serie")
-                || segment.equals("auth")
-                || segment.equals("_custom_page");
+        return RESERVED_SEGMENTS.contains(segment);
     }
 
     public static long linksBlogId(CustomPage page) {
@@ -114,6 +128,10 @@ public final class CustomPagePaths {
             return "/%s/page/%s".formatted(owner.getUsername(), slug);
         }
         return "/%s/%s/page/%s".formatted(owner.getUsername(), blog.getSlug(), slug);
+    }
+
+    public static Set<String> reservedSegments() {
+        return RESERVED_SEGMENTS;
     }
 
     public static String slug(java.util.List<jakarta.ws.rs.core.PathSegment> segments, PageType type) {

@@ -99,6 +99,8 @@ class CustomPagePathsTest {
         assertThat(CustomPagePaths.isReservedSegment("api")).isTrue();
         assertThat(CustomPagePaths.isReservedSegment("feed")).isTrue();
         assertThat(CustomPagePaths.isReservedSegment("main-blog")).isTrue();
+        assertThat(CustomPagePaths.matchPageType(List.of(seg("eve"), seg("page"), seg("js")))).isEqualTo(PageType.USER);
+        assertThat(CustomPagePaths.matchPageType(List.of(seg("eve"), seg("travel"), seg("page"), seg("style")))).isEqualTo(PageType.BLOG);
     }
 
     @Test

@@ -9,6 +9,11 @@ public final class TestTags {
     public static final String UNIT = "unit";
     public static final String QUARKUS = "quarkus";
     public static final String WEB = "web";
+    /**
+     * Post/custom-page slugs may use
+     * {@link dev.vepo.contraponto.custompage.CustomPagePaths#reservedSegments()}.
+     */
+    public static final String RESERVED_SLUGS = "reserved-slugs";
 
     private TestTags() {}
 }
