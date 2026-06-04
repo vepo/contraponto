@@ -46,7 +46,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
       - name: Compile application
-        run: mvn clean package -P 'native,prod' --file pom.xml
+        run: mvn clean package -P native --file pom.xml
       - name: Build container image (JVM)
         run: docker build -f src/main/docker/Dockerfile.jvm -t contraponto:jvm .
       - name: Log in to Docker Hub
