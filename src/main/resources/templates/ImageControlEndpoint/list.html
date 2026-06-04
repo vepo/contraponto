@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     {#include components/head}
-    Images - {blog.name} - contraponto
+    Images - {owner.name} - contraponto
     {/include}
     <body>
         {#include components/header /}
@@ -11,18 +11,30 @@
                 <div class="pages-manage__header">
                     <div>
                         <h1 class="pages-manage__title" data-i18n="image.pageTitle">Imagens</h1>
-                        <p class="pages-manage__subtitle">{blog.name}</p>
+                        <p class="pages-manage__subtitle">{owner.name}</p>
                     </div>
-                    <a data-hx-get="/writing/images?blogId={blog.id}"
+                    <a data-hx-get="/writing/images"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"
-                       hx-push-url="/writing/images?blogId={blog.id}"
+                       hx-push-url="/writing/images"
                        class="btn btn--secondary"
-                       data-nav data-i18n="image.backToList">Voltar para imagens</a>
+                       data-nav data-i18n="image.backToHub">Back to Writing images</a>
                 </div>
 
-                {#include ImageControlEndpoint/image-list blog=blog images=images hubMode=false basePath='/blogs/{blog.id}/images' extraQuery='' fragmentTarget='' /}
+                {#include components/image-library-search
+                    hxGet='/writing/images'
+                    hxTarget='main'
+                    hxSelect='main'
+                    hxPushUrl='true'
+                    hxSwap='outerHTML'
+                    searchQuery=searchQuery
+                    inputId='imageControlSearchList'
+                    spinnerId='image-control-search-indicator-list'
+                    modifierClass='image-library-search--hub'
+                    pickerToolbar=false /}
+
+                {#include ImageControlEndpoint/image-list owner=owner images=images searchQuery=searchQuery hubMode=false basePath='/writing/images' extraQuery=extraQuery fragmentTarget='' /}
             </div>
         </main>
         {#include components/footer /}

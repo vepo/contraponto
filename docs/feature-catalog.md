@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-05-19 · Author profiles, explore strip, directory cards, tag main authors
+**Last verified:** 2026-06-04 · User-scoped image library, picker layout, Images hub search
 
 ---
 
@@ -100,7 +100,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | Delete draft | `USER` | HTMX delete on library | 2 | **Writing** hub → **Delete** on draft row. |
 | Save draft | `USER` | `POST /forms/write/draft` | — | On `/write` → header **Salvar Rascunho** (no extra navigation). |
 | Publish post | `USER` | `POST /forms/write/publish` | — | On `/write` → header **Publicar**. |
-| Image library (Writing hub) | `USER` | `GET /writing/images` | 2 | Open user menu → **Writing** → **Images** in left nav. |
+| Image library (Writing hub) | `USER` | `GET /writing/images` (+ optional `?q=` search) | 2 | Open user menu → **Writing** → **Images** in left nav; search filters by alt text or path. |
 
 ---
 
@@ -116,7 +116,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 | New blog | `USER` | `GET /blogs/new` | 3 | **Writing** → **Blogs** → **New Blog**. |
 | Edit blog (core) | `USER` | `GET /blogs/{id}/edit?hub=writing` | 4 | **Writing** → **Blogs** → **Edit** on row. |
 | Blog settings (extended) | `USER` | `GET /blogs/{id}/settings` | 4 | **Writing** → **Blogs** → **Settings** on row. |
-| Blog image library (deep link) | `USER` | `GET /blogs/{blogId}/images` | 2 | **Writing** → **Images** (or direct URL / bookmark). |
+| Blog image library (legacy redirect) | `USER` | `GET /blogs/{blogId}/images` → `/writing/images` | 2 | Bookmarked blog URL redirects to Writing hub **Images**. |
 | Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 5 | **Blogs** → **Edit** → **View sync history**. |
 | Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 6 | Sync history → run link. |
 | Custom pages list | `USER` | `GET /manage/pages` | 2 | Open user menu → **Manage** → **Custom Pages** in left nav. |

@@ -1938,6 +1938,12 @@ public class App {
             return this;
         }
 
+        public WritePage assertCoverId(String expectedUuid) {
+            var coverId = wait.until(presenceOfElementLocated(By.id("coverId")));
+            assertThat(coverId.getDomProperty("value")).isEqualTo(expectedUuid);
+            return this;
+        }
+
         public WritePage assertCoverPreviewNotVisible() {
             assertThat(driver.findElement(By.id("coverPreview")).isDisplayed()).isFalse();
             return this;
@@ -1989,6 +1995,13 @@ public class App {
             return Long.parseLong(matcher.group(1));
         }
 
+        public WritePage openCoverImagePicker() {
+            var coverArea = wait.until(visibilityOfElementLocated(By.id("coverUploadArea")));
+            reliableClick(coverArea);
+            wait.until(visibilityOfElementLocated(By.id("imagePickerModal")));
+            return this;
+        }
+
         public WritePage publish() {
             var publishBtn = wait.until(visibilityOfElementLocated(By.id("publish")));
             reliableClick(publishBtn);
@@ -2007,6 +2020,15 @@ public class App {
             var saveBtn = wait.until(visibilityOfElementLocated(By.id("saveDraft")));
             reliableClick(saveBtn);
             waitForToast(); // wait for success/error toast
+            return this;
+        }
+
+        public WritePage selectImageFromPicker(String imageUuid) {
+            var selector = ".image-picker__item[data-image-uuid='%s']".formatted(imageUuid);
+            var item = wait.until(elementToBeClickable(cssSelector(selector)));
+            reliableClick(item);
+            wait.until(invisibilityOfElementLocated(By.id("imagePickerModal")));
+            wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
             return this;
         }
 
@@ -2475,6 +2497,11 @@ public class App {
         _goTo("/tags/" + slug);
         waitForReady();
         return new TagBrowsePage();
+    }
+
+    public ImageControlPage goToWritingImages() {
+        _goTo("/writing/images");
+        return new ImageControlPage();
     }
 
     public App loadMore() {

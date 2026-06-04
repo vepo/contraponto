@@ -48,14 +48,6 @@ public class ReviewEndpoint {
         this.loggedUser = loggedUser;
     }
 
-    private Response forbidden() {
-        return Toast.response(Response.Status.FORBIDDEN)
-                    .i18nKey(I18nKeys.TOAST_EDITOR_FORBIDDEN, I18nDefaults.EDITOR_FORBIDDEN)
-                    .type(Toast.Type.ERROR)
-                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .build();
-    }
-
     public Page<Post> listPage(int page) {
         return postRepository.findPublished(PageQuery.forGrid(20, page));
     }

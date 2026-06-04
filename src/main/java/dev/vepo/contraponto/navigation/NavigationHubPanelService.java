@@ -97,7 +97,7 @@ public class NavigationHubPanelService {
     }
 
     public TemplateInstance render(NavigationHub hub, String sectionSlug, int page) {
-        return render(hub, sectionSlug, page, false, null, null);
+        return render(hub, sectionSlug, page, false, null, null, null);
     }
 
     public TemplateInstance render(NavigationHub hub,
@@ -105,7 +105,7 @@ public class NavigationHubPanelService {
                                    int page,
                                    boolean emailVerified,
                                    String profileError) {
-        return render(hub, sectionSlug, page, emailVerified, profileError, null);
+        return render(hub, sectionSlug, page, emailVerified, profileError, null, null);
     }
 
     public TemplateInstance render(NavigationHub hub,
@@ -114,9 +114,19 @@ public class NavigationHubPanelService {
                                    boolean emailVerified,
                                    String profileError,
                                    Long blogId) {
+        return render(hub, sectionSlug, page, emailVerified, profileError, blogId, null);
+    }
+
+    public TemplateInstance render(NavigationHub hub,
+                                   String sectionSlug,
+                                   int page,
+                                   boolean emailVerified,
+                                   String profileError,
+                                   Long blogId,
+                                   String imageSearchQuery) {
         registry.requireSection(hub, sectionSlug, loggedUser);
         return switch (hub) {
-            case WRITING -> renderWriting(sectionSlug, page, blogId);
+            case WRITING -> renderWriting(sectionSlug, page, imageSearchQuery);
             case READING -> renderReading(sectionSlug, page);
             case MANAGE -> renderManage(sectionSlug, page);
             case ACCOUNT -> renderAccount(sectionSlug, page, emailVerified, profileError);
@@ -196,11 +206,11 @@ public class NavigationHubPanelService {
         };
     }
 
-    private TemplateInstance renderWriting(String sectionSlug, int page, Long blogId) {
+    private TemplateInstance renderWriting(String sectionSlug, int page, String imageSearchQuery) {
         String basePath = registry.sectionPath(NavigationHub.WRITING, sectionSlug);
         return switch (sectionSlug) {
             case "library" -> libraryEndpoint.renderHubPanel();
-            case "images" -> imageControlEndpoint.renderHubPanel(blogId, page);
+            case "images" -> imageControlEndpoint.renderHubPanel(page, imageSearchQuery);
             case "blogs" -> blogManageEndpoint.renderAuthorHubPanel(page, basePath);
             case "appearance" -> authorAppearanceEndpoint.renderHubPanel();
             case "highlights" -> highlightManageEndpoint.renderHubPanel(page, basePath, "proposals");

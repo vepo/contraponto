@@ -1613,8 +1613,10 @@
 }
 
 .image-control__thumb {
+  width: 3.5rem;
+  height: 3.5rem;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -1650,6 +1652,29 @@
 
 .image-control__usage-list li {
   margin-bottom: 0.35rem;
+}
+
+.image-library-search {
+  margin-bottom: var(--spacing-md);
+}
+
+.image-library-search--hub {
+  max-width: 18rem;
+}
+
+.image-library-search .search-form__group {
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.image-library-search .search-form__input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-pill);
+}
+
+.image-library-search .htmx-indicator-slot {
+  flex-shrink: 0;
 }
 
 .image-control-hub__blog-select {

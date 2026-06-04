@@ -391,7 +391,7 @@ public interface Given {
                                                                    "image/png",
                                                                    new FileInputStream(image.toFile()),
                                                                    Files.size(image),
-                                                                   blog,
+                                                                   blog.getOwner(),
                                                                    blog.getOwner());
             var imageDb = inject(ImageRepository.class).findByUuid(imageResp.id());
             assertTrue(imageDb.isPresent());

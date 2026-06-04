@@ -3,13 +3,13 @@ package dev.vepo.contraponto.image;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
+import dev.vepo.contraponto.user.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -17,20 +17,9 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class ImageControlService {
 
-    private static String displayFilename(Image image) {
-        String gitPath = image.getGitAssetRelativePath();
-        if (gitPath != null && !gitPath.isBlank()) {
-            int dot = image.getUrl().lastIndexOf('.');
-            String ext = dot >= 0 ? image.getUrl().substring(dot) : "";
-            return gitPath + ext;
-        }
-        return image.getFilename();
-    }
-
     private final ImageRepository imageRepository;
     private final ImageDependencyRepository dependencyRepository;
     private final PostRepository postRepository;
-
     private final CustomPageRepository customPageRepository;
 
     @Inject
@@ -44,18 +33,18 @@ public class ImageControlService {
         this.customPageRepository = customPageRepository;
     }
 
-    public Page<ImageControlRow> listForBlog(Blog blog, PageQuery query) {
-        Page<Image> page = imageRepository.findPageByBlogId(blog.getId(), query);
-        List<ImageControlRow> rows = page.data().stream().map(img -> toRow(img, blog.getId())).toList();
+    public Page<ImageControlRow> listForOwner(User owner, String searchQuery, PageQuery query) {
+        Page<Image> page = imageRepository.findPageByOwnerId(owner.getId(), searchQuery, query);
+        List<ImageControlRow> rows = page.data().stream().map(this::toRow).toList();
         return new Page<>(rows, page.page(), page.limit(), page.total());
     }
 
-    private ImageControlRow toRow(Image image, long blogId) {
+    private ImageControlRow toRow(Image image) {
         List<ImageUsageView> usages = new ArrayList<>();
-        for (ImageUsageRow usage : dependencyRepository.findUsagesForImage(image.getId(), blogId)) {
+        for (ImageUsageRow usage : dependencyRepository.findUsagesForImage(image.getId())) {
             usages.add(toUsageView(usage));
         }
-        String displayFilename = displayFilename(image);
+        String displayFilename = ImageDisplayNames.displayFilename(image);
         String altText = image.getAltText() == null ? "" : image.getAltText();
         return new ImageControlRow(image.getUuid(),
                                    image.getUrl(),
@@ -83,8 +72,8 @@ public class ImageControlService {
     }
 
     @Transactional
-    public void updateAltText(Blog blog, String uuid, String altText) {
-        Image image = imageRepository.findByUuidAndBlogId(uuid, blog.getId())
+    public void updateAltText(long ownerId, String uuid, String altText) {
+        Image image = imageRepository.findByUuidAndOwnerId(uuid, ownerId)
                                      .orElseThrow(() -> new IllegalArgumentException("Image not found"));
         String trimmed = altText == null ? null : altText.trim();
         image.setAltText(trimmed == null || trimmed.isEmpty() ? null : trimmed);

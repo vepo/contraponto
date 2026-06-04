@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,8 +43,8 @@ public class Image {
     private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blog_id", nullable = false)
-    private Blog blog;
+    @JoinColumn(name = "owner_user_id", nullable = false)
+    private User owner;
 
     @Column(name = "alt_text")
     private String altText;
@@ -67,31 +66,29 @@ public class Image {
 
     public Image() {}
 
-    public Image(String uuid, String filename, String contentType, Long size, String url, Blog blog) {
+    public Image(String uuid, String filename, String contentType, Long size, String url, User owner) {
         this.uuid = uuid;
         this.filename = filename;
         this.contentType = contentType;
         this.size = size;
         this.url = url;
-        this.blog = blog;
+        this.owner = owner;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null || getClass() != obj.getClass())
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
+        }
         Image other = (Image) obj;
         return Objects.equals(id, other.id);
     }
 
     public String getAltText() {
         return altText;
-    }
-
-    public Blog getBlog() {
-        return blog;
     }
 
     public String getContentType() {
@@ -112,6 +109,10 @@ public class Image {
 
     public Long getId() {
         return id;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 
     public Long getSize() {
@@ -147,10 +148,6 @@ public class Image {
         this.altText = altText;
     }
 
-    public void setBlog(Blog blog) {
-        this.blog = blog;
-    }
-
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
@@ -169,6 +166,10 @@ public class Image {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 
     public void setSize(Long size) {

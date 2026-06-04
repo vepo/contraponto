@@ -135,7 +135,7 @@ public class SaveDraftEndpoint {
 
     private void updateCoverImageIfProvided(Post post, SaveDraftRequest request, Blog blog) {
         if (request.coverId() != null && !request.coverId().isBlank()) {
-            imageRepository.findByUuidAndBlogId(request.coverId(), blog.getId())
+            imageRepository.findByUuidAndOwnerId(request.coverId(), blog.getOwner().getId())
                            .ifPresent(post::setCover);
         }
         // Note: Unlike publish endpoint, we do NOT clear cover if coverId is missing.

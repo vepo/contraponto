@@ -1,0 +1,48 @@
+<form class="search-form image-library-search {#if modifierClass}{modifierClass}{/if}"
+      hx-get="{hxGet}"
+      hx-target="{hxTarget}"
+      {#if hxSelect??}{#if hxSelect}hx-select="{hxSelect}"{/if}{/if}
+      {#if hxPushUrl??}{#if hxPushUrl}hx-push-url="{hxPushUrl}"{/if}{/if}
+      hx-swap="{hxSwap}"
+      hx-trigger="keyup changed delay:300ms from:#{inputId}"
+      hx-params="q"
+      {#if spinnerId??}{#if spinnerId}hx-indicator="#{spinnerId}"{/if}{/if}>
+    <label class="sr-only" for="{inputId}" data-i18n="image.search.label">Search images</label>
+    {#if pickerToolbar?? && pickerToolbar}
+    <div class="image-library-search__control">
+        <span class="image-library-search__icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="M21 21l-4.35-4.35"/>
+            </svg>
+        </span>
+        <input type="search"
+               id="{inputId}"
+               name="q"
+               class="search-form__input"
+               value="{searchQuery}"
+               placeholder="Search by alt text or path…"
+               data-i18n="image.search.placeholder"
+               data-i18n-attr="placeholder"
+               autocomplete="off"/>
+        {#if spinnerId??}{#if spinnerId}
+        {#include components/htmx-spinner id=spinnerId /}
+        {/if}{/if}
+    </div>
+    {#else}
+    <div class="search-form__group">
+        <input type="search"
+               id="{inputId}"
+               name="q"
+               class="search-form__input"
+               value="{searchQuery}"
+               placeholder="Search by alt text or path…"
+               data-i18n="image.search.placeholder"
+               data-i18n-attr="placeholder"
+               autocomplete="off"/>
+        {#if spinnerId??}{#if spinnerId}
+        {#include components/htmx-spinner id=spinnerId /}
+        {/if}{/if}
+    </div>
+    {/if}
+</form>

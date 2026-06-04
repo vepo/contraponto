@@ -86,13 +86,6 @@ public class BlogBannerService {
         if (imageUuid == null || imageUuid.isBlank()) {
             return Optional.empty();
         }
-        var trimmed = imageUuid.trim();
-        for (Blog blog : blogRepository.findByOwnerIdForManagement(ownerId)) {
-            var image = imageRepository.findByUuidAndBlogId(trimmed, blog.getId());
-            if (image.isPresent()) {
-                return image;
-            }
-        }
-        return Optional.empty();
+        return imageRepository.findByUuidAndOwnerId(imageUuid.trim(), ownerId);
     }
 }

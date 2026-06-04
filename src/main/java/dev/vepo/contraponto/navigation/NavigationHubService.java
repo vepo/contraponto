@@ -83,7 +83,7 @@ public class NavigationHubService {
     }
 
     public TemplateInstance shell(NavigationHub hub, String sectionSlug, int page) {
-        return shell(hub, sectionSlug, page, false, null, null);
+        return shell(hub, sectionSlug, page, false, null, null, null);
     }
 
     public TemplateInstance shell(NavigationHub hub,
@@ -91,7 +91,7 @@ public class NavigationHubService {
                                   int page,
                                   boolean emailVerified,
                                   String profileError) {
-        return shell(hub, sectionSlug, page, emailVerified, profileError, null);
+        return shell(hub, sectionSlug, page, emailVerified, profileError, null, null);
     }
 
     public TemplateInstance shell(NavigationHub hub,
@@ -100,6 +100,16 @@ public class NavigationHubService {
                                   boolean emailVerified,
                                   String profileError,
                                   Long blogId) {
+        return shell(hub, sectionSlug, page, emailVerified, profileError, blogId, null);
+    }
+
+    public TemplateInstance shell(NavigationHub hub,
+                                  String sectionSlug,
+                                  int page,
+                                  boolean emailVerified,
+                                  String profileError,
+                                  Long blogId,
+                                  String imageSearchQuery) {
         var section = registry.requireSection(hub, sectionSlug, loggedUser);
         var meta = meta(hub);
         var navGroups = registry.groups(hub, loggedUser);
@@ -110,7 +120,13 @@ public class NavigationHubService {
                                    navGroups,
                                    registry.isSingleSectionHub(hub, loggedUser),
                                    sectionSlug,
-                                   new RawString(panelService.render(hub, sectionSlug, page, emailVerified, profileError, blogId)
+                                   new RawString(panelService.render(hub,
+                                                                     sectionSlug,
+                                                                     page,
+                                                                     emailVerified,
+                                                                     profileError,
+                                                                     blogId,
+                                                                     imageSearchQuery)
                                                              .render()),
                                    customPageRepository.loadLinks(),
                                    loggedUser,

@@ -1,0 +1,39 @@
+<div id="imagePickerModal" class="modal modal--open" role="dialog" aria-labelledby="imagePickerModalTitle" aria-modal="true">
+    <div class="modal__container modal__container--image-picker">
+        <div class="modal__header">
+            <div>
+                <h2 id="imagePickerModalTitle" class="modal__title" data-i18n="image.picker.title">Escolher imagem</h2>
+                <p class="image-picker__subtitle" data-i18n="image.picker.owner" data-i18n-params='{"name": "{owner.name}"}'>Library: {owner.name}</p>
+            </div>
+            <button type="button" class="modal__close" data-image-picker-close aria-label="Fechar" data-i18n="common.close" data-i18n-attr="aria-label">✕</button>
+        </div>
+        <div class="modal__body image-picker__body">
+            <div class="image-picker__upload" data-image-picker-upload>
+                <input type="file" class="u-hidden" data-image-picker-file accept="image/jpeg,image/png,image/gif,image/webp"/>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <span class="image-picker__upload-label" data-i18n="image.picker.upload">Enviar imagem nova</span>
+                <small class="image-picker__upload-hint" data-i18n="image.picker.uploadHint">JPG, PNG, GIF, WebP até 10 MB</small>
+            </div>
+            <section class="image-picker__library" aria-labelledby="imagePickerLibraryTitle">
+                <div class="image-picker__library-toolbar">
+                    <h3 id="imagePickerLibraryTitle" class="image-picker__library-title" data-i18n="image.picker.librarySection">Your library</h3>
+                    {#include components/image-library-search
+                        hxGet='/components/images/picker/grid'
+                        hxTarget='#imagePickerGrid'
+                        hxSwap='innerHTML'
+                        searchQuery=searchQuery
+                        inputId='imagePickerSearch'
+                        spinnerId='image-picker-search-indicator'
+                        modifierClass='image-library-search--picker'
+                        pickerToolbar=true /}
+                </div>
+                {#include ImagePickerEndpoint/pickerGrid owner=owner images=images gridBasePath=gridBasePath extraQuery=extraQuery /}
+            </section>
+        </div>
+        <div class="image-picker__footer">
+            <button type="button" class="btn btn--outline" data-image-picker-close data-i18n="common.cancel">Cancelar</button>
+        </div>
+    </div>
+</div>

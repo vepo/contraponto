@@ -45,12 +45,12 @@ public class TagProfileService {
 
     private List<TagUsage> loadTagUsages(String sql, String paramName, long paramValue, int limit) {
         @SuppressWarnings("unchecked")
-        List<Object[]> rows = entityManager.createNativeQuery(sql + " LIMIT :limit")
+        List<Object[]> rows = entityManager.createNativeQuery(sql)
                                            .setParameter(paramName, paramValue)
-                                           .setParameter(PARAM_LIMIT, limit)
+                                           .setMaxResults(limit)
                                            .getResultList();
-        List<TagUsage> result = new ArrayList<>();
-        for (Object[] row : rows) {
+        var result = new ArrayList<TagUsage>();
+        for (var row : rows) {
             long tagId = ((Number) row[0]).longValue();
             long count = ((Number) row[1]).longValue();
             tagRepository.findById(tagId).ifPresent(tag -> result.add(new TagUsage(tag, count)));

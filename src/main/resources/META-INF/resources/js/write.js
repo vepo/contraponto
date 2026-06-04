@@ -194,64 +194,32 @@ class WriteEditor {
         editor.dispatchEvent(new Event('input'));
     }
 
-    async insertImageMarkdown(editor) {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp';
-        fileInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-                const blogId = document.querySelector('[name="blogId"]')?.value;
-                const res = await fetch(`/api/images?blogId=${encodeURIComponent(blogId)}`, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
-                    body: formData
-                });
-                const img = await res.json();
-                const markdownImage = `![](${img.url})`;
-                const start = editor.selectionStart;
-                const end = editor.selectionEnd;
-                editor.value = editor.value.substring(0, start) + markdownImage + editor.value.substring(end);
-                editor.setSelectionRange(start + markdownImage.length, start + markdownImage.length);
-                editor.dispatchEvent(new Event('input'));
-            } catch (err) {
-                alert('Image upload failed');
-            }
-        };
-        fileInput.click();
+    insertImageMarkdown(editor) {
+        if (!window.imagePicker) {
+            console.warn('Image picker is not available');
+            return;
+        }
+        window.imagePicker.open({
+            onSelect: (image) => this.insertImageAtCaret(editor, `![](${image.url})`)
+        });
     }
 
-    async insertImageAsciiDoc(editor) {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp';
-        fileInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-                const blogId = document.querySelector('[name="blogId"]')?.value;
-                const res = await fetch(`/api/images?blogId=${encodeURIComponent(blogId)}`, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
-                    body: formData
-                });
-                const img = await res.json();
-                const asciidocImage = `image::${img.url}[]`;
-                const start = editor.selectionStart;
-                const end = editor.selectionEnd;
-                editor.value = editor.value.substring(0, start) + asciidocImage + editor.value.substring(end);
-                editor.setSelectionRange(start + asciidocImage.length, start + asciidocImage.length);
-                editor.dispatchEvent(new Event('input'));
-            } catch (err) {
-                alert('Image upload failed');
-            }
-        };
-        fileInput.click();
+    insertImageAsciiDoc(editor) {
+        if (!window.imagePicker) {
+            console.warn('Image picker is not available');
+            return;
+        }
+        window.imagePicker.open({
+            onSelect: (image) => this.insertImageAtCaret(editor, `image::${image.url}[]`)
+        });
+    }
+
+    insertImageAtCaret(editor, snippet) {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        editor.value = editor.value.substring(0, start) + snippet + editor.value.substring(end);
+        editor.setSelectionRange(start + snippet.length, start + snippet.length);
+        editor.dispatchEvent(new Event('input'));
     }
 
     togglePreview() {

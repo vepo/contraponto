@@ -182,49 +182,49 @@ DECLARE
         'hex');
     v_size BIGINT := octet_length(v_jpeg);
 BEGIN
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-distributed-001', 'img-distributed-001.jpg', 'image/jpeg', v_size, '/api/images/img-distributed-001.jpg', TRUE, '2024-01-10 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-distributed-001', 'img-distributed-001.jpg', 'image/jpeg', v_size, '/api/images/img-distributed-001.jpg', TRUE, '2024-01-10 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-microservices-002', 'img-microservices-002.jpg', 'image/jpeg', v_size, '/api/images/img-microservices-002.jpg', TRUE, '2024-02-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-microservices-002', 'img-microservices-002.jpg', 'image/jpeg', v_size, '/api/images/img-microservices-002.jpg', TRUE, '2024-02-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-kafka-003', 'img-kafka-003.jpg', 'image/jpeg', v_size, '/api/images/img-kafka-003.jpg', TRUE, '2024-03-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-kafka-003', 'img-kafka-003.jpg', 'image/jpeg', v_size, '/api/images/img-kafka-003.jpg', TRUE, '2024-03-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-observability-004', 'img-observability-004.jpg', 'image/jpeg', v_size, '/api/images/img-observability-004.jpg', TRUE, '2024-04-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-observability-004', 'img-observability-004.jpg', 'image/jpeg', v_size, '/api/images/img-observability-004.jpg', TRUE, '2024-04-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-loom-005', 'img-loom-005.jpg', 'image/jpeg', v_size, '/api/images/img-loom-005.jpg', TRUE, '2024-05-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-loom-005', 'img-loom-005.jpg', 'image/jpeg', v_size, '/api/images/img-loom-005.jpg', TRUE, '2024-05-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-ddd-006', 'img-ddd-006.jpg', 'image/jpeg', v_size, '/api/images/img-ddd-006.jpg', TRUE, '2024-06-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.slug = 'architecture-notes';
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-ddd-006', 'img-ddd-006.jpg', 'image/jpeg', v_size, '/api/images/img-ddd-006.jpg', TRUE, '2024-06-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'bob';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-graphql-007', 'img-graphql-007.jpg', 'image/jpeg', v_size, '/api/images/img-graphql-007.jpg', TRUE, '2024-07-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'carol' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-graphql-007', 'img-graphql-007.jpg', 'image/jpeg', v_size, '/api/images/img-graphql-007.jpg', TRUE, '2024-07-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'carol';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-draft-008', 'img-draft-008.jpg', 'image/jpeg', v_size, '/api/images/img-draft-008.jpg', TRUE, '2024-08-01 08:00:00', b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-draft-008', 'img-draft-008.jpg', 'image/jpeg', v_size, '/api/images/img-draft-008.jpg', TRUE, '2024-08-01 08:00:00', u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-alice-profile', 'img-alice-profile.jpg', 'image/jpeg', v_size, '/api/images/img-alice-profile.jpg', TRUE, NOW(), b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-alice-profile', 'img-alice-profile.jpg', 'image/jpeg', v_size, '/api/images/img-alice-profile.jpg', TRUE, NOW(), u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-alice-default-banner', 'img-alice-default-banner.jpg', 'image/jpeg', v_size, '/api/images/img-alice-default-banner.jpg', TRUE, NOW(), b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-alice-default-banner', 'img-alice-default-banner.jpg', 'image/jpeg', v_size, '/api/images/img-alice-default-banner.jpg', TRUE, NOW(), u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
-    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, blog_id, uploaded_by_user_id)
-    SELECT 'img-alice-blog-banner', 'img-alice-blog-banner.jpg', 'image/jpeg', v_size, '/api/images/img-alice-blog-banner.jpg', TRUE, NOW(), b.id, u.id
-    FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main;
+    INSERT INTO tb_images (uuid, filename, content_type, size, url, active, created_at, owner_user_id, uploaded_by_user_id)
+    SELECT 'img-alice-blog-banner', 'img-alice-blog-banner.jpg', 'image/jpeg', v_size, '/api/images/img-alice-blog-banner.jpg', TRUE, NOW(), u.id, u.id
+    FROM tb_users u WHERE u.username = 'alice';
 
     INSERT INTO tb_image_content (image_id, content)
     SELECT i.id, v_jpeg

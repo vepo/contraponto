@@ -1,29 +1,35 @@
 {#if images.isEmpty()}
 <div class="pages-manage__empty">
-    <p data-i18n="image.empty">Nenhuma imagem enviada para este blog ainda.</p>
+    <p data-i18n="image.empty">No images in your library yet.</p>
 </div>
 {#else}
 <div class="pages-manage__list">
     {#for row in images.data}
     <article class="pages-manage__row image-control__row" id="image-row-{row.uuid}">
         <div class="pages-manage__row-main image-control__row-main">
-            <img src="{row.url}" alt="" class="image-control__thumb" width="80" height="80"/>
+            <img src="{row.url}" alt="" class="image-control__thumb" width="56" height="56"/>
             <div>
                 <h2 class="pages-manage__row-title">{row.displayFilename}</h2>
                 <p class="pages-manage__row-meta">{row.createdAt}</p>
                 {#if hubMode}
                 <form class="image-control__alt-form"
-                      hx-put="/forms/blogs/{blog.id}/images/{row.uuid}/alt?page={images.page}"
+                      hx-put="/forms/images/{row.uuid}/alt?page={images.page}{extraQuery}"
                       hx-target="main"
                       hx-select="main"
                       hx-swap="outerHTML"
-                      hx-push-url="/writing/images?blogId={blog.id}&page={images.page}">
+                      hx-push-url="/writing/images?page={images.page}{extraQuery}">
                     <input type="hidden" name="hub" value="writing"/>
+                    {#if searchQuery}
+                    <input type="hidden" name="q" value="{searchQuery}"/>
+                    {/if}
                 {#else}
                 <form class="image-control__alt-form"
-                      hx-put="/forms/blogs/{blog.id}/images/{row.uuid}/alt?page={images.page}"
+                      hx-put="/forms/images/{row.uuid}/alt?page={images.page}{extraQuery}"
                       hx-target="#main-content"
                       hx-swap="outerHTML">
+                    {#if searchQuery}
+                    <input type="hidden" name="q" value="{searchQuery}"/>
+                    {/if}
                 {/if}
                     <label class="write-form__label" for="alt-{row.uuid}" data-i18n="image.altText">Texto alternativo</label>
                     <div class="image-control__alt-row">
