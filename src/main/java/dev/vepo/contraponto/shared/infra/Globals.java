@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import dev.vepo.contraponto.notification.NotificationHtmxConfig;
 import dev.vepo.contraponto.rss.RssFeedPaths;
+import dev.vepo.contraponto.shared.htmx.HtmxRequest;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.i18n.CurrentLocale;
 import dev.vepo.contraponto.shared.i18n.LocalePreference;
@@ -31,6 +32,15 @@ public class Globals {
     @TemplateGlobal(name = "currentYear")
     public static int currentYear() {
         return LocalDateTime.now().getYear();
+    }
+
+    @TemplateGlobal(name = "htmxRequest")
+    public static boolean htmxRequest() {
+        var current = CDI.current().select(HtmxRequest.class);
+        if (!current.isResolvable()) {
+            return false;
+        }
+        return current.get().isActive();
     }
 
     @TemplateGlobal(name = "locale")

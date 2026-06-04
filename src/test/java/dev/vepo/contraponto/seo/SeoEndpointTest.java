@@ -2,7 +2,6 @@ package dev.vepo.contraponto.seo;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
-
 import java.net.URL;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -37,13 +36,18 @@ class SeoEndpointTest {
                         .persist();
         String postPath = TemplateExtensions.url(post);
 
-        given().when()
-               .get(postPath)
-               .then()
-               .statusCode(200)
-               .body(containsString("rel=\"canonical\""))
-               .body(containsString("property=\"og:title\""))
-               .body(containsString("BlogPosting"));
+        String html = given().when()
+                             .get(postPath)
+                             .then()
+                             .statusCode(200)
+                             .body(containsString("rel=\"canonical\""))
+                             .body(containsString("property=\"og:title\""))
+                             .body(containsString("BlogPosting"))
+                             .extract()
+                             .asString();
+        int canonicalCount = html.split("rel=\"canonical\"", -1).length - 1;
+        org.assertj.core.api.Assertions.assertThat(canonicalCount).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(html).contains("<html lang=\"pt-BR\">");
     }
 
     @Test

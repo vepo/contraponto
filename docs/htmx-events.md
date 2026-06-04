@@ -31,7 +31,7 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 
 ### SEO head sync (HTMX navigation)
 
-Public full-page responses include `{#include components/seo-oob seo=seo /}` so HTMX can OOB-swap `#seo-head` (title, description, canonical, Open Graph, JSON-LD) when `main` is replaced.
+Public page templates include `{#include components/seo-oob seo=seo /}`; `seo-oob` renders only when `HX-Request: true` so a normal GET has a single canonical in `<head>` (no duplicate tags in `<body>` for crawlers). HTMX navigations OOB-swap `#seo-head` (title, description, canonical, Open Graph, JSON-LD) when `main` is replaced.
 
 On every `main` swap, `main.js` (`setupSeoSync`) refetches `GET /components/seo?path={pathname}` (OOB response updates `#page-title` and `#seo-head`; `hx-select="main"` does not apply OOB from the navigation response itself). **History back/forward** also refetches SEO (`htmx:historyRestore`) because `hx-history-elt` restores body only, not `<head>`.
 
