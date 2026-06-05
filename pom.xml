@@ -342,6 +342,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <groups>quarkus</groups>
+                            <systemPropertyVariables>
+                                <quarkus.http.test-port>8081</quarkus.http.test-port>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -355,6 +358,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <groups>web</groups>
+                            <systemPropertyVariables>
+                                <quarkus.http.test-port>8082</quarkus.http.test-port>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
