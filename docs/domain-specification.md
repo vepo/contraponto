@@ -52,9 +52,12 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Session store** | Backing store for login sessions: in-memory (single instance) or Redis (multi-instance). | `SessionStore`, `SessionStoreProducer` |
 | **Password recovery** | Self-service flow to reset a forgotten password via email link. | `PasswordRecoveryEndpoint` |
 | **Password reset token** | Single-use, time-limited secret sent by email; stored hashed in `tb_user_account_tokens`. | `UserAccountToken` |
+| **Account activation token** | Single-use, time-limited secret sent after self-service signup; stored hashed in `tb_user_account_tokens`. | `UserAccountToken`, `UserAccountTokenType.ACCOUNT_ACTIVATION` |
+| **Activation link** | Email link that activates an inactive account and starts a session. | `GET /account/activate?token=…`, `AccountActivationEndpoint` |
+| **Unauthorized signup report** | Recipient of an activation email reports they did not create the account; invalidates the activation token and emails site administrators. | `GET /account/report-signup?token=…`, `AccountReportSignupEndpoint` |
 | **Pending email** | New email address awaiting verification; login and notifications use the confirmed email until verified. | `User.pendingEmail` |
 | **Email verification** | Confirms a **pending email** via link; promotes it to the account email. | `EmailVerificationEndpoint` |
-| **Account email** | Transactional HTML message for access or user management (password reset, password changed, email verification). | `AccountEmailService` |
+| **Account email** | Transactional HTML message for access or user management (account activation, password reset, password changed, email verification). | `AccountEmailService` |
 | **Role** | Platform capability assigned to a user (multi-role). | `Role` enum |
 | **User** (role) | Default role; write own content. | `Role.USER` — label: "User" |
 | **Editor** | Curate site-wide: feature posts, review queue, tag metadata. | `Role.EDITOR` — label: "Editor" |
@@ -263,7 +266,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 
 - **Default locale:** `pt-BR` — canonical copy lives in Qute templates (visible without JavaScript).
 - **Secondary locales:** `en`, `es` — JSON bundles at `GET /i18n/messages/{locale}.json`; the browser applies them to elements with `data-i18n` keys.
-- **Scope:** menus, forms, validation messages, toasts, pagination, hub chrome — **not** post/comment/blog body, custom page content from DB, or account emails.
+- **Scope:** menus, forms, validation messages, toasts, pagination, hub chrome — **not** post/comment/blog body, custom page content from DB. **Account emails** use the same locale cookie and `accountEmail.*` keys (PT-BR default, EN/ES bundles).
 - **Keys:** dot-separated identifiers (e.g. `auth.signIn`, `menu.writing`). Full catalog: `src/main/resources/i18n/messages_en.json` and `messages_es.json`.
 - **Markup rules:** `data-i18n` on leaf text nodes only; form placeholders use `data-i18n-attr` (never `textContent` on `input`/`textarea`). Placeholder and field value are distinct.
 
@@ -285,6 +288,11 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Breadcrumb — home | `breadcrumb.home` | Início | Home | Public pages root segment |
 | Write — header | `write.title` | Escrever | Write | Header button → `/write` (icon + label) |
 | Auth — forgot password link | `auth.forgotPassword` | Esqueceu a senha? | Forgot password? | Login modal |
+| Auth — signup activation sent | `auth.signupActivationSent` | Verifique seu e-mail para ativar sua conta. | Check your email to activate your account. | Sign up modal after submit |
+| Account activation — invalid link | — | Este link de ativação é inválido ou expirou. | This activation link is invalid or has expired. | `/account/activate` error |
+| Account email — activation subject | — | Activate your {siteName} account | — | Signup activation email |
+| Account email — activation report link | `accountEmail.activation.report` | Notificar administrador | Notify site administrator | Signup activation email (did not create account) |
+| Account — unauthorized signup reported | `accountReportSignup.confirmed` | O administrador foi notificado. O link de ativação desta conta foi invalidado. | The site administrator has been notified. The activation link for this account has been invalidated. | After unauthorized signup report |
 
 Further interface labels use the same four-column shape; canonical keys and EN/ES strings live in `src/main/resources/i18n/messages_en.json` and `messages_es.json`. Legacy rows below retain English reference text — prefer the JSON catalog when adding or changing copy.
 
@@ -430,10 +438,14 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 20. Public URLs for posts and custom pages must use `PostPaths.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building or endpoint pass-through wrappers.
 21. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
 22. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
-23. **Inactive users** cannot complete password recovery.
-24. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
-25. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
-26. After a successful password reset, all **sessions** for that user are invalidated.
+23. **Inactive users** cannot complete password recovery or sign in with password until activated.
+24. **Self-service signup** creates an **inactive** user, sends an **account activation token** by email, and does not start a session; the user becomes **active** only via a valid **activation link**, which also logs them in.
+25. **Admin-created users** are **active** immediately (no activation email).
+26. **Account activation tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
+26a. An **unauthorized signup report** consumes the activation token (the account cannot be activated via that link afterward), notifies configured administrator email address(es) or active **user administrators** / **administrators**, and leaves the inactive user row for review in user management.
+27. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
+28. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
+29. After a successful password reset, all **sessions** for that user are invalidated.
 
 ---
 

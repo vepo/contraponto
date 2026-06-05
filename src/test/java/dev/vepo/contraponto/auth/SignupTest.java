@@ -126,8 +126,8 @@ class SignupTest {
            .assertSubmitEnabled()
            // Submit
            .submit()
-           // Modal closes, user menu appears
            .assertModalWasClosed()
-           .assertMenuIsDisplayed();
+           .assertToastSuccess("Check your email to activate your account.")
+           .assertAccessButtonIsDisplayed();
     }
 }

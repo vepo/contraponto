@@ -30,13 +30,13 @@ public class UserService {
     }
 
     @Transactional
-    public User createUser(String username, String name, String email, String password, Set<Role> roles) {
+    public User createUser(String username, String name, String email, String password, Set<Role> roles, boolean active) {
         var user = new User();
         user.setUsername(username.trim());
         user.setName(name.trim());
         user.setEmail(email.trim());
         user.setPasswordHash(passwordService.hashPassword(password));
-        user.setActive(true);
+        user.setActive(active);
         user.setRoles(roles.isEmpty() ? Set.of(Role.USER) : roles);
         userRepository.save(user);
         blogRepository.save(new Blog(user));

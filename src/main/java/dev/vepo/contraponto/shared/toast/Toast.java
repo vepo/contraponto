@@ -79,6 +79,12 @@ public interface Toast {
             return this;
         }
 
+        public ToastResponseBuilder html(String html) {
+            builder.entity(html)
+                   .type(MediaType.TEXT_HTML);
+            return this;
+        }
+
         public ToastResponseBuilder i18nKey(String key) {
             return i18nKey(key, null);
         }

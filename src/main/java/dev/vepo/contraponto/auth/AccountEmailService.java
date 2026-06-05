@@ -2,10 +2,7 @@ package dev.vepo.contraponto.auth;
 
 import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.user.User;
-import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
-import io.quarkus.qute.Location;
-import io.quarkus.qute.Template;
+import io.quarkus.mailer.MailTemplate;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -13,86 +10,116 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class AccountEmailService {
 
-    private final Mailer mailer;
-    private final Template passwordResetEmail;
-    private final Template passwordChangedEmail;
-    private final Template emailChangeVerificationEmail;
-    private final Template emailChangedNoticeEmail;
+    record accountActivation(String baseUrl, String localeLang, AccountActivationEvent event, AccountEmailCopy copy)
+            implements MailTemplate.MailTemplateInstance {}
+
+    record emailChangedNotice(String baseUrl, String localeLang, EmailChangedNoticeEvent event, AccountEmailCopy copy)
+            implements MailTemplate.MailTemplateInstance {}
+
+    record emailChangeVerification(String baseUrl, String localeLang, EmailChangeVerificationEvent event, AccountEmailCopy copy)
+            implements MailTemplate.MailTemplateInstance {}
+
+    record passwordChanged(String baseUrl, String localeLang, PasswordChangedEvent event, AccountEmailCopy copy)
+            implements MailTemplate.MailTemplateInstance {}
+
+    record passwordReset(String baseUrl, String localeLang, PasswordResetEvent event, AccountEmailCopy copy)
+            implements MailTemplate.MailTemplateInstance {}
+
+    record unauthorizedSignupReport(String baseUrl, UnauthorizedSignupReportEvent event)
+            implements MailTemplate.MailTemplateInstance {}
+
     private final String mailFrom;
     private final String baseUrl;
     private final int passwordResetHours;
     private final int emailChangeHours;
+    private final int accountActivationHours;
     private final SiteBranding siteBranding;
+    private final AccountEmailMessages emailMessages;
+    private final AdminNotifyEmailResolver adminNotifyEmailResolver;
 
     @Inject
-    public AccountEmailService(Mailer mailer,
-                               @Location("auth/password-reset-email") Template passwordResetEmail,
-                               @Location("auth/password-changed-email") Template passwordChangedEmail,
-                               @Location("auth/email-change-verification-email") Template emailChangeVerificationEmail,
-                               @Location("auth/email-changed-notice-email") Template emailChangedNoticeEmail,
-                               @ConfigProperty(name = "quarkus.mailer.from", defaultValue = "noreply@contraponto.blog") String mailFrom,
+    public AccountEmailService(@ConfigProperty(name = "quarkus.mailer.from", defaultValue = "noreply@contraponto.blog") String mailFrom,
                                @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl,
                                @ConfigProperty(name = "app.account-token.password-reset-hours", defaultValue = "1") int passwordResetHours,
                                @ConfigProperty(name = "app.account-token.email-change-hours", defaultValue = "24") int emailChangeHours,
-                               SiteBranding siteBranding) {
-        this.mailer = mailer;
-        this.passwordResetEmail = passwordResetEmail;
-        this.passwordChangedEmail = passwordChangedEmail;
-        this.emailChangeVerificationEmail = emailChangeVerificationEmail;
-        this.emailChangedNoticeEmail = emailChangedNoticeEmail;
+                               @ConfigProperty(name = "app.account-token.account-activation-hours", defaultValue = "48") int accountActivationHours,
+                               SiteBranding siteBranding,
+                               AccountEmailMessages emailMessages,
+                               AdminNotifyEmailResolver adminNotifyEmailResolver) {
         this.mailFrom = mailFrom;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.passwordResetHours = passwordResetHours;
         this.emailChangeHours = emailChangeHours;
+        this.accountActivationHours = accountActivationHours;
         this.siteBranding = siteBranding;
+        this.emailMessages = emailMessages;
+        this.adminNotifyEmailResolver = adminNotifyEmailResolver;
+    }
+
+    private void send(MailTemplate.MailTemplateInstance template, String recipient, String subject) {
+        template.to(recipient).from(mailFrom).subject(subject).sendAndAwait();
+    }
+
+    public void sendAccountActivation(User user, String rawToken) {
+        String activateUrl = "%s/account/activate?token=%s".formatted(baseUrl, rawToken);
+        String reportUrl = "%s/account/report-signup?token=%s".formatted(baseUrl, rawToken);
+        var event = new AccountActivationEvent(activateUrl,
+                                               accountActivationHours,
+                                               siteBranding.displayName(),
+                                               siteBranding.seoName());
+        var copy = AccountEmailCopy.activation(event.siteName(), activateUrl, reportUrl, accountActivationHours, emailMessages);
+        send(new accountActivation(baseUrl, emailMessages.localeLang(), event, copy), user.getEmail(), copy.subject());
     }
 
     public void sendEmailChangedNotice(String previousEmail, String newEmail) {
-        String html = emailChangedNoticeEmail.data("newEmail", newEmail)
-                                             .data("baseUrl", baseUrl)
-                                             .data("siteName", siteBranding.displayName())
-                                             .data("siteSeoName", siteBranding.seoName())
-                                             .render();
-        mailer.send(Mail.withHtml(previousEmail,
-                                  "Your %s email address was changed".formatted(siteBranding.displayName()),
-                                  html)
-                        .setFrom(mailFrom));
+        var event = new EmailChangedNoticeEvent(newEmail, siteBranding.displayName(), siteBranding.seoName());
+        var copy = AccountEmailCopy.emailChangedNotice(event.siteName(), newEmail, emailMessages);
+        send(new emailChangedNotice(baseUrl, emailMessages.localeLang(), event, copy), previousEmail, copy.subject());
     }
 
     public void sendEmailChangeVerification(User user, String pendingEmail, String rawToken) {
         String verifyUrl = "%s/account/verify-email?token=%s".formatted(baseUrl, rawToken);
-        String html = emailChangeVerificationEmail.data("verifyUrl", verifyUrl)
-                                                  .data("newEmail", pendingEmail)
-                                                  .data("baseUrl", baseUrl)
-                                                  .data("expiresHours", emailChangeHours)
-                                                  .data("siteName", siteBranding.displayName())
-                                                  .data("siteSeoName", siteBranding.seoName())
-                                                  .render();
-        mailer.send(Mail.withHtml(pendingEmail, "Confirm your new email address", html).setFrom(mailFrom));
+        var event = new EmailChangeVerificationEvent(verifyUrl,
+                                                     pendingEmail,
+                                                     emailChangeHours,
+                                                     siteBranding.displayName(),
+                                                     siteBranding.seoName());
+        var copy = AccountEmailCopy.emailChangeVerification(event.siteName(), pendingEmail, verifyUrl, emailChangeHours, emailMessages);
+        send(new emailChangeVerification(baseUrl, emailMessages.localeLang(), event, copy), pendingEmail, copy.subject());
     }
 
     public void sendPasswordChanged(User user) {
-        String html = passwordChangedEmail.data("baseUrl", baseUrl)
-                                          .data("siteName", siteBranding.displayName())
-                                          .data("siteSeoName", siteBranding.seoName())
-                                          .render();
-        mailer.send(Mail.withHtml(user.getEmail(),
-                                  "Your %s password was changed".formatted(siteBranding.displayName()),
-                                  html)
-                        .setFrom(mailFrom));
+        var event = new PasswordChangedEvent(siteBranding.displayName(), siteBranding.seoName());
+        var copy = AccountEmailCopy.passwordChanged(event.siteName(), emailMessages);
+        send(new passwordChanged(baseUrl, emailMessages.localeLang(), event, copy), user.getEmail(), copy.subject());
     }
 
     public void sendPasswordReset(User user, String rawToken) {
         String resetUrl = "%s/password-recovery/reset?token=%s".formatted(baseUrl, rawToken);
-        String html = passwordResetEmail.data("resetUrl", resetUrl)
-                                        .data("baseUrl", baseUrl)
-                                        .data("expiresHours", passwordResetHours)
-                                        .data("siteName", siteBranding.displayName())
-                                        .data("siteSeoName", siteBranding.seoName())
-                                        .render();
-        mailer.send(Mail.withHtml(user.getEmail(),
-                                  "Reset your %s password".formatted(siteBranding.displayName()),
-                                  html)
-                        .setFrom(mailFrom));
+        var event = new PasswordResetEvent(resetUrl,
+                                           passwordResetHours,
+                                           siteBranding.displayName(),
+                                           siteBranding.seoName());
+        var copy = AccountEmailCopy.passwordReset(event.siteName(), resetUrl, passwordResetHours, emailMessages);
+        send(new passwordReset(baseUrl, emailMessages.localeLang(), event, copy), user.getEmail(), copy.subject());
+    }
+
+    public void sendUnauthorizedSignupReport(User user) {
+        var recipients = adminNotifyEmailResolver.resolve();
+        if (recipients.isEmpty()) {
+            return;
+        }
+        var event = new UnauthorizedSignupReportEvent(siteBranding.displayName(),
+                                                      user.getUsername(),
+                                                      user.getEmail(),
+                                                      user.getName(),
+                                                      "%s/administration/users".formatted(baseUrl));
+        String subject = "Unauthorized signup reported on %s".formatted(event.siteName());
+        for (String recipient : recipients) {
+            new unauthorizedSignupReport(baseUrl, event).to(recipient)
+                                                        .from(mailFrom)
+                                                        .subject(subject)
+                                                        .sendAndAwait();
+        }
     }
 }

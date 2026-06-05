@@ -2399,6 +2399,18 @@ public class App {
         return this;
     }
 
+    public App assertToastSuccess(String message) {
+        await().atMost(Duration.ofSeconds(15))
+               .pollInterval(Duration.ofMillis(100))
+               .until(() -> Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript("""
+                                                                                            const toast = document.getElementById('toast');
+                                                                                            if (!toast || !toast.classList.contains('toast--visible')) return false;
+                                                                                            return toast.textContent.includes(arguments[0]);
+                                                                                            """,
+                                                                                            message)));
+        return this;
+    }
+
     public App assertUrl(String url) {
         wait.until(urlToBe(this.rootUri + url));
         return this;

@@ -184,6 +184,8 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 ### 8.3 Account emails (access / user management)
 | Email | Trigger |
 |-------|---------|
+| Activate your {siteName} account | Self-service sign-up (includes **Notify site administrator** link if the recipient did not create the account) |
+| Unauthorized signup reported on {siteName} | Recipient clicks report link in activation email (`GET /account/report-signup?token=…`) |
 | Reset your contraponto password | Password recovery request |
 | Your contraponto password was changed | Reset, profile password change, admin sets new password |
 | Confirm your new email address | Profile email change (to pending address) |

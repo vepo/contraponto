@@ -54,6 +54,17 @@ public class UserRepository {
         return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
+    public List<String> findAdministratorEmails() {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT u.email FROM User u
+                                         JOIN u.roles r
+                                         WHERE u.active = true AND r IN (:roles)
+                                         ORDER BY u.email ASC
+                                         """, String.class)
+                            .setParameter("roles", List.of(Role.ADMIN, Role.USER_ADMINISTRATOR))
+                            .getResultList();
+    }
+
     public List<User> findAuthorsWithPublishedPosts() {
         return entityManager.createQuery("""
                                          SELECT DISTINCT u FROM User u

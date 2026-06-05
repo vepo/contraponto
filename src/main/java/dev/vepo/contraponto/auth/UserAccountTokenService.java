@@ -35,13 +35,17 @@ public class UserAccountTokenService {
 
     private final int emailChangeHours;
 
+    private final int accountActivationHours;
+
     @Inject
     public UserAccountTokenService(UserAccountTokenRepository tokenRepository,
                                    @ConfigProperty(name = "app.account-token.password-reset-hours", defaultValue = "1") int passwordResetHours,
-                                   @ConfigProperty(name = "app.account-token.email-change-hours", defaultValue = "24") int emailChangeHours) {
+                                   @ConfigProperty(name = "app.account-token.email-change-hours", defaultValue = "24") int emailChangeHours,
+                                   @ConfigProperty(name = "app.account-token.account-activation-hours", defaultValue = "48") int accountActivationHours) {
         this.tokenRepository = tokenRepository;
         this.passwordResetHours = passwordResetHours;
         this.emailChangeHours = emailChangeHours;
+        this.accountActivationHours = accountActivationHours;
     }
 
     @Transactional
@@ -89,6 +93,11 @@ public class UserAccountTokenService {
         tokenRepository.persist(token);
 
         return new IssuedToken(rawToken, token);
+    }
+
+    @Transactional
+    public IssuedToken issueAccountActivation(User user) {
+        return issue(user, UserAccountTokenType.ACCOUNT_ACTIVATION, null, accountActivationHours);
     }
 
     @Transactional

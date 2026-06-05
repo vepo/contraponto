@@ -11,6 +11,73 @@ public final class I18nKeys {
     public static final String AUTH_ERROR_LOGIN_REQUIRED = "auth.error.loginRequired";
 
     public static final String AUTH_ERROR_INVALID_CREDENTIALS = "auth.error.invalidCredentials";
+
+    public static final String AUTH_SIGNUP_ACTIVATION_SENT = "auth.signupActivationSent";
+
+    public static final String ACCOUNT_REPORT_SIGNUP_CONFIRMED = "accountReportSignup.confirmed";
+
+    // Account emails
+    public static final String ACCOUNT_EMAIL_GREETING = "accountEmail.greeting";
+
+    public static final String ACCOUNT_EMAIL_FOOTER_SECURITY = "accountEmail.footer.security";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_SUBJECT = "accountEmail.activation.subject";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_TITLE = "accountEmail.activation.title";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_BODY = "accountEmail.activation.body";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_ACTION = "accountEmail.activation.action";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_EXPIRY = "accountEmail.activation.expiry";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_REPORT = "accountEmail.activation.report";
+
+    public static final String ACCOUNT_EMAIL_ACTIVATION_FOOTER = "accountEmail.activation.footer";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_RESET_SUBJECT = "accountEmail.passwordReset.subject";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_RESET_TITLE = "accountEmail.passwordReset.title";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_RESET_BODY = "accountEmail.passwordReset.body";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_RESET_ACTION = "accountEmail.passwordReset.action";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_RESET_EXPIRY = "accountEmail.passwordReset.expiry";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_RESET_FOOTER = "accountEmail.passwordReset.footer";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_CHANGED_SUBJECT = "accountEmail.passwordChanged.subject";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_CHANGED_TITLE = "accountEmail.passwordChanged.title";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_CHANGED_BODY = "accountEmail.passwordChanged.body";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_CHANGED_WARNING = "accountEmail.passwordChanged.warning";
+
+    public static final String ACCOUNT_EMAIL_PASSWORD_CHANGED_FOOTER = "accountEmail.passwordChanged.footer";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGE_VERIFY_SUBJECT = "accountEmail.emailChangeVerification.subject";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGE_VERIFY_TITLE = "accountEmail.emailChangeVerification.title";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGE_VERIFY_BODY = "accountEmail.emailChangeVerification.body";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGE_VERIFY_ACTION = "accountEmail.emailChangeVerification.action";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGE_VERIFY_EXPIRY = "accountEmail.emailChangeVerification.expiry";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGE_VERIFY_FOOTER = "accountEmail.emailChangeVerification.footer";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGED_SUBJECT = "accountEmail.emailChanged.subject";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGED_TITLE = "accountEmail.emailChanged.title";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGED_BODY = "accountEmail.emailChanged.body";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGED_WARNING = "accountEmail.emailChanged.warning";
+
+    public static final String ACCOUNT_EMAIL_EMAIL_CHANGED_FOOTER = "accountEmail.emailChanged.footer";
     // Toasts — blog
     public static final String TOAST_BLOG_SAVED = "toast.blog.saved";
 

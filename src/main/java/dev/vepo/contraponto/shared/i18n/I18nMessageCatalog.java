@@ -60,7 +60,9 @@ public class I18nMessageCatalog {
                                                                             Map.entry(I18nKeys.AUTH_ERROR_LOGIN_REQUIRED,
                                                                                       "Informe seu e-mail ou nome de usuário."),
                                                                             Map.entry(I18nKeys.AUTH_ERROR_INVALID_CREDENTIALS,
-                                                                                      "Usuário/e-mail ou senha inválidos."));
+                                                                                      "Usuário/e-mail ou senha inválidos."),
+                                                                            Map.entry(I18nKeys.AUTH_SIGNUP_ACTIVATION_SENT,
+                                                                                      I18nDefaults.SIGNUP_ACTIVATION_SENT));
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -94,15 +96,19 @@ public class I18nMessageCatalog {
     }
 
     public String resolve(String key, String ptBrDefault) {
+        return resolve(key, ptBrDefault, localePreference.normalize(currentLocale.get()));
+    }
+
+    public String resolve(String key, String ptBrDefault, String locale) {
         if (key == null || key.isBlank()) {
             return ptBrDefault != null ? ptBrDefault : "";
         }
         var ptBr = ptBrDefault != null ? ptBrDefault : PT_BR_DEFAULTS.get(key);
-        var locale = localePreference.normalize(currentLocale.get());
-        if (LocalePreference.DEFAULT_LOCALE.equals(locale)) {
+        var normalized = localePreference.normalize(locale);
+        if (LocalePreference.DEFAULT_LOCALE.equals(normalized)) {
             return ptBr != null ? ptBr : key;
         }
-        var bundle = translations.get(locale);
+        var bundle = translations.get(normalized);
         if (bundle != null) {
             var translated = bundle.get(key);
             if (translated != null) {

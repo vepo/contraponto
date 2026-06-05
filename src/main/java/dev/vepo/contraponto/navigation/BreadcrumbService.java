@@ -93,6 +93,14 @@ public class BreadcrumbService {
         return BreadcrumbTrail.EMPTY;
     }
 
+    public BreadcrumbTrail forAccountActivation() {
+        return trail(link(HOME_LABEL, HOME_PATH), current("Activate account"));
+    }
+
+    public BreadcrumbTrail forAccountReportSignup() {
+        return trail(link(HOME_LABEL, HOME_PATH), current("Report signup"));
+    }
+
     public BreadcrumbTrail forAuthorDirectory() {
         return trail(link(HOME_LABEL, HOME_PATH), current("Autores"));
     }

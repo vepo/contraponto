@@ -23,7 +23,7 @@ class UserServiceTest {
 
     @Test
     void createUserDefaultsToUserRole() {
-        User created = userService.createUser("brandnew", "Brand New", "brandnew@example.com", "Password123!", Set.of());
+        User created = userService.createUser("brandnew", "Brand New", "brandnew@example.com", "Password123!", Set.of(), true);
 
         assertThat(created.getRoles()).containsExactly(Role.USER);
         assertThat(blogRepository.findMainByOwnerId(created.getId())).isPresent();

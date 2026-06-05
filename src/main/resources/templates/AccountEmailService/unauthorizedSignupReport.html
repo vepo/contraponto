@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Unauthorized signup reported</title>
+</head>
+<body style="margin:0;padding:24px;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1a1a18;">
+    <p style="margin:0 0 16px;">A recipient reported that they did not create an account on <strong>{event.siteName}</strong>.</p>
+    <ul style="margin:0 0 16px;padding-left:20px;line-height:1.6;">
+        <li>Username: {event.username}</li>
+        <li>Email: {event.email}</li>
+        <li>Name: {event.name}</li>
+        <li>Status: inactive (activation link invalidated)</li>
+    </ul>
+    <p style="margin:0;">
+        <a href="{event.usersManageUrl}" style="color:#3a6b3e;text-decoration:none;font-weight:600;">Review users</a>
+    </p>
+</body>
+</html>

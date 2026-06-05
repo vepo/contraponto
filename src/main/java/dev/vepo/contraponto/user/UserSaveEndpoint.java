@@ -89,7 +89,7 @@ public class UserSaveEndpoint {
             roles = java.util.Set.of(Role.USER);
         }
 
-        var user = userService.createUser(form.getUsername(), form.getName(), form.getEmail(), form.getPassword(), roles);
+        var user = userService.createUser(form.getUsername(), form.getName(), form.getEmail(), form.getPassword(), roles, true);
         logger.info("Created user id={} username={}", user.getId(), user.getUsername());
 
         return Toast.ok()

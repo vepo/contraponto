@@ -38,7 +38,13 @@ public class LoggedUserProvider {
     public Optional<LoggedUser> find(String sessionId) {
         return sessionStore.findUserId(sessionId)
                            .flatMap(userRepository::findById)
-                           .map(user -> new LoggedUser(user, sessionId));
+                           .flatMap(user -> {
+                               if (!user.isActive()) {
+                                   sessionStore.remove(sessionId);
+                                   return Optional.empty();
+                               }
+                               return Optional.of(new LoggedUser(user, sessionId));
+                           });
     }
 
     public void invalidateAllSessionsForUser(long userId) {

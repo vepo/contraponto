@@ -1,9 +1,9 @@
 package dev.vepo.contraponto.components.forms;
 
-import dev.vepo.contraponto.components.MenuEndpoint;
-import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
-import dev.vepo.contraponto.shared.security.SessionCookieSupport;
+import dev.vepo.contraponto.auth.AccountActivationService;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
+import dev.vepo.contraponto.shared.toast.Toast;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.UserService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,55 +21,26 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class SignUpEndpoint {
 
-    // Constants (align with LoginEndpoint)
     public static final String SESSION_COOKIE_NAME = LoginEndpoint.SESSION_COOKIE_NAME;
-    private static final String SESSION_COOKIE_PATH = "/";
     private static final String MODAL_CLEAR_OOB =
             "<div id=\"modal-container\" hx-swap-oob=\"innerHTML\"></div>";
 
-    private final LoggedUserProvider loggedUserProvider;
     private final UserService userService;
-    private final SessionCookieSupport sessionCookieSupport;
+    private final AccountActivationService accountActivationService;
 
     @Inject
-    public SignUpEndpoint(LoggedUserProvider loggedUserProvider,
-                          UserService userService,
-                          SessionCookieSupport sessionCookieSupport) {
-        this.loggedUserProvider = loggedUserProvider;
+    public SignUpEndpoint(UserService userService,
+                          AccountActivationService accountActivationService) {
         this.userService = userService;
-        this.sessionCookieSupport = sessionCookieSupport;
+        this.accountActivationService = accountActivationService;
     }
 
-    /**
-     * Returns a consistent error response for signup failures.
-     */
     private Response buildErrorResponse(String errorMessage) {
         return Response.status(Status.BAD_REQUEST)
-                       .entity(String.format("<div class='error-message'>%s</div>", errorMessage))
+                       .entity("<div class='error-message'>%s</div>".formatted(errorMessage))
                        .build();
     }
 
-    /**
-     * Builds the Set-Cookie header value for the session cookie.
-     */
-    private String buildSessionCookieHeader(String sessionId) {
-        return sessionCookieSupport.buildSessionCookie(sessionId);
-    }
-
-    /**
-     * Builds the HTML response for a successful signup. Uses OOB swap to replace
-     * the menu and clear the auth modal.
-     */
-    private String buildSuccessResponseBody(String menuHtml) {
-        return String.format("""
-                             <div hx-swap-oob="true" id="%s">%s</div>
-                             %s
-                             """, HtmxTriggers.MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
-    }
-
-    /**
-     * Utility method to check for blank strings (null, empty, or only whitespace).
-     */
     private boolean isBlank(String str) {
         return str == null || str.isBlank();
     }
@@ -91,16 +62,14 @@ public class SignUpEndpoint {
             return buildErrorResponse(validationError.get());
         }
 
-        var newUser = userService.createUser(username, name, email, password, java.util.Set.of(Role.USER));
+        var newUser = userService.createUser(username, name, email, password, java.util.Set.of(Role.USER), false);
+        accountActivationService.sendActivationEmail(newUser);
 
-        // Auto-login
-        var loggedUser = loggedUserProvider.login(newUser);
-        String menuHtml = MenuEndpoint.Templates.menu(loggedUser).render();
-        String responseBody = buildSuccessResponseBody(menuHtml);
-
-        return Response.ok(responseBody)
-                       .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
-                       .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_IN_ON_BODY)
-                       .build();
+        return Toast.ok()
+                    .i18nKey(I18nKeys.AUTH_SIGNUP_ACTIVATION_SENT, I18nDefaults.SIGNUP_ACTIVATION_SENT)
+                    .type(Toast.Type.SUCCESS)
+                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                    .html(MODAL_CLEAR_OOB)
+                    .build();
     }
 }

@@ -27,6 +27,7 @@ class UserManageTest {
            .fillPassword("memberPass123")
            .submit()
            .assertUrl("/administration/users")
+           .assertToastSuccess("User created successfully.")
            .assertUserListed("New Member");
     }
 

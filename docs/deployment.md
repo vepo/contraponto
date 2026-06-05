@@ -52,6 +52,7 @@ Configure outbound mail (signup verification, password reset, post notifications
 | `QUARKUS_MAILER_USERNAME` | Auth user (if needed) |
 | `QUARKUS_MAILER_PASSWORD` | Auth password (secret) |
 | `QUARKUS_MAILER_FROM` | From address (default in `application.properties`: `noreply@contraponto.blog`) |
+| `APP_ADMIN_NOTIFY_EMAIL` | Optional comma-separated administrator inbox(es) for unauthorized signup reports (`app.admin.notify-email`; when unset, active `ADMIN` / `USER_ADMINISTRATOR` users are notified) |
 
 ## 4. Search indexing (production)
 

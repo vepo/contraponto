@@ -4,6 +4,7 @@
 quarkus.mailer.mock=false
 quarkus.mailer.host=sandbox.smtp.mailtrap.io
 quarkus.mailer.port=2525
-quarkus.mailer.start-tls=DISABLED
+quarkus.mailer.ssl=false
+quarkus.mailer.start-tls=REQUIRED
 quarkus.mailer.username=YOUR_MAILTRAP_USERNAME
 quarkus.mailer.password=YOUR_MAILTRAP_PASSWORD

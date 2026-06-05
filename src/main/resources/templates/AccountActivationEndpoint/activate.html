@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="{localeLang}">
+    {#include components/head}
+    Activate account - {siteName}
+    {/include}
+    <body>
+        {#include components/header /}
+        <main hx-history-elt class="profile-page" id="main-content">
+            <div class="container-narrow">
+                {#include components/breadcrumb trail=breadcrumb /}
+                <h1 class="profile-page__title" data-i18n="accountActivation.title">Ativar conta</h1>
+
+                <div id="activationMessage">
+                    {#if invalidToken}
+                    <div class="error-message visible">This activation link is invalid or has expired.</div>
+                    <p class="auth-form__switch"><a href="#" hx-get="/auth/modal?mode=login" hx-target="#modal-container" data-i18n="auth.signIn">Entrar</a></p>
+                    {/if}
+                </div>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

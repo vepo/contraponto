@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="{localeLang}">
+    {#include components/head}
+    Report signup - {siteName}
+    {/include}
+    <body>
+        {#include components/header /}
+        <main hx-history-elt class="profile-page" id="main-content">
+            <div class="container-narrow">
+                {#include components/breadcrumb trail=breadcrumb /}
+                <h1 class="profile-page__title" data-i18n="accountReportSignup.title">Conta não solicitada</h1>
+
+                <div id="reportMessage">
+                    {#if reported}
+                    <div class="success-message" data-i18n="accountReportSignup.confirmed">O administrador foi notificado. O link de ativação desta conta foi invalidado.</div>
+                    {#else if invalidToken}
+                    <div class="error-message visible">This activation link is invalid or has expired.</div>
+                    {/if}
+                </div>
+            </div>
+        </main>
+        {#include components/footer /}
+    </body>
+</html>

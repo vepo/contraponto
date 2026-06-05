@@ -23,6 +23,8 @@ public final class I18nDefaults {
     public static final String PAGE_FORBIDDEN = "Você não tem permissão para gerenciar páginas personalizadas.";
     public static final String PAGE_SLUG_EXISTS = "Já existe uma página com este slug no escopo selecionado.";
     public static final String PAGE_BLOG_REQUIRED = "Selecione um blog para esta página.";
+    public static final String SIGNUP_ACTIVATION_SENT = "Verifique seu e-mail para ativar sua conta.";
+
     public static final String USER_CREATED = "Usuário criado com sucesso.";
     public static final String USER_SAVED = "Usuário salvo com sucesso.";
     public static final String USER_NOT_FOUND = "Usuário não encontrado.";

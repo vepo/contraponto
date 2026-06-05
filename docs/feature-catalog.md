@@ -25,7 +25,7 @@ Paths below list clicks in order. **Steps** = number of steps in that path from 
 
 ### Out of scope here
 
-Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, password-reset token links). RSS **XML** endpoints are documented in [ARCHITECTURE.md](../ARCHITECTURE.md); this catalog lists **RSS** link buttons in the UI.
+Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/account/activate`, password-reset token links). RSS **XML** endpoints are documented in [ARCHITECTURE.md](../ARCHITECTURE.md); this catalog lists **RSS** link buttons in the UI.
 
 ---
 
@@ -77,8 +77,9 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, passw
 
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
-| Sign up | guest | `GET /auth/modal?mode=signup` | 1 | Header → **Sign Up**. |
+| Sign up | guest | `GET /auth/modal?mode=signup` | 1 | Header → **Sign Up** → submit → check email to activate (no session until activation link). |
 | Sign in | guest | `GET /auth/modal?mode=login` | 1 | Header → **Sign In**. |
+| Account activation (email link) | guest (inactive account) | `GET /account/activate?token=…` | — | Link in signup email; activates account and starts session (email-only). |
 | Language preference | anyone | `POST /forms/locale` | 2 | Header or footer **flag** → pick language (also list on Account hub). |
 | Password recovery request | guest | `GET /password-recovery` | 2 | **Sign In** modal → **Forgot password?** |
 | Sign out | signed in | `POST /forms/auth/logout` | 2 | Open user menu → **Sign out**. |
