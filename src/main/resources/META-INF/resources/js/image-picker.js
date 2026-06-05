@@ -153,8 +153,10 @@ class ImagePickerManager {
             }
         } catch (err) {
             console.error(err);
-            const message = window.i18n?.t('toast.image.uploadFailed')
-                ?? 'Failed to upload image. Please try again.';
+            const translated = window.i18n?.t('toast.image.uploadFailed');
+            const message = translated && translated !== 'toast.image.uploadFailed'
+                ? translated
+                : 'Falha ao enviar a imagem. Tente novamente.';
             if (window.toastManager?.show) {
                 window.toastManager.show(message, 'error');
             } else {

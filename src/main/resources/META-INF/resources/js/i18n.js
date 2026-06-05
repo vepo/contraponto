@@ -68,13 +68,20 @@ class I18nManager {
         this.messages = await response.json();
     }
 
+    defaultLocaleText(key) {
+        const seed = document.querySelector('#i18n-seeds [data-i18n="' + key + '"]');
+        if (seed) {
+            return seed.textContent?.trim() || null;
+        }
+        const anchor = document.querySelector('[data-i18n="' + key + '"]');
+        return anchor?.textContent?.trim() || null;
+    }
+
     t(key, params) {
         if (!key) return '';
         if (this.locale === I18nManager.DEFAULT_LOCALE) {
-            return this.interpolate(
-                document.querySelector('[data-i18n="' + key + '"]')?.textContent?.trim() || key,
-                params
-            );
+            const raw = this.defaultLocaleText(key);
+            return raw ? this.interpolate(raw, params) : key;
         }
         const raw = this.messages?.[key];
         if (!raw) return key;

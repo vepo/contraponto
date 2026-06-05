@@ -107,11 +107,13 @@ class CodeCopyManager {
     static ENHANCED_ATTR = 'data-code-copy-enhanced';
 
     static copyLabel() {
-        return window.i18n?.t(CodeCopyManager.COPY_KEY) || 'Copiar';
+        const translated = window.i18n?.t(CodeCopyManager.COPY_KEY);
+        return translated && translated !== CodeCopyManager.COPY_KEY ? translated : 'Copiar';
     }
 
     static copiedLabel() {
-        return window.i18n?.t(CodeCopyManager.COPIED_KEY) || 'Copiado';
+        const translated = window.i18n?.t(CodeCopyManager.COPIED_KEY);
+        return translated && translated !== CodeCopyManager.COPIED_KEY ? translated : 'Copiado';
     }
 
     constructor() {
@@ -390,8 +392,10 @@ class MainManager {
         const errorElmSelector = evt.target.attributes.getNamedItem('hx-target-error')
         if (errorElmSelector) {
             if (evt.detail.failed) {
-                let msg = window.i18n?.t('error.generic.contactAdmin')
-                    || 'Algo deu errado. Entre em contato com o administrador do site';
+                const generic = window.i18n?.t('error.generic.contactAdmin');
+                let msg = generic && generic !== 'error.generic.contactAdmin'
+                    ? generic
+                    : 'Algo deu errado. Entre em contato com o administrador do site';
                 if (evt.detail.xhr.responseText) {
                     msg = evt.detail.xhr.responseText;
                 }
