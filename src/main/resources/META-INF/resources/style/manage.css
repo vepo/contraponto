@@ -1497,7 +1497,7 @@
   .hub-panel__header {
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
   }
 }
 

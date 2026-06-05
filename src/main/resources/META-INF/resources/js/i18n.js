@@ -177,14 +177,30 @@ class I18nManager {
         });
     }
 
+    resolveHtmxApplyRoot(evt) {
+        const settled = evt.detail?.elt;
+        if (settled instanceof Element && document.body.contains(settled)) {
+            return settled;
+        }
+        const target = evt.detail?.target;
+        if (target instanceof Element) {
+            if (document.body.contains(target)) {
+                return target;
+            }
+            const id = target.getAttribute('id');
+            if (id) {
+                const replacement = document.getElementById(id);
+                if (replacement) {
+                    return replacement;
+                }
+            }
+        }
+        return document;
+    }
+
     registerHtmxHooks() {
         document.body.addEventListener('htmx:afterSettle', (evt) => {
-            const target = evt.detail?.target;
-            if (target) {
-                this.apply(target);
-            } else {
-                this.apply(document);
-            }
+            this.apply(this.resolveHtmxApplyRoot(evt));
             this.syncLocalePickers();
         });
     }

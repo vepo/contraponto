@@ -1581,6 +1581,25 @@ public class App {
             return this;
         }
 
+        public ReviewPage assertPostFeatured(Post post, boolean featured) {
+            var row = wait.until(visibilityOfElementLocated(By.id("post-row-%d".formatted(post.getId()))));
+            var btn = row.findElement(By.cssSelector(".btn"));
+            if (featured) {
+                assertThat(btn.getAttribute("class")).contains("btn--featured");
+            } else {
+                assertThat(btn.getAttribute("class")).doesNotContain("btn--featured");
+            }
+            return this;
+        }
+
+        public ReviewPage assertPostFeaturedToggleLabel(Post post, String label) {
+            wait.until(d -> {
+                var row = d.findElement(By.id("post-row-%d".formatted(post.getId())));
+                return row.findElement(By.cssSelector(".btn")).getText().contains(label);
+            });
+            return this;
+        }
+
         public ReviewPage toggleFeatured(Post post) {
             var toggleBtn = wait.until(visibilityOfElementLocated(By.cssSelector("#post-row-%d .btn".formatted(post.getId()))));
             reliableClick(toggleBtn);

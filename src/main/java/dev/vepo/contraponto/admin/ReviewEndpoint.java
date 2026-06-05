@@ -67,7 +67,7 @@ public class ReviewEndpoint {
                         .build();
         }
 
-        var maybePost = postRepository.findById(postId);
+        var maybePost = postRepository.findByIdForReviewRow(postId);
         if (maybePost.isEmpty()) {
             return Toast.response(Response.Status.NOT_FOUND)
                         .duration(Toast.TOAST_DEFAULT_DURATION_MS)

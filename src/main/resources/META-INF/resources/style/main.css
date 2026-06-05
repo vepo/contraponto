@@ -2302,6 +2302,9 @@ hr:after {
 
 /* ========== BUTTONS ========== */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--color-border);
   padding: 8px 20px;
@@ -2309,9 +2312,11 @@ hr:after {
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 500;
+  line-height: 1.25;
   color: var(--color-text);
   border-radius: var(--radius-md);
   cursor: pointer;
+  text-align: center;
   transition: background-color var(--duration-normal) var(--ease-out),
     border-color var(--duration-normal) var(--ease-out),
     color var(--duration-normal) var(--ease-out);
@@ -4508,16 +4513,17 @@ a:focus:not(:focus-visible) {
   padding: 6px 0;
   margin: 0;
   list-style: none;
+  display: none;
   opacity: 0;
-  visibility: hidden;
   transform: translateY(-8px);
-  transition: all 0.2s ease;
+  transition: opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
   z-index: 1000;
 }
 
 .locale-picker__dropdown--open {
+  display: block;
   opacity: 1;
-  visibility: visible;
   transform: translateY(0);
 }
 

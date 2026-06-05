@@ -157,6 +157,18 @@ class ReviewTest {
     }
 
     @Test
+    void toggleFeaturedKeepsEnglishLocaleOnSwappedRow(App app) {
+        app.access()
+           .login(admin)
+           .setLocaleCookie("en")
+           .refresh()
+           .goToReview()
+           .toggleFeatured(mainPost1)
+           .assertPostFeatured(mainPost1, true)
+           .assertPostFeaturedToggleLabel(mainPost1, "Featured");
+    }
+
+    @Test
     void toggleFeaturedTest(App app) {
         app.access()
            .login(admin)
@@ -165,6 +177,7 @@ class ReviewTest {
            .assertNumberOfPosts(4)
            .assertManagePaginationVisible()
            .toggleFeatured(mainPost1)
+           .assertPostFeatured(mainPost1, true)
            .home()
            .assertNumberOfPosts(1);
     }

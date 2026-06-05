@@ -230,6 +230,23 @@ public class PostRepository {
         return Optional.ofNullable(entityManager.find(Post.class, id));
     }
 
+    public Optional<Post> findByIdForReviewRow(long id) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH p.livePublication lp
+                                         WHERE p.id = :id
+                                         """, Post.class)
+                            .setParameter("id", id)
+                            .getResultStream()
+                            .findFirst()
+                            .map(post -> {
+                                attachLatestPublication(post);
+                                return post;
+                            });
+    }
+
     public Optional<Post> findByIdWithTags(Long id) {
         return entityManager.createQuery("""
                                          SELECT DISTINCT p FROM Post p
