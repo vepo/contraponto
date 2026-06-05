@@ -1,0 +1,50 @@
+---
+description: Avoid method bypass — no pass-through wrappers with identical parameters
+globs: src/main/java/**/*.java
+alwaysApply: false
+---
+
+# No method bypass
+
+A **method bypass** is any method whose body only forwards the same arguments to another method and returns its result (possibly through a short chain). Do not add bypasses; call the target directly.
+
+```java
+// ❌ Bypass — same parameters, no added behavior
+public static String url(Tag tag) {
+    return TagPaths.url(tag);
+}
+
+// ✅ Call the implementation
+TagPaths.url(tag);
+```
+
+Bypass chains compound the problem: `A.foo(x)` → `B.foo(x)` → `C.foo(x)`.
+
+## When a wrapper is allowed
+
+Keep a method only when it **adds** something the callee does not: validation, authorization, caching, mapping to a different type, framework contract (e.g. JAX-RS handler), or a stable public API that intentionally hides an internal type.
+
+If the wrapper only exists for naming convenience or “closer to the caller,” delete it and update callers.
+
+## When touching legacy bypasses
+
+If you edit code that calls a bypass, switch to the canonical method in the same change. Remove the bypass once nothing references it.
+
+## Example in this codebase — URL paths
+
+Public route strings live in `*Paths` classes (`TagPaths`, `PostPaths`, `BlogPaths`, …). Endpoint statics that delegate to them are bypasses:
+
+| Bypass | Call instead |
+|--------|----------------|
+| `TagPageEndpoint.url(tag)` | `TagPaths.url(tag)` |
+| `PostEndpoint.extractUrl(post)` | `PostPaths.extractUrl(post)` |
+| `BlogEndpoint.extractUrl(blog)` | `BlogPaths.extractUrl(blog)` |
+| `SeriePageEndpoint.extractUrl(serie)` | `SeriePaths.extractUrl(serie)` |
+| `AuthorProfileEndpoint.url(author)` | `AuthorProfilePaths.url(author)` |
+
+`TemplateExtensions.url(entity)` is fine as the Qute entry point only if it delegates straight to `*Paths`, not through an endpoint static.
+
+## Never
+
+- Add a new method whose body is only `return Other.method(sameArgs)`.
+- Route callers through a bypass “for consistency” when the canonical method is already public.

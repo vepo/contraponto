@@ -31,6 +31,8 @@ public class ReadingTimeRepository {
 
     @Transactional
     public void addSeconds(Post post, Long userId, String sessionId, int seconds, LocalDateTime activityAt) {
+        // Native: PostgreSQL LEAST() for capped session increment is not expressible in
+        // JPQL bulk update.
         int updated = entityManager.createNativeQuery("""
                                                       UPDATE tb_reading_sessions
                                                       SET total_seconds = LEAST(total_seconds + :seconds, :maxSeconds),
@@ -76,6 +78,7 @@ public class ReadingTimeRepository {
     public Map<LocalDate, Long> countDailySecondsByBlogId(long blogId,
                                                           LocalDateTime startInclusive,
                                                           LocalDateTime endExclusive) {
+        // Native: CAST(… AS date) daily aggregation is database-specific.
         @SuppressWarnings("unchecked")
         List<Object[]> rows = entityManager.createNativeQuery("""
                                                               SELECT CAST(rs.last_activity_at AS date), COALESCE(SUM(rs.total_seconds), 0)

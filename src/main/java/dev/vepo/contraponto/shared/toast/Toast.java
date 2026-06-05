@@ -18,11 +18,11 @@ public interface Toast {
                 String escapedKey = escapeJson(i18nKey);
                 String paramsPart = "";
                 if (i18nParamsJson != null && !i18nParamsJson.isBlank()) {
-                    paramsPart = ",\"i18nParams\":" + i18nParamsJson;
+                    paramsPart = ",\"i18nParams\":%s".formatted(i18nParamsJson);
                 }
                 String messagePart = "";
                 if (message != null) {
-                    messagePart = ",\"message\":\"" + escapeJson(message) + "\"";
+                    messagePart = ",\"message\":\"%s\"".formatted(escapeJson(message));
                 }
                 return "{\"toast:show\":{\"i18nKey\":\"%s\"%s%s,\"duration\":%d,\"type\":\"%s\"}}"
                                                                                                   .formatted(escapedKey, messagePart, paramsPart, duration,

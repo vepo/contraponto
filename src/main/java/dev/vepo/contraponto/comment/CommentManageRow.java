@@ -20,7 +20,7 @@ public record CommentManageRow(long commentId,
     public static CommentManageRow from(PostComment comment) {
         Post post = comment.getPost();
         String body = comment.getBody();
-        String preview = body.length() <= BODY_PREVIEW_MAX ? body : body.substring(0, BODY_PREVIEW_MAX - 1) + "…";
+        String preview = body.length() <= BODY_PREVIEW_MAX ? body : "%s…".formatted(body.substring(0, BODY_PREVIEW_MAX - 1));
         return new CommentManageRow(comment.getId(),
                                     post.getId(),
                                     post.getTitle(),

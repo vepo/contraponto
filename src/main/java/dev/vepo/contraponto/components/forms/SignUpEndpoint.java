@@ -25,7 +25,7 @@ public class SignUpEndpoint {
     public static final String SESSION_COOKIE_NAME = LoginEndpoint.SESSION_COOKIE_NAME;
     private static final String SESSION_COOKIE_PATH = "/";
     private static final String MODAL_CLEAR_OOB =
-            "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
+            "<div id=\"modal-container\" hx-swap-oob=\"innerHTML\"></div>";
 
     private final LoggedUserProvider loggedUserProvider;
     private final UserService userService;

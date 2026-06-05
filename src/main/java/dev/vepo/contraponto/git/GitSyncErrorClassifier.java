@@ -46,8 +46,7 @@ public class GitSyncErrorClassifier {
         if (root instanceof TransportException || isAuthMessage(text)) {
             return new ClassifiedError(GitErrorKind.AUTHENTICATION,
                                        "Git authentication failed.",
-                                       "Configure contraponto.git.username and contraponto.git.password on the server, "
-                                               + "or embed a personal access token in the HTTPS remote URL.");
+                                       "Configure contraponto.git.username and contraponto.git.password on the server, or embed a personal access token in the HTTPS remote URL.");
         }
         if (root instanceof RepositoryNotFoundException || text.contains("not found") && text.contains("repository")) {
             return new ClassifiedError(GitErrorKind.REPOSITORY,
@@ -73,8 +72,7 @@ public class GitSyncErrorClassifier {
         if (text.contains("_contraponto") || text.contains("convention") || text.contains("directory segments")) {
             return new ClassifiedError(GitErrorKind.CONVENTION,
                                        "Repository layout configuration is invalid.",
-                                       "Fix _contraponto.yml in the repository root or remove it to use defaults. "
-                                               + "See the layout convention documentation.");
+                                       "Fix _contraponto.yml in the repository root or remove it to use defaults. See the layout convention documentation.");
         }
         if (text.contains("invalid remote") || text.contains("cannot open") && text.contains("uri")) {
             return new ClassifiedError(GitErrorKind.REPOSITORY,

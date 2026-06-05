@@ -16,12 +16,17 @@ alwaysApply: false
 ## Style
 
 - 4 spaces, K&R braces, ~120 char lines, `var` when type is obvious.
+- String building: [contraponto-strings.mdc](contraponto-strings.mdc) — `.formatted()` first, `StringBuilder` for loops; no `+` concatenation.
 
 ## Entities
 
 - `jakarta.persistence`; `Long` ids; `LocalDateTime` timestamps.
 - Lazy associations by default; `JOIN FETCH` in queries when templates need them.
 - Posts belong to a `Blog` (`blog_id`), not directly to `User`.
+
+## Method bypass
+
+- No pass-through wrappers — [contraponto-no-method-bypass-allowed.mdc](contraponto-no-method-bypass-allowed.mdc). Call the canonical method directly (e.g. `TagPaths.url`, not `TagPageEndpoint.url`).
 
 ## Forms vs components
 

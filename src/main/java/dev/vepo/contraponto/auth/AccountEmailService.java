@@ -54,13 +54,13 @@ public class AccountEmailService {
                                              .data("siteSeoName", siteBranding.seoName())
                                              .render();
         mailer.send(Mail.withHtml(previousEmail,
-                                  "Your " + siteBranding.displayName() + " email address was changed",
+                                  "Your %s email address was changed".formatted(siteBranding.displayName()),
                                   html)
                         .setFrom(mailFrom));
     }
 
     public void sendEmailChangeVerification(User user, String pendingEmail, String rawToken) {
-        String verifyUrl = baseUrl + "/account/verify-email?token=" + rawToken;
+        String verifyUrl = "%s/account/verify-email?token=%s".formatted(baseUrl, rawToken);
         String html = emailChangeVerificationEmail.data("verifyUrl", verifyUrl)
                                                   .data("newEmail", pendingEmail)
                                                   .data("baseUrl", baseUrl)
@@ -77,13 +77,13 @@ public class AccountEmailService {
                                           .data("siteSeoName", siteBranding.seoName())
                                           .render();
         mailer.send(Mail.withHtml(user.getEmail(),
-                                  "Your " + siteBranding.displayName() + " password was changed",
+                                  "Your %s password was changed".formatted(siteBranding.displayName()),
                                   html)
                         .setFrom(mailFrom));
     }
 
     public void sendPasswordReset(User user, String rawToken) {
-        String resetUrl = baseUrl + "/password-recovery/reset?token=" + rawToken;
+        String resetUrl = "%s/password-recovery/reset?token=%s".formatted(baseUrl, rawToken);
         String html = passwordResetEmail.data("resetUrl", resetUrl)
                                         .data("baseUrl", baseUrl)
                                         .data("expiresHours", passwordResetHours)
@@ -91,7 +91,7 @@ public class AccountEmailService {
                                         .data("siteSeoName", siteBranding.seoName())
                                         .render();
         mailer.send(Mail.withHtml(user.getEmail(),
-                                  "Reset your " + siteBranding.displayName() + " password",
+                                  "Reset your %s password".formatted(siteBranding.displayName()),
                                   html)
                         .setFrom(mailFrom));
     }

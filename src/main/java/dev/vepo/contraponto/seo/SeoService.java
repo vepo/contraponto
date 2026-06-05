@@ -8,26 +8,26 @@ import java.util.Locale;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.blog.BlogPaths;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPage;
 import dev.vepo.contraponto.custompage.CustomPageCache;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.serie.Serie;
-import dev.vepo.contraponto.serie.SeriePageEndpoint;
+import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
-import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
+import dev.vepo.contraponto.directory.AuthorProfilePaths;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.tag.AuthorTagUsage;
 import dev.vepo.contraponto.tag.Tag;
-import dev.vepo.contraponto.tag.TagPageEndpoint;
+import dev.vepo.contraponto.tag.TagPaths;
 import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
@@ -103,8 +103,8 @@ public class SeoService {
 
     public SeoMetadata forAuthorDirectory() {
         return SeoMetadata.builder()
-                          .title("Autores · " + siteBranding.seoName())
-                          .description("Lista de autores com publicações no " + siteBranding.seoName() + ".")
+                          .title("Autores · %s".formatted(siteBranding.seoName()))
+                          .description("Lista de autores com publicações no %s.".formatted(siteBranding.seoName()))
                           .canonicalUrl(publicSiteUrl.absolute("/authors"))
                           .ogType(SeoOgType.WEBSITE)
                           .build();
@@ -121,11 +121,11 @@ public class SeoService {
         }
         String plain = SeoDescription.toPlainText(description);
         if (plain.isBlank()) {
-            plain = "Perfil de " + author.getName() + " no " + siteBranding.seoName() + ".";
+            plain = "Perfil de %s no %s.".formatted(author.getName(), siteBranding.seoName());
         }
-        String profilePath = AuthorProfileEndpoint.url(author);
+        String profilePath = AuthorProfilePaths.url(author);
         return SeoMetadata.builder()
-                          .title(author.getName() + " · Autores · " + siteBranding.seoName())
+                          .title("%s · Autores · %s".formatted(author.getName(), siteBranding.seoName()))
                           .description(plain)
                           .canonicalUrl(publicSiteUrl.absolute(profilePath))
                           .ogType(SeoOgType.PROFILE)
@@ -135,8 +135,8 @@ public class SeoService {
 
     public SeoMetadata forBlogDirectory() {
         return SeoMetadata.builder()
-                          .title("Blogs · " + siteBranding.seoName())
-                          .description("Explore todos os blogs ativos no " + siteBranding.seoName() + ".")
+                          .title("Blogs · %s".formatted(siteBranding.seoName()))
+                          .description("Explore todos os blogs ativos no %s.".formatted(siteBranding.seoName()))
                           .canonicalUrl(publicSiteUrl.absolute("/explore/blogs"))
                           .ogType(SeoOgType.WEBSITE)
                           .build();
@@ -148,12 +148,12 @@ public class SeoService {
 
     public SeoMetadata forBlogHome(User author, Blog blog, BreadcrumbTrail breadcrumb) {
         String blogLabel = blog.isMain() ? author.getName() : blog.getName();
-        String title = blogLabel + " · " + siteBranding.seoName();
+        String title = "%s · %s".formatted(blogLabel, siteBranding.seoName());
         String description = SeoDescription.toPlainText(blog.getDescription());
         if (description.isBlank()) {
-            description = "Publicações de " + blogLabel + " no " + siteBranding.seoName() + ".";
+            description = "Publicações de %s no %s.".formatted(blogLabel, siteBranding.seoName());
         }
-        String blogPath = BlogEndpoint.extractUrl(blog);
+        String blogPath = BlogPaths.extractUrl(blog);
         return SeoMetadata.builder()
                           .title(title)
                           .description(description)
@@ -172,7 +172,7 @@ public class SeoService {
         String plain = description.isBlank() ? page.getTitle() : description;
         String pagePath = CustomPagePaths.publicUrl(page);
         return SeoMetadata.builder()
-                          .title(page.getTitle() + " · " + siteBranding.seoName())
+                          .title("%s · %s".formatted(page.getTitle(), siteBranding.seoName()))
                           .description(plain)
                           .canonicalUrl(publicSiteUrl.absolute(pagePath))
                           .ogType(SeoOgType.WEBSITE)
@@ -183,9 +183,7 @@ public class SeoService {
     public SeoMetadata forHome() {
         return SeoMetadata.builder()
                           .title(siteBranding.seoName())
-                          .description("Descubra artigos em destaque e explore blogs e autores na plataforma "
-                                  + siteBranding.seoName()
-                                  + ".")
+                          .description("Descubra artigos em destaque e explore blogs e autores na plataforma %s.".formatted(siteBranding.seoName()))
                           .canonicalUrl(publicSiteUrl.absolute("/"))
                           .ogType(SeoOgType.WEBSITE)
                           .jsonLd(structuredData.webSite())
@@ -199,9 +197,9 @@ public class SeoService {
     public SeoMetadata forPost(PublishedPostView view, BreadcrumbTrail breadcrumb) {
         Post post = view.post();
         User author = post.getAuthor();
-        String title = TemplateExtensions.liveTitle(view) + " · " + author.getName() + " · " + siteBranding.seoName();
+        String title = "%s · %s · %s".formatted(TemplateExtensions.liveTitle(view), author.getName(), siteBranding.seoName());
         String description = describePost(view);
-        String path = PostEndpoint.extractUrl(post);
+        String path = PostPaths.extractUrl(post);
         PostPublication live = view.live();
         var builder = SeoMetadata.builder()
                                  .title(title)
@@ -226,7 +224,7 @@ public class SeoService {
 
     public SeoMetadata forPrivatePage(String pageTitle) {
         return SeoMetadata.builder()
-                          .title(pageTitle + " · " + siteBranding.seoName())
+                          .title("%s · %s".formatted(pageTitle, siteBranding.seoName()))
                           .description("")
                           .canonicalUrl(publicSiteUrl.absolute("/"))
                           .ogType(SeoOgType.WEBSITE)
@@ -236,11 +234,11 @@ public class SeoService {
 
     public SeoMetadata forSearch(String query) {
         String title = query != null && !query.isBlank()
-                                                         ? "Busca: " + query + " · " + siteBranding.seoName()
-                                                         : "Busca · " + siteBranding.seoName();
+                                                         ? "Busca: %s · %s".formatted(query, siteBranding.seoName())
+                                                         : "Busca · %s".formatted(siteBranding.seoName());
         return SeoMetadata.builder()
                           .title(title)
-                          .description("Resultados de busca no " + siteBranding.seoName() + ".")
+                          .description("Resultados de busca no %s.".formatted(siteBranding.seoName()))
                           .canonicalUrl(publicSiteUrl.absolute("/search"))
                           .ogType(SeoOgType.WEBSITE)
                           .noindex(true)
@@ -252,10 +250,10 @@ public class SeoService {
     }
 
     public SeoMetadata forSerie(Serie serie, BreadcrumbTrail breadcrumb) {
-        String description = "Série " + serie.getTitle() + " no " + siteBranding.seoName() + ".";
-        String seriePath = SeriePageEndpoint.extractUrl(serie);
+        String description = "Série %s no %s.".formatted(serie.getTitle(), siteBranding.seoName());
+        String seriePath = SeriePaths.extractUrl(serie);
         return SeoMetadata.builder()
-                          .title(serie.getTitle() + " · " + siteBranding.seoName())
+                          .title("%s · %s".formatted(serie.getTitle(), siteBranding.seoName()))
                           .description(description)
                           .canonicalUrl(publicSiteUrl.absolute(seriePath))
                           .ogType(SeoOgType.WEBSITE)
@@ -274,14 +272,14 @@ public class SeoService {
     public SeoMetadata forTag(Tag tag, List<AuthorTagUsage> mainAuthors, BreadcrumbTrail breadcrumb) {
         String description = tag.getDescription() != null && !tag.getDescription().isBlank()
                                                                                              ? SeoDescription.toPlainText(tag.getDescription())
-                                                                                             : "Artigos com a tag " + tag.getName() + " no "
-                                                                                                     + siteBranding.seoName() + ".";
-        String tagPath = TagPageEndpoint.url(tag);
+                                                                                             : "Artigos com a tag %s no %s.".formatted(tag.getName(),
+                                                                                                                                       siteBranding.seoName());
+        String tagPath = TagPaths.url(tag);
         List<String> authorUrls = mainAuthors.stream()
-                                             .map(usage -> publicSiteUrl.absolute(AuthorProfileEndpoint.url(usage.author())))
+                                             .map(usage -> publicSiteUrl.absolute(AuthorProfilePaths.url(usage.author())))
                                              .toList();
         return SeoMetadata.builder()
-                          .title(tag.getName() + " · " + siteBranding.seoName())
+                          .title("%s · %s".formatted(tag.getName(), siteBranding.seoName()))
                           .description(description)
                           .canonicalUrl(publicSiteUrl.absolute(tagPath))
                           .ogType(SeoOgType.WEBSITE)
@@ -334,7 +332,7 @@ public class SeoService {
             pathOnly = pathOnly.substring(0, queryStart);
         }
         if (!pathOnly.startsWith("/")) {
-            pathOnly = "/" + pathOnly;
+            pathOnly = "/%s".formatted(pathOnly);
         }
 
         if ("/authors".equals(pathOnly)) {

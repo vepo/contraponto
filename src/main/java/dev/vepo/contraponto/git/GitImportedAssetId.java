@@ -21,7 +21,7 @@ final class GitImportedAssetId {
             return key.toLowerCase(Locale.ROOT);
         }
         String ext = extensionWithDot == null ? "" : extensionWithDot.toLowerCase(Locale.ROOT);
-        String material = "contraponto-git-asset:" + key + ext;
+        String material = "contraponto-git-asset:%s%s".formatted(key, ext);
         return UUID.nameUUIDFromBytes(material.getBytes(StandardCharsets.UTF_8)).toString();
     }
 

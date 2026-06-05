@@ -135,7 +135,7 @@ public class ImageService {
                               filename,
                               contentType,
                               (long) content.length,
-                              "/api/images/" + filename,
+                              "/api/images/%s".formatted(filename),
                               owner);
         if (gitAssetRelativePath != null && !gitAssetRelativePath.isBlank()) {
             image.setGitAssetRelativePath(gitAssetRelativePath);

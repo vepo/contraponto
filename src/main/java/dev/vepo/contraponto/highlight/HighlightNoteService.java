@@ -116,7 +116,7 @@ public class HighlightNoteService {
             throw new BadRequestException("Note body is required.");
         }
         if (trimmed.length() > maxNoteLength) {
-            throw new BadRequestException("Note must be at most " + maxNoteLength + " characters.");
+            throw new BadRequestException("Note must be at most %s characters.".formatted(maxNoteLength));
         }
         return trimmed;
     }

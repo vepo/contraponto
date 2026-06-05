@@ -38,7 +38,7 @@ public class CustomPageFilter implements ContainerRequestFilter {
                                                      CustomPagePaths.username(segments),
                                                      CustomPagePaths.blogSlug(segments),
                                                      CustomPagePaths.slug(segments, pageType));
-            default -> throw new IllegalStateException("Unexpected page type: " + pageType);
+            default -> throw new IllegalStateException("Unexpected page type: %s".formatted(pageType));
         };
 
         var targetUri = UriBuilder.fromUri(uriInfo.getBaseUri())

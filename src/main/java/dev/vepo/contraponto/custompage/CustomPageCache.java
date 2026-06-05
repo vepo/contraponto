@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 
 /**
  * In-memory cache of published custom pages for public reads (invalidated on
@@ -30,33 +29,24 @@ public class CustomPageCache {
     }
 
     private static String keyBlog(String username, String blogSlug, String slug) {
-        return "blog:" + username + ":" + blogSlug + ":" + CustomPagePaths.storedSlug(slug);
+        return "blog:%s:%s:%s".formatted(username, blogSlug, CustomPagePaths.storedSlug(slug));
     }
 
     private static String keyGlobal(String slug) {
-        return "global:" + CustomPagePaths.storedSlug(slug);
+        return "global:%s".formatted(CustomPagePaths.storedSlug(slug));
     }
 
     private static String keyUser(String username, String slug) {
-        return "user:" + username + ":" + CustomPagePaths.storedSlug(slug);
+        return "user:%s:%s".formatted(username, CustomPagePaths.storedSlug(slug));
     }
 
     private final CustomPageRepository customPageRepository;
 
-    private final EntityManager entityManager;
-
     private final ConcurrentMap<String, CustomPage> entries = new ConcurrentHashMap<>();
 
     @Inject
-    public CustomPageCache(CustomPageRepository customPageRepository, EntityManager entityManager) {
+    public CustomPageCache(CustomPageRepository customPageRepository) {
         this.customPageRepository = customPageRepository;
-        this.entityManager = entityManager;
-    }
-
-    private void detach(CustomPage page) {
-        if (entityManager.contains(page)) {
-            entityManager.detach(page);
-        }
     }
 
     public Optional<CustomPage> findByUsernameAndSlug(String username, String slug) {
@@ -100,7 +90,7 @@ public class CustomPageCache {
             entries.remove(primaryKey);
             return page;
         }
-        detach(page);
+        customPageRepository.detach(page);
         entries.put(primaryKey, page);
         return page;
     }
@@ -110,7 +100,7 @@ public class CustomPageCache {
         if (!page.isPublished()) {
             return;
         }
-        detach(page);
+        customPageRepository.detach(page);
         entries.put(cacheKey(page), page);
     }
 }

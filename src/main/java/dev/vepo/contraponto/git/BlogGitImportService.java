@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
@@ -31,7 +32,6 @@ import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 
@@ -157,7 +157,7 @@ public class BlogGitImportService {
 
     private final SerieService serieService;
 
-    private final EntityManager entityManager;
+    private final BlogRepository blogRepository;
 
     private final ObjectMapper objectMapper;
 
@@ -178,7 +178,7 @@ public class BlogGitImportService {
                                 PostPublicationService publicationService,
                                 TagService tagService,
                                 SerieService serieService,
-                                EntityManager entityManager,
+                                BlogRepository blogRepository,
                                 ObjectMapper objectMapper,
                                 PostGitMarkdownCodec markdownCodec,
                                 GitImageSyncService gitImageSyncService,
@@ -190,7 +190,7 @@ public class BlogGitImportService {
         this.publicationService = publicationService;
         this.tagService = tagService;
         this.serieService = serieService;
-        this.entityManager = entityManager;
+        this.blogRepository = blogRepository;
         this.objectMapper = objectMapper;
         this.markdownCodec = markdownCodec;
         this.gitImageSyncService = gitImageSyncService;
@@ -295,18 +295,17 @@ public class BlogGitImportService {
         if (draft.published()) {
             publicationService.publish(post);
         }
-        entityManager.flush();
+        postRepository.flush();
         String rawDescription = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");
         if (draft.published() && PostPublicationDescriptions.exceedsPublicationLimit(rawDescription)) {
             gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.warnPost(
                                                                                GitSyncPhase.POST_IMPORT,
                                                                                post.getId(),
                                                                                markdownPath,
-                                                                               "Description was longer than " + PostPublicationDescriptions.MAX_LENGTH
-                                                                                       + " characters; the excerpt was truncated for storage and publishing.",
-                                                                               "Shorten the excerpt in Git or in Contraponto to fit the "
-                                                                                       + PostPublicationDescriptions.MAX_LENGTH
-                                                                                       + "-character limit."));
+                                                                               "Description was longer than %s characters; the excerpt was truncated for storage and publishing."
+                                                                                                                                                                                 .formatted(PostPublicationDescriptions.MAX_LENGTH),
+                                                                               "Shorten the excerpt in Git or in Contraponto to fit the %s-character limit."
+                                                                                                                                                            .formatted(PostPublicationDescriptions.MAX_LENGTH)));
         }
     }
 
@@ -318,7 +317,7 @@ public class BlogGitImportService {
                                     SourceKind sourceKind) {
         String pathLabel = markdownPath.toString();
         try {
-            Blog blog = entityManager.find(Blog.class, blogId);
+            Blog blog = blogRepository.findById(blogId).orElse(null);
             if (blog == null) {
                 return GitSyncPostResult.skipped(pathLabel, "Blog was not found.", null);
             }
@@ -343,7 +342,7 @@ public class BlogGitImportService {
             applyPostFields(draft, doc, blog, workspace, convention, markdownPath);
             finalizeIngestion(draft, doc, pathLabel);
             return GitSyncPostResult.success(draft.post().getId(), pathLabel,
-                                             "Imported post \"" + draft.slug() + "\".");
+                                             "Imported post \"%s\".".formatted(draft.slug()));
         } catch (Exception ex) {
             LOG.warn("Import failed markdown={}: {}", markdownPath, ex.toString());
             GitImportFailureMapper.ClassifiedImportFailure classified = gitImportFailureMapper.classify(ex);

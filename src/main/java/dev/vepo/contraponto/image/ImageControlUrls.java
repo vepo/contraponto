@@ -11,7 +11,7 @@ public final class ImageControlUrls {
         if (searchQuery == null || searchQuery.isBlank()) {
             return "";
         }
-        return "&q=" + URLEncoder.encode(searchQuery.trim(), StandardCharsets.UTF_8);
+        return "&q=%s".formatted(URLEncoder.encode(searchQuery.trim(), StandardCharsets.UTF_8));
     }
 
     private ImageControlUrls() {

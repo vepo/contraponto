@@ -89,7 +89,7 @@ public class GitSyncHistoryEndpoint {
                                 entries,
                                 links,
                                 loggedUser,
-                                breadcrumbService.writingBlogGitSyncRun(blog, "Git sync run " + run.getId()));
+                                breadcrumbService.writingBlogGitSyncRun(blog, "Git sync run %s".formatted(run.getId())));
     }
 
     @GET

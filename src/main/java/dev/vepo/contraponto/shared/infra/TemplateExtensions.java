@@ -135,14 +135,14 @@ public class TemplateExtensions {
         }
         long minutes = seconds / 60;
         if (minutes < 60) {
-            return minutes + " min";
+            return "%s min".formatted(minutes);
         }
         long hours = minutes / 60;
         long remainingMinutes = minutes % 60;
         if (remainingMinutes == 0) {
-            return hours + "h";
+            return "%sh".formatted(hours);
         }
-        return hours + "h " + remainingMinutes + "m";
+        return "%sh %sm".formatted(hours, remainingMinutes);
     }
 
     @TemplateExtension
@@ -152,14 +152,14 @@ public class TemplateExtensions {
         }
         long minutes = totalSeconds / 60;
         if (minutes < 60) {
-            return minutes + " min";
+            return "%s min".formatted(minutes);
         }
         long hours = minutes / 60;
         long remainingMinutes = minutes % 60;
         if (remainingMinutes == 0) {
-            return hours + "h";
+            return "%sh".formatted(hours);
         }
-        return hours + "h " + remainingMinutes + "m";
+        return "%sh %sm".formatted(hours, remainingMinutes);
     }
 
     @TemplateExtension
@@ -168,7 +168,7 @@ public class TemplateExtensions {
                 || notification.getType() == NotificationType.GIT_SYNC_FAILED)
                 && notification.getGitSyncRun() != null) {
             GitSyncRun run = notification.getGitSyncRun();
-            return "/blogs/" + run.getBlog().getId() + "/git-sync/" + run.getId();
+            return "/blogs/%s/git-sync/%s".formatted(run.getBlog().getId(), run.getId());
         }
         if ((notification.getType() == NotificationType.NEW_POST
                 || notification.getType() == NotificationType.NEW_COMMENT
@@ -178,7 +178,7 @@ public class TemplateExtensions {
                 && notification.getPost() != null) {
             String url = PostEndpoint.extractUrl(notification.getPost());
             if (notification.getType() == NotificationType.NEW_COMMENT) {
-                return url + "#comments";
+                return "%s#comments".formatted(url);
             }
             if (notification.getType() == NotificationType.COMMON_HIGHLIGHT_PROPOSAL
                     || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
@@ -265,15 +265,15 @@ public class TemplateExtensions {
                 if (title == null || title.isBlank()) {
                     title = notification.getPost() != null ? notification.getPost().getSlug() : DEFAULT_POST_TITLE;
                 }
-                yield blogName + " published " + title;
+                yield "%s published %s".formatted(blogName, title);
             }
             case NEW_FOLLOW -> {
                 String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
-                yield actor + " started following " + blogName;
+                yield "%s started following %s".formatted(actor, blogName);
             }
             case NEW_SUBSCRIBE -> {
                 String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
-                yield actor + " subscribed by email to " + blogName;
+                yield "%s subscribed by email to %s".formatted(actor, blogName);
             }
             case NEW_COMMENT -> {
                 String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
@@ -281,24 +281,24 @@ public class TemplateExtensions {
                 if (title == null || title.isBlank()) {
                     title = notification.getPost() != null ? notification.getPost().getSlug() : DEFAULT_POST_TITLE;
                 }
-                yield actor + " commented on " + title;
+                yield "%s commented on %s".formatted(actor, title);
             }
             case COMMON_HIGHLIGHT_PROPOSAL -> {
                 String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
-                yield "Readers often highlighted a passage on " + title;
+                yield "Readers often highlighted a passage on %s".formatted(title);
             }
             case PUBLIC_HIGHLIGHT_NOTE -> {
                 String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
                 String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
-                yield actor + " submitted a public highlight note on " + title;
+                yield "%s submitted a public highlight note on %s".formatted(actor, title);
             }
             case POST_RESPONSE -> {
                 String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
                 String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
-                yield actor + " published a response to " + title;
+                yield "%s published a response to %s".formatted(actor, title);
             }
-            case GIT_SYNC_SUCCEEDED -> "Git sync succeeded for " + blogName;
-            case GIT_SYNC_FAILED -> "Git sync failed for " + blogName;
+            case GIT_SYNC_SUCCEEDED -> "Git sync succeeded for %s".formatted(blogName);
+            case GIT_SYNC_FAILED -> "Git sync failed for %s".formatted(blogName);
         };
     }
 
@@ -320,7 +320,7 @@ public class TemplateExtensions {
         if (minutes < 1) {
             return "< 1 min read";
         }
-        return minutes + " min read";
+        return "%s min read".formatted(minutes);
     }
 
     @TemplateExtension

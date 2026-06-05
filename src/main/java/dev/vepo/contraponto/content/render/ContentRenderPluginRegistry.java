@@ -22,10 +22,10 @@ public class ContentRenderPluginRegistry {
         ServiceLoader.load(ContentRenderPlugin.class).forEach(plugin -> {
             String id = plugin.identifier();
             if (id == null || id.isBlank()) {
-                throw new IllegalStateException("Content render plugin missing identifier: " + plugin.getClass().getName());
+                throw new IllegalStateException("Content render plugin missing identifier: %s".formatted(plugin.getClass().getName()));
             }
             if (loaded.putIfAbsent(id, plugin) != null) {
-                throw new IllegalStateException("Duplicate content render plugin identifier: " + id);
+                throw new IllegalStateException("Duplicate content render plugin identifier: %s".formatted(id));
             }
         });
         plugins = Map.copyOf(loaded);

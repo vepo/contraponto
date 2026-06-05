@@ -106,7 +106,7 @@ public class CommentComponentEndpoint {
 
     public TemplateInstance renderComments(Post post) {
         CommentViewerContext viewer = buildViewer(post);
-        String commentsUrl = PostEndpoint.extractUrl(post) + "/components/comments";
+        String commentsUrl = "%s/components/comments".formatted(PostEndpoint.extractUrl(post));
         CommentsSectionView section = new CommentsSectionView(post,
                                                               commentsUrl,
                                                               commentService.buildRootViews(post.getId(), viewer),
@@ -119,7 +119,7 @@ public class CommentComponentEndpoint {
 
     public TemplateInstance renderReplies(Post post, long rootCommentId) {
         CommentViewerContext viewer = buildViewer(post);
-        String commentsUrl = PostEndpoint.extractUrl(post) + "/components/comments";
+        String commentsUrl = "%s/components/comments".formatted(PostEndpoint.extractUrl(post));
 
         CommentView rootView = commentService.buildRootViews(post.getId(), viewer).stream()
                                              .filter(c -> c.id() == rootCommentId)

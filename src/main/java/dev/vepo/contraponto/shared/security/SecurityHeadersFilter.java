@@ -16,7 +16,7 @@ import jakarta.ws.rs.ext.Provider;
 public class SecurityHeadersFilter implements ContainerResponseFilter {
 
     static String contentSecurityPolicy(Optional<String> siteIntegrationOrigin) {
-        String integrationOrigin = siteIntegrationOrigin.map(origin -> " " + origin).orElse("");
+        String integrationOrigin = siteIntegrationOrigin.map(origin -> " %s".formatted(origin)).orElse("");
         return """
                default-src 'self'; \
                script-src 'self' 'unsafe-inline' https://platform.twitter.com%s; \

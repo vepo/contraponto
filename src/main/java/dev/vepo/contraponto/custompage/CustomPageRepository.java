@@ -52,29 +52,29 @@ public class CustomPageRepository {
         findByIdForManagement(id).ifPresent(entityManager::remove);
     }
 
+    public void detach(CustomPage page) {
+        if (entityManager.contains(page)) {
+            entityManager.detach(page);
+        }
+    }
+
     public boolean existsSlug(String slug, Long blogId, Long excludePageId) {
         var normalized = CustomPagePaths.storedSlug(slug);
-        var query = new StringBuilder("""
-                                      SELECT COUNT(cp) FROM CustomPage cp
-                                      WHERE cp.slug = :slug
-                                      """);
+        var cb = entityManager.getCriteriaBuilder();
+        var criteria = cb.createQuery(Long.class);
+        var root = criteria.from(CustomPage.class);
+        var predicates = cb.equal(root.get("slug"), normalized);
         if (blogId == null) {
-            query.append(" AND cp.blog IS NULL");
+            predicates = cb.and(predicates, cb.isNull(root.get("blog")));
         } else {
-            query.append(" AND cp.blog.id = :blogId");
+            predicates = cb.and(predicates, cb.equal(root.get("blog").get("id"), blogId));
         }
         if (excludePageId != null) {
-            query.append(" AND cp.id <> :excludePageId");
+            predicates = cb.and(predicates, cb.notEqual(root.get("id"), excludePageId));
         }
-
-        var typedQuery = entityManager.createQuery(query.toString(), Long.class).setParameter("slug", normalized);
-        if (blogId != null) {
-            typedQuery.setParameter("blogId", blogId);
-        }
-        if (excludePageId != null) {
-            typedQuery.setParameter("excludePageId", excludePageId);
-        }
-        return typedQuery.getSingleResult() > 0;
+        criteria.select(cb.count(root));
+        criteria.where(predicates);
+        return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
     public Optional<CustomPage> findByIdForManagement(long id) {

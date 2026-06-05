@@ -13,7 +13,6 @@ import dev.vepo.contraponto.tag.Tag;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
@@ -33,19 +32,19 @@ public class PostPublicationService {
     private final PostPublicationRepository publicationRepository;
     private final PostImageDependencyService postImageDependencyService;
     private final PostSlugAliasRepository postSlugAliasRepository;
-    private final EntityManager entityManager;
+    private final PostRepository postRepository;
     private final Event<PostPublishedEvent> postPublishedEvents;
 
     @Inject
     public PostPublicationService(PostPublicationRepository publicationRepository,
                                   PostImageDependencyService postImageDependencyService,
                                   PostSlugAliasRepository postSlugAliasRepository,
-                                  EntityManager entityManager,
+                                  PostRepository postRepository,
                                   Event<PostPublishedEvent> postPublishedEvents) {
         this.publicationRepository = publicationRepository;
         this.postImageDependencyService = postImageDependencyService;
         this.postSlugAliasRepository = postSlugAliasRepository;
-        this.entityManager = entityManager;
+        this.postRepository = postRepository;
         this.postPublishedEvents = postPublishedEvents;
     }
 
@@ -81,13 +80,6 @@ public class PostPublicationService {
         return tagIds(post.getTags()).equals(tagIds(live.getTags()));
     }
 
-    private void persistSlug(Post post) {
-        entityManager.createQuery("UPDATE Post p SET p.slug = :slug WHERE p.id = :id")
-                     .setParameter("slug", post.getSlug())
-                     .setParameter("id", post.getId())
-                     .executeUpdate();
-    }
-
     @Transactional
     public PostPublication publish(Post post) {
         PostPublication candidate = snapshotFrom(post);
@@ -97,14 +89,14 @@ public class PostPublicationService {
         }
         if (live != null && !Objects.equals(nullToEmpty(post.getSlug()), nullToEmpty(live.getSlug()))) {
             postSlugAliasRepository.saveIfAbsent(post, live.getSlug());
-            persistSlug(post);
+            postRepository.updateSlug(post.getId(), post.getSlug());
         }
 
         int nextVersion = publicationRepository.findMaxVersion(post.getId()).orElse(0) + 1;
         candidate.setVersion(nextVersion);
         candidate.setPublishedAt(LocalDateTime.now());
         publicationRepository.save(candidate);
-        entityManager.flush();
+        publicationRepository.flush();
         postImageDependencyService.snapshotPublicationDependencies(candidate, post);
         post.setPublished(true);
         if (post.getPublishedAt() == null) {

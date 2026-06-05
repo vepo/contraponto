@@ -46,42 +46,55 @@ public class ImageRepository {
     }
 
     public Page<Image> findPageByOwnerId(long ownerId, String searchQuery, PageQuery query) {
+        var cb = entityManager.getCriteriaBuilder();
+
+        // Count query
+        var countCriteria = cb.createQuery(Long.class);
+        var countRoot = countCriteria.from(Image.class);
+        var countPredicates = cb.and(
+                                     cb.equal(countRoot.get("owner").get("id"), ownerId),
+                                     cb.isTrue(countRoot.get("active")));
+
         boolean hasSearch = searchQuery != null && !searchQuery.isBlank();
-        String searchTerm = hasSearch ? "%" + searchQuery.trim().toLowerCase() + "%" : null;
+        String searchTerm = hasSearch ? "%%%s%%".formatted(searchQuery.trim().toLowerCase()) : null;
 
-        String countJpql = """
-                           SELECT COUNT(i) FROM Image i
-                           WHERE i.owner.id = :ownerId AND i.active = true
-                           """;
-        String dataJpql = """
-                          SELECT i FROM Image i
-                          WHERE i.owner.id = :ownerId AND i.active = true
-                          """;
         if (hasSearch) {
-            String searchClause = """
-                                  AND (
-                                      LOWER(i.altText) LIKE :search
-                                      OR LOWER(i.filename) LIKE :search
-                                      OR LOWER(i.gitAssetRelativePath) LIKE :search
-                                  )
-                                  """;
-            countJpql += searchClause;
-            dataJpql += searchClause;
-        }
-        dataJpql += " ORDER BY i.createdAt DESC";
-
-        var countQuery = entityManager.createQuery(countJpql, Long.class).setParameter(PARAM_OWNER_ID, ownerId);
-        var dataQuery = entityManager.createQuery(dataJpql, Image.class)
-                                     .setParameter(PARAM_OWNER_ID, ownerId)
-                                     .setFirstResult(query.skip())
-                                     .setMaxResults(query.limit());
-        if (hasSearch) {
-            countQuery.setParameter(PARAM_SEARCH, searchTerm);
-            dataQuery.setParameter(PARAM_SEARCH, searchTerm);
+            var searchPredicate = cb.or(
+                                        cb.like(cb.lower(countRoot.get("altText")), searchTerm),
+                                        cb.like(cb.lower(countRoot.get("filename")), searchTerm),
+                                        cb.like(cb.lower(countRoot.get("gitAssetRelativePath")), searchTerm));
+            countPredicates = cb.and(countPredicates, searchPredicate);
         }
 
-        long total = countQuery.getSingleResult();
-        List<Image> data = dataQuery.getResultList();
+        countCriteria.select(cb.count(countRoot));
+        countCriteria.where(countPredicates);
+
+        long total = entityManager.createQuery(countCriteria).getSingleResult();
+
+        // Data query
+        var dataCriteria = cb.createQuery(Image.class);
+        var dataRoot = dataCriteria.from(Image.class);
+        var dataPredicates = cb.and(
+                                    cb.equal(dataRoot.get("owner").get("id"), ownerId),
+                                    cb.isTrue(dataRoot.get("active")));
+
+        if (hasSearch) {
+            var searchPredicate = cb.or(
+                                        cb.like(cb.lower(dataRoot.get("altText")), searchTerm),
+                                        cb.like(cb.lower(dataRoot.get("filename")), searchTerm),
+                                        cb.like(cb.lower(dataRoot.get("gitAssetRelativePath")), searchTerm));
+            dataPredicates = cb.and(dataPredicates, searchPredicate);
+        }
+
+        dataCriteria.select(dataRoot);
+        dataCriteria.where(dataPredicates);
+        dataCriteria.orderBy(cb.desc(dataRoot.get("createdAt")));
+
+        List<Image> data = entityManager.createQuery(dataCriteria)
+                                        .setFirstResult(query.skip())
+                                        .setMaxResults(query.limit())
+                                        .getResultList();
+
         return new Page<>(data, query.page(), query.limit(), total);
     }
 

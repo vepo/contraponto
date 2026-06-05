@@ -61,7 +61,7 @@ public class TagPageEndpoint {
     private static final int MAIN_AUTHOR_LIMIT = 6;
 
     public static String url(Tag tag) {
-        return "/tags/%s".formatted(tag.getSlug());
+        return TagPaths.url(tag);
     }
 
     private final TagRepository tagRepository;

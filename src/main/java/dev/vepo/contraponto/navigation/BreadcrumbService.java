@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.blog.BlogPaths;
 import dev.vepo.contraponto.custompage.CustomPage;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PublishedPostView;
@@ -118,7 +118,7 @@ public class BreadcrumbService {
         var author = blog.getOwner();
         items.add(link(author.getName(), authorBlogUrl(author)));
         if (!blog.isMain()) {
-            items.add(link(blog.getName(), BlogEndpoint.extractUrl(blog)));
+            items.add(link(blog.getName(), BlogPaths.extractUrl(blog)));
         }
         items.add(current(pageTitle(page)));
         return trail(items);
@@ -147,7 +147,7 @@ public class BreadcrumbService {
         items.add(link(HOME_LABEL, HOME_PATH));
         items.add(link(author.getName(), authorBlogUrl(author)));
         if (!blog.isMain()) {
-            items.add(link(blog.getName(), BlogEndpoint.extractUrl(blog)));
+            items.add(link(blog.getName(), BlogPaths.extractUrl(blog)));
         }
         items.add(current(title == null || title.isBlank() ? "Untitled" : title));
         return trail(items);
@@ -174,7 +174,7 @@ public class BreadcrumbService {
         items.add(link(HOME_LABEL, HOME_PATH));
         items.add(link(author.getName(), authorBlogUrl(author)));
         if (!blog.isMain()) {
-            items.add(link(blog.getName(), BlogEndpoint.extractUrl(blog)));
+            items.add(link(blog.getName(), BlogPaths.extractUrl(blog)));
         }
         items.add(current(serie.getTitle()));
         return trail(items);
@@ -201,22 +201,22 @@ public class BreadcrumbService {
     public BreadcrumbTrail manageBlogGitSync(Blog blog) {
         return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
-                     link(blog.getName(), "/blogs/" + blog.getId() + "/edit"),
+                     link(blog.getName(), "/blogs/%s/edit".formatted(blog.getId())),
                      current("Git sync history"));
     }
 
     public BreadcrumbTrail manageBlogGitSyncRun(Blog blog, String runLabel) {
         return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
-                     link(blog.getName(), "/blogs/" + blog.getId() + "/edit"),
-                     link("Git sync history", "/blogs/" + blog.getId() + "/git-sync"),
+                     link(blog.getName(), "/blogs/%s/edit".formatted(blog.getId())),
+                     link("Git sync history", "/blogs/%s/git-sync".formatted(blog.getId())),
                      current(runLabel));
     }
 
     public BreadcrumbTrail manageBlogImages(Blog blog) {
         return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
-                     link(blog.getName(), "/blogs/" + blog.getId() + "/edit"),
+                     link(blog.getName(), "/blogs/%s/edit".formatted(blog.getId())),
                      current("Images"));
     }
 
@@ -275,15 +275,15 @@ public class BreadcrumbService {
     public BreadcrumbTrail writingBlogGitSync(Blog blog) {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
-                     link(blog.getName(), "/blogs/" + blog.getId() + "/settings"),
+                     link(blog.getName(), "/blogs/%s/settings".formatted(blog.getId())),
                      current("Git sync history"));
     }
 
     public BreadcrumbTrail writingBlogGitSyncRun(Blog blog, String runLabel) {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
-                     link(blog.getName(), "/blogs/" + blog.getId() + "/settings"),
-                     link("Git sync history", "/blogs/" + blog.getId() + "/git-sync"),
+                     link(blog.getName(), "/blogs/%s/settings".formatted(blog.getId())),
+                     link("Git sync history", "/blogs/%s/git-sync".formatted(blog.getId())),
                      current(runLabel));
     }
 
@@ -300,7 +300,7 @@ public class BreadcrumbService {
     public BreadcrumbTrail writingBlogSettings(Blog blog) {
         return trail(link(NavigationHub.WRITING.label(), hubRegistry.defaultSectionPath(NavigationHub.WRITING)),
                      link("Blogs", hubRegistry.sectionPath(NavigationHub.WRITING, "blogs")),
-                     current("Settings — " + blog.getName()));
+                     current("Settings — %s".formatted(blog.getName())));
     }
 
     public BreadcrumbTrail writingDraft(String draftTitle) {

@@ -67,7 +67,7 @@ public final class PostGitMarkdownCodec {
     public String writeMarkdownDocument(Map<String, Object> frontMatter, String body) throws IOException {
         String fmYaml = YAML_MAP.writeValueAsString(frontMatter);
         String separator = fmYaml.endsWith("\n") ? "" : "\n";
-        return "---\n" + fmYaml + separator + "---\n\n" + body;
+        return "---\n%s%s---\n\n%s".formatted(fmYaml, separator, body);
     }
 
 }

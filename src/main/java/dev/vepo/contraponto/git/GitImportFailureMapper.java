@@ -23,7 +23,7 @@ public class GitImportFailureMapper {
     private static ClassifiedImportFailure genericFailure(String detail) {
         return new ClassifiedImportFailure(
                                            "Could not import this post from Git.",
-                                           detail + " " + LAYOUT_CONVENTION_DOC);
+                                           "%s %s".formatted(detail, LAYOUT_CONVENTION_DOC));
     }
 
     private static boolean isDescriptionTooLong(String text) {
@@ -81,19 +81,19 @@ public class GitImportFailureMapper {
         if (isYamlParseFailure(root, text)) {
             return new ClassifiedImportFailure(
                                                "Invalid YAML front matter.",
-                                               "Fix the block between the opening and closing --- lines. " + LAYOUT_CONVENTION_DOC);
+                                               "Fix the block between the opening and closing --- lines. %s".formatted(LAYOUT_CONVENTION_DOC));
         }
         if (isDescriptionTooLong(text)) {
             return new ClassifiedImportFailure(
                                                "Description too long for a published snapshot.",
-                                               "Published excerpts are limited to " + PostPublicationDescriptions.MAX_LENGTH
-                                                       + " characters; shorten the description in Git or in Contraponto.");
+                                               "Published excerpts are limited to %s characters; shorten the description in Git or in Contraponto."
+                                                                                                                                                   .formatted(PostPublicationDescriptions.MAX_LENGTH));
         }
         if (isSlugConflict(text)) {
             return new ClassifiedImportFailure(
                                                "Slug already used on this blog.",
-                                               "Use a different slug or permalink, or set contraponto_post_id to the existing post id. "
-                                                       + LAYOUT_CONVENTION_DOC);
+                                               "Use a different slug or permalink, or set contraponto_post_id to the existing post id. %s"
+                                                                                                                                          .formatted(LAYOUT_CONVENTION_DOC));
         }
         String rootLine = firstLine(root.getMessage());
         if (rootLine != null && !rootLine.isBlank()) {

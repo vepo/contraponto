@@ -73,6 +73,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Feature catalog maintenance rule | ✅ `feature-catalog.mdc` (always-on) |
 | JavaScript / HTMX-first rule | ✅ `contraponto-javascript.mdc` (globs: `js/*.js`, templates) |
 | CSS authoring rule | ✅ `contraponto-css.mdc` (globs: `style/*.css`, templates) |
+| No method bypass rule | ✅ `contraponto-no-method-bypass-allowed.mdc` (globs: `src/main/java/**/*.java`) |
 
 ## Implemented features (reference — keep ARCHITECTURE in sync)
 

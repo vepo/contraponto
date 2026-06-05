@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vepo.contraponto.post.Post;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 
 @ApplicationScoped
 public class TagService {
@@ -19,13 +18,11 @@ public class TagService {
 
     private final ObjectMapper objectMapper;
     private final TagRepository tagRepository;
-    private final EntityManager entityManager;
 
     @Inject
-    public TagService(ObjectMapper objectMapper, TagRepository tagRepository, EntityManager entityManager) {
+    public TagService(ObjectMapper objectMapper, TagRepository tagRepository) {
         this.objectMapper = objectMapper;
         this.tagRepository = tagRepository;
-        this.entityManager = entityManager;
     }
 
     private List<String> parseTagLabels(String tagsJson) {
@@ -61,7 +58,7 @@ public class TagService {
             bySlug.put(tag.getSlug(), tag);
         }
         post.getTags().addAll(bySlug.values());
-        entityManager.flush();
+        tagRepository.flush();
     }
 
     public String tagsToJson(Post post) {

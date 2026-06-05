@@ -71,12 +71,7 @@ public class PostEndpoint {
     private static final int RELATED_POST_LIMIT = 4;
 
     public static String extractUrl(Post post) {
-        var blog = post.getBlog();
-        if (post.getBlog().isMain()) {
-            return "/%s/post/%s".formatted(blog.getOwner().getUsername(), post.getSlug());
-        } else {
-            return "/%s/%s/post/%s".formatted(blog.getOwner().getUsername(), blog.getSlug(), post.getSlug());
-        }
+        return PostPaths.extractUrl(post);
     }
 
     private final PostRepository postRepository;

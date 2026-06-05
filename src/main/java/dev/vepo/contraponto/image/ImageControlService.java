@@ -5,7 +5,7 @@ import java.util.List;
 
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
@@ -60,7 +60,7 @@ public class ImageControlService {
         if (usage.kind() == ImageUsageKind.POST) {
             return postRepository.findById(usage.resourceId())
                                  .map(post -> new ImageUsageView(usage.title(),
-                                                                 PostEndpoint.extractUrl(post),
+                                                                 PostPaths.extractUrl(post),
                                                                  roleLabel))
                                  .orElse(new ImageUsageView(usage.title(), "#", roleLabel));
         }

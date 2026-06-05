@@ -37,7 +37,7 @@ public class LoginEndpoint {
     private static final String SESSION_COOKIE_PATH = "/";
     private static final String ERROR_MESSAGE_HTML = "<div class='error-message' data-i18n='%s'>%s</div>";
     private static final String MODAL_CLEAR_OOB =
-            "<" + "div" + " id=\"modal-container\" hx-swap-oob=\"innerHTML\"></" + "div" + ">";
+            "<div id=\"modal-container\" hx-swap-oob=\"innerHTML\"></div>";
 
     private final UserRepository userRepository;
     private final ViewRepository viewRepository;

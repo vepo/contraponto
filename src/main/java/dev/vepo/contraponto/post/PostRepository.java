@@ -149,7 +149,7 @@ public class PostRepository {
                                                   OR LOWER(lp.description) LIKE LOWER(:query)
                                                   OR LOWER(lp.content) LIKE LOWER(:query))
                                              """, Long.class)
-                                .setParameter("query", "%" + query + "%")
+                                .setParameter("query", "%%%s%%".formatted(query))
                                 .getSingleResult();
         } else {
             return entityManager.createQuery("""
@@ -561,6 +561,10 @@ public class PostRepository {
                          .toList();
     }
 
+    public void flush() {
+        entityManager.flush();
+    }
+
     @Transactional
     public Post save(Post post) {
         if (post.getId() == null) {
@@ -615,6 +619,14 @@ public class PostRepository {
                             .setParameter("excludeId", excludeId)
                             .setParameter("blogId", blogId)
                             .getSingleResult() > 0;
+    }
+
+    @Transactional
+    public void updateSlug(long id, String slug) {
+        entityManager.createQuery("UPDATE Post p SET p.slug = :slug WHERE p.id = :id")
+                     .setParameter("slug", slug)
+                     .setParameter("id", id)
+                     .executeUpdate();
     }
 
 }

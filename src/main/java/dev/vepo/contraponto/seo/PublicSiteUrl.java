@@ -39,9 +39,9 @@ public class PublicSiteUrl {
             return path;
         }
         if (path.startsWith("/")) {
-            return baseUrl + path;
+            return "%s%s".formatted(baseUrl, path);
         }
-        return baseUrl + "/" + path;
+        return "%s/%s".formatted(baseUrl, path);
     }
 
     public String baseUrl() {

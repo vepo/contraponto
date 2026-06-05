@@ -19,7 +19,7 @@ import jakarta.ws.rs.core.UriInfo;
 @ApplicationScoped
 public class SiteWideFeedEndpoint {
 
-    static final int FEED_LIMIT = 50;
+    static final int FEED_LIMIT = RssFeedPaths.FEED_LIMIT;
 
     private final RssFeedService rssFeedService;
 

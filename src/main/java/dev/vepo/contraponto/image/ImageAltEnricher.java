@@ -28,9 +28,9 @@ public class ImageAltEnricher {
         }
         String tag = matcher.group(0);
         if (tag.matches("(?is).*\\balt\\s*=.*")) {
-            return tag.replaceAll("(?is)\\balt\\s*=\\s*[\"'][^\"']*[\"']", "alt=\"" + alt + "\"");
+            return tag.replaceAll("(?is)\\balt\\s*=\\s*[\"'][^\"']*[\"']", "alt=\"%s\"".formatted(alt));
         }
-        return tag.replaceFirst(">$", " alt=\"" + alt + "\">");
+        return tag.replaceFirst(">$", " alt=\"%s\">".formatted(alt));
     }
 
     private final ImageRepository imageRepository;

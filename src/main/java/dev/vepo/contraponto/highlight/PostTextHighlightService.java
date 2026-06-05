@@ -14,7 +14,7 @@ import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.postresponse.PostResponseCardView;
 import dev.vepo.contraponto.postresponse.PostResponseRepository;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -106,7 +106,7 @@ public class PostTextHighlightService {
     }
 
     public HighlightsSectionView buildSectionView(Post post, Long currentUserId) {
-        String highlightsUrl = PostEndpoint.extractUrl(post) + "/components/highlights";
+        String highlightsUrl = "%s/components/highlights".formatted(PostPaths.extractUrl(post));
         List<OfficialHighlight> officials = officialHighlightRepository.findVisibleForPost(post.getId());
         Set<String> officialClusters = new HashSet<>();
         List<OfficialHighlightView> officialViews = new ArrayList<>();
@@ -158,7 +158,7 @@ public class PostTextHighlightService {
                                                                                                          rp.getTitle(),
                                                                                                          r.getResponder().getName(),
                                                                                                          excerpt,
-                                                                                                         PostEndpoint.extractUrl(rp));
+                                                                                                         PostPaths.extractUrl(rp));
                                                                      })
                                                                      .toList();
 
@@ -233,7 +233,7 @@ public class PostTextHighlightService {
         if (trimmed.length() <= 200) {
             return trimmed;
         }
-        return trimmed.substring(0, 199) + "…";
+        return "%s…".formatted(trimmed.substring(0, 199));
     }
 
     private String excerptPassage(String passage) {
@@ -244,7 +244,7 @@ public class PostTextHighlightService {
         if (trimmed.length() <= 120) {
             return trimmed;
         }
-        return trimmed.substring(0, 119) + "…";
+        return "%s…".formatted(trimmed.substring(0, 119));
     }
 
     private CommonHighlightProposal loadProposalForModeration(long postId, long proposalId, long ownerUserId) {
@@ -342,7 +342,7 @@ public class PostTextHighlightService {
             throw new BadRequestException("Highlight passage is required.");
         }
         if (trimmed.length() > maxPassageLength) {
-            throw new BadRequestException("Highlight passage must be at most " + maxPassageLength + " characters.");
+            throw new BadRequestException("Highlight passage must be at most %s characters.".formatted(maxPassageLength));
         }
         return trimmed;
     }

@@ -25,20 +25,16 @@ public class UserRepository {
     }
 
     public boolean existsByEmail(String email, Long excludeUserId) {
-        var query = new StringBuilder("""
-                                      SELECT COUNT(u) FROM User u
-                                      WHERE u.email = :email
-                                         OR u.pendingEmail = :email
-                                      """);
+        var cb = entityManager.getCriteriaBuilder();
+        var criteria = cb.createQuery(Long.class);
+        var root = criteria.from(User.class);
+        var predicates = cb.or(cb.equal(root.get("email"), email), cb.equal(root.get("pendingEmail"), email));
         if (excludeUserId != null) {
-            query.append(" AND u.id <> :excludeId");
+            predicates = cb.and(predicates, cb.notEqual(root.get("id"), excludeUserId));
         }
-        var typedQuery = entityManager.createQuery(query.toString(), Long.class)
-                                      .setParameter("email", email);
-        if (excludeUserId != null) {
-            typedQuery.setParameter("excludeId", excludeUserId);
-        }
-        return typedQuery.getSingleResult() > 0;
+        criteria.select(cb.count(root));
+        criteria.where(predicates);
+        return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
     public boolean existsByUsername(String username) {
@@ -46,19 +42,16 @@ public class UserRepository {
     }
 
     public boolean existsByUsername(String username, Long excludeUserId) {
-        var query = new StringBuilder("""
-                                      SELECT COUNT(u) FROM User u
-                                      WHERE u.username = :username
-                                      """);
+        var cb = entityManager.getCriteriaBuilder();
+        var criteria = cb.createQuery(Long.class);
+        var root = criteria.from(User.class);
+        var predicates = cb.equal(root.get("username"), username);
         if (excludeUserId != null) {
-            query.append(" AND u.id <> :excludeId");
+            predicates = cb.and(predicates, cb.notEqual(root.get("id"), excludeUserId));
         }
-        var typedQuery = entityManager.createQuery(query.toString(), Long.class)
-                                      .setParameter("username", username);
-        if (excludeUserId != null) {
-            typedQuery.setParameter("excludeId", excludeUserId);
-        }
-        return typedQuery.getSingleResult() > 0;
+        criteria.select(cb.count(root));
+        criteria.where(predicates);
+        return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
     public List<User> findAuthorsWithPublishedPosts() {

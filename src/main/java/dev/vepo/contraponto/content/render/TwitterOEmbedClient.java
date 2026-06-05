@@ -51,7 +51,7 @@ final class TwitterOEmbedClient {
     }
 
     Optional<String> fetchEmbedHtml(String tweetUrl) {
-        URI requestUri = URI.create(oembedEndpoint + "?url=" + URLEncoder.encode(tweetUrl, StandardCharsets.UTF_8));
+        URI requestUri = URI.create("%s?url=%s".formatted(oembedEndpoint, URLEncoder.encode(tweetUrl, StandardCharsets.UTF_8)));
         HttpRequest request = HttpRequest.newBuilder(requestUri)
                                          .timeout(Duration.ofSeconds(10))
                                          .header("Accept", "application/json")
@@ -63,7 +63,7 @@ final class TwitterOEmbedClient {
                 return Optional.empty();
             }
             if (response.statusCode() != 200) {
-                throw new TwitterOEmbedException("Unexpected status " + response.statusCode());
+                throw new TwitterOEmbedException("Unexpected status %s".formatted(response.statusCode()));
             }
             JsonNode root = JSON.readTree(response.body());
             String html = root.path("html").asText(null);

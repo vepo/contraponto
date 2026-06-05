@@ -9,7 +9,7 @@ public final class GithubContentRenderPlugin implements ContentRenderPlugin {
     private static final Pattern REPO_PATH = Pattern.compile("^/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)/?$");
 
     private static String error(String message) {
-        return "<p class=\"content-render content-render--error\">" + escape(message) + "</p>";
+        return "<p class=\"content-render content-render--error\">%s</p>".formatted(escape(message));
     }
 
     private static String escape(String value) {

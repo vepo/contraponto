@@ -8,7 +8,7 @@ public final class YoutubeContentRenderPlugin implements ContentRenderPlugin {
     private static final Pattern VIDEO_ID = Pattern.compile("^[a-zA-Z0-9_-]{11}$");
 
     private static String error(String message) {
-        return "<p class=\"content-render content-render--error\">" + escape(message) + "</p>";
+        return "<p class=\"content-render content-render--error\">%s</p>".formatted(escape(message));
     }
 
     private static String escape(String value) {

@@ -39,12 +39,12 @@ public class ContentRenderTagProcessor {
     private String resolve(String identifier, String paramsGroup) {
         ContentRenderPlugin plugin = registry.find(identifier);
         if (plugin == null) {
-            return "{% " + identifier + " " + paramsGroup.trim() + " %}";
+            return "{%% %s %s %%}".formatted(identifier, paramsGroup.trim());
         }
         List<String> params = Arrays.asList(paramsGroup.trim().split("\\s+"));
         String html = plugin.render(params);
         if (html == null || html.isBlank()) {
-            return "{% " + identifier + " " + paramsGroup.trim() + " %}";
+            return "{%% %s %s %%}".formatted(identifier, paramsGroup.trim());
         }
         return html;
     }

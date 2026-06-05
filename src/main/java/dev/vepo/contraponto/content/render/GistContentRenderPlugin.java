@@ -9,7 +9,7 @@ public final class GistContentRenderPlugin implements ContentRenderPlugin {
     private static final Pattern GIST_PATH = Pattern.compile("^/([a-zA-Z0-9_-]+)/([a-f0-9]+)$");
 
     private static String error(String message) {
-        return "<p class=\"content-render content-render--error\">" + escape(message) + "</p>";
+        return "<p class=\"content-render content-render--error\">%s</p>".formatted(escape(message));
     }
 
     private static String escape(String value) {
@@ -43,7 +43,7 @@ public final class GistContentRenderPlugin implements ContentRenderPlugin {
         if (!matcher.matches()) {
             return error("Invalid Gist URL.");
         }
-        String scriptSrc = "https://gist.github.com/" + matcher.group(1) + "/" + matcher.group(2) + ".js";
+        String scriptSrc = "https://gist.github.com/%s/%s.js".formatted(matcher.group(1), matcher.group(2));
         return """
                <div class="content-render content-render--gist">
                <script src="%s"></script>

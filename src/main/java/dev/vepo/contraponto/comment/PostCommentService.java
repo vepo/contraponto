@@ -241,7 +241,7 @@ public class PostCommentService {
             throw new BadRequestException("Comment body is required.");
         }
         if (trimmed.length() > MAX_BODY_LENGTH) {
-            throw new BadRequestException("Comment must be at most " + MAX_BODY_LENGTH + " characters.");
+            throw new BadRequestException("Comment must be at most %s characters.".formatted(MAX_BODY_LENGTH));
         }
         return trimmed;
     }

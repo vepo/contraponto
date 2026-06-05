@@ -84,11 +84,11 @@ public class NavigationHubRegistry {
     }
 
     public HubSectionNav requireSection(NavigationHub hub, String slug, LoggedUser user) {
-        return findSection(hub, slug, user).orElseThrow(() -> new NotFoundException("Unknown hub section: " + slug));
+        return findSection(hub, slug, user).orElseThrow(() -> new NotFoundException("Unknown hub section: %s".formatted(slug)));
     }
 
     public String sectionPath(NavigationHub hub, String slug) {
-        return hub.path() + "/" + slug;
+        return "%s/%s".formatted(hub.path(), slug);
     }
 
     private List<HubNavGroup> writingGroups() {

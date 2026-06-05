@@ -36,6 +36,7 @@ public class ViewRepository {
     }
 
     public Map<LocalDate, Long> countDailyByBlogId(long blogId, LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        // Native: CAST(viewed_at AS date) for daily GROUP BY is database-specific.
         @SuppressWarnings("unchecked")
         List<Object[]> rows = entityManager.createNativeQuery("""
                                                               SELECT CAST(v.viewed_at AS date), COUNT(*)
@@ -110,6 +111,8 @@ public class ViewRepository {
         // constraint)
         // Using native query to handle conflict gracefully.
         logger.info("Creating view for post! userId={} post={}", userId, post);
+        // Native: direct INSERT for view deduplication relies on unique constraint
+        // handling.
         String sql = """
                      INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
                      VALUES (:postId, :userId, :sessionId, :viewedAt)

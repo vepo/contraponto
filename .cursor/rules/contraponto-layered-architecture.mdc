@@ -1,0 +1,78 @@
+---
+description: Layered architecture — Endpoint, Service, Repository responsibilities
+alwaysApply: true
+---
+
+# Layered architecture
+
+Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) §9 and §11. Dependencies flow **downward only**:
+
+```
+*Endpoint  →  *Service (when needed)  →  *Repository  →  database
+```
+
+## *Endpoint — HTTP boundary
+
+- `@ApplicationScoped` + `@Path`; handle requests, auth gates (`@Logged`, `*Access`), status codes, Qute rendering.
+- Map path/query/form input to domain calls; build `Response` and template view models.
+- **May** inject `*Repository` for trivial read-only lookups (single `find`, existence check) with no business rules.
+- **Must** inject `*Service` when logic spans entities, enforces invariants, fires CDI events, or coordinates writes.
+
+## *Service — business logic
+
+- `@ApplicationScoped`; name `XxxService`.
+- Orchestrate repositories, apply domain rules, fire events (`PostPublishedEvent`, etc.).
+- **Inject** `*Repository` (and other services); **never** `EntityManager`, raw SQL, or JPQL.
+- **Never** depend on `*Endpoint`, JAX-RS types (`Response`, `@PathParam`), or Qute templates.
+
+## *Repository — persistence
+
+- One per entity; `@ApplicationScoped`; name `XxxRepository`.
+- `EntityManager` (or equivalent) **only** here; `Optional` for single results; `@Transactional` on mutating methods.
+- Queries and persistence only — **no** business rules, events, or HTTP concerns.
+- **Never** inject `*Service` or `*Endpoint`.
+
+## Related types (not layers)
+
+| Kind | Role |
+|------|------|
+| `*Access` | Authorization checks; callable from endpoints |
+| `*Observer` | React to CDI events; no HTTP |
+| `*Filter` | Cross-cutting HTTP in `shared/` |
+
+## When adding a feature
+
+1. Entity (if new table).
+2. `XxxRepository` for DB access.
+3. `XxxService` when logic is non-trivial (see [contraponto-core.mdc](contraponto-core.mdc)).
+4. `XxxEndpoint` + Qute template.
+
+## Violations — refactor toward layers
+
+```java
+// ❌ Endpoint with business logic or direct writes
+@POST
+public Response publish(Post post) {
+    entityManager.persist(new PostPublication(...));
+    event.fire(new PostPublishedEvent(...));
+}
+
+// ✅ Endpoint delegates; service owns the workflow
+@POST
+public Response publish(long postId) {
+    postPublicationService.publish(postId);
+    return Response.ok(...).build();
+}
+```
+
+```java
+// ❌ Service with EntityManager
+public class TagService {
+    @Inject EntityManager em;
+}
+
+// ✅ Service uses repository
+public class TagService {
+    private final TagRepository tagRepository;
+}
+```

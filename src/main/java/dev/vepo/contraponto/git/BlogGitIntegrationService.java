@@ -71,9 +71,9 @@ public class BlogGitIntegrationService {
         long failed = results.stream().filter(GitSyncPostResult::isFailed).count();
         long ok = results.stream().filter(GitSyncPostResult::isSuccess).count();
         return switch (outcome) {
-            case SUCCESS -> "Git import succeeded. " + ok + " post(s) synced.";
-            case PARTIAL -> "Git import partially completed. " + ok + " succeeded, " + failed + " failed.";
-            case FAILED -> "Git import failed. " + failed + " post(s) could not be imported.";
+            case SUCCESS -> "Git import succeeded. %s post(s) synced.".formatted(ok);
+            case PARTIAL -> "Git import partially completed. %s succeeded, %s failed.".formatted(ok, failed);
+            case FAILED -> "Git import failed. %s post(s) could not be imported.".formatted(failed);
             case SKIPPED -> "Git import skipped.";
         };
     }
@@ -89,8 +89,8 @@ public class BlogGitIntegrationService {
 
     private static boolean isPostPath(String repoRelativePath, JekyllLayoutConvention convention) {
         String norm = repoRelativePath.replace('\\', '/');
-        String posts = convention.postsRelative() + "/";
-        String drafts = convention.draftsRelative() + "/";
+        String posts = "%s/".formatted(convention.postsRelative());
+        String drafts = "%s/".formatted(convention.draftsRelative());
         return norm.startsWith(posts) || norm.startsWith(drafts);
     }
 
@@ -228,7 +228,7 @@ public class BlogGitIntegrationService {
                                                                                loaded.convention(), loaded.configSource(), loaded.parseWarning());
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                GitSyncPhase.CONVENTION,
-                                                                               "Repository layout resolved (" + loaded.configSource() + ")."));
+                                                                               "Repository layout resolved (%s).".formatted(loaded.configSource())));
 
                 JekyllLayoutConvention convention = loaded.convention();
                 Path markdownPath = markdownPathForPost(post, convention, workspace);
@@ -257,7 +257,7 @@ public class BlogGitIntegrationService {
 
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                GitSyncPhase.POST_EXPORT,
-                                                                               "Exported post \"" + post.getSlug() + "\" to " + rel + "."));
+                                                                               "Exported post \"%s\" to %s.".formatted(post.getSlug(), rel)));
 
                 var status = git.status().call();
                 if (status.hasUncommittedChanges()) {
@@ -266,7 +266,7 @@ public class BlogGitIntegrationService {
                        .setAllowEmpty(false)
                        .setAuthor(who)
                        .setCommitter(who)
-                       .setMessage("[contraponto] sync post " + post.getSlug())
+                       .setMessage("[contraponto] sync post %s".formatted(post.getSlug()))
                        .call();
                     gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                    GitSyncPhase.COMMIT, "Changes committed locally."));
@@ -292,7 +292,7 @@ public class BlogGitIntegrationService {
                 }
                 finalizeRun(GitSyncOutcome.SUCCESS, GitErrorKind.NONE, repositoryReadable, dataLoadable,
                             commitAfter, conventionSnapshot,
-                            "Git export succeeded for post \"" + post.getSlug() + "\".");
+                            "Git export succeeded for post \"%s\".".formatted(post.getSlug()));
             }
         } catch (Exception e) {
             handleFailure(e, repositoryReadable, dataLoadable, conventionSnapshot);
@@ -542,7 +542,7 @@ public class BlogGitIntegrationService {
             String branch = resolveBranch(blog);
             Ref ref = refs.get(Constants.R_HEADS + branch);
             if (ref == null) {
-                ref = refs.get("refs/heads/" + branch);
+                ref = refs.get("refs/heads/%s".formatted(branch));
             }
             if (ref == null || ref.getObjectId() == null) {
                 return Optional.empty();
@@ -593,9 +593,12 @@ public class BlogGitIntegrationService {
             if (remoteHead.isPresent() && remoteHead.get().equals(lastKnown)) {
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                GitSyncPhase.FETCH,
-                                                                               "Remote unchanged at "
-                                                                                       + remoteHead.get().substring(0, Math.min(7, remoteHead.get().length()))
-                                                                                       + "."));
+                                                                               "Remote unchanged at %s.".formatted(
+                                                                                                                   remoteHead.get()
+                                                                                                                             .substring(0,
+                                                                                                                                        Math.min(7,
+                                                                                                                                                 remoteHead.get()
+                                                                                                                                                           .length())))));
                 finalizeRun(GitSyncOutcome.SKIPPED, GitErrorKind.NONE, false, false,
                             remoteHead.get(), null, "No new commits on remote.");
                 return;
@@ -633,7 +636,7 @@ public class BlogGitIntegrationService {
             List<Path> changedPosts = listChangedPostFiles(workspace, convention, lastKnown, head);
             gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                            GitSyncPhase.POST_IMPORT,
-                                                                           changedPosts.size() + " post file(s) to import."));
+                                                                           "%s post file(s) to import.".formatted(changedPosts.size())));
 
             postResults.addAll(ingestPostFiles(blogId, workspace, convention, changedPosts));
 

@@ -74,7 +74,7 @@ public class StructuredDataBuilder {
         node.put("author", Map.of(
                                   "@type", "Person",
                                   "name", author.getName(),
-                                  "url", publicSiteUrl.absolute("/" + author.getUsername())));
+                                  "url", publicSiteUrl.absolute("/%s".formatted(author.getUsername()))));
         String imageUrl = resolveCoverUrl(post, live);
         if (imageUrl != null) {
             node.put("image", imageUrl);
@@ -84,8 +84,8 @@ public class StructuredDataBuilder {
                                      "@type", "Organization",
                                      "name", blog.isMain() ? author.getName() : blog.getName(),
                                      "url", publicSiteUrl.absolute(blog.isMain()
-                                                                                 ? "/" + author.getUsername()
-                                                                                 : "/" + author.getUsername() + "/" + blog.getSlug())));
+                                                                                 ? "/%s".formatted(author.getUsername())
+                                                                                 : "/%s/%s".formatted(author.getUsername(), blog.getSlug()))));
         return node;
     }
 

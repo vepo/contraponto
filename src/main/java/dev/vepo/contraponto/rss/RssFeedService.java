@@ -4,12 +4,12 @@ import java.net.URI;
 import java.util.List;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.blog.BlogPaths;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
-import dev.vepo.contraponto.serie.SeriePageEndpoint;
+import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagRepository;
@@ -75,23 +75,23 @@ public class RssFeedService {
     }
 
     private String renderBlogFeed(Blog blog, String baseUri) {
-        var posts = postRepository.findPublishedFeedByBlog(blog.getId(), UsernameRssEndpoint.FEED_LIMIT);
+        var posts = postRepository.findPublishedFeedByBlog(blog.getId(), RssFeedPaths.FEED_LIMIT);
         var channel = new RssFeedRenderer.Channel(blog.getName(),
-                                                  BlogEndpoint.extractUrl(blog),
+                                                  BlogPaths.extractUrl(blog),
                                                   descriptionOr(blog.getDescription(), blog.getName()));
         return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
     }
 
     private String renderSerieFeed(Serie serie, String baseUri) {
-        List<Post> posts = postRepository.findPublishedFeedBySerie(serie.getId(), UsernameRssEndpoint.FEED_LIMIT);
+        List<Post> posts = postRepository.findPublishedFeedBySerie(serie.getId(), RssFeedPaths.FEED_LIMIT);
         var channel = new RssFeedRenderer.Channel(serie.getTitle(),
-                                                  SeriePageEndpoint.extractUrl(serie),
+                                                  SeriePaths.extractUrl(serie),
                                                   serie.getTitle());
         return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
     }
 
     private User requireUser(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
+        return userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: %s".formatted(username)));
     }
 
     @CacheResult(cacheName = "rss-feeds")
@@ -103,7 +103,7 @@ public class RssFeedService {
 
     @CacheResult(cacheName = "rss-feeds")
     public String siteWideFeed(String baseUri) {
-        var posts = postRepository.findPublishedFeedGlobal(SiteWideFeedEndpoint.FEED_LIMIT);
+        var posts = postRepository.findPublishedFeedGlobal(RssFeedPaths.FEED_LIMIT);
         var channel = new RssFeedRenderer.Channel(siteBranding.seoName(), "/", "Recently published posts");
         return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
     }
@@ -111,22 +111,22 @@ public class RssFeedService {
     @CacheResult(cacheName = "rss-feeds")
     public String tagFeed(String tagSlug, String baseUri) {
         Tag tag = tagRepository.findBySlug(tagSlug)
-                               .orElseThrow(() -> new NotFoundException("Tag not found: " + tagSlug));
-        var posts = postRepository.findPublishedFeedByTagSlug(tag.getSlug(), UsernameRssEndpoint.FEED_LIMIT);
+                               .orElseThrow(() -> new NotFoundException("Tag not found: %s".formatted(tagSlug)));
+        var posts = postRepository.findPublishedFeedByTagSlug(tag.getSlug(), RssFeedPaths.FEED_LIMIT);
         String desc = tag.getDescription();
         if (desc == null || desc.isBlank()) {
             desc = "Posts tagged %s".formatted(tag.getName());
         }
-        var channel = new RssFeedRenderer.Channel(tag.getName(), "/tags/" + tagSlug, desc);
+        var channel = new RssFeedRenderer.Channel(tag.getName(), "/tags/%s".formatted(tagSlug), desc);
         return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
     }
 
     @CacheResult(cacheName = "rss-feeds")
     public String userFeed(String username, String baseUri) {
         User user = requireUser(username);
-        var posts = postRepository.findPublishedFeedByAuthor(user.getId(), UsernameRssEndpoint.FEED_LIMIT);
+        var posts = postRepository.findPublishedFeedByAuthor(user.getId(), RssFeedPaths.FEED_LIMIT);
         var channel =
-                new RssFeedRenderer.Channel(user.getName(), "/" + username, "Posts by %s".formatted(user.getName()));
+                new RssFeedRenderer.Channel(user.getName(), "/%s".formatted(username), "Posts by %s".formatted(user.getName()));
         return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
     }
 }

@@ -22,14 +22,16 @@ Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) and existing code in the same pa
 ## Data access
 
 - Repositories: `EntityManager` directly, no base class; `Optional` for single results; `@Transactional` on mutating methods.
+- Query style: [contraponto-jpa.mdc](contraponto-jpa.mdc) — Criteria for dynamic filters, JPQL for static, native SQL last.
 - Non-trivial domain logic: `@ApplicationScoped` `XxxService` (e.g. `PostPublicationService`, `BlogAudienceService`).
 - Side effects across aggregates: CDI events + `@Observes` observers (e.g. `PostPublishedEvent`).
 
 ## URLs (do not hardcode in templates)
 
-- Posts: `PostEndpoint.extractUrl(post)` — `/{username}/post/{slug}` or `/{username}/{blogSlug}/post/{slug}`.
+- Canonical builders: `*Paths` classes — [contraponto-no-method-bypass-allowed.mdc](contraponto-no-method-bypass-allowed.mdc).
+- Posts: `PostPaths.extractUrl(post)` — `/{username}/post/{slug}` or `/{username}/{blogSlug}/post/{slug}`.
 - Custom pages: `CustomPagePaths.publicUrl(page)` — always includes `/page/` segment.
-- Links in Qute: `TemplateExtensions.url(...)`.
+- Links in Qute: `TemplateExtensions.url(...)` (must delegate to `*Paths`, not `*Endpoint` statics).
 
 ## Auth
 

@@ -19,7 +19,7 @@ public final class TwitterContentRenderPlugin implements ContentRenderPlugin {
     private static final Pattern STATUS_PATH = Pattern.compile("^/([^/]+)/status/([0-9]+)/?$");
 
     private static String error(String message) {
-        return "<p class=\"content-render content-render--error\">" + escape(message) + "</p>";
+        return "<p class=\"content-render content-render--error\">%s</p>".formatted(escape(message));
     }
 
     private static String escape(String value) {
@@ -49,7 +49,7 @@ public final class TwitterContentRenderPlugin implements ContentRenderPlugin {
         }
         String username = matcher.group(1);
         String statusId = matcher.group(2);
-        return Optional.of("https://twitter.com/" + username + "/status/" + statusId);
+        return Optional.of("https://twitter.com/%s/status/%s".formatted(username, statusId));
     }
 
     private final TwitterOEmbedClient oembedClient;

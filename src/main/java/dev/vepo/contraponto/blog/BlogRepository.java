@@ -37,21 +37,16 @@ public class BlogRepository {
     }
 
     public boolean existsSlug(long ownerId, String slug, Long excludeBlogId) {
-        var query = new StringBuilder("""
-                                      SELECT COUNT(b) FROM Blog b
-                                      WHERE b.owner.id = :ownerId AND
-                                            b.slug = :slug
-                                      """);
+        var cb = entityManager.getCriteriaBuilder();
+        var criteria = cb.createQuery(Long.class);
+        var root = criteria.from(Blog.class);
+        var predicates = cb.and(cb.equal(root.get("owner").get("id"), ownerId), cb.equal(root.get(PARAM_SLUG), slug));
         if (excludeBlogId != null) {
-            query.append(" AND b.id <> :excludeBlogId");
+            predicates = cb.and(predicates, cb.notEqual(root.get("id"), excludeBlogId));
         }
-        var typedQuery = entityManager.createQuery(query.toString(), Long.class)
-                                      .setParameter(PARAM_OWNER_ID, ownerId)
-                                      .setParameter(PARAM_SLUG, slug);
-        if (excludeBlogId != null) {
-            typedQuery.setParameter(PARAM_EXCLUDE_BLOG_ID, excludeBlogId);
-        }
-        return typedQuery.getSingleResult() > 0;
+        criteria.select(cb.count(root));
+        criteria.where(predicates);
+        return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
     public List<Long> findActiveBlogIdsForGitPoll() {

@@ -28,7 +28,7 @@ public final class HtmxTriggers {
     public static final String NOTIFICATIONS_CHANGED_ON_BODY = "{\"notificationsChanged\":{\"target\":\"body\"}}";
 
     public static String notificationBadgeTrigger(String pollInterval) {
-        return AUTH_REFRESH_TRIGGER + ", notificationsChanged from:body, every " + pollInterval;
+        return "%s, notificationsChanged from:body, every %s".formatted(AUTH_REFRESH_TRIGGER, pollInterval);
     }
 
     private HtmxTriggers() {}

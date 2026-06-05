@@ -56,7 +56,7 @@ public class RateLimitFilter implements ContainerRequestFilter {
         if (!isLimited(path)) {
             return;
         }
-        String key = clientKey(requestContext) + ":" + normalize(path);
+        String key = "%s:%s".formatted(clientKey(requestContext), normalize(path));
         if (isOverLimit(key)) {
             requestContext.abortWith(Response.status(Response.Status.TOO_MANY_REQUESTS)
                                              .entity("Too many requests. Please try again later.")

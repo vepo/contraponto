@@ -21,9 +21,9 @@ public class SiteIntegration {
     private static String originFrom(URI uri) {
         int port = uri.getPort();
         if (port <= 0 || ("https".equalsIgnoreCase(uri.getScheme()) && port == 443)) {
-            return uri.getScheme() + "://" + uri.getHost();
+            return "%s://%s".formatted(uri.getScheme(), uri.getHost());
         }
-        return uri.getScheme() + "://" + uri.getHost() + ":" + port;
+        return "%s://%s:%s".formatted(uri.getScheme(), uri.getHost(), port);
     }
 
     static Optional<String> resolveDataToken(Optional<String> raw) {

@@ -32,7 +32,7 @@ public class I18nMessagesEndpoint {
         if (!"en".equals(normalized) && !"es".equals(normalized)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        String resourcePath = "/i18n/messages_" + normalized + ".json";
+        String resourcePath = "/i18n/messages_%s.json".formatted(normalized);
         try (InputStream in = getClass().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 return Response.status(Response.Status.NOT_FOUND).build();

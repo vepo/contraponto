@@ -6,28 +6,28 @@ import java.util.List;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.blog.BlogPaths;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPage;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
+import dev.vepo.contraponto.post.PostPublicationRepository;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
-import dev.vepo.contraponto.serie.SeriePageEndpoint;
+import dev.vepo.contraponto.serie.SeriePaths;
+import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.tag.Tag;
-import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
-import dev.vepo.contraponto.tag.TagPageEndpoint;
+import dev.vepo.contraponto.directory.AuthorProfilePaths;
+import dev.vepo.contraponto.tag.TagPaths;
 import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import io.quarkus.cache.CacheResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 
 @ApplicationScoped
 public class SitemapService {
@@ -42,110 +42,61 @@ public class SitemapService {
 
     private final PublicSiteUrl publicSiteUrl;
     private final PostRepository postRepository;
+    private final PostPublicationRepository publicationRepository;
     private final BlogRepository blogRepository;
     private final TagRepository tagRepository;
     private final CustomPageRepository customPageRepository;
-
-    private final EntityManager entityManager;
+    private final SerieRepository serieRepository;
     private final UserRepository userRepository;
 
     @Inject
     public SitemapService(PublicSiteUrl publicSiteUrl,
                           PostRepository postRepository,
+                          PostPublicationRepository publicationRepository,
                           BlogRepository blogRepository,
                           TagRepository tagRepository,
                           CustomPageRepository customPageRepository,
-                          UserRepository userRepository,
-                          EntityManager entityManager) {
+                          SerieRepository serieRepository,
+                          UserRepository userRepository) {
         this.publicSiteUrl = publicSiteUrl;
         this.postRepository = postRepository;
+        this.publicationRepository = publicationRepository;
         this.blogRepository = blogRepository;
         this.tagRepository = tagRepository;
         this.customPageRepository = customPageRepository;
+        this.serieRepository = serieRepository;
         this.userRepository = userRepository;
-        this.entityManager = entityManager;
     }
 
     public List<SitemapUrl> buildUrls() {
-        Optional<LocalDateTime> siteLastModified = findSiteWideLastModified();
+        Optional<LocalDateTime> siteLastModified = publicationRepository.findMaxPublishedAtSiteWide();
         List<SitemapUrl> urls = new ArrayList<>();
         urls.add(new SitemapUrl("/", siteLastModified));
         urls.add(new SitemapUrl("/authors", siteLastModified));
         urls.add(new SitemapUrl("/explore/blogs", siteLastModified));
         for (User author : userRepository.findAuthorsWithPublishedPosts()) {
-            urls.add(new SitemapUrl(AuthorProfileEndpoint.url(author), Optional.ofNullable(author.getUpdatedAt())));
+            urls.add(new SitemapUrl(AuthorProfilePaths.url(author), Optional.ofNullable(author.getUpdatedAt())));
         }
 
         for (Post post : postRepository.findPublishedForSitemap()) {
             Optional<String> cover = Optional.ofNullable(TemplateExtensions.coverUrl(post));
-            urls.add(new SitemapUrl(PostEndpoint.extractUrl(post), lastModified(post), cover));
+            urls.add(new SitemapUrl(PostPaths.extractUrl(post), lastModified(post), cover));
         }
         for (Blog blog : blogRepository.findAllActiveWithOwner()) {
-            urls.add(new SitemapUrl(BlogEndpoint.extractUrl(blog), findBlogLastModified(blog.getId())));
+            urls.add(new SitemapUrl(BlogPaths.extractUrl(blog), publicationRepository.findMaxPublishedAtByBlogId(blog.getId())));
         }
         for (Tag tag : tagRepository.listAllForManagement()) {
             if (hasPublishedPostsForTag(tag.getSlug())) {
-                urls.add(new SitemapUrl(TagPageEndpoint.url(tag), findTagLastModified(tag.getSlug())));
+                urls.add(new SitemapUrl(TagPaths.url(tag), publicationRepository.findMaxPublishedAtByTagSlug(tag.getSlug())));
             }
         }
-        for (Serie serie : findSeriesWithPublishedPosts()) {
-            urls.add(new SitemapUrl(SeriePageEndpoint.extractUrl(serie), findSerieLastModified(serie.getId())));
+        for (Serie serie : serieRepository.findAllWithPublishedPosts()) {
+            urls.add(new SitemapUrl(SeriePaths.extractUrl(serie), publicationRepository.findMaxPublishedAtBySerieId(serie.getId())));
         }
         for (CustomPage page : customPageRepository.findPublishedForSitemap()) {
             urls.add(new SitemapUrl(CustomPagePaths.publicUrl(page), Optional.ofNullable(page.getUpdatedAt())));
         }
         return urls;
-    }
-
-    private Optional<LocalDateTime> findBlogLastModified(long blogId) {
-        return optionalMaxPublishedAt("""
-                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
-                                      JOIN pub.post p
-                                      WHERE p.published = TRUE AND p.blog.id = :blogId
-                                      """, "blogId", blogId);
-    }
-
-    private Optional<LocalDateTime> findSerieLastModified(long serieId) {
-        return optionalMaxPublishedAt("""
-                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
-                                      JOIN pub.post p
-                                      WHERE p.published = TRUE AND p.serie.id = :serieId
-                                      """, "serieId", serieId);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Serie> findSeriesWithPublishedPosts() {
-        return entityManager.createQuery("""
-                                         SELECT DISTINCT s FROM Serie s
-                                         JOIN FETCH s.blog b
-                                         JOIN FETCH b.owner
-                                         WHERE b.active = TRUE AND
-                                               EXISTS (
-                                                   SELECT 1 FROM Post p
-                                                   WHERE p.serie = s AND p.published = TRUE
-                                               )
-                                         ORDER BY s.id
-                                         """, Serie.class)
-                            .getResultList();
-    }
-
-    private Optional<LocalDateTime> findSiteWideLastModified() {
-        return optionalMaxPublishedAt("""
-                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
-                                      JOIN pub.post p
-                                      JOIN p.blog b
-                                      WHERE p.published = TRUE AND b.active = TRUE
-                                      """, null, null);
-    }
-
-    private Optional<LocalDateTime> findTagLastModified(String tagSlug) {
-        return optionalMaxPublishedAt("""
-                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
-                                      JOIN pub.post p
-                                      JOIN p.blog b
-                                      JOIN p.tags t
-                                      WHERE p.published = TRUE AND b.active = TRUE AND t.slug = :tagSlug
-                                      """, "tagSlug", tagSlug);
     }
 
     private boolean hasPublishedPostsForTag(String slug) {
@@ -157,19 +108,6 @@ public class SitemapService {
             return Optional.of(post.getLivePublication().getPublishedAt());
         }
         return Optional.ofNullable(post.getPublishedAt());
-    }
-
-    private Optional<LocalDateTime> optionalMaxPublishedAt(String jpql, String paramName, Object paramValue) {
-        var query = entityManager.createQuery(jpql, LocalDateTime.class);
-        if (paramName != null) {
-            query.setParameter(paramName, paramValue);
-        }
-        try {
-            LocalDateTime result = query.getSingleResult();
-            return Optional.ofNullable(result);
-        } catch (NoResultException _) {
-            return Optional.empty();
-        }
     }
 
     @CacheResult(cacheName = "sitemap")

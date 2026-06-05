@@ -59,16 +59,16 @@ public class GitImageSyncService {
         String ext = extensionFromUrl(image.getUrl());
         String gitPath = image.getGitAssetRelativePath();
         if (gitPath != null && !gitPath.isBlank()) {
-            return convention.assetsRelative() + "/" + gitPath + ext;
+            return "%s/%s%s".formatted(convention.assetsRelative(), gitPath, ext);
         }
-        return convention.assetsRelative() + "/" + image.getUuid() + ext;
+        return "%s/%s%s".formatted(convention.assetsRelative(), image.getUuid(), ext);
     }
 
     public static Pattern relativeAssetPattern(JekyllLayoutConvention convention) {
         String dir = Pattern.quote(convention.assetsRelative());
         // Optional slash after ../ so "(/assets/images/…)" is matched as a whole, not
-        // "(/" + "/api/images/…".
-        return Pattern.compile("(?:\\.\\./)*/?" + dir + "/((?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+)(\\.[A-Za-z0-9]{2,8})");
+        // as a partial match against "/api/images/…".
+        return Pattern.compile("(?:\\.\\./)*/?%s/((?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+)(\\.[A-Za-z0-9]{2,8})".formatted(dir));
     }
 
     private static Path resolveAssetFile(Path assetsDir, String assetRelativePath, String ext) {
@@ -295,7 +295,7 @@ public class GitImageSyncService {
     private String relativeAssetPathForUuid(JekyllLayoutConvention convention, String uuid, String ext) {
         return imageRepository.findByUuid(uuid)
                               .map(img -> relativeAssetPath(convention, img))
-                              .orElse(convention.assetsRelative() + "/" + uuid + ext);
+                              .orElse("%s/%s%s".formatted(convention.assetsRelative(), uuid, ext));
     }
 
     private String resolveAsciiDocImageReplacement(String rawPath,
@@ -311,7 +311,7 @@ public class GitImageSyncService {
         String ext = GitPostAssetReferences.extensionWithDot(assetRelWithExt);
         importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
         String uuid = GitImportedAssetId.normalize(GitFrontMatterResolver.assetBasename(assetRel), ext);
-        return "/api/images/" + uuid + ext;
+        return "/api/images/%s%s".formatted(uuid, ext);
     }
 
     private String rewriteAsciiDocAssetUrls(String body,
@@ -326,7 +326,7 @@ public class GitImageSyncService {
             if (replacement == null) {
                 m.appendReplacement(sb, Matcher.quoteReplacement(m.group(0)));
             } else {
-                m.appendReplacement(sb, Matcher.quoteReplacement("image::" + replacement + "["));
+                m.appendReplacement(sb, Matcher.quoteReplacement("image::%s[".formatted(replacement)));
             }
         }
         m.appendTail(sb);
@@ -349,7 +349,7 @@ public class GitImageSyncService {
                 }
                 return m.group(1);
             }).orElse(m.group(1));
-            m.appendReplacement(sb, Matcher.quoteReplacement("![" + escapeMarkdownAlt(alt) + "](" + url + ")"));
+            m.appendReplacement(sb, Matcher.quoteReplacement("![%s](%s)".formatted(escapeMarkdownAlt(alt), url)));
         }
         m.appendTail(sb);
         return sb.toString();
@@ -367,7 +367,7 @@ public class GitImageSyncService {
             String basename = GitFrontMatterResolver.assetBasename(assetRel);
             String uuid = GitImportedAssetId.normalize(basename, ext);
             importAssetFromRelativePath(blog, workspace, convention, assetRel, ext);
-            m.appendReplacement(sb, Matcher.quoteReplacement("/api/images/" + uuid + ext));
+            m.appendReplacement(sb, Matcher.quoteReplacement("/api/images/%s%s".formatted(uuid, ext)));
         }
         m.appendTail(sb);
         return sb.toString();

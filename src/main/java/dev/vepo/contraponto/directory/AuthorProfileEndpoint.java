@@ -62,7 +62,7 @@ public class AuthorProfileEndpoint {
     private static final int RECENT_POST_LIMIT = 6;
 
     public static String url(User author) {
-        return "/authors/%s".formatted(author.getUsername());
+        return AuthorProfilePaths.url(author);
     }
 
     private final UserRepository userRepository;
@@ -102,7 +102,7 @@ public class AuthorProfileEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance profile(@PathParam("username") String username) {
         User author = userRepository.findPublicAuthorByUsername(username)
-                                    .orElseThrow(() -> new NotFoundException("Author not found: " + username));
+                                    .orElseThrow(() -> new NotFoundException("Author not found: %s".formatted(username)));
         Blog mainBlog = blogRepository.findMainByOwnerId(author.getId()).orElseThrow(NotFoundException::new);
         String bioSource = author.getProfileDescription();
         if (bioSource == null || bioSource.isBlank()) {

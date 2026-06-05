@@ -51,7 +51,7 @@ public class PostResponseModerationEndpoint {
                 case "approve" -> responseService.approve(responseId, loggedUser.getId());
                 case "reject" -> responseService.reject(responseId, loggedUser.getId());
                 case "revoke" -> responseService.revoke(responseId, loggedUser.getId());
-                default -> throw new IllegalArgumentException("Unknown action: " + action);
+                default -> throw new IllegalArgumentException("Unknown action: %s".formatted(action));
             }
             var builder = Toast.ok()
                                .message("Response updated.")

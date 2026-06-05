@@ -41,35 +41,33 @@ public class ImageDependencyRepository {
 
     @SuppressWarnings("unchecked")
     public List<ImageUsageRow> findUsagesForImage(long imageId) {
-        var postUsages = entityManager.createNativeQuery("""
-                                                         SELECT p.id, p.title, d.role, 'POST' AS kind
-                                                         FROM tb_post_image_dependencies d
-                                                         JOIN tb_posts p ON p.id = d.post_id
-                                                         WHERE d.image_id = :imageId
-                                                         """)
-                                      .setParameter(PARAM_IMAGE_ID, imageId)
-                                      .getResultList();
-        var pageUsages = entityManager.createNativeQuery("""
-                                                         SELECT cp.id, cp.title, d.role, 'CUSTOM_PAGE' AS kind
-                                                         FROM tb_custom_page_image_dependencies d
-                                                         JOIN tb_custom_pages cp ON cp.id = d.custom_page_id
-                                                         WHERE d.image_id = :imageId
-                                                         """)
-                                      .setParameter(PARAM_IMAGE_ID, imageId)
-                                      .getResultList();
+        List<Object[]> postUsages = entityManager.createQuery("""
+                                                              SELECT p.id, p.title, d.role
+                                                              FROM PostImageDependency d
+                                                              JOIN d.post p
+                                                              WHERE d.image.id = :imageId
+                                                              """)
+                                                 .setParameter(PARAM_IMAGE_ID, imageId)
+                                                 .getResultList();
+        List<Object[]> pageUsages = entityManager.createQuery("""
+                                                              SELECT cp.id, cp.title, d.role
+                                                              FROM CustomPageImageDependency d
+                                                              JOIN d.customPage cp
+                                                              WHERE d.image.id = :imageId
+                                                              """)
+                                                 .setParameter(PARAM_IMAGE_ID, imageId)
+                                                 .getResultList();
         var rows = new java.util.ArrayList<ImageUsageRow>();
-        for (Object row : postUsages) {
-            Object[] cols = (Object[]) row;
+        for (Object[] cols : postUsages) {
             rows.add(new ImageUsageRow(((Number) cols[0]).longValue(),
                                        (String) cols[1],
-                                       ImageRole.valueOf((String) cols[2]),
+                                       (ImageRole) cols[2],
                                        ImageUsageKind.POST));
         }
-        for (Object row : pageUsages) {
-            Object[] cols = (Object[]) row;
+        for (Object[] cols : pageUsages) {
             rows.add(new ImageUsageRow(((Number) cols[0]).longValue(),
                                        (String) cols[1],
-                                       ImageRole.valueOf((String) cols[2]),
+                                       (ImageRole) cols[2],
                                        ImageUsageKind.CUSTOM_PAGE));
         }
         return rows;

@@ -30,7 +30,7 @@ final class GitPostAssetReferences {
             path = path.substring(1);
         }
         String assetsPrefix = convention.assetsRelative();
-        if (path.startsWith(assetsPrefix + "/")) {
+        if (path.startsWith("%s/".formatted(assetsPrefix))) {
             path = path.substring(assetsPrefix.length() + 1);
         }
         if (path.isBlank() || path.contains("://")) {

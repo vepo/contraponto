@@ -2,7 +2,7 @@ package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.user.User;
@@ -46,7 +46,7 @@ public class PostNotificationEmailService {
             return;
         }
 
-        String postUrl = baseUrl + PostEndpoint.extractUrl(post);
+        String postUrl = "%s%s".formatted(baseUrl, PostPaths.extractUrl(post));
         String title = publication.getTitle() != null ? publication.getTitle() : publication.getSlug();
         String excerpt = publication.getDescription();
         if (excerpt == null || excerpt.isBlank()) {
@@ -63,7 +63,7 @@ public class PostNotificationEmailService {
                                         .data("siteSeoName", siteBranding.seoName())
                                         .render();
 
-        String subject = blog.getName() + ": " + title;
+        String subject = "%s: %s".formatted(blog.getName(), title);
 
         mailer.send(Mail.withHtml(subscriber.getEmail(), subject, html).setFrom(mailFrom));
 

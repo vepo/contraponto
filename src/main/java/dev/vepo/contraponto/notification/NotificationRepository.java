@@ -30,6 +30,7 @@ public class NotificationRepository {
                                                         NotificationType type,
                                                         LocalDateTime startInclusive,
                                                         LocalDateTime endExclusive) {
+        // Native: CAST(created_at AS date) for daily GROUP BY is database-specific.
         @SuppressWarnings("unchecked")
         List<Object[]> rows = entityManager.createNativeQuery("""
                                                               SELECT CAST(n.created_at AS date), COUNT(*)

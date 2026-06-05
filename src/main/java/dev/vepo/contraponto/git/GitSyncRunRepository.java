@@ -106,6 +106,8 @@ public class GitSyncRunRepository {
 
     @Transactional
     public void pruneOldRuns(long blogId) {
+        // Native: PostgreSQL DELETE with LIMIT subquery for retention prune is not
+        // expressible in JPQL.
         entityManager.createNativeQuery("""
                                         DELETE FROM tb_git_sync_runs
                                         WHERE blog_id = :blogId

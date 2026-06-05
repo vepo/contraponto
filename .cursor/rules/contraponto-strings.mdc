@@ -1,0 +1,50 @@
+---
+description: Avoid string concatenation — prefer formatted(), then StringBuilder
+globs: src/main/java/**/*.java
+alwaysApply: false
+---
+
+# String building
+
+Do **not** join strings with the `+` operator (including chained `+` in return statements, exceptions, URLs, and messages).
+
+## 1. Prefer `.formatted()`
+
+Use `String.formatted` on a literal or text block when the full shape is known and only values vary.
+
+```java
+// ❌ Concatenation
+throw new NotFoundException("User not found: " + username);
+return "/" + username + "/post/" + slug;
+
+// ✅ Formatted
+throw new NotFoundException("User not found: %s".formatted(username));
+return "/%s/post/%s".formatted(username, slug);
+```
+
+- Multi-line: text block + `.formatted(...)`.
+- `String.format(...)` only when a static helper or API already expects that form; otherwise prefer `.formatted()`.
+
+## 2. Otherwise `StringBuilder`
+
+Use `StringBuilder` (or `StringJoiner`) when assembling incrementally — loops, many conditional segments, or streaming output.
+
+```java
+var sb = new StringBuilder();
+for (byte b : digest) {
+    sb.append("%02x".formatted(b));
+}
+return sb.toString();
+```
+
+Do not replace a simple formatted template with `StringBuilder`.
+
+## Allowed without formatting
+
+- A single literal with no interpolation: `"FROM Image WHERE active = true"`.
+- `StringBuilder.append` / `.formatted` **inside** repository query construction still follows [contraponto-jpa.mdc](contraponto-jpa.mdc) (dynamic JPQL → Criteria API).
+
+## Never
+
+- `+` to build user-facing text, paths, log messages, or SQL/JPQL fragments.
+- Interpolating request or user input into query strings — bind via parameters ([contraponto-jpa.mdc](contraponto-jpa.mdc)).

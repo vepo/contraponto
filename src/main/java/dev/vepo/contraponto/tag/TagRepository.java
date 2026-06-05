@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.tag;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,22 @@ public class TagRepository {
         this.entityManager = entityManager;
     }
 
+    public long countDistinctAuthorsForTag(String tagSlug) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(DISTINCT u.id)
+                                         FROM Post p
+                                         JOIN p.blog b
+                                         JOIN p.tags t
+                                         JOIN b.owner u
+                                         WHERE p.published = true
+                                           AND b.active = true
+                                           AND u.active = true
+                                           AND t.slug = :tagSlug
+                                         """, Long.class)
+                            .setParameter("tagSlug", tagSlug)
+                            .getSingleResult();
+    }
+
     public boolean existsOtherWithSlug(Long excludeId, String slug) {
         return entityManager.createQuery("""
                                          SELECT COUNT(t)
@@ -29,6 +46,26 @@ public class TagRepository {
                             .setParameter("slug", slug)
                             .setParameter("excludeId", excludeId)
                             .getSingleResult() > 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> findAuthorUsageRowsForTag(String tagSlug, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT u.id, COUNT(DISTINCT p.id)
+                                         FROM Post p
+                                         JOIN p.blog b
+                                         JOIN p.tags t
+                                         JOIN b.owner u
+                                         WHERE p.published = true
+                                           AND b.active = true
+                                           AND u.active = true
+                                           AND t.slug = :tagSlug
+                                         GROUP BY u.id
+                                         ORDER BY COUNT(DISTINCT p.id) DESC, u.id ASC
+                                         """)
+                            .setParameter("tagSlug", tagSlug)
+                            .setMaxResults(limit)
+                            .getResultList();
     }
 
     public Optional<Tag> findById(Long id) {
@@ -71,6 +108,37 @@ public class TagRepository {
         return new Page<>(data, query.page(), query.limit(), total);
     }
 
+    @SuppressWarnings("unchecked")
+    private List<Object[]> findTagUsageRows(Long ownerId, Long blogId, int limit) {
+        var query = entityManager.createQuery("""
+                                              SELECT t.id, COUNT(DISTINCT p.id)
+                                              FROM Post p
+                                              JOIN p.blog b
+                                              JOIN p.tags t
+                                              WHERE p.published = true
+                                                AND b.active = true
+                                                AND (:ownerId IS NULL OR b.owner.id = :ownerId)
+                                                AND (:blogId IS NULL OR b.id = :blogId)
+                                              GROUP BY t.id
+                                              ORDER BY COUNT(DISTINCT p.id) DESC, t.id ASC
+                                              """);
+        query.setParameter("ownerId", ownerId);
+        query.setParameter("blogId", blogId);
+        return query.setMaxResults(limit).getResultList();
+    }
+
+    public List<TagUsage> findTopTagUsagesForAuthor(long ownerId, int limit) {
+        return toTagUsages(findTagUsageRows(ownerId, null, limit));
+    }
+
+    public List<TagUsage> findTopTagUsagesForBlog(long blogId, int limit) {
+        return toTagUsages(findTagUsageRows(null, blogId, limit));
+    }
+
+    public void flush() {
+        entityManager.flush();
+    }
+
     public List<Tag> listAllForManagement() {
         return entityManager.createQuery("FROM Tag t ORDER BY t.name ASC", Tag.class)
                             .getResultList();
@@ -95,7 +163,7 @@ public class TagRepository {
                                 .setMaxResults(limit)
                                 .getResultList();
         }
-        String pattern = "%" + prefix.toLowerCase() + "%";
+        String pattern = "%%%s%%".formatted(prefix.toLowerCase());
         return entityManager.createQuery("""
                                          SELECT t.name FROM Tag t
                                          WHERE LOWER(t.name) LIKE :pattern OR LOWER(t.slug) LIKE :pattern
@@ -104,5 +172,15 @@ public class TagRepository {
                             .setParameter("pattern", pattern)
                             .setMaxResults(limit)
                             .getResultList();
+    }
+
+    private List<TagUsage> toTagUsages(List<Object[]> rows) {
+        var result = new ArrayList<TagUsage>();
+        for (var row : rows) {
+            long tagId = ((Number) row[0]).longValue();
+            long count = ((Number) row[1]).longValue();
+            findById(tagId).ifPresent(tag -> result.add(new TagUsage(tag, count)));
+        }
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.serie;
 
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,6 +15,22 @@ public class SerieRepository {
     @Inject
     public SerieRepository(EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Serie> findAllWithPublishedPosts() {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT s FROM Serie s
+                                         JOIN FETCH s.blog b
+                                         JOIN FETCH b.owner
+                                         WHERE b.active = true AND
+                                               EXISTS (
+                                                   SELECT 1 FROM Post p
+                                                   WHERE p.serie = s AND p.published = true
+                                               )
+                                         ORDER BY s.id
+                                         """, Serie.class)
+                            .getResultList();
     }
 
     public Optional<Serie> findByBlogIdAndSlug(long blogId, String slug) {

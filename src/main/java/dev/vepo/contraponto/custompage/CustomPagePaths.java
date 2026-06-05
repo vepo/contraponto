@@ -61,7 +61,7 @@ public final class CustomPagePaths {
                                 .append(segments[1])
                                 .append('/')
                                 .append(segments[2]);
-            default -> throw new IllegalArgumentException("Unsupported page type: " + type);
+            default -> throw new IllegalArgumentException("Unsupported page type: %s".formatted(type));
         }
         return builder.toString();
     }
@@ -139,7 +139,7 @@ public final class CustomPagePaths {
             case GLOBAL -> segments.get(1).getPath();
             case USER -> segments.get(2).getPath();
             case BLOG -> segments.get(3).getPath();
-            default -> throw new IllegalArgumentException("Unsupported page type: " + type);
+            default -> throw new IllegalArgumentException("Unsupported page type: %s".formatted(type));
         };
     }
 
@@ -147,7 +147,7 @@ public final class CustomPagePaths {
         if (pathSlug == null || pathSlug.isBlank()) {
             return pathSlug;
         }
-        return pathSlug.startsWith("/") ? pathSlug : "/" + pathSlug;
+        return pathSlug.startsWith("/") ? pathSlug : "/%s".formatted(pathSlug);
     }
 
     public static String username(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {

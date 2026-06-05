@@ -144,7 +144,7 @@ public class NavigationHubPanelService {
             case "notifications" -> notificationEndpoint.renderHubPanel(page, basePath);
             case "subscriptions" -> subscriptionEndpoint.renderHubPanel(page, basePath);
             case "security" -> accountSecurityEndpoint.renderHubPanel(emailVerified, profileError);
-            default -> throw new NotFoundException("Unknown account section: " + sectionSlug);
+            default -> throw new NotFoundException("Unknown account section: %s".formatted(sectionSlug));
         };
     }
 
@@ -152,7 +152,7 @@ public class NavigationHubPanelService {
         if ("users".equals(sectionSlug)) {
             return userManageEndpoint.renderHubPanel(page, registry.sectionPath(NavigationHub.ADMINISTRATION, sectionSlug));
         }
-        throw new NotFoundException("Unknown administration section: " + sectionSlug);
+        throw new NotFoundException("Unknown administration section: %s".formatted(sectionSlug));
     }
 
     private TemplateInstance renderDashboardPanel() {
@@ -184,7 +184,7 @@ public class NavigationHubPanelService {
             }
             case "pages" -> customPageManageEndpoint.renderHubPanel(page, basePath);
             case "comments" -> commentManageEndpoint.renderHubPanel(page, basePath);
-            default -> throw new NotFoundException("Unknown manage section: " + sectionSlug);
+            default -> throw new NotFoundException("Unknown manage section: %s".formatted(sectionSlug));
         };
     }
 
@@ -193,7 +193,7 @@ public class NavigationHubPanelService {
         return switch (sectionSlug) {
             case "highlights" -> highlightsLibraryEndpoint.renderHighlightsHubPanel(page, basePath);
             case "notes" -> highlightsLibraryEndpoint.renderNotesHubPanel(page, basePath);
-            default -> throw new NotFoundException("Unknown reading section: " + sectionSlug);
+            default -> throw new NotFoundException("Unknown reading section: %s".formatted(sectionSlug));
         };
     }
 
@@ -202,7 +202,7 @@ public class NavigationHubPanelService {
         return switch (sectionSlug) {
             case "review" -> reviewEndpoint.renderHubPanel(page, basePath);
             case "tags" -> tagManageEndpoint.renderHubPanel(page, basePath);
-            default -> throw new NotFoundException("Unknown editor section: " + sectionSlug);
+            default -> throw new NotFoundException("Unknown editor section: %s".formatted(sectionSlug));
         };
     }
 
@@ -214,7 +214,7 @@ public class NavigationHubPanelService {
             case "blogs" -> blogManageEndpoint.renderAuthorHubPanel(page, basePath);
             case "appearance" -> authorAppearanceEndpoint.renderHubPanel();
             case "highlights" -> highlightManageEndpoint.renderHubPanel(page, basePath, "proposals");
-            default -> throw new NotFoundException("Unknown writing section: " + sectionSlug);
+            default -> throw new NotFoundException("Unknown writing section: %s".formatted(sectionSlug));
         };
     }
 }

@@ -127,9 +127,9 @@ public class PublishEndpoint {
 
         String postUrl;
         if (blog.isMain()) {
-            postUrl = "/" + username + "/post/" + slug;
+            postUrl = "/%s/post/%s".formatted(username, slug);
         } else {
-            postUrl = "/" + username + "/" + blog.getSlug() + "/post/" + slug;
+            postUrl = "/%s/%s/post/%s".formatted(username, blog.getSlug(), slug);
         }
 
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());

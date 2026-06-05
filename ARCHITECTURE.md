@@ -37,7 +37,7 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 | Custom page | `GET /{username}/page/{slug}` | `GET /{username}/{blogSlug}/page/{slug}` |
 | Global custom page | `GET /page/{slug}` | — |
 
-Use `PostEndpoint.extractUrl(post)` and `CustomPagePaths.publicUrl(page)` in code — do not duplicate path logic.
+Use `PostPaths.extractUrl(post)` and `CustomPagePaths.publicUrl(page)` in code — do not duplicate path logic or add pass-through wrappers (see `.cursor/rules/contraponto-no-method-bypass-allowed.mdc`).
 
 `CustomPageFilter` rewrites public custom-page URLs to `/_custom_page/...`; `CustomPageEndpoint` loads published pages via `CustomPageCache` (in-memory, invalidated on `CustomPageChangedEvent`).
 
@@ -247,7 +247,7 @@ class ExampleTest {
 ## 18. Common pitfalls
 
 - **Custom pages** — always fire `CustomPageChangedEvent` after save/delete; slugs stored with leading `/` (`CustomPagePaths.storedSlug`).
-- **Post URLs** — use `PostEndpoint.extractUrl`, especially for secondary blogs.
+- **Post URLs** — use `PostPaths.extractUrl`, especially for secondary blogs.
 - **HTMX tests** — wait for swaps (`App` helpers / `waitForReady`).
 - **N+1 in templates** — `JOIN FETCH` in repository queries.
 - **Git tests** — `%test.contraponto.git.poll-enabled=false` (scheduler off in tests).

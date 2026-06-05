@@ -16,7 +16,7 @@ Read these before changing code or tests:
 | [docs/deployment.md](docs/deployment.md) | Production checklist (DB, SMTP, URL, secrets) |
 | [docs/prd/post-text-highlight.md](docs/prd/post-text-highlight.md) | PRD: reader highlights, author curation, post responses |
 | [docs/prd/reading-list.md](docs/prd/reading-list.md) | PRD: personal reading list, mark as read, unread queue |
-| [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped); tooling languages (no Python, scripts bash/JBang, JS browser-only) → `contraponto-tooling-languages.mdc`; static analysis finish gate → `static-analysis.mdc`; list UIs → `contraponto-pagination.mdc`; JS/HTMX → `contraponto-javascript.mdc`; CSS → `contraponto-css.mdc` |
+| [.cursor/rules/](.cursor/rules/) | Cursor rules (always-on + file-scoped); layered architecture (`*Endpoint` / `*Service` / `*Repository`) → `contraponto-layered-architecture.mdc`; no method bypass (pass-through wrappers) → `contraponto-no-method-bypass-allowed.mdc`; JPA queries (Criteria / JPQL / native) → `contraponto-jpa.mdc`; string building (`.formatted()` / `StringBuilder`) → `contraponto-strings.mdc`; tooling languages (no Python, scripts bash/JBang, JS browser-only) → `contraponto-tooling-languages.mdc`; static analysis finish gate → `static-analysis.mdc`; list UIs → `contraponto-pagination.mdc`; JS/HTMX → `contraponto-javascript.mdc`; CSS → `contraponto-css.mdc` |
 
 **Workflow:** entity/repository → service (if non-trivial) → endpoint → Qute template → `@WebTest` with `App` + `Given` → navigation/links if user-facing.
 

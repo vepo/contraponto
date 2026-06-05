@@ -67,11 +67,7 @@ public class BlogEndpoint {
     private static final int TOP_TAG_LIMIT = 8;
 
     public static String extractUrl(Blog blog) {
-        if (blog.isMain()) {
-            return "/%s".formatted(blog.getOwner().getUsername());
-        } else {
-            return "/%s/%s".formatted(blog.getOwner().getUsername(), blog.getSlug());
-        }
+        return BlogPaths.extractUrl(blog);
     }
 
     private final UserRepository userRepository;
@@ -109,7 +105,7 @@ public class BlogEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance blog(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit) {
-        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: %s".formatted(username)));
 
         var mainBlog = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
         return renderBlogHome(user,
@@ -125,7 +121,7 @@ public class BlogEndpoint {
     public TemplateInstance morePosts(@PathParam("username") String username, @QueryParam("limit") @DefaultValue("12") int limit,
                                       @QueryParam("page") int page) {
 
-        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: %s".formatted(username)));
         var mainBlog = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
         return Templates.grid(username,
                               mainBlog,
@@ -156,7 +152,7 @@ public class BlogEndpoint {
     public Response secondaryBlog(@PathParam("username") String username,
                                   @PathParam("blogSlug") String blogSlug,
                                   @QueryParam("limit") @DefaultValue("12") int limit) {
-        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: " + username));
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found: %s".formatted(username)));
         var blog = blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug).orElseThrow(NotFoundException::new);
         if (blog.isMain()) {
             return Response.seeOther(UriBuilder.fromPath("/").path(username).build()).build();

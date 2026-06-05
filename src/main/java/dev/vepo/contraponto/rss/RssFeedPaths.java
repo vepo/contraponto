@@ -6,6 +6,8 @@ import dev.vepo.contraponto.tag.Tag;
 
 public final class RssFeedPaths {
 
+    public static final int FEED_LIMIT = 50;
+
     public static String blogFeed(Blog blog) {
         var owner = blog.getOwner();
         if (blog.isMain()) {

@@ -62,7 +62,7 @@ public class HighlightNoteFormEndpoint {
         if (trimmed.length() <= 120) {
             return trimmed;
         }
-        return trimmed.substring(0, 119) + "…";
+        return "%s…".formatted(trimmed.substring(0, 119));
     }
 
     private PostTextHighlight loadOwnedHighlight(long highlightId) {

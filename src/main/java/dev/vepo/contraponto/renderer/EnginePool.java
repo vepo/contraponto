@@ -41,7 +41,7 @@ public class EnginePool {
             // 1. Acquire a permit to borrow an engine (up to max concurrency)
             permitAcquired = semaphore.tryAcquire(5, TimeUnit.SECONDS);
             if (!permitAcquired) {
-                throw new RendererException("Timeout waiting for an engine slot (max concurrency = " + maxPoolSize + ")");
+                throw new RendererException("Timeout waiting for an engine slot (max concurrency = %s)".formatted(maxPoolSize));
             }
 
             // 2. Try to get an idle engine; if none, create a new one

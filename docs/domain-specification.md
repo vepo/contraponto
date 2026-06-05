@@ -427,7 +427,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 17. Only the **blog owner** may change blog settings (name, slug, description, Git, **blog banner**, active flag on the edit form). **Editors** and **administrators** may **deactivate** another user's **secondary** blog but cannot edit blog fields.
 18. **Effective blog banner** is resolved at display time; new secondary blogs copy the owner's **default blog banner** FK at creation when set (same `Image` row, not a duplicate file).
 19. **Custom pages** served publicly must be **published** and present in cache after changes.
-20. Public URLs for posts and custom pages must use `PostEndpoint.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building.
+20. Public URLs for posts and custom pages must use `PostPaths.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building or endpoint pass-through wrappers.
 21. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
 22. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
 23. **Inactive users** cannot complete password recovery.

@@ -1,0 +1,61 @@
+---
+description: JPA query conventions — Criteria API, JPQL, native SQL
+globs: src/main/java/**/*Repository.java
+alwaysApply: false
+---
+
+# JPA usage
+
+All database queries belong in `*Repository` classes ([contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc)). Pick the query style by **how much the WHERE clause varies**.
+
+## 1. Dynamic queries → Criteria API
+
+Use `EntityManager.getCriteriaBuilder()` when predicates, joins, or sort change based on input (optional filters, search terms, pagination with varying conditions).
+
+Reference: `ImageRepository.findPageByOwnerId` — builds predicates with `cb.and` / `cb.or`, shares logic between count and data queries.
+
+```java
+var cb = entityManager.getCriteriaBuilder();
+var criteria = cb.createQuery(Image.class);
+var root = criteria.from(Image.class);
+var predicates = cb.and(
+        cb.equal(root.get("owner").get("id"), ownerId),
+        cb.isTrue(root.get("active")));
+if (hasSearch) {
+    predicates = cb.and(predicates, cb.like(cb.lower(root.get("filename")), searchTerm));
+}
+criteria.select(root).where(predicates).orderBy(cb.desc(root.get("createdAt")));
+```
+
+- **Do not** build dynamic JPQL with `StringBuilder` or string concatenation — refactor to Criteria when touching such code.
+- Always bind values via Criteria parameters / `setParameter` — never interpolate user input into query strings.
+
+## 2. Static queries → JPQL
+
+Use `entityManager.createQuery(...)` with a fixed JPQL string when the shape of the query does not change — only parameter **values** differ.
+
+- Text blocks (`""" ... """`) for multi-line JPQL.
+- Named parameters (`:blogId`, `:published`) for every argument.
+- `Optional`: `getResultStream().findFirst()` or `find` by primary key.
+- Pagination: separate count + data queries returning `Page<T>` via `PageQuery.skip()` / `limit()`.
+- `JOIN FETCH` when templates need associations in the same request.
+
+## 3. Native SQL → last resort
+
+Use `createNativeQuery` only when JPQL/Criteria cannot express the operation cleanly, for example:
+
+- Database-specific functions (`LEAST`, `COALESCE`, `CAST(… AS date)`).
+- Updates against non-entity column sets where JPQL bulk update is awkward.
+- Aggregations or unions across tables with no single entity root.
+
+Before adding native SQL, try JPQL/Criteria first. When native is required:
+
+- Keep SQL in the repository; add a one-line comment explaining why JPQL is insufficient.
+- Use named parameters; map `Object[]` rows to typed records/DTOs in the repository.
+- Table/column names must match Flyway migrations (`tb_*`).
+
+## Never
+
+- `EntityManager` or queries in `*Endpoint` / `*Service`.
+- Native SQL for simple CRUD or entity lookups expressible in JPQL.
+- Unparameterized SQL built from request strings.
