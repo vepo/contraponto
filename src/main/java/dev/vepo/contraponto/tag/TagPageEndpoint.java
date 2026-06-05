@@ -130,6 +130,7 @@ public class TagPageEndpoint {
         Tag tag = tagRepository.findBySlug(slug).orElseThrow(() -> new NotFoundException(TAG_NOT_FOUND_PREFIX + slug));
         var mainAuthors = tagProfileService.mainAuthorsForTag(tag.getSlug(), MAIN_AUTHOR_LIMIT);
         long totalAuthors = tagProfileService.countDistinctAuthorsForTag(tag.getSlug());
+        var breadcrumb = breadcrumbService.forTag(tag);
         return Templates.tag(tag,
                              postRepository.findPublishedByTagSlug(tag.getSlug(), PageQuery.forGrid(limit, 1)),
                              java.util.List.of(),
@@ -137,8 +138,8 @@ public class TagPageEndpoint {
                              totalAuthors,
                              customPageRepository.loadLinks(),
                              loggedUser,
-                             breadcrumbService.forTag(tag),
-                             seoService.forTag(tag, mainAuthors));
+                             breadcrumb,
+                             seoService.forTag(tag, mainAuthors, breadcrumb));
     }
 
     @GET

@@ -53,7 +53,16 @@ Configure outbound mail (signup verification, password reset, post notifications
 | `QUARKUS_MAILER_PASSWORD` | Auth password (secret) |
 | `QUARKUS_MAILER_FROM` | From address (default in `application.properties`: `noreply@contraponto.blog`) |
 
-## 4. Security
+## 4. Search indexing (production)
+
+After the app is reachable on the public HTTPS origin:
+
+1. Confirm **`APP_PUBLIC_URL`** matches the canonical host (no mixed `www` / non-`www`, no `http://` in sitemap locs).
+2. Open [Google Search Console](https://search.google.com/search-console), verify the property, and submit **`{APP_PUBLIC_URL}/sitemap.xml`**.
+3. Spot-check `GET /robots.txt`, `GET /sitemap.xml`, and a published post in “URL inspection” (canonical, JSON-LD, `article:modified_time` on republished posts).
+4. Optional: use [Rich Results Test](https://search.google.com/test/rich-results) on home and a post URL.
+
+## 5. Security
 
 | Item | Action |
 |------|--------|
@@ -62,7 +71,7 @@ Configure outbound mail (signup verification, password reset, post notifications
 | **Secrets** | Never commit SMTP or DB passwords; use platform secret stores |
 | **Dev import** | `app.dev-import.enabled=false` in prod (default) |
 
-## 5. Optional: Git / Jekyll sync
+## 6. Optional: Git / Jekyll sync
 
 Disabled by default in prod (`%prod.contraponto.git.poll-enabled=false`). To enable:
 
@@ -72,11 +81,11 @@ Disabled by default in prod (`%prod.contraponto.git.poll-enabled=false`). To ena
 
 See [git-jekyll-convention.md](git-jekyll-convention.md).
 
-## 6. Optional: Redis session store
+## 7. Optional: Redis session store
 
 For multiple app instances, set `app.session.store=redis` and configure `quarkus.redis.hosts`. Default is in-memory (`app.session.store=memory`), suitable for a single node.
 
-## 7. Build and run
+## 8. Build and run
 
 ```bash
 mvn package -DskipTests
@@ -93,7 +102,7 @@ docker run -p 8080:8080 \
 
 **Health:** `GET /q/health` (SmallRye Health).
 
-## 8. Local development email
+## 9. Local development email
 
 By default, `%dev` uses `quarkus.mailer.mock=true` (no outbound mail). For real SMTP in dev, copy [`application-dev.properties.example`](../src/main/resources/application-dev.properties.example) to `application-dev.properties` (gitignored) and fill in credentials.
 

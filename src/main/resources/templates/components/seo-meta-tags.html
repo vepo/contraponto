@@ -21,6 +21,9 @@
 {#if seo.articlePublishedAtIso.isPresent}
 <meta property="article:published_time" content="{seo.articlePublishedAtIso.get}">
 {/if}
+{#if seo.articleModifiedAtIso.isPresent}
+<meta property="article:modified_time" content="{seo.articleModifiedAtIso.get}">
+{/if}
 {#if seo.jsonLdRaw.isPresent}
 <script type="application/ld+json">{seo.jsonLdRaw.get}</script>
 {/if}

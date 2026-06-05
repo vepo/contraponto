@@ -1,0 +1,20 @@
+{#if !relatedPosts.isEmpty}
+<aside class="browse-page-shell__aside browse-explore-aside post-related-aside" aria-label="Artigos relacionados" data-i18n="post.relatedPosts" data-i18n-attr="aria-label">
+    <h2 class="browse-explore-aside__title" data-i18n="post.relatedPosts">Artigos relacionados</h2>
+    <ul class="post-related-aside__list">
+        {#for related in relatedPosts}
+        <li class="post-related-aside__item">
+            <a href="{related.url}"
+               data-hx-get="{related.url}"
+               hx-select="main"
+               hx-target="main"
+               hx-push-url="{related.url}"
+               class="post-related-aside__link">
+                <span class="post-related-aside__link-label">{related.liveTitle}</span>
+                <span class="post-related-aside__link-hint">{related.author.name}</span>
+            </a>
+        </li>
+        {/for}
+    </ul>
+</aside>
+{/if}

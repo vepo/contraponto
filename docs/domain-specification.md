@@ -43,6 +43,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Contraponto** | The publishing platform (product). | — |
 | **Platform display name** | White-label name shown in header, footer, page titles, SEO, RSS, and transactional email (default `contraponto`). | `app.site.name` / `APP_SITE_NAME`, `SiteBranding`, Qute globals `siteName` / `siteSeoName` |
 | **Platform integration script** | Optional third-party script in page `<head>` (HTTPS URL + `data-token`; disabled unless both are set). Its origin is allowlisted in Content-Security-Policy `script-src` and `connect-src` when enabled. | `app.site.integration.script-url`, `app.site.integration.script-data-token`, `SiteIntegration`, `SecurityHeadersFilter` |
+| **Post embed CSP allowlist** | Origins permitted in Content-Security-Policy `frame-src` for built-in **content render plugins** and sanitized post HTML iframes: Twitter (`platform.twitter.com`), YouTube (`www.youtube.com`, `www.youtube-nocookie.com`). | `SecurityHeadersFilter`, `HtmlSanitizer`, `YoutubeContentRenderPlugin`, `TwitterContentRenderPlugin` |
 | **Guest** | Unauthenticated visitor; may read public content. | No session |
 | **User** | Registered account (`tb_users`): username, email, display name, password, roles, active flag; optional **profile picture** and **default blog banner**. | `User` |
 | **Author** | User who owns at least one blog and writes posts. Implied by blog ownership, not a separate role. | `Post.getAuthor()` → blog owner |
@@ -223,10 +224,12 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Tag page** | Public listing of posts with a given tag. | `TagPageEndpoint` |
 | **RSS feed** | Syndication for site, blog, serie, or tag. | `rss` package |
 | **RSS feed link** | Public control that opens the matching feed URL in a new tab. | `components/rss-feed-link.html`, `RssFeedPaths` |
-| **Page metadata** | Per-route SEO bundle: document title, description, canonical URL, `noindex`, Open Graph / Twitter Card fields, optional JSON-LD. | `SeoMetadata`, `SeoService`, `components/seo-metadata.html` |
+| **Page metadata** | Per-route SEO bundle: document title, description, canonical URL, `noindex`, Open Graph / Twitter Card fields, optional JSON-LD (`BlogPosting`, `BreadcrumbList`, `WebSite` + `SearchAction`, …), `article:modified_time` on republished posts. | `SeoMetadata`, `SeoService`, `components/seo-meta-tags.html` |
+| **Post slug alias** | Former URL slug for a published post; registered when the live slug changes on republish; old URLs respond with **301** to the current post URL. | `PostSlugAlias`, `PostSlugAliasRepository`, `PostEndpoint` |
+| **Related posts** | Post-page rail listing other published articles that share tags with the current post (ranked by tag overlap, then recency). Shown in the **right margin aside** on wide viewports; stacks below the article on narrow viewports. | `PostRepository.findRelatedPublishedBySharedTags`, `PostEndpoint/related-posts-aside.html` |
 | **Author directory** | Public card index of authors; links to **author profile**. | `GET /authors`, `AuthorDirectoryEndpoint` |
 | **Blog directory** | Public card index of active blogs with description, author, and top tags. | `GET /explore/blogs`, `BlogDirectoryEndpoint` |
-| **Browse page shell** | Home and blog listing layout: main column at **reading width** (`container-narrow`); **SIDEBAR** custom pages in the left margin; explore + RSS in the right margin. Sidebars do not shrink the main column. Post pages have no sidebars. | `browse-page-shell`, `components/browse-sidebar-nav.html`, `components/home-explore-aside.html` |
+| **Browse page shell** | Home and blog listing layout: main column at **reading width** (`container-narrow`); **SIDEBAR** custom pages in the left margin; explore + RSS in the right margin. Sidebars do not shrink the main column. Post pages reuse the shell with **related posts only** in the right margin (no left SIDEBAR, no explore/RSS). | `browse-page-shell`, `browse-page--article`, `components/browse-sidebar-nav.html`, `components/home-explore-aside.html`, `PostEndpoint/related-posts-aside.html` |
 | **Sitemap** | Machine-readable list of public URLs for crawlers. | `GET /sitemap.xml`, `SitemapEndpoint` |
 | **Robots policy** | Crawl rules and sitemap reference for crawlers. | `GET /robots.txt`, `RobotsEndpoint` |
 | **View count** | Read metric per post load (one row per page GET per session). | `View` |

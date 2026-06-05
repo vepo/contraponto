@@ -145,6 +145,19 @@ public class BlogRepository {
                             .findFirst();
     }
 
+    public Optional<Blog> findMainByOwnerUsername(String username) {
+        return entityManager.createQuery("""
+                                         FROM Blog b
+                                         JOIN FETCH b.owner o
+                                         WHERE b.active AND
+                                               b.main AND
+                                               o.username = :username
+                                         """, Blog.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public Page<Blog> findPageAllForManagement(PageQuery query) {
         long total = entityManager.createQuery("SELECT COUNT(b) FROM Blog b", Long.class)
                                   .getSingleResult();

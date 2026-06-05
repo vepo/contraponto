@@ -113,6 +113,7 @@ public class AuthorProfileEndpoint {
                                          .filter(blog -> postRepository.countPublishedByBlog(blog.getId()) > 0)
                                          .toList();
         List<Post> recentPosts = postRepository.findPublishedFeedByAuthor(author.getId(), RECENT_POST_LIMIT);
+        var breadcrumb = breadcrumbService.forAuthorProfile(author);
         return Templates.profile(author,
                                  mainBlog,
                                  renderedBio,
@@ -122,7 +123,7 @@ public class AuthorProfileEndpoint {
                                  recentPosts,
                                  customPageRepository.loadLinks(),
                                  loggedUser,
-                                 breadcrumbService.forAuthorProfile(author),
-                                 seoService.forAuthorProfile(author, mainBlog));
+                                 breadcrumb,
+                                 seoService.forAuthorProfile(author, mainBlog, breadcrumb));
     }
 }

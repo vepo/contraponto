@@ -22,23 +22,14 @@ public class RobotsEndpoint {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response robots() {
-        String body = """
-                      User-agent: *
-                      Allow: /
-                      Disallow: /write
-                      Disallow: /writing
-                      Disallow: /reading
-                      Disallow: /highlights
-                      Disallow: /manage
-                      Disallow: /account
-                      Disallow: /administration
-                      Disallow: /editor
-                      Disallow: /forms/
-                      Disallow: /api/
-                      Disallow: /auth/
-                      Disallow: /search
-                      Sitemap: %s/sitemap.xml
-                      """.formatted(publicSiteUrl.baseUrl()).stripTrailing();
-        return Response.ok(body).build();
+        var lines = new StringBuilder();
+        lines.append("User-agent: *\n");
+        lines.append("Allow: /\n");
+        for (String rule : CrawlerPrivatePaths.disallowRules()) {
+            lines.append("Disallow: ").append(rule).append('\n');
+        }
+        lines.append("Disallow: /feed\n");
+        lines.append("Sitemap: ").append(publicSiteUrl.baseUrl()).append("/sitemap.xml");
+        return Response.ok(lines.toString()).build();
     }
 }

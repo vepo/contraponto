@@ -86,12 +86,13 @@ public class SeriePageEndpoint {
         List<Post> posts = postRepository.findPublishedBySerieOrdered(serie.getId());
         Links links = serie.getBlog().isMain() ? customPageRepository.loadLinks()
                                                : customPageRepository.loadLinks(serie.getBlog().getId());
+        var breadcrumb = breadcrumbService.forSerie(serie);
         return Response.ok(Templates.serie(serie,
                                            posts,
                                            links,
                                            loggedUser,
-                                           breadcrumbService.forSerie(serie),
-                                           seoService.forSerie(serie)))
+                                           breadcrumb,
+                                           seoService.forSerie(serie, breadcrumb)))
                        .build();
     }
 

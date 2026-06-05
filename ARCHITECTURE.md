@@ -89,14 +89,18 @@ Registered before catch-all `/{username}` routes where needed (`SiteWideFeedEndp
 
 | Resource | Path | Notes |
 |----------|------|--------|
-| Page metadata | Per-route `SeoMetadata` in Qute `components/seo-metadata.html` | Title, description, canonical, Open Graph, Twitter Card, optional JSON-LD |
+| Page metadata | Per-route `SeoMetadata` in Qute `components/seo-meta-tags.html` | Title, description, canonical, Open Graph, Twitter Card, `article:published_time` / `article:modified_time`, JSON-LD (`BlogPosting`, `BreadcrumbList`, `WebSite` + `SearchAction`, etc.) |
 | SEO fragment (HTMX) | `GET /components/seo?path=...` | Refreshes `#seo-head` after navigation or history restore |
 | Author directory | `GET /authors` | Public list of authors with published posts |
 | Blog directory | `GET /explore/blogs` | Public list of active blogs |
-| Sitemap | `GET /sitemap.xml` | Published posts, blogs, tags, series, custom pages |
-| Robots | `GET /robots.txt` | Disallow manage/auth paths; `Sitemap:` uses `image.base.url` / `APP_PUBLIC_URL` |
+| Sitemap | `GET /sitemap.xml` | Published URLs with `lastmod`, post cover `image:image` entries; cached (`sitemap` cache, invalidated on publish / custom page change) |
+| Robots | `GET /robots.txt` | Shared `CrawlerPrivatePaths` disallow list (manage/auth/components/search/feed, …); `Sitemap:` uses `image.base.url` / `APP_PUBLIC_URL` |
+| Post slug alias | `tb_post_slug_aliases` | Old slugs registered on republish; `GET` post routes 301 to current URL |
+| Related posts | Post page block | Tag-overlap related articles with crawler-friendly `href` links |
+| Favicon | `GET /favicon.svg` | Linked from `components/head.html` |
+| RSS crawl hint | Feed responses | `X-Robots-Tag: noindex` via `RssNoIndexFilter` |
 
-Set **`APP_PUBLIC_URL`** in production so canonical URLs, `og:image`, and the sitemap locs use the public origin. HTMX OOB + `main.js` keep head metadata in sync with `hx-push-url` navigation (see [docs/htmx-events.md](docs/htmx-events.md)).
+Set **`APP_PUBLIC_URL`** in production so canonical URLs, `og:image`, and the sitemap locs use the public origin. Submit `https://your-domain/sitemap.xml` in Google Search Console after deploy (see [docs/deployment.md](docs/deployment.md)). HTMX OOB + `main.js` keep head metadata in sync with `hx-push-url` navigation (see [docs/htmx-events.md](docs/htmx-events.md)).
 
 ## 9. Design patterns
 

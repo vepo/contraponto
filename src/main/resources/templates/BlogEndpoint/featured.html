@@ -4,7 +4,8 @@
             <div class="featured__content">
                 <div class="featured__category" data-i18n="post.featured">Destaque</div>
                 <h1 class="featured__title">
-                    <a data-hx-get="{post.url}"
+                    <a href="{post.url}"
+                        data-hx-get="{post.url}"
                         hx-select="main"
                         hx-target="main"
                         hx-push-url="{post.url}">{post.liveTitle}</a>
@@ -14,7 +15,8 @@
                 {/if}
                 {#include components/post-tags post=post /}
                 <div class="article-meta">
-                    <a data-hx-get="/{post.author.username}"
+                    <a href="/{post.author.username}"
+                        data-hx-get="/{post.author.username}"
                         hx-select="main"
                         hx-target="main"
                         hx-push-url="/{post.author.username}">

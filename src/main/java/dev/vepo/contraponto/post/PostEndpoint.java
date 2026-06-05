@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
@@ -36,10 +38,12 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Path("{username}")
 @ApplicationScoped
 public class PostEndpoint {
+
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance history(List<PostChangeDiffService.VersionDiff> versions);
@@ -48,6 +52,7 @@ public class PostEndpoint {
 
         public static native TemplateInstance post(PublishedPostView view,
                                                    List<Post> seriePosts,
+                                                   List<Post> relatedPosts,
                                                    Links links,
                                                    LoggedUser user,
                                                    long viewCount,
@@ -62,6 +67,8 @@ public class PostEndpoint {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
         }
     }
+
+    private static final int RELATED_POST_LIMIT = 4;
 
     public static String extractUrl(Post post) {
         var blog = post.getBlog();
@@ -84,6 +91,8 @@ public class PostEndpoint {
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
     private final SeoService seoService;
+    private final BlogRepository blogRepository;
+    private final PostSlugAliasRepository postSlugAliasRepository;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -96,7 +105,9 @@ public class PostEndpoint {
                         SessionIdProvider sessionIdProvider,
                         BlogAudienceComponentEndpoint audienceComponentEndpoint,
                         BreadcrumbService breadcrumbService,
-                        SeoService seoService) {
+                        SeoService seoService,
+                        BlogRepository blogRepository,
+                        PostSlugAliasRepository postSlugAliasRepository) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -108,6 +119,8 @@ public class PostEndpoint {
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.breadcrumbService = breadcrumbService;
         this.seoService = seoService;
+        this.blogRepository = blogRepository;
+        this.postSlugAliasRepository = postSlugAliasRepository;
     }
 
     @GET
@@ -118,9 +131,7 @@ public class PostEndpoint {
                              @PathParam("blogSlug") String blogSlug,
                              @PathParam("slug") String slug,
                              @Context HttpHeaders headers) {
-        return renderPost(postRepository.findBlogPost(username, blogSlug, slug)
-                                        .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))),
-                          headers);
+        return resolveSecondaryBlogPost(username, blogSlug, slug, headers);
     }
 
     @GET
@@ -168,9 +179,7 @@ public class PostEndpoint {
     public Response mainBlogPost(@PathParam("username") String username,
                                  @PathParam("slug") String slug,
                                  @Context HttpHeaders headers) {
-        return renderPost(postRepository.findMainBlogPost(username, slug)
-                                        .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))),
-                          headers);
+        return resolveMainBlogPost(username, slug, headers);
     }
 
     @GET
@@ -191,6 +200,22 @@ public class PostEndpoint {
         return historyModalFor(postRepository.findMainBlogPost(username, slug));
     }
 
+    private Response redirectToPost(Post post) {
+        return Response.status(Response.Status.MOVED_PERMANENTLY)
+                       .location(UriBuilder.fromPath(extractUrl(post)).build())
+                       .build();
+    }
+
+    private Optional<Response> redirectViaAlias(Blog blog, String slug) {
+        return postSlugAliasRepository.findPostIdByBlogAndSlug(blog.getId(), slug)
+                                      .flatMap(postRepository::findPublishedWithBlogForRedirect)
+                                      .map(this::redirectToPost);
+    }
+
+    private List<Post> relatedPostsFor(Post post) {
+        return postRepository.findRelatedPublishedBySharedTags(post, RELATED_POST_LIMIT);
+    }
+
     private Response renderPost(Post post, HttpHeaders headers) {
         // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));
@@ -205,20 +230,42 @@ public class PostEndpoint {
         PostPublication live = post.getLivePublication();
         PublishedPostView view = new PublishedPostView(post, live);
         BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
+        BreadcrumbTrail breadcrumb = breadcrumbService.forPost(view);
         TemplateInstance template = Templates.post(view,
                                                    seriePostsFor(post),
+                                                   relatedPostsFor(post),
                                                    loadLinks(post),
                                                    loggedUser,
                                                    viewCount,
                                                    averageReadingSeconds,
                                                    audience,
-                                                   breadcrumbService.forPost(view),
-                                                   seoService.forPost(view));
+                                                   breadcrumb,
+                                                   seoService.forPost(view, breadcrumb));
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));
         }
         return response.build();
+    }
+
+    private Response resolveMainBlogPost(String username, String slug, HttpHeaders headers) {
+        var post = postRepository.findMainBlogPost(username, slug);
+        if (post.isPresent()) {
+            return renderPost(post.get(), headers);
+        }
+        return blogRepository.findMainByOwnerUsername(username)
+                             .flatMap(blog -> redirectViaAlias(blog, slug))
+                             .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
+    }
+
+    private Response resolveSecondaryBlogPost(String username, String blogSlug, String slug, HttpHeaders headers) {
+        var post = postRepository.findBlogPost(username, blogSlug, slug);
+        if (post.isPresent()) {
+            return renderPost(post.get(), headers);
+        }
+        return blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug)
+                             .flatMap(blog -> redirectViaAlias(blog, slug))
+                             .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
     }
 
     private List<Post> seriePostsFor(Post post) {

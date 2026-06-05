@@ -22,6 +22,8 @@ public class SitemapEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_XML)
     public Response sitemap() {
-        return Response.ok(sitemapService.renderXml()).build();
+        return Response.ok(sitemapService.renderXml())
+                       .header("Cache-Control", "public, max-age=3600")
+                       .build();
     }
 }

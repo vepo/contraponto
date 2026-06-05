@@ -138,6 +138,8 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `featured__grid--no-cover` | `HomeEndpoint/featured.html` | Single-column hero when post has no cover |
 | `posts-grid`, `load-more` | Grid partials | |
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
+| `browse-page`, `browse-page--article`, `browse-page-shell`, `browse-page-shell__*` | `PostEndpoint/post.html`, home/blog listings | Post pages: main column only + right related-posts rail; home/blog: left SIDEBAR + explore aside |
+| `post-related-aside`, `post-related-aside__*` | `PostEndpoint/related-posts-aside.html` | Related posts rail (fixed right margin; inline below article ≤1280px) |
 | `.imageblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor block images | Centered figure, caption in `.title`; styles in main.css / write.css |
 | `.verseblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor verse / poetry | Lines in `pre.content`, attribution in `.attribution`; styles in main.css / write.css |
 | `.tableblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor tables | `table.tableblock` with caption `.title`, cell text in `p.tableblock`; horizontal scroll via `.sectionbody:has(> table.tableblock)`; styles in main.css / write.css |

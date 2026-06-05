@@ -134,6 +134,7 @@ public class PublishEndpoint {
 
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
 
+        var breadcrumb = breadcrumbService.forPost(view);
         return Toast.ok()
                     .i18nKey(I18nKeys.TOAST_POST_PUBLISHED, I18nDefaults.POST_PUBLISHED)
                     .type(Toast.Type.SUCCESS)
@@ -141,13 +142,14 @@ public class PublishEndpoint {
                     .url(postUrl)
                     .page(PostEndpoint.Templates.post(view,
                                                       seriePostsFor(post),
+                                                      postRepository.findRelatedPublishedBySharedTags(post, 4),
                                                       links,
                                                       loggedUser,
                                                       0L,
                                                       0L,
                                                       audienceComponentEndpoint.buildView(blog),
-                                                      breadcrumbService.forPost(view),
-                                                      seoService.forPost(view)))
+                                                      breadcrumb,
+                                                      seoService.forPost(view, breadcrumb)))
                     .build();
     }
 

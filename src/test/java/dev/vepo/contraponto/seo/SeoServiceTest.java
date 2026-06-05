@@ -6,7 +6,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.navigation.BreadcrumbItem;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPublicationService;
+import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
@@ -15,6 +19,8 @@ import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.user.User;
 import jakarta.inject.Inject;
+
+import java.util.List;
 
 @QuarkusIntegrationTest
 class SeoServiceTest {
@@ -27,6 +33,12 @@ class SeoServiceTest {
 
     @Inject
     TagRepository tagRepository;
+
+    @Inject
+    PostPublicationService publicationService;
+
+    @Inject
+    PostRepository postRepository;
 
     private User author;
     private Blog secondaryBlog;
@@ -86,6 +98,33 @@ class SeoServiceTest {
         assertThat(meta.title()).contains("Published SEO title");
         assertThat(meta.description()).isNotBlank();
         assertThat(meta.articlePublishedAt()).isPresent();
+    }
+
+    @Test
+    void forPost_withBreadcrumbIncludesGraphAndModifiedAtOnRepublish() {
+        Post published = Given.post()
+                              .withAuthor(author)
+                              .withTitle("Republish SEO")
+                              .withContent("Version one")
+                              .withSlug("republish-seo")
+                              .withPublished(true)
+                              .persist();
+        long postId = published.getId();
+        Given.transaction(() -> {
+            Post reloaded = postRepository.findByIdWithTags(postId).orElseThrow();
+            reloaded.setContent("Version two");
+            publicationService.publish(reloaded);
+        });
+        Post post = postRepository.findByIdWithTags(postId).orElseThrow();
+        PublishedPostView view = new PublishedPostView(post, post.getLivePublication());
+        var breadcrumb = new BreadcrumbTrail(List.of(
+                                                     new BreadcrumbItem("Home", "/"),
+                                                     new BreadcrumbItem("Republish SEO", null)));
+
+        SeoMetadata meta = seoService.forPost(view, breadcrumb);
+        assertThat(meta.jsonLd().orElse("")).contains("BreadcrumbList");
+        assertThat(meta.jsonLd().orElse("")).contains("@graph");
+        assertThat(meta.articleModifiedAt()).isPresent();
     }
 
     @Test

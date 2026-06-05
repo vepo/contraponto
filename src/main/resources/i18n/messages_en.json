@@ -160,6 +160,7 @@
   "post.changesFromVersion": "Changes from version {n}",
   "post.codeBlock.copied": "Copied",
   "post.codeBlock.copy": "Copy",
+  "post.relatedPosts": "Related posts",
   "post.featured": "Featured",
   "post.notFeatured": "Not featured",
   "post.serieNavAria": "Series navigation",

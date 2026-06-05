@@ -16,15 +16,18 @@ import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePageEndpoint;
+import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
 import dev.vepo.contraponto.tag.TagPageEndpoint;
 import dev.vepo.contraponto.tag.TagRepository;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
+import io.quarkus.cache.CacheResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 
 @ApplicationScoped
 public class SitemapService {
@@ -64,32 +67,50 @@ public class SitemapService {
     }
 
     public List<SitemapUrl> buildUrls() {
+        Optional<LocalDateTime> siteLastModified = findSiteWideLastModified();
         List<SitemapUrl> urls = new ArrayList<>();
-        urls.add(new SitemapUrl("/", Optional.empty()));
-        urls.add(new SitemapUrl("/authors", Optional.empty()));
-        urls.add(new SitemapUrl("/explore/blogs", Optional.empty()));
+        urls.add(new SitemapUrl("/", siteLastModified));
+        urls.add(new SitemapUrl("/authors", siteLastModified));
+        urls.add(new SitemapUrl("/explore/blogs", siteLastModified));
         for (User author : userRepository.findAuthorsWithPublishedPosts()) {
             urls.add(new SitemapUrl(AuthorProfileEndpoint.url(author), Optional.ofNullable(author.getUpdatedAt())));
         }
 
         for (Post post : postRepository.findPublishedForSitemap()) {
-            urls.add(new SitemapUrl(PostEndpoint.extractUrl(post), lastModified(post)));
+            Optional<String> cover = Optional.ofNullable(TemplateExtensions.coverUrl(post));
+            urls.add(new SitemapUrl(PostEndpoint.extractUrl(post), lastModified(post), cover));
         }
         for (Blog blog : blogRepository.findAllActiveWithOwner()) {
-            urls.add(new SitemapUrl(BlogEndpoint.extractUrl(blog), Optional.ofNullable(blog.getCreatedAt())));
+            urls.add(new SitemapUrl(BlogEndpoint.extractUrl(blog), findBlogLastModified(blog.getId())));
         }
         for (Tag tag : tagRepository.listAllForManagement()) {
             if (hasPublishedPostsForTag(tag.getSlug())) {
-                urls.add(new SitemapUrl(TagPageEndpoint.url(tag), Optional.empty()));
+                urls.add(new SitemapUrl(TagPageEndpoint.url(tag), findTagLastModified(tag.getSlug())));
             }
         }
         for (Serie serie : findSeriesWithPublishedPosts()) {
-            urls.add(new SitemapUrl(SeriePageEndpoint.extractUrl(serie), Optional.empty()));
+            urls.add(new SitemapUrl(SeriePageEndpoint.extractUrl(serie), findSerieLastModified(serie.getId())));
         }
         for (CustomPage page : customPageRepository.findPublishedForSitemap()) {
             urls.add(new SitemapUrl(CustomPagePaths.publicUrl(page), Optional.ofNullable(page.getUpdatedAt())));
         }
         return urls;
+    }
+
+    private Optional<LocalDateTime> findBlogLastModified(long blogId) {
+        return optionalMaxPublishedAt("""
+                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
+                                      JOIN pub.post p
+                                      WHERE p.published = TRUE AND p.blog.id = :blogId
+                                      """, "blogId", blogId);
+    }
+
+    private Optional<LocalDateTime> findSerieLastModified(long serieId) {
+        return optionalMaxPublishedAt("""
+                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
+                                      JOIN pub.post p
+                                      WHERE p.published = TRUE AND p.serie.id = :serieId
+                                      """, "serieId", serieId);
     }
 
     @SuppressWarnings("unchecked")
@@ -108,6 +129,25 @@ public class SitemapService {
                             .getResultList();
     }
 
+    private Optional<LocalDateTime> findSiteWideLastModified() {
+        return optionalMaxPublishedAt("""
+                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
+                                      JOIN pub.post p
+                                      JOIN p.blog b
+                                      WHERE p.published = TRUE AND b.active = TRUE
+                                      """, null, null);
+    }
+
+    private Optional<LocalDateTime> findTagLastModified(String tagSlug) {
+        return optionalMaxPublishedAt("""
+                                      SELECT MAX(pub.publishedAt) FROM PostPublication pub
+                                      JOIN pub.post p
+                                      JOIN p.blog b
+                                      JOIN p.tags t
+                                      WHERE p.published = TRUE AND b.active = TRUE AND t.slug = :tagSlug
+                                      """, "tagSlug", tagSlug);
+    }
+
     private boolean hasPublishedPostsForTag(String slug) {
         return !postRepository.findPublishedFeedByTagSlug(slug, 1).isEmpty();
     }
@@ -119,16 +159,36 @@ public class SitemapService {
         return Optional.ofNullable(post.getPublishedAt());
     }
 
+    private Optional<LocalDateTime> optionalMaxPublishedAt(String jpql, String paramName, Object paramValue) {
+        var query = entityManager.createQuery(jpql, LocalDateTime.class);
+        if (paramName != null) {
+            query.setParameter(paramName, paramValue);
+        }
+        try {
+            LocalDateTime result = query.getSingleResult();
+            return Optional.ofNullable(result);
+        } catch (NoResultException _) {
+            return Optional.empty();
+        }
+    }
+
+    @CacheResult(cacheName = "sitemap")
     public String renderXml() {
         var builder = new StringBuilder();
         builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        builder.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
+        builder.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
+        builder.append(" xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">\n");
         for (SitemapUrl url : buildUrls()) {
             builder.append("  <url>\n");
             builder.append("    <loc>").append(escapeXml(publicSiteUrl.absolute(url.path()))).append("</loc>\n");
             url.lastModified().ifPresent(lastmod -> builder.append("    <lastmod>")
                                                            .append(escapeXml(lastmod.toLocalDate().toString()))
                                                            .append("</lastmod>\n"));
+            url.imagePath().ifPresent(imagePath -> {
+                builder.append("    <image:image>\n");
+                builder.append("      <image:loc>").append(escapeXml(publicSiteUrl.absolute(imagePath))).append("</image:loc>\n");
+                builder.append("    </image:image>\n");
+            });
             builder.append("  </url>\n");
         }
         builder.append("</urlset>");

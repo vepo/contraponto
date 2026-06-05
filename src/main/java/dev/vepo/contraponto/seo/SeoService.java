@@ -24,6 +24,7 @@ import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.directory.AuthorProfileEndpoint;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.tag.AuthorTagUsage;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagPageEndpoint;
@@ -54,29 +55,7 @@ public class SeoService {
     }
 
     private static boolean isPrivatePath(String path) {
-        return path.startsWith("/write")
-                || path.startsWith("/writing")
-                || path.startsWith("/reading")
-                || path.startsWith("/highlights")
-                || path.startsWith("/manage")
-                || path.startsWith("/account")
-                || path.startsWith("/administration")
-                || path.startsWith("/editor")
-                || path.startsWith("/forms/")
-                || path.startsWith("/api/")
-                || path.startsWith("/auth/")
-                || path.startsWith("/blogs")
-                || path.startsWith("/users")
-                || path.startsWith("/library")
-                || path.startsWith("/dashboard")
-                || path.startsWith("/profile")
-                || path.startsWith("/review")
-                || path.startsWith("/pages")
-                || path.startsWith("/comments")
-                || path.startsWith("/notifications")
-                || path.startsWith("/subscriptions")
-                || path.startsWith("/password-recovery")
-                || path.startsWith("/_custom_page");
+        return CrawlerPrivatePaths.isPrivatePath(path);
     }
 
     private final SiteBranding siteBranding;
@@ -132,6 +111,10 @@ public class SeoService {
     }
 
     public SeoMetadata forAuthorProfile(User author, Blog mainBlog) {
+        return forAuthorProfile(author, mainBlog, BreadcrumbTrail.EMPTY);
+    }
+
+    public SeoMetadata forAuthorProfile(User author, Blog mainBlog, BreadcrumbTrail breadcrumb) {
         String description = author.getProfileDescription();
         if (description == null || description.isBlank()) {
             description = mainBlog.getDescription();
@@ -146,7 +129,7 @@ public class SeoService {
                           .description(plain)
                           .canonicalUrl(publicSiteUrl.absolute(profilePath))
                           .ogType(SeoOgType.PROFILE)
-                          .jsonLd(structuredData.person(author, profilePath))
+                          .jsonLd(structuredData.person(author, profilePath, breadcrumb))
                           .build();
     }
 
@@ -160,27 +143,40 @@ public class SeoService {
     }
 
     public SeoMetadata forBlogHome(User author, Blog blog) {
+        return forBlogHome(author, blog, BreadcrumbTrail.EMPTY);
+    }
+
+    public SeoMetadata forBlogHome(User author, Blog blog, BreadcrumbTrail breadcrumb) {
         String blogLabel = blog.isMain() ? author.getName() : blog.getName();
         String title = blogLabel + " · " + siteBranding.seoName();
         String description = SeoDescription.toPlainText(blog.getDescription());
         if (description.isBlank()) {
             description = "Publicações de " + blogLabel + " no " + siteBranding.seoName() + ".";
         }
+        String blogPath = BlogEndpoint.extractUrl(blog);
         return SeoMetadata.builder()
                           .title(title)
                           .description(description)
-                          .canonicalUrl(publicSiteUrl.absolute(BlogEndpoint.extractUrl(blog)))
+                          .canonicalUrl(publicSiteUrl.absolute(blogPath))
                           .ogType(SeoOgType.WEBSITE)
+                          .jsonLd(structuredData.webPage(blogLabel, blogPath, description, breadcrumb))
                           .build();
     }
 
     public SeoMetadata forCustomPage(CustomPage page) {
+        return forCustomPage(page, BreadcrumbTrail.EMPTY);
+    }
+
+    public SeoMetadata forCustomPage(CustomPage page, BreadcrumbTrail breadcrumb) {
         String description = SeoDescription.toPlainText(page.getTitle());
+        String plain = description.isBlank() ? page.getTitle() : description;
+        String pagePath = CustomPagePaths.publicUrl(page);
         return SeoMetadata.builder()
                           .title(page.getTitle() + " · " + siteBranding.seoName())
-                          .description(description.isBlank() ? page.getTitle() : description)
-                          .canonicalUrl(publicSiteUrl.absolute(CustomPagePaths.publicUrl(page)))
+                          .description(plain)
+                          .canonicalUrl(publicSiteUrl.absolute(pagePath))
                           .ogType(SeoOgType.WEBSITE)
+                          .jsonLd(structuredData.webPage(page.getTitle(), pagePath, plain, breadcrumb))
                           .build();
     }
 
@@ -197,6 +193,10 @@ public class SeoService {
     }
 
     public SeoMetadata forPost(PublishedPostView view) {
+        return forPost(view, BreadcrumbTrail.EMPTY);
+    }
+
+    public SeoMetadata forPost(PublishedPostView view, BreadcrumbTrail breadcrumb) {
         Post post = view.post();
         User author = post.getAuthor();
         String title = TemplateExtensions.liveTitle(view) + " · " + author.getName() + " · " + siteBranding.seoName();
@@ -208,13 +208,16 @@ public class SeoService {
                                  .description(description)
                                  .canonicalUrl(publicSiteUrl.absolute(path))
                                  .ogType(SeoOgType.ARTICLE)
-                                 .jsonLd(structuredData.blogPosting(view));
+                                 .jsonLd(structuredData.blogPosting(view, breadcrumb));
         String cover = TemplateExtensions.coverUrl(post);
         if (cover != null) {
             builder.ogImageUrl(publicSiteUrl.absolute(cover));
         }
         if (live != null && live.getPublishedAt() != null) {
             builder.articlePublishedAt(live.getPublishedAt());
+            if (live.getVersion() > 1) {
+                builder.articleModifiedAt(live.getPublishedAt());
+            }
         } else if (post.getPublishedAt() != null) {
             builder.articlePublishedAt(post.getPublishedAt());
         }
@@ -245,12 +248,18 @@ public class SeoService {
     }
 
     public SeoMetadata forSerie(Serie serie) {
+        return forSerie(serie, BreadcrumbTrail.EMPTY);
+    }
+
+    public SeoMetadata forSerie(Serie serie, BreadcrumbTrail breadcrumb) {
         String description = "Série " + serie.getTitle() + " no " + siteBranding.seoName() + ".";
+        String seriePath = SeriePageEndpoint.extractUrl(serie);
         return SeoMetadata.builder()
                           .title(serie.getTitle() + " · " + siteBranding.seoName())
                           .description(description)
-                          .canonicalUrl(publicSiteUrl.absolute(SeriePageEndpoint.extractUrl(serie)))
+                          .canonicalUrl(publicSiteUrl.absolute(seriePath))
                           .ogType(SeoOgType.WEBSITE)
+                          .jsonLd(structuredData.webPage(serie.getTitle(), seriePath, description, breadcrumb))
                           .build();
     }
 
@@ -259,6 +268,10 @@ public class SeoService {
     }
 
     public SeoMetadata forTag(Tag tag, List<AuthorTagUsage> mainAuthors) {
+        return forTag(tag, mainAuthors, BreadcrumbTrail.EMPTY);
+    }
+
+    public SeoMetadata forTag(Tag tag, List<AuthorTagUsage> mainAuthors, BreadcrumbTrail breadcrumb) {
         String description = tag.getDescription() != null && !tag.getDescription().isBlank()
                                                                                              ? SeoDescription.toPlainText(tag.getDescription())
                                                                                              : "Artigos com a tag " + tag.getName() + " no "
@@ -272,7 +285,7 @@ public class SeoService {
                           .description(description)
                           .canonicalUrl(publicSiteUrl.absolute(tagPath))
                           .ogType(SeoOgType.WEBSITE)
-                          .jsonLd(structuredData.tagPage(tag, tagPath, authorUrls))
+                          .jsonLd(structuredData.collectionPage(tag, tagPath, authorUrls, breadcrumb))
                           .build();
     }
 

@@ -3,100 +3,105 @@
     {#include components/head seo=seo /}
     <body>
         {#include components/header /}
-        <main hx-history-elt class="article-page" id="main-content"
+        <main hx-history-elt class="article-page browse-page browse-page--article" id="main-content"
               data-reading-time-post-id="{view.post.id}"
               data-reading-time-url="/forms/posts/{view.post.id}/reading-time">
-            <div class="container-narrow">
-                {#include components/breadcrumb trail=breadcrumb /}
-                {#include components/page-top}
-                {#actions}
-                    {#if user.isAuthenticated}
-                        {#if user.id == view.post.author.id}
-                        <a data-hx-get="/write/draft/{view.post.id}"
-                           hx-select="main"
-                           hx-target="main"
-                           hx-push-url="/write/draft/{view.post.id}"
-                           class="btn btn--icon btn--outline">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z"/>
-                            </svg>
-                            Edit
-                        </a>
+            <div class="browse-page-shell">
+                <div class="browse-page-shell__main">
+                    <div class="container-narrow">
+                        {#include components/breadcrumb trail=breadcrumb /}
+                        {#include components/page-top}
+                        {#actions}
+                            {#if user.isAuthenticated}
+                                {#if user.id == view.post.author.id}
+                                <a data-hx-get="/write/draft/{view.post.id}"
+                                   hx-select="main"
+                                   hx-target="main"
+                                   hx-push-url="/write/draft/{view.post.id}"
+                                   class="btn btn--icon btn--outline">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z"/>
+                                    </svg>
+                                    Edit
+                                </a>
+                                {/if}
+                                {#include PostEndpoint/toggle post=view.post user=user /}
+                            {/if}
+                            {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
+                        {/actions}
+                        {/include}
+
+                        {#if view.post.coverUrl}
+                        <div class="article-page__cover">
+                            <img src="{view.post.coverUrl}" alt="{view.liveTitle}" class="article-page__cover-image"/>
+                        </div>
                         {/if}
-                        {#include PostEndpoint/toggle post=view.post user=user /}
-                    {/if}
-                    {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
-                {/actions}
-                {/include}
 
-                {#if view.post.coverUrl}
-                <div class="article-page__cover">
-                    <img src="{view.post.coverUrl}" alt="{view.liveTitle}" class="article-page__cover-image"/>
-                </div>
-                {/if}
+                        <h1 class="article-page__title">{view.liveTitle}</h1>
 
-                <h1 class="article-page__title">{view.liveTitle}</h1>
+                        {#include components/post-tags-live tags=view.liveTags /}
 
-                {#include components/post-tags-live tags=view.liveTags /}
+                        <div class="article-page__byline">
+                            By <a data-hx-get="/{view.post.author.username}"
+                                hx-select="main"
+                                hx-target="main"
+                                hx-push-url="/{view.post.author.username}"
+                                class="author-link">
+                                {view.post.author.name}
+                            </a>
+                        </div>
 
-                <div class="article-page__byline">
-                    By <a data-hx-get="/{view.post.author.username}"
-                        hx-select="main"
-                        hx-target="main"
-                        hx-push-url="/{view.post.author.username}"
-                        class="author-link">
-                        {view.post.author.name}
-                    </a>
-                </div>
+                        <div class="article-page__metadata">
+                            <div>Published: {view.livePublishedAt.formatDate}</div>
+                            {#if view.showUpdated}
+                            <div>Updated: {view.livePublishedAt.formatDate}</div>
+                            {/if}
+                            <div>👁️ {viewCount} views</div>
+                            {#if averageReadingSeconds > 0}
+                            <div>Avg reading time: {averageReadingSeconds.formatReadingDuration}</div>
+                            {/if}
+                            {#if view.hasLivePublication}
+                            <button type="button"
+                                    class="article-page__version"
+                                    aria-label="Change history"
+                                    hx-get="{view.post.url}/components/history/modal"
+                                    hx-target="#modal-container"
+                                    hx-swap="innerHTML">
+                                <svg class="article-page__version-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span>Version {view.liveVersion}</span>
+                                <span class="post-history__badge" data-i18n="post.versionCurrent">atual</span>
+                            </button>
+                            {/if}
+                        </div>
 
-                <div class="article-page__metadata">
-                    <div>Published: {view.livePublishedAt.formatDate}</div>
-                    {#if view.showUpdated}
-                    <div>Updated: {view.livePublishedAt.formatDate}</div>
-                    {/if}
-                    <div>👁️ {viewCount} views</div>
-                    {#if averageReadingSeconds > 0}
-                    <div>Avg reading time: {averageReadingSeconds.formatReadingDuration}</div>
-                    {/if}
-                    {#if view.hasLivePublication}
-                    <button type="button"
-                            class="article-page__version"
-                            aria-label="Change history"
-                            hx-get="{view.post.url}/components/history/modal"
-                            hx-target="#modal-container"
-                            hx-swap="innerHTML">
-                        <svg class="article-page__version-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        <span>Version {view.liveVersion}</span>
-                        <span class="post-history__badge" data-i18n="post.versionCurrent">atual</span>
-                    </button>
-                    {/if}
-                </div>
+                        {#include PostEndpoint/serie-nav serie=view.post.serie seriePosts=seriePosts currentPost=view.post /}
 
-                {#include PostEndpoint/serie-nav serie=view.post.serie seriePosts=seriePosts currentPost=view.post /}
+                        <article class="article-page__content">
+                            {view.render.raw}
+                        </article>
 
-                <article class="article-page__content">
-                    {view.render.raw}
-                </article>
+                        <div id="post-highlights"
+                             class="post-highlights-section post-highlights-section--loading"
+                             hx-get="{view.post.url}/components/highlights"
+                             hx-trigger="load, {authRefreshTrigger}"
+                             hx-target="#post-highlights"
+                             hx-swap="innerHTML">
+                        </div>
 
-                <div id="post-highlights"
-                     class="post-highlights-section post-highlights-section--loading"
-                     hx-get="{view.post.url}/components/highlights"
-                     hx-trigger="load, {authRefreshTrigger}"
-                     hx-target="#post-highlights"
-                     hx-swap="innerHTML">
-                </div>
-
-                <div id="comments"
-                     class="comments-section comments-section--loading"
-                     hx-get="{view.post.url}/components/comments"
-                     hx-trigger="load, {authRefreshTrigger}"
-                     hx-target="#comments"
-                     hx-swap="innerHTML">
+                        <div id="comments"
+                             class="comments-section comments-section--loading"
+                             hx-get="{view.post.url}/components/comments"
+                             hx-trigger="load, {authRefreshTrigger}"
+                             hx-target="#comments"
+                             hx-swap="innerHTML">
+                        </div>
+                    </div>
                 </div>
             </div>
+            {#include PostEndpoint/related-posts-aside relatedPosts=relatedPosts /}
         </main>
 
         {#include components/footer /}

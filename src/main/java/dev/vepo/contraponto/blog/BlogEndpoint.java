@@ -147,7 +147,7 @@ public class BlogEndpoint {
                               loggedUser,
                               audienceComponentEndpoint.buildView(blog),
                               breadcrumb,
-                              seoService.forBlogHome(user, blog));
+                              seoService.forBlogHome(user, blog, breadcrumb));
     }
 
     @GET

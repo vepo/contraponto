@@ -62,11 +62,12 @@ public class CustomPageEndpoint {
                                      @PathParam("slug") String slug) {
         var page = customPageCache.findByUsernameBlogSlugAndSlug(username, blogSlug, slug)
                                   .orElseThrow(NotFoundException::new);
+        var breadcrumb = breadcrumbService.forCustomPage(page);
         return Templates.page(page,
                               customPageRepository.loadLinks(CustomPagePaths.linksBlogId(page)),
                               loggedUser,
-                              breadcrumbService.forCustomPage(page),
-                              seoService.forCustomPage(page));
+                              breadcrumb,
+                              seoService.forCustomPage(page, breadcrumb));
     }
 
     @GET
@@ -75,11 +76,12 @@ public class CustomPageEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance globalPage(@PathParam("slug") String slug) {
         var page = customPageCache.findGlobalBySlug(slug).orElseThrow(NotFoundException::new);
+        var breadcrumb = breadcrumbService.forCustomPage(page);
         return Templates.page(page,
                               customPageRepository.loadLinks(),
                               loggedUser,
-                              breadcrumbService.forCustomPage(page),
-                              seoService.forCustomPage(page));
+                              breadcrumb,
+                              seoService.forCustomPage(page, breadcrumb));
     }
 
     @GET
@@ -88,10 +90,11 @@ public class CustomPageEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance userPage(@PathParam("username") String username, @PathParam("slug") String slug) {
         var page = customPageCache.findByUsernameAndSlug(username, slug).orElseThrow(NotFoundException::new);
+        var breadcrumb = breadcrumbService.forCustomPage(page);
         return Templates.page(page,
                               customPageRepository.loadLinks(CustomPagePaths.linksBlogId(page)),
                               loggedUser,
-                              breadcrumbService.forCustomPage(page),
-                              seoService.forCustomPage(page));
+                              breadcrumb,
+                              seoService.forCustomPage(page, breadcrumb));
     }
 }

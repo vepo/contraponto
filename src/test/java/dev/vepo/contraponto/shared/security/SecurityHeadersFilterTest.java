@@ -17,6 +17,7 @@ class SecurityHeadersFilterTest {
 
         assertThat(csp).contains("script-src 'self' 'unsafe-inline' https://platform.twitter.com https://visita.vepo.dev;");
         assertThat(csp).contains("connect-src 'self' https://visita.vepo.dev;");
+        assertThat(csp).contains("frame-src https://platform.twitter.com https://www.youtube.com https://www.youtube-nocookie.com;");
     }
 
     @Test
@@ -25,6 +26,7 @@ class SecurityHeadersFilterTest {
 
         assertThat(csp).contains("script-src 'self' 'unsafe-inline' https://platform.twitter.com;");
         assertThat(csp).contains("connect-src 'self';");
+        assertThat(csp).contains("frame-src https://platform.twitter.com https://www.youtube.com https://www.youtube-nocookie.com;");
         assertThat(csp).doesNotContain("visita.vepo.dev");
     }
 }

@@ -13,7 +13,8 @@ public record SeoMetadata(String title,
                           Optional<String> ogImageUrl,
                           boolean noindex,
                           Optional<String> jsonLd,
-                          Optional<LocalDateTime> articlePublishedAt) {
+                          Optional<LocalDateTime> articlePublishedAt,
+                          Optional<LocalDateTime> articleModifiedAt) {
 
     public SeoMetadata {
         title = title != null ? title : "Contraponto";
@@ -23,10 +24,26 @@ public record SeoMetadata(String title,
         ogImageUrl = ogImageUrl != null ? ogImageUrl : Optional.empty();
         jsonLd = jsonLd != null ? jsonLd : Optional.empty();
         articlePublishedAt = articlePublishedAt != null ? articlePublishedAt : Optional.empty();
+        articleModifiedAt = articleModifiedAt != null ? articleModifiedAt : Optional.empty();
+    }
+
+    public SeoMetadata(String title,
+                       String description,
+                       String canonicalUrl,
+                       SeoOgType ogType,
+                       Optional<String> ogImageUrl,
+                       boolean noindex,
+                       Optional<String> jsonLd,
+                       Optional<LocalDateTime> articlePublishedAt) {
+        this(title, description, canonicalUrl, ogType, ogImageUrl, noindex, jsonLd, articlePublishedAt, Optional.empty());
     }
 
     public Optional<RawString> jsonLdRaw() {
         return jsonLd.filter(json -> !json.isBlank()).map(RawString::new);
+    }
+
+    public Optional<String> articleModifiedAtIso() {
+        return articleModifiedAt.map(DateTimeFormatter.ISO_LOCAL_DATE_TIME::format);
     }
 
     public Optional<String> articlePublishedAtIso() {
@@ -46,6 +63,12 @@ public record SeoMetadata(String title,
         private boolean noindex;
         private Optional<String> jsonLd = Optional.empty();
         private Optional<LocalDateTime> articlePublishedAt = Optional.empty();
+        private Optional<LocalDateTime> articleModifiedAt = Optional.empty();
+
+        public Builder articleModifiedAt(LocalDateTime articleModifiedAt) {
+            this.articleModifiedAt = Optional.ofNullable(articleModifiedAt);
+            return this;
+        }
 
         public Builder articlePublishedAt(LocalDateTime articlePublishedAt) {
             this.articlePublishedAt = Optional.ofNullable(articlePublishedAt);
@@ -53,7 +76,15 @@ public record SeoMetadata(String title,
         }
 
         public SeoMetadata build() {
-            return new SeoMetadata(title, description, canonicalUrl, ogType, ogImageUrl, noindex, jsonLd, articlePublishedAt);
+            return new SeoMetadata(title,
+                                   description,
+                                   canonicalUrl,
+                                   ogType,
+                                   ogImageUrl,
+                                   noindex,
+                                   jsonLd,
+                                   articlePublishedAt,
+                                   articleModifiedAt);
         }
 
         public Builder canonicalUrl(String canonicalUrl) {

@@ -23,7 +23,7 @@ public class SecurityHeadersFilter implements ContainerResponseFilter {
                style-src 'self' 'unsafe-inline' https://platform.twitter.com; \
                img-src 'self' data: https://pbs.twimg.com https://abs.twimg.com https://syndication.twitter.com https://github.com https://avatars.githubusercontent.com; \
                font-src 'self' https://platform.twitter.com; \
-               frame-src https://platform.twitter.com; \
+               frame-src https://platform.twitter.com https://www.youtube.com https://www.youtube-nocookie.com; \
                connect-src 'self'%s; \
                form-action 'self'; \
                frame-ancestors 'none'""".formatted(integrationOrigin,

@@ -1,8 +1,11 @@
 package dev.vepo.contraponto.post;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +22,20 @@ import jakarta.transaction.Transactional;
 public class PostRepository {
     private static final Logger logger = LoggerFactory.getLogger(PostRepository.class);
 
+    private static int sharedTagCount(Post candidate, Set<Long> tagIds) {
+        if (candidate.getTags() == null || candidate.getTags().isEmpty()) {
+            return 0;
+        }
+        return (int) candidate.getTags()
+                              .stream()
+                              .map(dev.vepo.contraponto.tag.Tag::getId)
+                              .filter(Objects::nonNull)
+                              .filter(tagIds::contains)
+                              .count();
+    }
+
     private EntityManager entityManager;
+
     private PostPublicationRepository publicationRepository;
 
     @Inject
@@ -483,6 +499,18 @@ public class PostRepository {
                                                      .getResultList());
     }
 
+    public Optional<Post> findPublishedWithBlogForRedirect(long postId) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner
+                                         WHERE p.id = :id AND p.published = TRUE
+                                         """, Post.class)
+                            .setParameter("id", postId)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public List<Post> findRecentByAuthorAndPublished(long authorId, boolean published, int limit) {
         return entityManager.createQuery("""
                                          SELECT DISTINCT p FROM Post p
@@ -495,6 +523,42 @@ public class PostRepository {
                             .setParameter("published", published)
                             .setMaxResults(limit)
                             .getResultList();
+    }
+
+    public List<Post> findRelatedPublishedBySharedTags(Post post, int limit) {
+        if (post == null || post.getTags() == null || post.getTags().isEmpty()) {
+            return List.of();
+        }
+        Set<Long> tagIds = post.getTags()
+                               .stream()
+                               .map(dev.vepo.contraponto.tag.Tag::getId)
+                               .filter(Objects::nonNull)
+                               .collect(Collectors.toSet());
+        if (tagIds.isEmpty()) {
+            return List.of();
+        }
+        var candidates = attachLatestPublications(entityManager.createQuery("""
+                                                                            SELECT DISTINCT p FROM Post p
+                                                                            JOIN FETCH p.blog b
+                                                                            JOIN FETCH b.owner o
+                                                                            LEFT JOIN FETCH p.tags
+                                                                            JOIN p.tags sharedTag
+                                                                            WHERE p.published = TRUE AND
+                                                                                  b.active = TRUE AND
+                                                                                  p.id <> :postId AND
+                                                                                  sharedTag.id IN :tagIds
+                                                                            """, Post.class)
+                                                               .setParameter("postId", post.getId())
+                                                               .setParameter("tagIds", tagIds)
+                                                               .setMaxResults(Math.max(limit * 5, 20))
+                                                               .getResultList());
+        return candidates.stream()
+                         .sorted(Comparator.comparingInt((Post candidate) -> sharedTagCount(candidate, tagIds))
+                                           .reversed()
+                                           .thenComparing(Post::getPublishedAt,
+                                                          Comparator.nullsLast(Comparator.reverseOrder())))
+                         .limit(limit)
+                         .toList();
     }
 
     @Transactional
