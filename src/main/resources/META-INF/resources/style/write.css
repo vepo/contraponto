@@ -97,7 +97,7 @@
 }
 
 .write-container {
-    max-width: var(--container-narrow);
+    max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--layout-container-padding);
 }

@@ -25,7 +25,7 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 
 ### When full navigation is allowed
 
-- User clicks nav: `href` + `data-hx-get` (same URL) + `hx-select="main"` + `hx-target="main"` + `hx-swap="outerHTML"` + `hx-push-url`. Default `innerHTML` would nest `<main>` inside `<main>`; `main.js` enforces `outerHTML` when both select and target are `main`.
+- User clicks nav: `href` + `data-hx-get` (same URL) + `hx-select="main"` + `hx-target="main"` + `hx-swap="outerHTML"` + `hx-push-url`. Default `innerHTML` would nest `<main>` inside `<main>`; `main.js` enforces `outerHTML` when both select and target are `main`. After each main swap, `main.js` (`setupMainNavigationScroll`) calls `window.scrollTo(0, 0)` (skipped on history restore and hash/anchor URLs).
 - **Ctrl/Cmd/Shift/middle-click** on those anchors: `main.js` (`setupModifierKeyNavigation`) cancels the HTMX request and opens `href` (or `hx-push-url`) in a new tab. Without `href`, the browser cannot open a new tab; without the handler, HTMX would still swap `#main` in place.
 - **`loggedOut`** on a **protected path**: `main.js` redirects to `/` (documented exception).
 

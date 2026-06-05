@@ -271,7 +271,7 @@ class MainManager {
             }
         });
 
-        document.body.addEventListener('htmx:afterSettle', () => {
+        document.body.addEventListener('htmx:afterSettle', (e) => {
             this.repairNestedMain();
             patchMainNavigationSwaps();
             document.body.style.removeProperty('min-height');

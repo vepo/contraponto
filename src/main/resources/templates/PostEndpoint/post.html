@@ -8,7 +8,6 @@
               data-reading-time-url="/forms/posts/{view.post.id}/reading-time">
             <div class="browse-page-shell">
                 <div class="browse-page-shell__main">
-                    <div class="container-narrow">
                         {#include components/breadcrumb trail=breadcrumb /}
                         {#include components/page-top}
                         {#actions}
@@ -92,13 +91,12 @@
                         </div>
 
                         <div id="comments"
-                             class="comments-section comments-section--loading"
+                             class="comments-section--loading"
                              hx-get="{view.post.url}/components/comments"
                              hx-trigger="load, {authRefreshTrigger}"
                              hx-target="#comments"
                              hx-swap="innerHTML">
                         </div>
-                    </div>
                 </div>
             </div>
             {#include PostEndpoint/related-posts-aside relatedPosts=relatedPosts /}

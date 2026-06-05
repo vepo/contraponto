@@ -6,6 +6,10 @@ alwaysApply: false
 
 # Test conventions
 
+## Headless Chrome
+
+Always run Maven with `GITHUB_ACTIONS=true` so `WebTestExtension` matches CI headless mode — see [test-headless-github-actions.mdc](test-headless-github-actions.mdc).
+
 ## Annotations
 
 - `@WebTest` on browser tests (Quarkus + Selenium via `WebTestExtension`); tagged `web`.

@@ -37,12 +37,11 @@
 .library-page,
 .review-page,
 .pages-manage,
-.article-page,
+.article-page:not(.browse-page),
 .drafts-page,
 .notifications-page,
 .subscriptions-page {
   padding: var(--spacing-lg) 0 var(--spacing-2xl);
-  min-height: calc(100vh - 200px);
 }
 
 .notifications-page__header {

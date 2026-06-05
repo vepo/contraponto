@@ -14,10 +14,10 @@ Before marking a coding task **done**, run **local** checks only (no SonarCloud,
 
 ## Required commands (match CI)
 
-Primary gate — same as [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml):
+Primary gate — same as [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Prefix with `GITHUB_ACTIONS=true` so `@WebTest` Chrome runs headless (see [test-headless-github-actions.mdc](test-headless-github-actions.mdc)):
 
 ```bash
-./mvnw -B verify
+GITHUB_ACTIONS=true ./mvnw -B verify
 ```
 
 Must pass: compile, Spotless/format phase, unit tests, integration tests (`@WebTest` needs Chrome).
@@ -49,7 +49,7 @@ Pre-existing issues in unrelated files: fix only if trivial; do not scope-creep.
 
 ## Do not finish while
 
-- `./mvnw verify` fails on your branch.
+- `GITHUB_ACTIONS=true ./mvnw verify` fails on your branch.
 - Spotless/check or linter reports new problems in files you changed.
 - You knowingly left failing tests or compiler warnings in touched code.
 

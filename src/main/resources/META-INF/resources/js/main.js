@@ -234,6 +234,7 @@ class MainManager {
         this.setupErrorHandler();
         this.setupCsrfHeader();
         this.setupMainNavigationSwap();
+        this.setupMainNavigationScroll();
         this.setupModifierKeyNavigation();
         this.setupSeoSync();
         this.setupSearchModalSubmit();
@@ -263,17 +264,6 @@ class MainManager {
             applyOuterHtmlSwap(evt.detail.elt);
         });
 
-        document.body.addEventListener('htmx:configRequest', (evt) => {
-            const elt = evt.detail.elt;
-            if (!elt || elt.getAttribute('hx-target') !== 'main' || elt.getAttribute('hx-select') !== 'main') {
-                return;
-            }
-            const swap = evt.detail.swap || elt.getAttribute('hx-swap');
-            if (!swap || swap === 'innerHTML') {
-                evt.detail.swap = 'outerHTML';
-            }
-        });
-
         document.body.addEventListener('htmx:afterSettle', () => {
             this.repairNestedMain();
             patchMainNavigationSwaps();
@@ -284,6 +274,49 @@ class MainManager {
         });
 
         patchMainNavigationSwaps();
+    }
+
+    /**
+     * HTMX "show:window:top" resolves "body" inside the swapped <main>, not the document —
+     * so scroll position is preserved on SPA navigation. Reset the window after main swaps.
+     */
+    setupMainNavigationScroll() {
+        let historyRestorePending = false;
+
+        document.body.addEventListener('htmx:historyRestore', () => {
+            historyRestorePending = true;
+        });
+
+        document.body.addEventListener('htmx:afterSettle', (evt) => {
+            if (historyRestorePending) {
+                historyRestorePending = false;
+                return;
+            }
+            if (!MainManager.isMainNavigationSwap(evt)) {
+                return;
+            }
+            const path = evt.detail?.requestConfig?.path || evt.detail?.pathInfo?.finalRequestPath || '';
+            const anchor = evt.detail?.pathInfo?.anchor;
+            if (anchor || path.includes('#')) {
+                return;
+            }
+            window.setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 0);
+        });
+    }
+
+    static isMainNavigationSwap(evt) {
+        const swapTarget = evt.detail?.target;
+        if (!swapTarget || swapTarget.tagName !== 'MAIN') {
+            return false;
+        }
+        const trigger = evt.detail?.requestConfig?.elt;
+        if (!trigger) {
+            return false;
+        }
+        return trigger.getAttribute('hx-target') === 'main'
+            && trigger.getAttribute('hx-select') === 'main';
     }
 
     /**

@@ -384,6 +384,10 @@ pre code {
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100dvh;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -397,6 +401,13 @@ body {
 
 body > main {
   flex: 1 0 auto;
+}
+
+/* Fixed chrome between main and footer must not reserve flex space */
+#modal-container,
+#image-lightbox,
+#toast {
+  flex: 0 0 auto;
 }
 
 img {
@@ -1766,11 +1777,6 @@ a {
   flex-direction: column;
 }
 
-.browse-page--article .browse-page-shell__main .container-narrow {
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .post-related-aside__list {
   list-style: none;
   margin: 0;
@@ -1812,7 +1818,7 @@ a {
   display: block;
   position: static;
   width: 100%;
-  max-width: var(--container-narrow);
+  max-width: var(--container-max);
   margin: var(--spacing-lg) auto 0;
   padding: 0 var(--layout-container-padding);
   max-height: none;
@@ -2247,10 +2253,10 @@ hr:after {
 /* ========== FOOTER ========== */
 .site-footer {
   flex-shrink: 0;
+  margin-top: auto;
   background: var(--color-bg-offset);
   border-top: 1px solid var(--color-border);
   padding: var(--spacing-xl) 0 var(--spacing-md);
-  margin-top: 0;
   font-family: var(--font-sans);
 }
 
@@ -2578,8 +2584,6 @@ hr:after {
   top: calc(100% + 8px);
   right: 0;
   width: min(22rem, calc(100vw - 2rem));
-  max-height: min(24rem, calc(100dvh - var(--layout-header-height) - 2rem));
-  overflow-y: auto;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 12px;

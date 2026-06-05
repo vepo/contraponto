@@ -1,0 +1,28 @@
+---
+description: Run Maven tests with GITHUB_ACTIONS=true so @WebTest Chrome is headless
+alwaysApply: true
+---
+
+# Headless @WebTest — GITHUB_ACTIONS
+
+`WebTestExtension` enables Chrome `--headless` only when `GITHUB_ACTIONS=true` (see `src/test/java/dev/vepo/contraponto/shared/WebTestExtension.java`). GitHub Actions sets this automatically; **local runs must set it explicitly** to match CI and avoid failures when no display is available.
+
+## Always prefix test commands
+
+```bash
+GITHUB_ACTIONS=true ./mvnw -B verify
+GITHUB_ACTIONS=true ./mvnw -B test
+GITHUB_ACTIONS=true ./mvnw -B test -Ptest-web
+GITHUB_ACTIONS=true ./mvnw test -Dtest=SomeWebTest#methodName
+```
+
+Use the same prefix for parallel profile runs (`-Ptest-unit`, `-Ptest-quarkus`, `-Ptest-web`).
+
+## Do not
+
+- Run `./mvnw verify` or `./mvnw test` without `GITHUB_ACTIONS=true` when `@WebTest` / `web`-tagged tests are in scope.
+- Hard-code `--headless` in test code — the env var is the single switch shared with CI.
+
+## When changing WebTestExtension
+
+Keep the `GITHUB_ACTIONS` gate; document any new Chrome flags in this rule if they affect local vs CI behavior.
