@@ -40,10 +40,10 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 ## 3. Global Components
 
 ### 3.1 Header
-- Sticky top bar with logo (centered), navigation icons (left), and user actions (right).
-- **Logo:** “contraponto” in Playfair Display, links to home.
-- **Left:** menu (sidebar) and search icons.
-- **Right:** write button (if logged in), user menu or Sign Up / Sign In buttons. On `/write`, Publish and Save draft live in the editor **write-actions** bar, not the header.
+- Sticky top bar with two columns: **left** (optional sidebar menu + logo) and **right** (search, write, notifications, locale, user menu or auth buttons).
+- **Logo:** “contraponto” in Playfair Display, links to home — left-anchored beside the optional hamburger.
+- **Left:** optional sidebar menu button and site logo.
+- **Right:** search, write button (if logged in), notifications, locale picker, user menu or Sign Up / Sign In buttons. On `/write`, Publish and Save draft live in the editor **write-actions** bar, not the header.
 
 ### 3.2 Footer
 - Darker background (`#fafafa`), multi‑column layout with links to explore, connect, legal, and dynamically loaded **Custom Pages** (global, placement `FOOTER` or `BOTH`).

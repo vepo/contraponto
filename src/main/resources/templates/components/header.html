@@ -2,21 +2,23 @@
 <div id="global-indicator" class="page-progress htmx-indicator" role="status" aria-live="polite" aria-label="Carregando página" data-i18n="header.loading" data-i18n-attr="aria-label"></div>
 <header class="site-header">
     <div class="header-container">
-        {#if !sections.isEmpty}
-        <div class="nav-left">
-            <button class="icon-btn" aria-label="Menu" id="menuBtn" data-i18n="header.menu" data-i18n-attr="aria-label">
-                <img src="/images/sidebar.svg" alt="ícone do menu lateral" data-i18n="header.menuIconAlt" data-i18n-attr="alt" />
-            </button>
-        </div>
-        {/if}
+        <div class="header-start">
+            {#if !sections.isEmpty}
+            <div class="nav-left">
+                <button class="icon-btn" aria-label="Menu" id="menuBtn" data-i18n="header.menu" data-i18n-attr="aria-label">
+                    <img src="/images/sidebar.svg" alt="ícone do menu lateral" data-i18n="header.menuIconAlt" data-i18n-attr="alt" />
+                </button>
+            </div>
+            {/if}
 
-        <div class="logo">
-            <a data-hx-get="/"
-               hx-select="main"
-               hx-target="main"
-               hx-push-url="/">
-                {siteName}
-            </a>
+            <div class="logo">
+                <a data-hx-get="/"
+                   hx-select="main"
+                   hx-target="main"
+                   hx-push-url="/">
+                    {siteName}
+                </a>
+            </div>
         </div>
 
         <div class="nav-right">

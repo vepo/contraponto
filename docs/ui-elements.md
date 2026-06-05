@@ -128,7 +128,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 
 | Block | Templates | Notes |
 |-------|-----------|-------|
-| `site-header`, `icon-btn`, `logo`, `nav-*` | `components/header.html` | Sticky header |
+| `site-header`, `header-container`, `header-start`, `icon-btn`, `logo`, `nav-*` | `components/header.html` | Sticky header (two columns: start = menu + logo, right = actions) |
 | `site-footer`, `footer__*` | `components/footer.html` | |
 | `sidebar`, `sidebar-overlay` | `components/header.html`, `MenuEndpoint/menu.html` | Drawer nav |
 | `modal`, `modal__*` | `AuthModal/modal.html`, `SearchEndpoint/modal.html` | |

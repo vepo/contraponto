@@ -451,17 +451,16 @@ a {
   margin: 0 auto;
   padding: 0 var(--layout-container-padding);
   height: var(--layout-header-height);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
 }
 
-.nav-left {
-  justify-self: start;
-}
-
-.nav-right {
-  justify-self: end;
+.header-start {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
   min-width: 0;
 }
 
@@ -470,6 +469,11 @@ a {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.nav-right {
+  min-width: 0;
 }
 
 .icon-btn {
@@ -507,7 +511,6 @@ a {
 }
 
 .logo {
-  justify-self: center;
   font-family: var(--font-serif-display);
   font-size: 1.125rem;
   font-weight: 700;
