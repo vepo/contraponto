@@ -10,21 +10,21 @@ import java.util.stream.Collectors;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.git.GitSyncRun;
 import dev.vepo.contraponto.blog.BlogBannerService;
-import dev.vepo.contraponto.blog.BlogEndpoint;
+import dev.vepo.contraponto.blog.BlogPaths;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.notification.Notification;
 import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.blog.BlogDescriptionRenderer;
 import dev.vepo.contraponto.content.render.PostContentRenderer;
 import dev.vepo.contraponto.serie.Serie;
-import dev.vepo.contraponto.serie.SeriePageEndpoint;
+import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.rss.RssFeedPaths;
 import dev.vepo.contraponto.tag.Tag;
-import dev.vepo.contraponto.tag.TagPageEndpoint;
+import dev.vepo.contraponto.tag.TagPaths;
 import java.util.List;
 
 import io.quarkus.qute.TemplateExtension;
@@ -176,7 +176,7 @@ public class TemplateExtensions {
                 || notification.getType() == NotificationType.PUBLIC_HIGHLIGHT_NOTE
                 || notification.getType() == NotificationType.POST_RESPONSE)
                 && notification.getPost() != null) {
-            String url = PostEndpoint.extractUrl(notification.getPost());
+            String url = PostPaths.extractUrl(notification.getPost());
             if (notification.getType() == NotificationType.NEW_COMMENT) {
                 return "%s#comments".formatted(url);
             }
@@ -187,7 +187,7 @@ public class TemplateExtensions {
             }
             return url;
         }
-        return BlogEndpoint.extractUrl(notification.getBlog());
+        return BlogPaths.extractUrl(notification.getBlog());
     }
 
     @TemplateExtension
@@ -404,22 +404,22 @@ public class TemplateExtensions {
 
     @TemplateExtension
     public static String url(Blog blog) {
-        return BlogEndpoint.extractUrl(blog);
+        return BlogPaths.extractUrl(blog);
     }
 
     @TemplateExtension
     public static String url(Post post) {
-        return PostEndpoint.extractUrl(post);
+        return PostPaths.extractUrl(post);
     }
 
     @TemplateExtension
     public static String url(Serie serie) {
-        return SeriePageEndpoint.extractUrl(serie);
+        return SeriePaths.extractUrl(serie);
     }
 
     @TemplateExtension
     public static String url(Tag tag) {
-        return TagPageEndpoint.url(tag);
+        return TagPaths.url(tag);
     }
 
     private TemplateExtensions() {

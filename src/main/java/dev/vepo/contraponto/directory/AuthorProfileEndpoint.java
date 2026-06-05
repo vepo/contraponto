@@ -61,10 +61,6 @@ public class AuthorProfileEndpoint {
 
     private static final int RECENT_POST_LIMIT = 6;
 
-    public static String url(User author) {
-        return AuthorProfilePaths.url(author);
-    }
-
     private final UserRepository userRepository;
     private final BlogRepository blogRepository;
     private final PostRepository postRepository;

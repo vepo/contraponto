@@ -54,10 +54,6 @@ public class SeoService {
         return null;
     }
 
-    private static boolean isPrivatePath(String path) {
-        return CrawlerPrivatePaths.isPrivatePath(path);
-    }
-
     private final SiteBranding siteBranding;
 
     private final PublicSiteUrl publicSiteUrl;
@@ -360,7 +356,7 @@ public class SeoService {
         if (pathOnly.startsWith("/page/")) {
             return resolveGlobalCustomPage(pathOnly);
         }
-        if (isPrivatePath(pathOnly)) {
+        if (CrawlerPrivatePaths.isPrivatePath(pathOnly)) {
             return forPrivatePage(privateTitle(pathOnly));
         }
 

@@ -1,7 +1,7 @@
 package dev.vepo.contraponto.highlight;
 
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.postresponse.PostResponse;
 import dev.vepo.contraponto.postresponse.PostResponseService;
@@ -81,7 +81,7 @@ public class HighlightComponentEndpoint {
                                                 section.approvedResponses(),
                                                 source.getId(),
                                                 source.getTitle(),
-                                                PostEndpoint.extractUrl(source),
+                                                PostPaths.extractUrl(source),
                                                 section.highlightsJson());
         }
         return Templates.highlights(section);

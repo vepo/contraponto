@@ -80,7 +80,7 @@ public class UpdateTagEndpoint {
         return Toast.ok()
                     .i18nKey(I18nKeys.TOAST_TAG_UPDATED, I18nDefaults.TAG_UPDATED)
                     .type(Toast.Type.SUCCESS)
-                    .url(TagPageEndpoint.url(tag))
+                    .url(TagPaths.url(tag))
                     .build();
     }
 }

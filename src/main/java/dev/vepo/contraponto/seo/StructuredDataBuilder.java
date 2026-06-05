@@ -15,7 +15,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.navigation.BreadcrumbItem;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.shared.infra.SiteBranding;
@@ -54,7 +54,7 @@ public class StructuredDataBuilder {
         User author = post.getAuthor();
         String title = TemplateExtensions.liveTitle(view);
         String description = SeoDescription.toPlainText(TemplateExtensions.liveDescription(post));
-        String url = publicSiteUrl.absolute(PostEndpoint.extractUrl(post));
+        String url = publicSiteUrl.absolute(PostPaths.extractUrl(post));
         LocalDateTime publishedAt = live != null && live.getPublishedAt() != null
                                                                                   ? live.getPublishedAt()
                                                                                   : post.getPublishedAt();

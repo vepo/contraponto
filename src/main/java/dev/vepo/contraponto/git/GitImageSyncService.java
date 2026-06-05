@@ -35,10 +35,6 @@ public class GitImageSyncService {
     private static final Pattern ASCIIDOC_IMAGE =
             Pattern.compile("image::?([^\\s\\[]+)\\[", Pattern.CASE_INSENSITIVE);
 
-    private static String contentTypeForExt(String ext) {
-        return ImageService.contentTypeForExtension(ext);
-    }
-
     private static String escapeMarkdownAlt(String alt) {
         return alt.replace("]", "\\]");
     }
@@ -179,7 +175,7 @@ public class GitImageSyncService {
         }
         try {
             byte[] content = Files.readAllBytes(source);
-            imageService.storeImportedImage(blog, uuid, ext, content, contentTypeForExt(ext), gitAssetRelativePath);
+            imageService.storeImportedImage(blog, uuid, ext, content, ImageService.contentTypeForExtension(ext), gitAssetRelativePath);
         } catch (IOException e) {
             LOG.warn("Failed to import image uuid={}", uuid, e);
         }

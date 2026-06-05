@@ -22,10 +22,6 @@ public class LoggedUser {
         this.sessionId = sessionId;
     }
 
-    public String getAvatarUrl() {
-        return AvatarUrls.avatarUrl(this);
-    }
-
     public String getEmail() {
         return Optional.ofNullable(user).map(User::getEmail).orElse("");
     }

@@ -3,7 +3,7 @@ package dev.vepo.contraponto.comment;
 import java.time.LocalDateTime;
 
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 
 public record CommentManageRow(long commentId,
                                long postId,
@@ -24,7 +24,7 @@ public record CommentManageRow(long commentId,
         return new CommentManageRow(comment.getId(),
                                     post.getId(),
                                     post.getTitle(),
-                                    PostEndpoint.extractUrl(post),
+                                    PostPaths.extractUrl(post),
                                     comment.getAuthor().getName(),
                                     comment.getAuthor().getUsername(),
                                     preview,

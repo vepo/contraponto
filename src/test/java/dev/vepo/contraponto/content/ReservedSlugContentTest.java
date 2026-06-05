@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Tag;
 
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.custompage.PagePlacement;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
@@ -66,7 +66,7 @@ class ReservedSlugContentTest {
                             .withPublished(true)
                             .persist();
 
-            given().get(PostEndpoint.extractUrl(post))
+            given().get(PostPaths.extractUrl(post))
                    .then()
                    .statusCode(200)
                    .body(containsString(post.getTitle()));

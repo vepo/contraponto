@@ -14,7 +14,7 @@ import dev.vepo.contraponto.image.ContentImageMarkerService;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.tag.TagService;
@@ -104,7 +104,7 @@ public class WriteEndpoint {
         if (source.getAuthor().getId().equals(loggedUser.getId())) {
             throw new NotFoundException("Cannot respond to your own post.");
         }
-        return new ResponseContext(source.getId(), source.getTitle(), PostEndpoint.extractUrl(source));
+        return new ResponseContext(source.getId(), source.getTitle(), PostPaths.extractUrl(source));
     }
 
     @GET

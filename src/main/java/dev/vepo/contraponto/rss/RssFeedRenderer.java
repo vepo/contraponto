@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 
 public final class RssFeedRenderer {
@@ -41,7 +41,7 @@ public final class RssFeedRenderer {
     }
 
     static URI itemUri(URI baseUri, Post post) {
-        return resolve(baseUri, PostEndpoint.extractUrl(post));
+        return resolve(baseUri, PostPaths.extractUrl(post));
     }
 
     private static String liveTitle(Post post, PostPublication live) {

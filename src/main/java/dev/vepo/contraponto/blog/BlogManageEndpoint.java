@@ -105,7 +105,7 @@ public class BlogManageEndpoint {
         boolean coreFormOnly = hubContext.authorMode() && !full;
         return Response.ok(Templates.form(Optional.of(blog),
                                           blog.getOwner().getUsername(),
-                                          BlogEndpoint.extractUrl(blog),
+                                          BlogPaths.extractUrl(blog),
                                           hubContext,
                                           coreFormOnly,
                                           blogAccess.canDelete(blog, loggedUser),

@@ -70,10 +70,6 @@ public class PostEndpoint {
 
     private static final int RELATED_POST_LIMIT = 4;
 
-    public static String extractUrl(Post post) {
-        return PostPaths.extractUrl(post);
-    }
-
     private final PostRepository postRepository;
     private final PostPublicationRepository publicationRepository;
     private final PostChangeDiffService changeDiffService;
@@ -197,7 +193,7 @@ public class PostEndpoint {
 
     private Response redirectToPost(Post post) {
         return Response.status(Response.Status.MOVED_PERMANENTLY)
-                       .location(UriBuilder.fromPath(extractUrl(post)).build())
+                       .location(UriBuilder.fromPath(PostPaths.extractUrl(post)).build())
                        .build();
     }
 

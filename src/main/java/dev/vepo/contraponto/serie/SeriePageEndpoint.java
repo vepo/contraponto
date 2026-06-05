@@ -42,10 +42,6 @@ public class SeriePageEndpoint {
         }
     }
 
-    public static String extractUrl(Serie serie) {
-        return SeriePaths.extractUrl(serie);
-    }
-
     private final SerieRepository serieRepository;
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;

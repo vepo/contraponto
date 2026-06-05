@@ -1,7 +1,7 @@
 package dev.vepo.contraponto.comment;
 
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
@@ -106,7 +106,7 @@ public class CommentComponentEndpoint {
 
     public TemplateInstance renderComments(Post post) {
         CommentViewerContext viewer = buildViewer(post);
-        String commentsUrl = "%s/components/comments".formatted(PostEndpoint.extractUrl(post));
+        String commentsUrl = "%s/components/comments".formatted(PostPaths.extractUrl(post));
         CommentsSectionView section = new CommentsSectionView(post,
                                                               commentsUrl,
                                                               commentService.buildRootViews(post.getId(), viewer),
@@ -119,7 +119,7 @@ public class CommentComponentEndpoint {
 
     public TemplateInstance renderReplies(Post post, long rootCommentId) {
         CommentViewerContext viewer = buildViewer(post);
-        String commentsUrl = "%s/components/comments".formatted(PostEndpoint.extractUrl(post));
+        String commentsUrl = "%s/components/comments".formatted(PostPaths.extractUrl(post));
 
         CommentView rootView = commentService.buildRootViews(post.getId(), viewer).stream()
                                              .filter(c -> c.id() == rootCommentId)

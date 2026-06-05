@@ -66,10 +66,6 @@ public class BlogEndpoint {
 
     private static final int TOP_TAG_LIMIT = 8;
 
-    public static String extractUrl(Blog blog) {
-        return BlogPaths.extractUrl(blog);
-    }
-
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CustomPageRepository customPageRepository;

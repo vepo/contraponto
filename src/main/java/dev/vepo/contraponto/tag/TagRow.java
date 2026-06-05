@@ -11,6 +11,6 @@ public record TagRow(Long id, String name, String slug, String description, Stri
                           tag.getName(),
                           tag.getSlug(),
                           description,
-                          TagPageEndpoint.url(tag));
+                          TagPaths.url(tag));
     }
 }
