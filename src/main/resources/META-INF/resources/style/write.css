@@ -57,6 +57,7 @@
 
 .write-header__btn {
     padding: 8px 20px;
+    min-height: var(--tap-target-min);
     border-radius: var(--radius-pill);
     font-family: var(--font-sans);
     font-size: var(--text-sm);
@@ -106,7 +107,7 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-border);
-    padding: var(--spacing-xl);
+    padding: var(--spacing-md);
 }
 
 .write-form__group {
@@ -116,7 +117,7 @@
 .write-form__title {
     width: 100%;
     font-family: var(--font-serif-display);
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     font-weight: 700;
     line-height: 1.2;
     border: none;
@@ -124,11 +125,11 @@
     margin: 0;
     outline: none;
     background: transparent;
-    color: #1a1a1a;
+    color: var(--color-text);
 }
 
 .write-form__title::placeholder {
-    color: #cbd5e0;
+    color: var(--color-text-muted);
 }
 
 .write-form__serie {
@@ -259,11 +260,14 @@
 /* Editor Toolbar */
 .write-editor-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 4px;
     padding: 12px;
-    background: #f8f9fa;
-    border: 1px solid #e5e5e5;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
     border-bottom: none;
     border-radius: 12px 12px 0 0;
 }
@@ -272,35 +276,36 @@
     background: none;
     border: none;
     padding: 6px 12px;
+    min-height: var(--tap-target-min);
     border-radius: 6px;
     cursor: pointer;
-    font-family: 'Inter', Helvetica, sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
-    color: #4a4a4a;
+    color: var(--color-text-light);
     transition: all 0.2s ease;
 }
 
 .write-editor-toolbar button:hover {
-    background: #e9ecef;
-    color: #1a8917;
+    background: var(--color-bg-offset);
+    color: var(--color-primary);
 }
 
 .toolbar-separator {
     width: 1px;
     height: 24px;
-    background: #dee2e6;
+    background: var(--color-border);
     margin: 0 4px;
 }
 
 /* Editor Textarea */
 .write-form__editor {
     width: 100%;
-    min-height: 500px;
-    font-family: 'Courier New', Courier, monospace;
+    min-height: 300px;
+    font-family: var(--font-mono);
     font-size: 18px;
     line-height: 1.7;
-    color: #1a1a1a;
-    border: 1px solid #e5e5e5;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
     border-top: none;
     border-radius: 0 0 12px 12px;
     padding: 24px;
@@ -312,7 +317,7 @@
 
 .write-editor-toolbar:has(~ .write-form__editor:focus),
 .write-form__editor:focus {
-    border-color: #1a8917;
+    border-color: var(--color-primary);
 }
 
 /* User Menu in Write Page */
@@ -331,8 +336,8 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #1a8917;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -346,10 +351,10 @@
     top: 100%;
     right: 0;
     margin-top: 8px;
-    background: white;
-    border: 1px solid #e5e5e5;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
     min-width: 200px;
     opacity: 0;
     visibility: hidden;
@@ -369,9 +374,9 @@
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    color: #1a1a1a;
+    color: var(--color-text);
     text-decoration: none;
-    font-family: 'Inter', Helvetica, sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     cursor: pointer;
     width: 100%;
@@ -381,12 +386,12 @@
 }
 
 .write-header .user-menu__item:hover {
-    background: #f5f5f5;
+    background: var(--color-bg-offset);
 }
 
 .write-header .user-menu__divider {
     height: 1px;
-    background: #e5e5e5;
+    background: var(--color-border);
     margin: 8px 0;
 }
 
@@ -396,71 +401,137 @@
     cursor: not-allowed;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .write-header__container {
-        padding: 0 16px;
-    }
-    
-    .write-container {
-        padding: 0 16px;
-    }
-    
-    .write-form {
-        padding: 24px;
-    }
-    
-    .write-form__title {
-        font-size: 28px;
-    }
-    
-    .write-editor-toolbar {
-        overflow-x: auto;
-        white-space: nowrap;
-        flex-wrap: nowrap;
-    }
-    
-    .write-editor-toolbar button {
-        padding: 4px 10px;
-        font-size: 12px;
-    }
-    
-    .write-header__btn {
-        padding: 6px 14px;
-        font-size: 13px;
+/* Write page actions (publish / save draft) */
+.write-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    gap: var(--spacing-sm);
+    margin: 0 -1rem;
+    padding: var(--spacing-sm) 1rem calc(var(--spacing-sm) + env(safe-area-inset-bottom, 0));
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+}
+
+.write-actions__btn {
+    flex: 1;
+    min-height: var(--tap-target-min);
+    justify-content: center;
+}
+
+.write-main {
+    padding-bottom: calc(var(--tap-target-min) + var(--spacing-md) + env(safe-area-inset-bottom, 0));
+}
+
+/* Write page — mobile-first responsive */
+.write-header__container,
+.write-container {
+    padding: 0 1rem;
+}
+
+.write-header__right {
+    gap: 0.5rem;
+}
+
+.write-header__btn span {
+    display: none;
+}
+
+.write-header__btn {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+}
+
+@media (min-width: 480px) {
+    .write-header__btn span {
+        display: inline;
     }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 640px) {
+    .write-header__container,
+    .write-container {
+        padding: 0 var(--layout-container-padding);
+    }
+
     .write-form {
-        padding: 16px;
+        padding: 1.5rem;
     }
-    
-    .write-header__right {
-        gap: 8px;
+}
+
+@media (min-width: 768px) {
+    .write-actions {
+        position: static;
+        margin: 0 0 var(--spacing-md);
+        padding: 0;
+        background: transparent;
+        border-top: none;
+        justify-content: flex-end;
     }
-    
-    .write-header__btn span {
-        display: none;
+
+    .write-actions__btn {
+        flex: 0 0 auto;
     }
-    
-    .write-header__btn {
+
+    .write-main {
+        padding-bottom: 0;
+    }
+
+    .write-form {
+        padding: var(--spacing-xl);
+    }
+
+    .write-form__title {
+        font-size: 2.25rem;
+    }
+
+    .write-editor-toolbar {
+        flex-wrap: wrap;
+        overflow-x: visible;
+        white-space: normal;
+    }
+
+    .write-editor-toolbar button {
+        min-height: auto;
         padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .write-header__btn {
+        padding: 8px 20px;
+        font-size: var(--text-sm);
+    }
+
+    .write-header__right {
+        gap: var(--spacing-sm);
+    }
+
+    .write-form__editor,
+    .write-preview {
+        min-height: 500px;
     }
 }
 
 /* Preview container */
 .write-preview {
-    min-height: 500px;
-    padding: 24px;
-    background: #fffcf5;
-    border: 1px solid #e0d0b0;
+    min-height: 300px;
+    padding: 16px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
     border-radius: 0 0 12px 12px;
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 18px;
+    font-family: var(--font-serif);
+    font-size: 16px;
     line-height: 1.7;
-    color: #1a1a1a;
+    color: var(--color-text);
     overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+    .write-preview {
+        padding: 24px;
+        font-size: 18px;
+    }
 }
 
 /* Preview styling - mirrors article-page__content */
@@ -683,15 +754,6 @@
     cursor: not-allowed;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .write-preview {
-        min-height: 300px;
-        padding: 16px;
-        font-size: 16px;
-    }
-}
-
 .write-editor-toolbar.preview-mode button:not(#previewToggleBtn) {
     opacity: 0.5;
     cursor: default;
@@ -701,8 +763,8 @@
 .write-editor-toolbar.preview-mode button#previewToggleBtn {
     opacity: 1;
     cursor: pointer;
-    background: #1a8917;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 /* Custom mode selector – vintage writer style */

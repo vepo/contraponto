@@ -212,7 +212,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 
 | Block | Templates |
 |-------|-----------|
-| `write-page`, `write-header`, `write-main`, `write-form`, `write-form__*` | `WriteEndpoint/write.html` |
+| `write-page`, `write-header`, `write-main`, `write-actions`, `write-form`, `write-form__*` | `WriteEndpoint/write.html` |
 | `write-toolbar`, `write-editor`, `write-preview` | |
 | `write-tags-picker` | Tag picker on write form |
 

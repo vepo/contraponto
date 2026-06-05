@@ -101,6 +101,11 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 | `--layout-header-height` | `56px` | Site header |
 | `--layout-container-padding` | `1.125rem` | Horizontal container padding |
 | `--layout-page-padding` | `var(--spacing-lg)` | Section vertical rhythm |
+| `--bp-sm` | `480px` | Phone landscape / small phones (use in `@media (min-width: 480px)`) |
+| `--bp-md` | `768px` | Tablet / primary mobile boundary |
+| `--bp-lg` | `1024px` | Desktop grid enhancements |
+| `--bp-xl` | `1280px` | Margin rails, related-posts aside |
+| `--tap-target-min` | `44px` | Minimum hit area for icons, tabs, toolbar buttons |
 
 ## Radius, shadow, motion
 

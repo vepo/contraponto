@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-04 · User-scoped image library, picker layout, Images hub search
+**Last verified:** 2026-06-05 · Mobile-first CSS (stacked layouts, touch targets, hub tabs); mobile layout smoke tests (`MobileLayoutWebTest`)
 
 ---
 

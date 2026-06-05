@@ -41,7 +41,7 @@ Load order in [components/head.html](../../src/main/resources/templates/componen
 - Section banners: `/* ========== SECTION NAME ========== */` before each major block.
 - One declaration per line; properties roughly grouped (layout → box → typography → visual → motion).
 - Transitions: `var(--duration-normal)` and `var(--ease-out)` where possible.
-- Responsive: `@media (max-width: 768px)` for mobile overrides (existing breakpoint).
+- Responsive: **mobile-first** — base styles target the smallest viewport; add layout enhancements with `@media (min-width: …)` using breakpoints from [ui-palette.md](../../docs/ui-palette.md) (`--bp-sm` 480px, `--bp-md` 768px, `--bp-lg` 1024px, `--bp-xl` 1280px). Use `@media (max-width: …)` only for rare removals during migration (e.g. hiding labels until there is room).
 - `!important` only for utilities (`[hidden]`, `.u-hidden`) or reduced-motion overrides — not for component tweaks.
 
 ## Templates vs CSS

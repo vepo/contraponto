@@ -209,6 +209,7 @@
   "toast.user.saved": "User saved successfully.",
   "validation.nameMax": "Name must be no more than 255 characters.",
   "validation.nameRequired": "Name is required.",
+  "write.actions": "Editor actions",
   "write.publish": "Publish",
   "write.saveDraft": "Save draft",
   "write.title": "Write",

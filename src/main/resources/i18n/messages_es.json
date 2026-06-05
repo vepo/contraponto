@@ -206,6 +206,7 @@
   "toast.user.saved": "Usuario guardado correctamente.",
   "validation.nameMax": "El nombre debe tener como máximo 255 caracteres.",
   "validation.nameRequired": "El nombre es obligatorio.",
+  "write.actions": "Acciones del editor",
   "write.publish": "Publicar",
   "write.saveDraft": "Guardar borrador",
   "write.title": "Escribir",

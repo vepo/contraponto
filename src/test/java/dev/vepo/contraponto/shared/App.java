@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -846,6 +847,12 @@ public class App {
     public final class Login extends AccessModal<Login> {
         private Login() {}
 
+        public Login assertSubmitReachable() {
+            var submit = wait.until(visibilityOfElementLocated(cssSelector("#authModal button[type='submit']")));
+            assertThat(submit.isDisplayed()).isTrue();
+            return this;
+        }
+
         public Login closeModal() {
             var closeBtn = driver.findElement(By.cssSelector("#authModal .modal__close"));
             reliableClick(closeBtn);
@@ -1598,6 +1605,12 @@ public class App {
             return this;
         }
 
+        public SearchModal assertInputVisible() {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#searchModal input[name='q']")));
+            assertThat(input.isDisplayed()).isTrue();
+            return this;
+        }
+
         public SearchModal assertResultContains(String text) {
             var modal = driver.findElement(By.id("searchModal"));
             var results = modal.findElements(cssSelector(".search-result"));
@@ -2205,6 +2218,15 @@ public class App {
         return this;
     }
 
+    public App assertHeaderControlsVisible() {
+        var searchBtn = wait.until(visibilityOfElementLocated(By.id("searchBtn")));
+        assertThat(searchBtn.isDisplayed()).isTrue();
+        var loginOrMenu = driver.findElements(cssSelector("button.btn--auth-login, #menuBtn, #userMenuBtn"));
+        assertThat(loginOrMenu).isNotEmpty();
+        assertThat(loginOrMenu.get(0).isDisplayed()).isTrue();
+        return this;
+    }
+
     public App assertHeaderIsDisplayed() {
         var header = wait.until(visibilityOfElementLocated(className("site-header")));
         assertThat(header.isDisplayed()).isTrue();
@@ -2215,6 +2237,13 @@ public class App {
         for (var link : driver.findElements(cssSelector(".hub-nav__link"))) {
             assertThat(link.getText().trim()).isNotEqualTo(label);
         }
+        return this;
+    }
+
+    public App assertHubNavTabsVisible() {
+        var nav = wait.until(visibilityOfElementLocated(cssSelector(".hub-nav__list")));
+        assertThat(nav.isDisplayed()).isTrue();
+        assertThat(nav.findElements(cssSelector(".hub-nav__link"))).isNotEmpty();
         return this;
     }
 
@@ -2270,6 +2299,14 @@ public class App {
         return this;
     }
 
+    public App assertNoHorizontalPageScroll() {
+        wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                                                                                   """
+                                                                                   return document.documentElement.scrollWidth <= window.innerWidth + 2;
+                                                                                   """)));
+        return this;
+    }
+
     public App assertNotificationOverlayOpen() {
         var overlay = wait.until(visibilityOfElementLocated(By.id("notificationOverlay")));
         assertThat(overlay.getAttribute("class")).contains("notification-menu__dropdown--open");
@@ -2279,6 +2316,23 @@ public class App {
     public App assertNotificationOverlayShows(String text) {
         assertNotificationOverlayOpen();
         wait.until(d -> d.findElement(By.id("notificationOverlay")).getText().contains(text));
+        return this;
+    }
+
+    public App assertNotificationOverlayWithinViewport() {
+        assertNotificationOverlayOpen();
+        var within = (Boolean) ((JavascriptExecutor) driver).executeScript(
+                                                                           """
+                                                                           const el = document.getElementById('notificationOverlay');
+                                                                           if (!el) {
+                                                                               return false;
+                                                                           }
+                                                                           const rect = el.getBoundingClientRect();
+                                                                           return rect.width > 0
+                                                                               && rect.width <= window.innerWidth
+                                                                               && rect.height <= window.innerHeight;
+                                                                           """);
+        assertThat(within).isTrue();
         return this;
     }
 
@@ -2315,6 +2369,31 @@ public class App {
         return this;
     }
 
+    public App assertSidebarLinkVisible() {
+        var link = wait.until(visibilityOfElementLocated(cssSelector("#sidebar .sidebar__link")));
+        assertThat(link.isDisplayed()).isTrue();
+        return this;
+    }
+
+    public App assertSidebarOpen() {
+        var sidebar = wait.until(visibilityOfElementLocated(By.id("sidebar")));
+        assertThat(sidebar.getAttribute("class")).contains("open");
+        return this;
+    }
+
+    public App assertSingleColumnPostsGrid() {
+        wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
+                                                                                   """
+                                                                                   const grid = document.querySelector('.posts-grid');
+                                                                                   if (!grid) {
+                                                                                       return false;
+                                                                                   }
+                                                                                   const cols = getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean);
+                                                                                   return cols.length === 1;
+                                                                                   """)));
+        return this;
+    }
+
     public App assertSingleMainElement() {
         assertThat(driver.findElements(By.tagName("main"))).hasSize(1);
         return this;
@@ -2329,6 +2408,91 @@ public class App {
         var link = wait.until(visibilityOfElementLocated(
                                                          cssSelector("a.user-menu__item[data-hx-get='%s']".formatted(hxGetPath))));
         assertThat(link.findElements(By.tagName("svg")).size()).isEqualTo(1);
+        return this;
+    }
+
+    public App assertUserMenuTriggerCompactOnMobile() {
+        wait.until(presenceOfElementLocated(cssSelector("#userMenuBtn > span")));
+        var hidden = (Boolean) ((JavascriptExecutor) driver).executeScript(
+                                                                           """
+                                                                           const span = document.querySelector('#userMenuBtn > span');
+                                                                           if (!span) {
+                                                                               return false;
+                                                                           }
+                                                                           return getComputedStyle(span).display === 'none';
+                                                                           """);
+        assertThat(hidden).isTrue();
+        var nameWidth = ((Number) ((JavascriptExecutor) driver).executeScript(
+                                                                              """
+                                                                              const span = document.querySelector('#userMenuBtn > span');
+                                                                              return span ? span.getBoundingClientRect().width : -1;
+                                                                              """)).doubleValue();
+        assertThat(nameWidth).isLessThanOrEqualTo(1.0);
+        return this;
+    }
+
+    public App assertUserMenuWithinViewport() {
+        openUserMenu();
+        var within = (Boolean) ((JavascriptExecutor) driver).executeScript(
+                                                                           """
+                                                                           const el = document.getElementById('userDropdown');
+                                                                           if (!el) {
+                                                                               return false;
+                                                                           }
+                                                                           const rect = el.getBoundingClientRect();
+                                                                           return rect.width > 0
+                                                                               && rect.width <= window.innerWidth
+                                                                               && rect.height <= window.innerHeight
+                                                                               && rect.left >= -1
+                                                                               && rect.right <= window.innerWidth + 1;
+                                                                           """);
+        assertThat(within).isTrue();
+        return this;
+    }
+
+    public App assertWriteActionsFitMobileViewport() {
+        assertWriteActionsInEditorSurface();
+        var within = (Boolean) ((JavascriptExecutor) driver).executeScript(
+                                                                           """
+                                                                           const actions = document.querySelector('.write-actions');
+                                                                           const publish = document.getElementById('publish');
+                                                                           const saveDraft = document.getElementById('saveDraft');
+                                                                           if (!actions || !publish || !saveDraft) {
+                                                                               return false;
+                                                                           }
+                                                                           const viewportWidth = window.innerWidth;
+                                                                           const viewportHeight = window.innerHeight;
+                                                                           for (const el of [actions, publish, saveDraft]) {
+                                                                               const rect = el.getBoundingClientRect();
+                                                                               if (rect.left < -1 || rect.right > viewportWidth + 1
+                                                                                       || rect.top < -1 || rect.bottom > viewportHeight + 1) {
+                                                                                   return false;
+                                                                               }
+                                                                           }
+                                                                           return true;
+                                                                           """);
+        assertThat(within).isTrue();
+        return assertNoHorizontalPageScroll();
+    }
+
+    public App assertWriteActionsInEditorSurface() {
+        var publishBtn = wait.until(visibilityOfElementLocated(By.id("publish")));
+        var saveDraftBtn = wait.until(visibilityOfElementLocated(By.id("saveDraft")));
+        assertThat(publishBtn.isDisplayed()).isTrue();
+        assertThat(saveDraftBtn.isDisplayed()).isTrue();
+        assertThat(publishBtn.findElements(By.xpath("ancestor::header"))).isEmpty();
+        assertThat(saveDraftBtn.findElements(By.xpath("ancestor::header"))).isEmpty();
+        var actionsBar = wait.until(visibilityOfElementLocated(className("write-actions")));
+        assertThat(publishBtn.findElements(By.xpath("ancestor::*[contains(@class,'write-actions')]"))).isNotEmpty();
+        assertThat(saveDraftBtn.findElements(By.xpath("ancestor::*[contains(@class,'write-actions')]"))).isNotEmpty();
+        assertThat(actionsBar.isDisplayed()).isTrue();
+        return this;
+    }
+
+    public App assertWriteEditorVisible() {
+        wait.until(visibilityOfElementLocated(cssSelector(".write-editor-toolbar")));
+        wait.until(visibilityOfElementLocated(cssSelector(".write-form__editor")));
+        assertWriteActionsInEditorSurface();
         return this;
     }
 
@@ -2393,6 +2557,11 @@ public class App {
     public App clickNotificationBell() {
         reliableClick(wait.until(elementToBeClickable(By.id("notificationBellBtn"))));
         waitForReady();
+        return this;
+    }
+
+    public App clickSidebarMenu() {
+        reliableClick(wait.until(elementToBeClickable(By.id("menuBtn"))));
         return this;
     }
 
@@ -2659,6 +2828,11 @@ public class App {
         return new TagManagePage();
     }
 
+    public App useDesktopViewport() {
+        driver.manage().window().setSize(new Dimension(1920, 1080));
+        return this;
+    }
+
     private void useFieldValue(String selector, String value) {
         var by = By.cssSelector(selector);
         await().atMost(Duration.ofSeconds(10))
@@ -2670,6 +2844,11 @@ public class App {
                    input.sendKeys(value);
                    return true;
                });
+    }
+
+    public App useMobileViewport() {
+        driver.manage().window().setSize(new Dimension(393, 851));
+        return this;
     }
 
     public String userMenuLinkText(String hxGetPath) {

@@ -32,7 +32,8 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 - Transitions are smooth (`0.2s`) and never distract from content.
 
 ### 2.5 Mobile first
-- The design scales gracefully; all main functions are accessible on mobile with stacked layouts, hidden secondary text, and touch‑friendly tap targets.
+- Base CSS targets the smallest viewport; tablet and desktop add columns, sticky sidebars, and margin rails via `min-width` breakpoints (see [ui-palette.md](ui-palette.md): `--bp-sm` 480px, `--bp-md` 768px, `--bp-lg` 1024px, `--bp-xl` 1280px).
+- All main functions are accessible on mobile with stacked layouts, hidden secondary chrome (e.g. header button labels, compact locale picker), and touch targets of at least `--tap-target-min` (44px).
 
 ---
 
@@ -42,7 +43,7 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 - Sticky top bar with logo (centered), navigation icons (left), and user actions (right).
 - **Logo:** “contraponto” in Playfair Display, links to home.
 - **Left:** menu (sidebar) and search icons.
-- **Right:** write button (if logged in), user menu or Sign Up / Sign In buttons.
+- **Right:** write button (if logged in), user menu or Sign Up / Sign In buttons. On `/write`, Publish and Save draft live in the editor **write-actions** bar, not the header.
 
 ### 3.2 Footer
 - Darker background (`#fafafa`), multi‑column layout with links to explore, connect, legal, and dynamically loaded **Custom Pages** (global, placement `FOOTER` or `BOTH`).
@@ -237,11 +238,19 @@ Analytics load via HTMX (`GET /manage/dashboard/components/analytics`) on page l
 - Forms use proper label‑input associations.
 - Modals trap focus and close with Escape.
 - Images have `alt` attributes; SVGs are used for icons.
-- On mobile (<768px):
-  - Header text is hidden; only icons remain.
-  - Post grids become single‑column.
-  - Article titles scale down.
-  - The editor toolbar becomes horizontally scrollable.
+- **Breakpoints** (canonical values in [ui-palette.md](ui-palette.md)):
+
+| Token | Width | Typical enhancement |
+|-------|-------|---------------------|
+| (base) | &lt; 480px | Single-column grids, compact header, locale picker hidden in header |
+| `--bp-sm` | 480px+ | Header button labels; write header labels |
+| `--bp-md` | 768px+ | Two-column featured hero; hub vertical nav; footer link columns |
+| `--bp-lg` | 1024px+ | Three-column post grids; full article title scale |
+| `--bp-xl` | 1280px+ | Browse margin rails; related-posts aside |
+
+- **Mobile defaults:** single-column post grids; smaller article titles; horizontally scrollable editor toolbar; header icon labels hidden until `--bp-md`.
+- **Touch targets:** icons, tabs, and primary buttons meet `--tap-target-min` (44px).
+- **Safe areas:** sticky header and toasts respect `env(safe-area-inset-*)` on notched devices.
 - Sufficient colour contrast (WCAG AA compliant).
 
 ---

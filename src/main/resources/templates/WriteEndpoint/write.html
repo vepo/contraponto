@@ -6,6 +6,23 @@
         <main hx-history-elt class="write-main">
             <div class="write-container">
                 {#include components/breadcrumb trail=breadcrumb /}
+                <div class="write-actions" role="group" aria-label="Ações do editor" data-i18n="write.actions" data-i18n-attr="aria-label">
+                    <button id="saveDraft"
+                            type="button"
+                            class="btn btn--secondary write-actions__btn"
+                            hx-post="/forms/write/draft"
+                            hx-include="#postForm"
+                            hx-swap="none"
+                            data-i18n="write.saveDraft">Salvar rascunho</button>
+                    <button id="publish"
+                            type="button"
+                            class="btn btn--primary write-actions__btn"
+                            hx-post="/forms/write/publish"
+                            hx-include="#postForm"
+                            hx-target="main"
+                            hx-select="main"
+                            data-i18n="write.publish">Publicar</button>
+                </div>
                 {#if writePage.hasUnpublishedChanges}
                 <div class="write-form__banner write-form__banner--warning" role="status">
                     data-i18n="write.unpublishedBanner">Há alterações não publicadas. Os leitores ainda veem a última versão publicada até você publicar novamente.
