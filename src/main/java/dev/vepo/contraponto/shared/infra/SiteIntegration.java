@@ -18,12 +18,24 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Unremovable
 public class SiteIntegration {
 
+    private static String originFrom(URI uri) {
+        int port = uri.getPort();
+        if (port <= 0 || ("https".equalsIgnoreCase(uri.getScheme()) && port == 443)) {
+            return uri.getScheme() + "://" + uri.getHost();
+        }
+        return uri.getScheme() + "://" + uri.getHost() + ":" + port;
+    }
+
     static Optional<String> resolveDataToken(Optional<String> raw) {
         if (raw.isEmpty()) {
             return Optional.empty();
         }
         String trimmed = raw.get().trim();
         return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
+    }
+
+    static Optional<String> resolveScriptOrigin(Optional<String> raw) {
+        return resolveScriptUrl(raw).map(url -> originFrom(URI.create(url)));
     }
 
     static Optional<String> resolveScriptUrl(Optional<String> raw) {
@@ -50,12 +62,15 @@ public class SiteIntegration {
 
     private final Optional<String> scriptUrl;
 
+    private final Optional<String> scriptOrigin;
+
     private final Optional<String> scriptDataToken;
 
     @Inject
     public SiteIntegration(@ConfigProperty(name = "app.site.integration.script-url") Optional<String> scriptUrl,
                            @ConfigProperty(name = "app.site.integration.script-data-token") Optional<String> scriptDataToken) {
         this.scriptUrl = resolveScriptUrl(scriptUrl);
+        this.scriptOrigin = resolveScriptOrigin(scriptUrl);
         this.scriptDataToken = resolveDataToken(scriptDataToken);
     }
 
@@ -65,6 +80,13 @@ public class SiteIntegration {
 
     public String scriptDataToken() {
         return scriptDataToken.orElse("");
+    }
+
+    /**
+     * HTTPS origin of {@link #scriptUrl()} for Content-Security-Policy allowlists.
+     */
+    public Optional<String> scriptOrigin() {
+        return scriptOrigin;
     }
 
     public String scriptUrl() {

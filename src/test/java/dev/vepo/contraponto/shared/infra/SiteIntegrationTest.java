@@ -26,6 +26,18 @@ class SiteIntegrationTest {
     }
 
     @Test
+    void resolveScriptOriginEmptyWhenUrlInvalid() {
+        assertThat(SiteIntegration.resolveScriptOrigin(Optional.of("http://example.com/a.js"))).isEmpty();
+        assertThat(SiteIntegration.resolveScriptOrigin(Optional.empty())).isEmpty();
+    }
+
+    @Test
+    void resolveScriptOriginFromHttpsUrl() {
+        assertThat(SiteIntegration.resolveScriptOrigin(Optional.of("https://visita.vepo.dev/visita.js")))
+                                                                                                         .contains("https://visita.vepo.dev");
+    }
+
+    @Test
     void resolveScriptUrlAcceptsHttps() {
         assertThat(SiteIntegration.resolveScriptUrl(Optional.of("https://visita.vepo.dev/visita.js")))
                                                                                                       .contains("https://visita.vepo.dev/visita.js");

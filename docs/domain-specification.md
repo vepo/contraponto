@@ -42,7 +42,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 |------|---------|--------------|
 | **Contraponto** | The publishing platform (product). | — |
 | **Platform display name** | White-label name shown in header, footer, page titles, SEO, RSS, and transactional email (default `contraponto`). | `app.site.name` / `APP_SITE_NAME`, `SiteBranding`, Qute globals `siteName` / `siteSeoName` |
-| **Platform integration script** | Optional third-party script in page `<head>` (HTTPS URL + `data-token`; disabled unless both are set). | `app.site.integration.script-url`, `app.site.integration.script-data-token`, `SiteIntegration` |
+| **Platform integration script** | Optional third-party script in page `<head>` (HTTPS URL + `data-token`; disabled unless both are set). Its origin is allowlisted in Content-Security-Policy `script-src` and `connect-src` when enabled. | `app.site.integration.script-url`, `app.site.integration.script-data-token`, `SiteIntegration`, `SecurityHeadersFilter` |
 | **Guest** | Unauthenticated visitor; may read public content. | No session |
 | **User** | Registered account (`tb_users`): username, email, display name, password, roles, active flag; optional **profile picture** and **default blog banner**. | `User` |
 | **Author** | User who owns at least one blog and writes posts. Implied by blog ownership, not a separate role. | `Post.getAuthor()` → blog owner |
