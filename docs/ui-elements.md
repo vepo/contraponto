@@ -144,7 +144,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `.verseblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor verse / poetry | Lines in `pre.content`, attribution in `.attribution`; styles in main.css / write.css |
 | `.tableblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor tables | `table.tableblock` with caption `.title`, cell text in `p.tableblock`; horizontal scroll via `.sectionbody:has(> table.tableblock)`; styles in main.css / write.css |
 | `image-lightbox`, `image-lightbox__*` | `#image-lightbox` in `components/head.html` | Post body image expand overlay; `main.js` + main.css |
-| `code-block`, `code-block__copy` | Injected by `CodeCopyManager` on `.listingblock` / `pre` | Copy post and write-preview code; `main.js` + main.css |
+| `.listingblock`, `code-block`, `code-block__copy` | Asciidoctor listing blocks; `CodeCopyManager` on `.listingblock` / `pre` | Card panel: info left accent, `.title` caption bar (`--color-surface-muted`), `.content` / `pre` on `--color-code-block-bg`; copy top-right; `main.js` + main.css |
 | `post-serie-nav`, `post-serie-nav__*` | `PostEndpoint/serie-nav.html` | Serie parts list on post page |
 | `article-page__version`, `article-page__version-icon` | `PostEndpoint/post.html` | Version history trigger in metadata |
 | `post-history`, `post-history__*` | `PostEndpoint/history-list.html`, `historyModal.html` | Version history modal list |

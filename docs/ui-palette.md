@@ -60,6 +60,8 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 | `--color-warning-muted` | `rgba(122, 90, 32, 0.12)` | Warning backgrounds |
 | `--color-info` | `#3d5a7a` | Informational hints |
 | `--color-info-muted` | `rgba(61, 90, 122, 0.1)` | Info backgrounds |
+| `--color-code-inline` | `var(--color-info)` | Inline `code` in article body; listing block left accent |
+| `--color-code-block-bg` | `var(--color-bg-offset)` | Fenced / listing code panel interior |
 | `--color-disabled` | `#8a8a86` | Disabled submit buttons |
 
 ## Typography
