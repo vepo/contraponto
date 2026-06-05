@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.postresponse;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import dev.vepo.contraponto.notification.NotificationService;
 import dev.vepo.contraponto.post.Post;
@@ -37,7 +38,7 @@ public class PostResponseService {
     public void approve(long responseId, long ownerUserId) {
         PostResponse response = loadForModeration(responseId, ownerUserId);
         response.setLinkBackStatus(PostResponseLinkBackStatus.APPROVED);
-        response.setResolvedAt(LocalDateTime.now());
+        response.setResolvedAt(LocalDateTime.now(ZoneId.systemDefault()));
         responseRepository.save(response);
     }
 
@@ -81,7 +82,7 @@ public class PostResponseService {
     public void reject(long responseId, long ownerUserId) {
         PostResponse response = loadForModeration(responseId, ownerUserId);
         response.setLinkBackStatus(PostResponseLinkBackStatus.REJECTED);
-        response.setResolvedAt(LocalDateTime.now());
+        response.setResolvedAt(LocalDateTime.now(ZoneId.systemDefault()));
         responseRepository.save(response);
     }
 
@@ -89,7 +90,7 @@ public class PostResponseService {
     public void revoke(long responseId, long ownerUserId) {
         PostResponse response = loadForModeration(responseId, ownerUserId);
         response.setLinkBackStatus(PostResponseLinkBackStatus.REVOKED);
-        response.setResolvedAt(LocalDateTime.now());
+        response.setResolvedAt(LocalDateTime.now(ZoneId.systemDefault()));
         responseRepository.save(response);
     }
 }

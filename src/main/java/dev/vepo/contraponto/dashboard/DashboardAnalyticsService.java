@@ -3,6 +3,7 @@ package dev.vepo.contraponto.dashboard;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,7 @@ public class DashboardAnalyticsService {
 
         Blog blog = resolveBlog(blogId, ownedBlogs);
         YearMonth selected = resolveYearMonth(year, month);
-        YearMonth now = YearMonth.now();
+        YearMonth now = YearMonth.now(ZoneId.systemDefault());
 
         MonthSeries views = buildViewsSeries(blog.getId(), selected);
         MonthSeries viewsComparison = compareViews
@@ -139,7 +140,7 @@ public class DashboardAnalyticsService {
     }
 
     private YearMonth resolveYearMonth(Integer year, Integer month) {
-        YearMonth now = YearMonth.now();
+        YearMonth now = YearMonth.now(ZoneId.systemDefault());
         if (year == null || month == null) {
             return now;
         }

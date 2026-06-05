@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.highlight;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +79,7 @@ public class PostTextHighlightService {
         }
         if (officialHighlightRepository.findByPostAndCluster(postId, proposal.getAnchorClusterHash()).isPresent()) {
             proposal.setStatus(ProposalStatus.APPROVED);
-            proposal.setResolvedAt(LocalDateTime.now());
+            proposal.setResolvedAt(LocalDateTime.now(ZoneId.systemDefault()));
             proposalRepository.save(proposal);
             return officialHighlightRepository.findByPostAndCluster(postId, proposal.getAnchorClusterHash())
                                               .orElseThrow(NotFoundException::new);
@@ -100,7 +101,7 @@ public class PostTextHighlightService {
         officialHighlightRepository.save(official);
 
         proposal.setStatus(ProposalStatus.APPROVED);
-        proposal.setResolvedAt(LocalDateTime.now());
+        proposal.setResolvedAt(LocalDateTime.now(ZoneId.systemDefault()));
         proposalRepository.save(proposal);
         return official;
     }
@@ -305,7 +306,7 @@ public class PostTextHighlightService {
     public void rejectProposal(long postId, long proposalId, long ownerUserId) {
         CommonHighlightProposal proposal = loadProposalForModeration(postId, proposalId, ownerUserId);
         proposal.setStatus(ProposalStatus.REJECTED);
-        proposal.setResolvedAt(LocalDateTime.now());
+        proposal.setResolvedAt(LocalDateTime.now(ZoneId.systemDefault()));
         proposalRepository.save(proposal);
     }
 

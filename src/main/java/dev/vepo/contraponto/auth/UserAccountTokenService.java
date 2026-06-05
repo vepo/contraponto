@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -84,7 +85,7 @@ public class UserAccountTokenService {
         token.setType(type);
         token.setTokenHash(hashToken(rawToken));
         token.setNewEmail(newEmail);
-        token.setExpiresAt(LocalDateTime.now().plusHours(validHours));
+        token.setExpiresAt(LocalDateTime.now(ZoneId.systemDefault()).plusHours(validHours));
         tokenRepository.persist(token);
 
         return new IssuedToken(rawToken, token);

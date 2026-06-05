@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.comment;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +55,7 @@ public class PostCommentService {
     private void applyInitialStatus(PostComment comment, Post post, User author) {
         if (post.getAuthor().getId().equals(author.getId())) {
             comment.setStatus(CommentStatus.APPROVED);
-            comment.setApprovedAt(LocalDateTime.now());
+            comment.setApprovedAt(LocalDateTime.now(ZoneId.systemDefault()));
         } else {
             comment.setStatus(CommentStatus.PENDING);
         }
@@ -64,7 +65,7 @@ public class PostCommentService {
     public PostComment approve(long postId, long commentId, long ownerUserId) {
         PostComment comment = loadForModeration(postId, commentId, ownerUserId);
         comment.setStatus(CommentStatus.APPROVED);
-        comment.setApprovedAt(LocalDateTime.now());
+        comment.setApprovedAt(LocalDateTime.now(ZoneId.systemDefault()));
         return commentRepository.save(comment);
     }
 

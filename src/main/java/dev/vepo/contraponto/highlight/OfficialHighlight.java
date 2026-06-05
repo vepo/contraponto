@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.highlight;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import dev.vepo.contraponto.post.Post;
@@ -113,7 +114,7 @@ public class OfficialHighlight {
     @PrePersist
     void onCreate() {
         if (approvedAt == null) {
-            approvedAt = LocalDateTime.now();
+            approvedAt = LocalDateTime.now(ZoneId.systemDefault());
         }
     }
 

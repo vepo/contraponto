@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.highlight;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import dev.vepo.contraponto.user.User;
@@ -106,7 +107,7 @@ public class HighlightNote {
 
     @PrePersist
     void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
         if (createdAt == null) {
             createdAt = now;
         }
@@ -117,7 +118,7 @@ public class HighlightNote {
 
     @PreUpdate
     void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now(ZoneId.systemDefault());
     }
 
     public void setBody(String body) {

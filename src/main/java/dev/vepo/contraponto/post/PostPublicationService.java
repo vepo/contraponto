@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -94,7 +95,7 @@ public class PostPublicationService {
 
         int nextVersion = publicationRepository.findMaxVersion(post.getId()).orElse(0) + 1;
         candidate.setVersion(nextVersion);
-        candidate.setPublishedAt(LocalDateTime.now());
+        candidate.setPublishedAt(LocalDateTime.now(ZoneId.systemDefault()));
         publicationRepository.save(candidate);
         publicationRepository.flush();
         postImageDependencyService.snapshotPublicationDependencies(candidate, post);

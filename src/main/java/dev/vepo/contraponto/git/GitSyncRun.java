@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.git;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import dev.vepo.contraponto.blog.Blog;
@@ -187,7 +188,7 @@ public class GitSyncRun {
     @PrePersist
     void onCreate() {
         if (startedAt == null) {
-            startedAt = LocalDateTime.now();
+            startedAt = LocalDateTime.now(ZoneId.systemDefault());
         }
         if (outcome == null) {
             outcome = GitSyncOutcome.FAILED;

@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.git;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -132,7 +133,7 @@ public class GitSyncRunTransaction {
         }
         run.setSummaryMessage(result.summaryMessage());
         run.setErrorDetail(truncate(result.errorDetail(), 4096));
-        run.setFinishedAt(LocalDateTime.now());
+        run.setFinishedAt(LocalDateTime.now(ZoneId.systemDefault()));
         gitSyncRunRepository.update(run);
         gitSyncRunRepository.pruneOldRuns(run.getBlog().getId());
         applyNotificationPolicy(run);

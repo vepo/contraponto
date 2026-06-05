@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.auth;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import dev.vepo.contraponto.user.User;
 import jakarta.persistence.Column;
@@ -44,7 +45,7 @@ public class UserAccountToken {
     private LocalDateTime usedAt;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now(ZoneId.systemDefault());
 
     public UserAccountToken() {}
 
@@ -81,7 +82,7 @@ public class UserAccountToken {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
+        return LocalDateTime.now(ZoneId.systemDefault()).isAfter(expiresAt);
     }
 
     public boolean isUsed() {
@@ -93,7 +94,7 @@ public class UserAccountToken {
     }
 
     public void markUsed() {
-        this.usedAt = LocalDateTime.now();
+        this.usedAt = LocalDateTime.now(ZoneId.systemDefault());
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

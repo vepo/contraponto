@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -251,7 +252,7 @@ public class BlogGitImportService {
             post.setFeatured(false);
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
         if (!draft.existedBefore()) {
             post.setCreatedAt(now);
         }

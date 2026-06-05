@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -213,7 +214,7 @@ public class PostEndpoint {
         viewRepository.recordView(post,
                                   loggedUser.isAuthenticated() ? loggedUser.getId() : null,
                                   sessionId,
-                                  LocalDateTime.now());
+                                  LocalDateTime.now(ZoneId.systemDefault()));
 
         long viewCount = viewRepository.countByPost(post);
         long averageReadingSeconds = readingTimeRepository.averageSecondsByPost(post);

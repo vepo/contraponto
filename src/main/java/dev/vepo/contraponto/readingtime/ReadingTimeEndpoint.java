@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.readingtime;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
@@ -55,7 +56,7 @@ public class ReadingTimeEndpoint {
         String sessionId = sessionIdProvider.getOrCreateSessionId(viewCookie);
         Long userId = loggedUser.isAuthenticated() ? loggedUser.getId() : null;
 
-        readingTimeRepository.addSeconds(post, userId, sessionId, HEARTBEAT_SECONDS, LocalDateTime.now());
+        readingTimeRepository.addSeconds(post, userId, sessionId, HEARTBEAT_SECONDS, LocalDateTime.now(ZoneId.systemDefault()));
 
         Response.ResponseBuilder response = Response.noContent();
         if (viewCookie == null) {

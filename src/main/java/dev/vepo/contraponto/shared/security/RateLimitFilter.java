@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.shared.security;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +77,7 @@ public class RateLimitFilter implements ContainerRequestFilter {
     }
 
     private boolean isOverLimit(String key) {
-        Instant now = Instant.now();
+        Instant now = Instant.now(Clock.systemDefaultZone());
         Window window = windows.compute(key, (k, existing) -> {
             if (existing == null || now.isAfter(existing.resetAt())) {
                 return new Window(now.plusSeconds(windowSeconds), new AtomicInteger(0));

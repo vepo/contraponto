@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.notification;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import org.hibernate.annotations.UpdateTimestamp;
@@ -113,7 +114,7 @@ public class BlogAudience {
     @PrePersist
     void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = LocalDateTime.now(ZoneId.systemDefault());
         }
         if (updatedAt == null) {
             updatedAt = createdAt;
@@ -122,7 +123,7 @@ public class BlogAudience {
 
     @PreUpdate
     void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now(ZoneId.systemDefault());
     }
 
     public void setBlog(Blog blog) {

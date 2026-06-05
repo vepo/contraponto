@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.notification;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import dev.vepo.contraponto.post.PostPublication;
@@ -82,7 +83,7 @@ public class EmailNotificationLog {
     @PrePersist
     void onCreate() {
         if (sentAt == null) {
-            sentAt = LocalDateTime.now();
+            sentAt = LocalDateTime.now(ZoneId.systemDefault());
         }
     }
 }

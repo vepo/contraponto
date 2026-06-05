@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.comment;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import dev.vepo.contraponto.post.Post;
@@ -121,7 +122,7 @@ public class PostComment {
     @PrePersist
     void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = LocalDateTime.now(ZoneId.systemDefault());
         }
     }
 

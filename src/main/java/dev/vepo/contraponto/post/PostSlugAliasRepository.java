@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.post;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,7 +50,7 @@ public class PostSlugAliasRepository {
         alias.setPost(post);
         alias.setBlog(post.getBlog());
         alias.setSlug(slug);
-        alias.setCreatedAt(LocalDateTime.now());
+        alias.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()));
         entityManager.persist(alias);
     }
 }

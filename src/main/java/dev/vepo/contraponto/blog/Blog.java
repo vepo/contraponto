@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.blog;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -74,7 +75,7 @@ public class Blog {
         this.owner = user;
         this.main = true;
         this.active = true;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneId.systemDefault());
     }
 
     public Blog(User user, String slug, String name, String description) {
@@ -84,7 +85,7 @@ public class Blog {
         this.description = description;
         this.main = false;
         this.active = true;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneId.systemDefault());
     }
 
     @Override
