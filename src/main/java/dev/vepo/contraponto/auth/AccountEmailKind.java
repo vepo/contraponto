@@ -1,0 +1,10 @@
+package dev.vepo.contraponto.auth;
+
+public enum AccountEmailKind {
+    ACCOUNT_ACTIVATION,
+    EMAIL_CHANGED_NOTICE,
+    EMAIL_CHANGE_VERIFICATION,
+    PASSWORD_CHANGED,
+    PASSWORD_RESET,
+    UNAUTHORIZED_SIGNUP_REPORT
+}

@@ -17,6 +17,7 @@ TRUNCATE TABLE tb_common_highlight_proposals CASCADE;
 TRUNCATE TABLE tb_post_responses CASCADE;
 TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
+TRUNCATE TABLE tb_account_email_outbox CASCADE;
 TRUNCATE TABLE tb_notifications CASCADE;
 TRUNCATE TABLE tb_git_sync_run_entries CASCADE;
 TRUNCATE TABLE tb_git_sync_runs CASCADE;

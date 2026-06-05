@@ -58,6 +58,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Pending email** | New email address awaiting verification; login and notifications use the confirmed email until verified. | `User.pendingEmail` |
 | **Email verification** | Confirms a **pending email** via link; promotes it to the account email. | `EmailVerificationEndpoint` |
 | **Account email** | Transactional HTML message for access or user management (account activation, password reset, password changed, email verification). | `AccountEmailService` |
+| **Account email outbox** | Database queue of account emails that could not be delivered immediately; retried by a scheduled job with exponential backoff. | `AccountEmailOutbox`, `tb_account_email_outbox` |
+| **Account email delivery retry** | Background job that sends queued account emails when SMTP becomes available again. | `AccountEmailOutboxScheduler`, `AccountEmailOutboxService` |
 | **Role** | Platform capability assigned to a user (multi-role). | `Role` enum |
 | **User** (role) | Default role; write own content. | `Role.USER` — label: "User" |
 | **Editor** | Curate site-wide: feature posts, review queue, tag metadata. | `Role.EDITOR` — label: "Editor" |
