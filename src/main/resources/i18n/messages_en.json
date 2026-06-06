@@ -232,6 +232,7 @@
   "toast.post.notFound": "Post not found.",
   "toast.post.published": "Post published!",
   "toast.post.slugExists": "Slug already exists!",
+  "toast.post.slugRequired": "Provide a slug or a title that produces a valid slug.",
   "toast.post.titleRequired": "Title is required!",
   "toast.review.cannotFeatureDraft": "Cannot feature a draft post",
   "toast.tag.missing": "Missing tag.",

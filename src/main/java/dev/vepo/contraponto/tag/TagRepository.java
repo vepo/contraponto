@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -85,7 +86,7 @@ public class TagRepository {
     @Transactional
     public Tag findOrCreateByLabel(String label) {
         String trimmed = label.trim();
-        String slug = TagSlug.slugify(trimmed);
+        String slug = Slug.slugify(trimmed);
         if (slug.isEmpty()) {
             throw new IllegalArgumentException("Invalid tag label");
         }

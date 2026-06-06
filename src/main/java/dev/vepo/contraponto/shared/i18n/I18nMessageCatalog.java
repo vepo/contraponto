@@ -32,6 +32,7 @@ public class I18nMessageCatalog {
                                                                             Map.entry(I18nKeys.TOAST_POST_CONTENT_REQUIRED, I18nDefaults.POST_CONTENT_REQUIRED),
                                                                             Map.entry(I18nKeys.TOAST_POST_TITLE_REQUIRED, I18nDefaults.POST_TITLE_REQUIRED),
                                                                             Map.entry(I18nKeys.TOAST_POST_INVALID_SLUG, I18nDefaults.POST_INVALID_SLUG),
+                                                                            Map.entry(I18nKeys.TOAST_POST_SLUG_REQUIRED, I18nDefaults.POST_SLUG_REQUIRED),
                                                                             Map.entry(I18nKeys.TOAST_POST_SLUG_EXISTS, I18nDefaults.POST_SLUG_EXISTS),
                                                                             Map.entry(I18nKeys.TOAST_POST_BLOG_REQUIRED, I18nDefaults.POST_BLOG_REQUIRED),
                                                                             Map.entry(I18nKeys.TOAST_PAGE_SAVED, I18nDefaults.PAGE_SAVED),

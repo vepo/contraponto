@@ -90,6 +90,7 @@ public final class I18nKeys {
     public static final String TOAST_POST_CONTENT_REQUIRED = "toast.post.contentRequired";
     public static final String TOAST_POST_TITLE_REQUIRED = "toast.post.titleRequired";
     public static final String TOAST_POST_INVALID_SLUG = "toast.post.invalidSlug";
+    public static final String TOAST_POST_SLUG_REQUIRED = "toast.post.slugRequired";
     public static final String TOAST_POST_SLUG_EXISTS = "toast.post.slugExists";
     public static final String TOAST_POST_BLOG_REQUIRED = "toast.post.blogRequired";
     // Toasts — custom page

@@ -229,6 +229,7 @@
   "toast.post.notFound": "Publicación no encontrada.",
   "toast.post.published": "¡Publicación publicada!",
   "toast.post.slugExists": "¡El slug ya existe!",
+  "toast.post.slugRequired": "Indica un slug o un título que genere un slug válido.",
   "toast.post.titleRequired": "¡El título es obligatorio!",
   "toast.review.cannotFeatureDraft": "No se puede destacar un borrador",
   "toast.tag.missing": "Falta la etiqueta.",

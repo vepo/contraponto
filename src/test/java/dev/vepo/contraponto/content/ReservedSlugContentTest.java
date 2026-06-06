@@ -18,7 +18,7 @@ import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import dev.vepo.contraponto.shared.TestTags;
-import dev.vepo.contraponto.tag.TagSlug;
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.user.Role;
 
 /**
@@ -31,7 +31,7 @@ class ReservedSlugContentTest {
     private static List<String> reservedWordsValidAsPostSlug() {
         var words = new ArrayList<String>();
         for (String segment : CustomPagePaths.reservedSegments()) {
-            if (!TagSlug.hasInvalidSlugCharacters(segment)) {
+            if (!Slug.hasInvalidSlugCharacters(segment)) {
                 words.add(segment);
             }
         }

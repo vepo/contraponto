@@ -15,6 +15,7 @@ public final class I18nDefaults {
     public static final String POST_CONTENT_REQUIRED = "O conteúdo é obrigatório!";
     public static final String POST_TITLE_REQUIRED = "O título é obrigatório!";
     public static final String POST_INVALID_SLUG = "O slug só pode conter letras minúsculas, números e hífens";
+    public static final String POST_SLUG_REQUIRED = "Informe um slug ou um título que gere um slug válido.";
     public static final String POST_SLUG_EXISTS = "Este slug já existe!";
     public static final String POST_BLOG_REQUIRED = "A seleção do blog é obrigatória!";
     public static final String PAGE_SAVED = "Página salva com sucesso.";

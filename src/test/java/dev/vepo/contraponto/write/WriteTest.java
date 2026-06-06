@@ -237,6 +237,19 @@ class WriteTest {
            .assertLeaveConfirmVisible();
     }
 
+    @Test
+    void publishPresavedDraftWithEmptySlugDerivesSlugFromTitle(App app) {
+        app.login(testUser)
+           .writePage()
+           .fillTitle("Fresh Story")
+           .fillContent("Story body")
+           .saveDraft()
+           .assertToastSuccess("Draft saved successfully!")
+           .publish()
+           .assertToastSuccess("Post published!")
+           .assertUrlContains("/post/fresh-story");
+    }
+
     @BeforeEach
     void setup() {
         Given.cleanup();

@@ -3,7 +3,6 @@ package dev.vepo.contraponto.components.forms;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.PostWriteService;
@@ -24,7 +23,7 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
-import dev.vepo.contraponto.tag.TagSlug;
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -55,13 +54,12 @@ public class PublishEndpoint {
     private static final String ERROR_MSG_CONTENT_REQUIRED = "Content is required!";
     private static final String ERROR_MSG_TITLE_REQUIRED = "Title is required!";
     private static final String ERROR_MSG_INVALID_SLUG = "Slug can only contain lowercase letters, numbers, and hyphens";
+    private static final String ERROR_MSG_SLUG_REQUIRED = "Provide a slug or a title that produces a valid slug.";
     private static final String ERROR_MSG_SLUG_EXISTS = "Slug already exists!";
     private static final String ERROR_MSG_BLOG_REQUIRED = "Blog selection is required!";
     private static final String SUCCESS_MSG_PUBLISHED = "Post published!";
     private static final int TOAST_DURATION_SHORT = 10_000;
     private static final int TOAST_DURATION_LONG = 10_000;
-
-    private static final Pattern SLUG_GENERATION_PATTERN = Pattern.compile("[^a-zA-Z0-9\\-]");
 
     private final PostRepository postRepository;
     private final PostPublicationService publicationService;
@@ -111,6 +109,14 @@ public class PublishEndpoint {
 
     // ============================== PUBLIC API ==============================
 
+    private void applyResolvedSlug(Post post, SaveDraftRequest request) {
+        String slug = resolveSlug(request);
+        post.setSlug(slug);
+        if (post.getId() != null) {
+            postRepository.updateSlug(post.getId(), slug);
+        }
+    }
+
     private Response buildErrorResponse(String i18nKey, String ptBrMessage) {
         return Toast.response(Status.BAD_REQUEST)
                     .i18nKey(i18nKey, ptBrMessage)
@@ -159,19 +165,6 @@ public class PublishEndpoint {
         post.setDescription(request.description());
     }
 
-    private String generateSlugFromTitle(String title) {
-        return title.toLowerCase()
-                    .replaceAll(SLUG_GENERATION_PATTERN.pattern(), "-");
-    }
-
-    private void generateSlugIfMissing(Post post, SaveDraftRequest request) {
-        if (isBlank(request.slug())) {
-            post.setSlug(generateSlugFromTitle(request.title()));
-        } else {
-            post.setSlug(request.slug());
-        }
-    }
-
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
@@ -191,7 +184,7 @@ public class PublishEndpoint {
         setFormatIfProvided(post, request);
         updateCoverImage(post, request, blog);
         fillPostMetadata(post, request);
-        generateSlugIfMissing(post, request);
+        applyResolvedSlug(post, request);
         serieService.applySerieTitleToPost(post, request.serieTitle());
         postRepository.save(post);
         tagService.syncPostTags(post, request.tagsJson());
@@ -206,6 +199,13 @@ public class PublishEndpoint {
 
         Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
         return buildSuccessResponse(new PublishedPostView(rendered, published));
+    }
+
+    private String resolveSlug(SaveDraftRequest request) {
+        if (!isBlank(request.slug())) {
+            return request.slug().trim();
+        }
+        return Slug.slugify(request.title());
     }
 
     private List<Post> seriePostsFor(Post post) {
@@ -223,11 +223,11 @@ public class PublishEndpoint {
         }
     }
 
-    private boolean slugAlreadyExistsForDifferentPost(SaveDraftRequest request, Long blogId) {
-        if (isBlank(request.slug())) {
+    private boolean slugAlreadyExistsForDifferentPost(SaveDraftRequest request, Long blogId, String slug) {
+        if (isBlank(slug)) {
             return false;
         }
-        return postRepository.slugExists(blogId, request.slug(), request.id());
+        return postRepository.slugExists(blogId, slug, request.id());
     }
 
     private void updateCoverImage(Post post, SaveDraftRequest request, Blog blog) {
@@ -248,10 +248,14 @@ public class PublishEndpoint {
         if (isBlank(request.title())) {
             return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_TITLE_REQUIRED, I18nDefaults.POST_TITLE_REQUIRED));
         }
-        if (TagSlug.hasInvalidSlugCharacters(request.slug())) {
+        var slug = resolveSlug(request);
+        if (isBlank(slug)) {
+            return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_SLUG_REQUIRED, I18nDefaults.POST_SLUG_REQUIRED));
+        }
+        if (!isBlank(request.slug()) && Slug.hasInvalidSlugCharacters(request.slug())) {
             return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_INVALID_SLUG, I18nDefaults.POST_INVALID_SLUG));
         }
-        if (slugAlreadyExistsForDifferentPost(request, request.blogId())) {
+        if (slugAlreadyExistsForDifferentPost(request, request.blogId(), slug)) {
             return Optional.of(buildErrorResponse(I18nKeys.TOAST_POST_SLUG_EXISTS, I18nDefaults.POST_SLUG_EXISTS));
         }
         return Optional.empty();

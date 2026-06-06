@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.tag;
 
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
@@ -59,10 +60,10 @@ public class UpdateTagEndpoint {
         if (isBlank(form.slug())) {
             return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_INVALID, I18nDefaults.TAG_SLUG_INVALID).type(Toast.Type.ERROR).build();
         }
-        if (TagSlug.hasInvalidSlugCharacters(form.slug().trim())) {
+        if (Slug.hasInvalidSlugCharacters(form.slug().trim())) {
             return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_INVALID, I18nDefaults.TAG_SLUG_INVALID).type(Toast.Type.ERROR).build();
         }
-        String newSlug = TagSlug.slugify(form.slug().trim());
+        String newSlug = Slug.slugify(form.slug().trim());
         if (newSlug.isEmpty()) {
             return Toast.response(Status.BAD_REQUEST).i18nKey(I18nKeys.TOAST_TAG_SLUG_INVALID, I18nDefaults.TAG_SLUG_INVALID).type(Toast.Type.ERROR).build();
         }

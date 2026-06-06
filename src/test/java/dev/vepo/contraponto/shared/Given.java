@@ -33,7 +33,7 @@ import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagRepository;
-import dev.vepo.contraponto.tag.TagSlug;
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import jakarta.enterprise.inject.spi.CDI;
@@ -193,7 +193,7 @@ public interface Given {
                 }
                 if (serieTitle != null && !serieTitle.isBlank()) {
                     String trimmed = serieTitle.trim();
-                    String seriesSlug = TagSlug.slugify(trimmed);
+                    String seriesSlug = Slug.slugify(trimmed);
                     if (!seriesSlug.isEmpty()) {
                         Blog b = post.getBlog();
                         var sr = inject(SerieRepository.class);

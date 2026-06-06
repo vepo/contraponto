@@ -2,7 +2,7 @@ package dev.vepo.contraponto.serie;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.tag.TagSlug;
+import dev.vepo.contraponto.shared.Slug;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -29,7 +29,7 @@ public class SerieService {
             return;
         }
         String trimmed = serieTitle.trim();
-        String slug = TagSlug.slugify(trimmed);
+        String slug = Slug.slugify(trimmed);
         if (slug.isEmpty()) {
             post.setSerie(null);
             return;

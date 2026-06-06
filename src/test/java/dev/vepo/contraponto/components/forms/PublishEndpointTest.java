@@ -90,6 +90,44 @@ class PublishEndpointTest {
     }
 
     @Test
+    void publish_presavedDraftWithEmptySlugDerivesSlugFromTitle() {
+        authorized().contentType("application/x-www-form-urlencoded")
+                    .formParam("blogId", author.getDefaultBlog().getId())
+                    .formParam("title", "Fresh Story")
+                    .formParam("slug", "")
+                    .formParam("content", "Draft body")
+                    .post("/forms/write/draft")
+                    .then()
+                    .statusCode(200);
+
+        var draft = postRepository.findDrafts()
+                                  .stream()
+                                  .filter(p -> author.getId().equals(p.getBlog().getOwner().getId()))
+                                  .filter(p -> "Fresh Story".equals(p.getTitle()))
+                                  .findFirst()
+                                  .orElseThrow();
+        assertThat(draft.getSlug()).isBlank();
+
+        authorized().contentType("application/x-www-form-urlencoded")
+                    .formParam("postId", draft.getId())
+                    .formParam("blogId", author.getDefaultBlog().getId())
+                    .formParam("title", "Fresh Story")
+                    .formParam("slug", "")
+                    .formParam("content", "Draft body")
+                    .post("/forms/write/publish")
+                    .then()
+                    .statusCode(200)
+                    .body(containsString("Draft body"));
+
+        var published = Given.transaction(() -> {
+            Given.inject(jakarta.persistence.EntityManager.class).clear();
+            return postRepository.findByIdWithTags(draft.getId()).orElseThrow();
+        });
+        assertThat(published.getSlug()).isEqualTo("fresh-story");
+        assertThat(published.isPublished()).isTrue();
+    }
+
+    @Test
     void publish_with_respondsTo_creates_pending_post_response() {
         User responder = Given.user()
                               .withUsername("responseauthor")
@@ -125,6 +163,26 @@ class PublishEndpointTest {
         assertThat(response.getSourcePost().getId()).isEqualTo(source.getId());
         assertThat(response.getResponder().getId()).isEqualTo(responder.getId());
         assertThat(response.getLinkBackStatus()).isEqualTo(PostResponseLinkBackStatus.PENDING);
+    }
+
+    @Test
+    void publish_withoutSavingDraftDerivesSlugFromTitle() {
+        authorized().contentType("application/x-www-form-urlencoded")
+                    .formParam("blogId", author.getDefaultBlog().getId())
+                    .formParam("title", "Direct Publish")
+                    .formParam("slug", "")
+                    .formParam("content", "Published without save")
+                    .post("/forms/write/publish")
+                    .then()
+                    .statusCode(200)
+                    .body(containsString("Published without save"));
+
+        var published = Given.transaction(() -> {
+            Given.inject(jakarta.persistence.EntityManager.class).clear();
+            return postRepository.findMainBlogPost(author.getUsername(), "direct-publish").orElseThrow();
+        });
+        assertThat(published.getSlug()).isEqualTo("direct-publish");
+        assertThat(published.isPublished()).isTrue();
     }
 
     @BeforeEach

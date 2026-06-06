@@ -7,7 +7,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
-import dev.vepo.contraponto.tag.TagSlug;
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.user.User;
 
 @WebTest
@@ -49,7 +49,7 @@ class SeriePageTest {
     @Test
     void seriePageListsPostsOldestFirst(App app) {
         app.access()
-           .goToSerie("serieauthor", TagSlug.slugify("My Tutorial"))
+           .goToSerie("serieauthor", Slug.slugify("My Tutorial"))
            .assertListsPostTitle("Part One")
            .assertListsPostTitle("Part Two")
            .assertPostListedBefore("Part One", "Part Two");
