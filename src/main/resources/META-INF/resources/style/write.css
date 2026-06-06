@@ -767,6 +767,20 @@
     color: var(--color-on-primary);
 }
 
+.write-leave-modal__container {
+    max-width: 28rem;
+}
+
+.write-leave-modal__body {
+    margin: 0 0 var(--spacing-md);
+}
+
+.write-leave-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
 /* Custom mode selector – vintage writer style */
 .editor-mode-wrapper {
     position: relative;

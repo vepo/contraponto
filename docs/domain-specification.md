@@ -290,6 +290,8 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Menu — administration hub | `menu.administration` | Administração | Administration | User menu (admin) → `/administration` |
 | Breadcrumb — home | `breadcrumb.home` | Início | Home | Public pages root segment |
 | Write — header | `write.title` | Escrever | Write | Header button → `/write` (icon + label) |
+| Write — dirty editor | — | — | — | Post form on `/write` or `/write/draft/{id}` differs from the snapshot taken when the editor mounted |
+| Write — leave confirmation | `write.leaveConfirm.*` | Alterações não salvas (modal) | Unsaved changes (modal) | Modal on HTMX navigation away from a dirty editor: **Save draft**, **Leave without saving**, **Cancel** |
 | Auth — forgot password link | `auth.forgotPassword` | Esqueceu a senha? | Forgot password? | Login modal |
 | Auth — signup activation sent | `auth.signupActivationSent` | Verifique seu e-mail para ativar sua conta. | Check your email to activate your account. | Sign up modal after submit |
 | Account activation — invalid link | — | Este link de ativação é inválido ou expirou. | This activation link is invalid or has expired. | `/account/activate` error |

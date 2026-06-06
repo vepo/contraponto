@@ -1977,7 +1977,7 @@ public class App {
 
         public WritePage assertContent(String content) {
             var textarea = wait.until(visibilityOfElementLocated(cssSelector("#content")));
-            assertThat(textarea.getAttribute("value")).isEqualTo(content);
+            assertThat(textarea.getDomProperty("value")).isEqualTo(content);
             return this;
         }
 
@@ -1997,6 +1997,14 @@ public class App {
             return this;
         }
 
+        public WritePage assertEditMode() {
+            var editor = wait.until(visibilityOfElementLocated(cssSelector("#content")));
+            assertThat(editor.getDomAttribute("class")).doesNotContain("u-hidden");
+            var preview = driver.findElement(By.id("previewContainer"));
+            assertThat(preview.getDomAttribute("class")).contains("u-hidden");
+            return this;
+        }
+
         public WritePage assertEditorFormat(String mode) {
             var format = wait.until(presenceOfElementLocated(By.id("format")));
             assertThat(format.getDomProperty("value")).isEqualTo(mode);
@@ -2006,6 +2014,37 @@ public class App {
             } else {
                 assertThat(label.getText()).isEqualToIgnoringCase("Markdown");
             }
+            return this;
+        }
+
+        public WritePage assertEditorMounted() {
+            await().atMost(Duration.ofSeconds(10))
+                   .pollInterval(Duration.ofMillis(100))
+                   .until(() -> Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript(
+                                                                                                "return typeof window.writeEditor !== 'undefined' && window.writeEditor.isMounted();")));
+            return this;
+        }
+
+        public WritePage assertLeaveConfirmNotVisible() {
+            var modals = driver.findElements(By.id("writeLeaveModal"));
+            if (modals.isEmpty()) {
+                return this;
+            }
+            assertThat(modals.getFirst().getDomAttribute("class")).doesNotContain("modal--open");
+            return this;
+        }
+
+        public WritePage assertLeaveConfirmVisible() {
+            var modal = wait.until(visibilityOfElementLocated(By.id("writeLeaveModal")));
+            assertThat(modal.getDomAttribute("class")).contains("modal--open");
+            return this;
+        }
+
+        public WritePage assertPreviewMode() {
+            var editor = driver.findElement(By.id("content"));
+            assertThat(editor.getDomAttribute("class")).contains("u-hidden");
+            var preview = wait.until(visibilityOfElementLocated(By.id("previewContainer")));
+            assertThat(preview.getDomAttribute("class")).doesNotContain("u-hidden");
             return this;
         }
 
@@ -2026,6 +2065,45 @@ public class App {
 
         public WritePage assertToastSuccess(String message) {
             assertToast(message);
+            return this;
+        }
+
+        public WritePage attemptLeaveViaLogo() {
+            var homeBtn = wait.until(visibilityOfElementLocated(By.cssSelector(".logo a")));
+            reliableClick(homeBtn);
+            waitForReady();
+            return this;
+        }
+
+        public WritePage cancelLeaveConfirm() {
+            assertLeaveConfirmVisible();
+            reliableClick(wait.until(elementToBeClickable(By.id("writeLeaveCancelBtn"))));
+            wait.until(d -> {
+                var modal = d.findElement(By.id("writeLeaveModal"));
+                return !modal.getDomAttribute("class").contains("modal--open");
+            });
+            return this;
+        }
+
+        public WritePage clickToolbarCommand(String command) {
+            var button = wait.until(elementToBeClickable(
+                                                         cssSelector("#editorToolbar [data-command='%s']".formatted(command))));
+            reliableClick(button);
+            return this;
+        }
+
+        public WritePage confirmLeaveDiscard() {
+            assertLeaveConfirmVisible();
+            reliableClick(wait.until(elementToBeClickable(By.id("writeLeaveDiscardBtn"))));
+            waitForReady();
+            return this;
+        }
+
+        public WritePage confirmLeaveSaveDraft() {
+            assertLeaveConfirmVisible();
+            reliableClick(wait.until(elementToBeClickable(By.id("writeLeaveSaveBtn"))));
+            waitForToast();
+            waitForReady();
             return this;
         }
 
@@ -2078,7 +2156,20 @@ public class App {
             return this;
         }
 
+        public WritePage selectContentRange(int start, int end) {
+            wait.until(visibilityOfElementLocated(cssSelector("#content")));
+            ((JavascriptExecutor) driver).executeScript("""
+                                                        const ta = document.getElementById('content');
+                                                        ta.focus();
+                                                        ta.setSelectionRange(arguments[0], arguments[1]);
+                                                        """,
+                                                        start,
+                                                        end);
+            return this;
+        }
+
         public WritePage selectEditorFormat(String mode) {
+            assertEditorMounted();
             var modeButton = wait.until(elementToBeClickable(By.id("editorModeButton")));
             reliableClick(modeButton);
             var wrapper = wait.until(presenceOfElementLocated(By.cssSelector(".editor-mode-wrapper")));
@@ -2097,6 +2188,11 @@ public class App {
             wait.until(invisibilityOfElementLocated(By.id("imagePickerModal")));
             wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
             return this;
+        }
+
+        public WritePage togglePreview() {
+            assertEditorMounted();
+            return clickToolbarCommand("togglePreview");
         }
 
         public WritePage uploadCover(Path imagePath) {
@@ -2615,6 +2711,14 @@ public class App {
         return new BlogPage();
     }
 
+    public WritePage clickHeaderWriteButton() {
+        var writeBtn = wait.until(elementToBeClickable(
+                                                       cssSelector("button[data-hx-get='/write']")));
+        reliableClick(writeBtn);
+        waitForReady();
+        return new WritePage().assertEditorMounted();
+    }
+
     @Deprecated
     public App clickHubCard(String path) {
         reliableClick(wait.until(elementToBeClickable(
@@ -2996,6 +3100,8 @@ public class App {
     }
     // Inside App class, after SearchPage
 
+    // Inside App class, after LibraryPage
+
     public App waitForReady() {
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
         wait.until(d -> Boolean.TRUE.equals(((JavascriptExecutor) d).executeScript(
@@ -3004,11 +3110,9 @@ public class App {
         return this;
     }
 
-    // Inside App class, after LibraryPage
-
     public WritePage writePage() {
         _goTo("/write");
-        return new WritePage();
+        return new WritePage().assertEditorMounted();
     }
 
     public ProfilePage writingAppearance() {

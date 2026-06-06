@@ -204,6 +204,22 @@
                     </form>
                 </div>
             </div>
+
+            <div id="writeLeaveModal" class="modal write-leave-modal" role="dialog" aria-labelledby="writeLeaveModalTitle" aria-modal="true">
+                <div class="modal__container write-leave-modal__container">
+                    <div class="modal__header">
+                        <h2 id="writeLeaveModalTitle" class="modal__title" data-i18n="write.leaveConfirm.title">Alterações não salvas</h2>
+                    </div>
+                    <div class="modal__body">
+                        <p class="write-leave-modal__body" data-i18n="write.leaveConfirm.body">Você tem alterações não salvas. Deseja salvar o rascunho antes de sair?</p>
+                        <div class="write-leave-modal__actions" role="group" aria-label="Ações ao sair do editor" data-i18n="write.leaveConfirm.actions" data-i18n-attr="aria-label">
+                            <button type="button" id="writeLeaveSaveBtn" class="btn btn--primary" data-i18n="write.leaveConfirm.saveDraft">Salvar rascunho</button>
+                            <button type="button" id="writeLeaveDiscardBtn" class="btn btn--secondary" data-i18n="write.leaveConfirm.leave">Sair sem salvar</button>
+                            <button type="button" id="writeLeaveCancelBtn" class="btn btn--outline" data-i18n="write.leaveConfirm.cancel">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         {#include components/footer /}

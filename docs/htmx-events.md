@@ -146,6 +146,19 @@ Always use `Toast.ok()...message()` for toasts — not raw `X-Toast-Message` in 
 | `visibilitychange` | Pause interval when tab hidden; resume when visible |
 | `htmx:beforeSwap` | Stop tracker when leaving post page (`#main-content` / `main` swap) |
 
+### `write.js` (write editor)
+
+| Event | Use |
+|-------|-----|
+| `DOMContentLoaded` | Create `window.writeEditor` singleton |
+| `htmx:beforeSwap` | `unmount()` toolbar/tags listeners when `main` is replaced |
+| `htmx:afterSettle` | `tryMount()` when swap target is `main` (or inside it) and `#editorToolbar` exists |
+| `htmx:confirm` | Block HTMX navigation away from a **dirty** editor; show leave-confirmation modal |
+| `htmx:afterRequest` | Reset dirty baseline after successful **Save draft**; resume pending navigation if any |
+| `beforeunload` | Browser tab close / full reload guard when editor is dirty |
+
+Mount uses element-reference identity (not `dataset.writeEditorBound` alone) so history restore and SPA re-entry never skip listener attachment or stack duplicate handlers.
+
 ### Lifecycle hooks used in this repo
 
 | Event | Use in Contraponto |
@@ -153,6 +166,7 @@ Always use `Toast.ok()...message()` for toasts — not raw `X-Toast-Message` in 
 | `htmx:afterRequest` | Read response headers; `hx-target-error` (`main.js`); toasts (`toast.js`) |
 | `htmx:afterSwap` | Immediate chrome (sidebar, menu dropdown, cover upload) |
 | `htmx:afterSettle` | Re-init widgets after transitions (forms, write editor, highlight.js) |
+| `htmx:confirm` | Dirty write editor leave guard (`write.js`) |
 | `htmx:configRequest` | Attach `Authorization` header (`authentication.js`) |
 | `loggedOut` | Protected-path redirect (`main.js`) |
 

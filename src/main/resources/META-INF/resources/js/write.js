@@ -1,48 +1,267 @@
 class WriteEditor {
+    static WRITE_PATH = /^\/write(\/draft\/\d+)?(\?.*)?$/;
+
     constructor() {
         this.isPreviewMode = false;
-        this.currentMode = 'MARKDOWN';   // 'MARKDOWN' or 'ASCIIDOC'
-        this.onBodyAfterSettle = this.onBodyAfterSettle.bind(this);
+        this.currentMode = 'MARKDOWN';
+        this.mountedToolbar = null;
+        this.mountedModeButton = null;
+        this.mountedModeDropdown = null;
+        this.mountedForm = null;
+        this.baseline = null;
+        this.pendingNavigation = null;
+        this.onBeforeSwap = this.onBeforeSwap.bind(this);
+        this.onAfterSettle = this.onAfterSettle.bind(this);
         this.onDocumentClick = this.onDocumentClick.bind(this);
         this.onToolbarClick = this.onToolbarClick.bind(this);
         this.onModeButtonClick = this.onModeButtonClick.bind(this);
         this.onModeDropdownClick = this.onModeDropdownClick.bind(this);
+        this.onFormInput = this.onFormInput.bind(this);
+        this.onHtmxConfirm = this.onHtmxConfirm.bind(this);
+        this.onBeforeUnload = this.onBeforeUnload.bind(this);
+        this.onSaveDraftAfterRequest = this.onSaveDraftAfterRequest.bind(this);
         this.commandButtonCallback = this.commandButtonCallback.bind(this);
         this.togglePreview = this.togglePreview.bind(this);
         this.renderPreview = this.renderPreview.bind(this);
         this.changeMode = this.changeMode.bind(this);
-        document.body.addEventListener('htmx:afterSettle', this.onBodyAfterSettle);
+        this.onLeaveSave = this.onLeaveSave.bind(this);
+        this.onLeaveDiscard = this.onLeaveDiscard.bind(this);
+        this.onLeaveCancel = this.onLeaveCancel.bind(this);
+
+        document.addEventListener('htmx:beforeSwap', this.onBeforeSwap);
+        document.body.addEventListener('htmx:afterSettle', this.onAfterSettle);
+        document.body.addEventListener('htmx:confirm', this.onHtmxConfirm);
+        document.body.addEventListener('htmx:afterRequest', this.onSaveDraftAfterRequest);
         document.addEventListener('click', this.onDocumentClick);
-        this.mountEditor();
+        window.addEventListener('beforeunload', this.onBeforeUnload);
+        this.tryMount();
     }
 
-    onBodyAfterSettle() {
-        if (document.getElementById('editorToolbar')) {
-            this.mountEditor();
+    isMounted() {
+        return this.mountedToolbar != null && document.body.contains(this.mountedToolbar);
+    }
+
+    isOnWritePage() {
+        return WriteEditor.WRITE_PATH.test(window.location.pathname);
+    }
+
+    isLeavingWriteRequest(detail) {
+        const path = (detail?.path || '').split('?')[0];
+        if (!path) {
+            return false;
+        }
+        const verb = (detail.verb || 'get').toLowerCase();
+        if (verb !== 'get') {
+            return false;
+        }
+        if (path.startsWith('/forms/') || path.startsWith('/api/')) {
+            return false;
+        }
+        return !WriteEditor.WRITE_PATH.test(path);
+    }
+
+    isDirty() {
+        if (!this.baseline) {
+            return false;
+        }
+        const current = this.captureFormSnapshot();
+        return JSON.stringify(current) !== JSON.stringify(this.baseline);
+    }
+
+    captureFormSnapshot() {
+        return {
+            title: document.getElementById('title')?.value ?? '',
+            content: document.getElementById('content')?.value ?? '',
+            slug: document.getElementById('slug')?.value ?? '',
+            description: document.getElementById('description')?.value ?? '',
+            format: document.getElementById('format')?.value ?? '',
+            tagsJson: document.getElementById('tagsJson')?.value ?? '[]',
+            coverId: document.getElementById('coverId')?.value ?? '',
+            serieTitle: document.getElementById('serieTitle')?.value ?? '',
+            blogId: this.readBlogId()
+        };
+    }
+
+    readBlogId() {
+        const select = document.getElementById('blogSelect');
+        if (select && !select.disabled) {
+            return select.value ?? '';
+        }
+        const hidden = document.querySelector('#postForm input[name="blogId"]');
+        return hidden?.value ?? '';
+    }
+
+    captureBaseline() {
+        this.baseline = this.captureFormSnapshot();
+    }
+
+    onBeforeSwap(evt) {
+        const target = evt.detail?.target;
+        if (target?.tagName === 'MAIN') {
+            this.unmount();
         }
     }
 
-    mountEditor() {
-        const editorToolbar = document.getElementById('editorToolbar');
-        if (!editorToolbar || editorToolbar.dataset.writeEditorBound === '1') {
+    onAfterSettle(evt) {
+        const target = evt.detail?.target;
+        if (target && target.tagName !== 'MAIN' && !target.closest?.('main')) {
             return;
         }
-        editorToolbar.dataset.writeEditorBound = '1';
+        this.tryMount();
+    }
+
+    tryMount() {
+        const toolbar = document.getElementById('editorToolbar');
+        if (!toolbar) {
+            this.unmount();
+            return;
+        }
+        if (toolbar === this.mountedToolbar) {
+            return;
+        }
+        this.unmount();
+        this.mountedToolbar = toolbar;
         this.isPreviewMode = false;
 
-        editorToolbar.addEventListener('click', this.onToolbarClick);
+        toolbar.addEventListener('click', this.onToolbarClick);
 
         const modeButton = document.getElementById('editorModeButton');
         const modeDropdown = document.getElementById('editorModeDropdown');
         if (modeButton) {
+            this.mountedModeButton = modeButton;
             modeButton.addEventListener('click', this.onModeButtonClick);
         }
         if (modeDropdown) {
+            this.mountedModeDropdown = modeDropdown;
             modeDropdown.addEventListener('click', this.onModeDropdownClick);
         }
 
+        const form = document.getElementById('postForm');
+        if (form) {
+            this.mountedForm = form;
+            form.addEventListener('input', this.onFormInput);
+            form.addEventListener('change', this.onFormInput);
+        }
+
+        this.bindLeaveModal();
         this.syncModeFromForm();
         this.updateHint();
+        this.captureBaseline();
+    }
+
+    unmount() {
+        if (this.mountedToolbar) {
+            this.mountedToolbar.removeEventListener('click', this.onToolbarClick);
+            delete this.mountedToolbar.dataset.writeEditorBound;
+            this.mountedToolbar = null;
+        }
+        if (this.mountedModeButton) {
+            this.mountedModeButton.removeEventListener('click', this.onModeButtonClick);
+            this.mountedModeButton = null;
+        }
+        if (this.mountedModeDropdown) {
+            this.mountedModeDropdown.removeEventListener('click', this.onModeDropdownClick);
+            this.mountedModeDropdown = null;
+        }
+        if (this.mountedForm) {
+            this.mountedForm.removeEventListener('input', this.onFormInput);
+            this.mountedForm.removeEventListener('change', this.onFormInput);
+            this.mountedForm = null;
+        }
+        this.isPreviewMode = false;
+        this.baseline = null;
+        this.hideLeaveModal();
+        this.pendingNavigation = null;
+    }
+
+    onFormInput() {
+        /* dirty state derived from baseline comparison */
+    }
+
+    onHtmxConfirm(evt) {
+        if (!this.isOnWritePage() || !this.isDirty()) {
+            return;
+        }
+        const detail = evt.detail;
+        if (!detail || !this.isLeavingWriteRequest(detail)) {
+            return;
+        }
+        evt.preventDefault();
+        this.pendingNavigation = detail;
+        this.showLeaveModal();
+    }
+
+    onBeforeUnload(evt) {
+        if (this.isOnWritePage() && this.isDirty()) {
+            evt.preventDefault();
+            evt.returnValue = '';
+        }
+    }
+
+    onSaveDraftAfterRequest(evt) {
+        const elt = evt.detail?.requestConfig?.elt;
+        if (!elt || elt.id !== 'saveDraft') {
+            return;
+        }
+        if (evt.detail.failed) {
+            return;
+        }
+        this.captureBaseline();
+        if (this.pendingNavigation?.issueRequest) {
+            const pending = this.pendingNavigation;
+            this.pendingNavigation = null;
+            this.hideLeaveModal();
+            pending.issueRequest(true);
+        }
+    }
+
+    bindLeaveModal() {
+        document.getElementById('writeLeaveSaveBtn')?.addEventListener('click', this.onLeaveSave);
+        document.getElementById('writeLeaveDiscardBtn')?.addEventListener('click', this.onLeaveDiscard);
+        document.getElementById('writeLeaveCancelBtn')?.addEventListener('click', this.onLeaveCancel);
+    }
+
+    showLeaveModal() {
+        const modal = document.getElementById('writeLeaveModal');
+        if (!modal) {
+            return;
+        }
+        modal.classList.add('modal--open');
+        window.i18n?.apply(modal);
+    }
+
+    hideLeaveModal() {
+        const modal = document.getElementById('writeLeaveModal');
+        if (modal) {
+            modal.classList.remove('modal--open');
+        }
+    }
+
+    onLeaveSave() {
+        const saveBtn = document.getElementById('saveDraft');
+        if (!saveBtn) {
+            return;
+        }
+        if (typeof htmx !== 'undefined') {
+            htmx.trigger(saveBtn, 'click');
+        } else {
+            saveBtn.click();
+        }
+    }
+
+    onLeaveDiscard() {
+        const pending = this.pendingNavigation;
+        this.pendingNavigation = null;
+        this.baseline = this.captureFormSnapshot();
+        this.hideLeaveModal();
+        if (pending?.issueRequest) {
+            pending.issueRequest(true);
+        }
+    }
+
+    onLeaveCancel() {
+        this.pendingNavigation = null;
+        this.hideLeaveModal();
     }
 
     syncModeFromForm() {
@@ -113,7 +332,9 @@ class WriteEditor {
         this.currentMode = mode;
         document.getElementById('format').value = mode;
         this.updateHint();
-        if (this.isPreviewMode) this.renderPreview();
+        if (this.isPreviewMode) {
+            this.renderPreview();
+        }
     }
 
     updateHint() {
@@ -144,7 +365,6 @@ class WriteEditor {
         const beforeText = editor.value.substring(0, start);
         const afterText = editor.value.substring(end);
 
-        // Helper to get line boundaries
         const getLineBounds = (text, pos) => {
             const lineStart = text.lastIndexOf('\n', pos - 1) + 1;
             const lineEnd = text.indexOf('\n', pos);
@@ -199,7 +419,7 @@ class WriteEditor {
                     return;
                 default: return;
             }
-        } else { // AsciiDoc mode
+        } else {
             switch (command) {
                 case 'bold': replacement = `*${selectedText || 'bold text'}*`; break;
                 case 'italic': replacement = `_${selectedText || 'italic text'}_`; break;
@@ -303,17 +523,11 @@ class WriteEditor {
             if (typeof marked !== 'undefined') {
                 marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
                 previewDiv.innerHTML = marked.parse(rawText);
-                if (typeof hljs !== 'undefined') {
-                    hljs.highlightAll();
-                }
-                if (window.codeCopy) {
-                    window.codeCopy.enhanceAll();
-                }
+                this.highlightPreview(previewDiv);
             } else {
                 previewDiv.innerHTML = '<p>Markdown preview not available.</p>';
             }
-        }
-        else { // AsciiDoc
+        } else {
             if (typeof Asciidoctor !== 'undefined') {
                 const asciidoctor = Asciidoctor();
                 const html = asciidoctor.convert(rawText, {
@@ -321,49 +535,96 @@ class WriteEditor {
                     attributes: { showtitle: true, 'figure-caption!': '' }
                 });
                 previewDiv.innerHTML = html;
-                if (typeof hljs !== 'undefined') {
-                    hljs.highlightAll();
-                }
-                if (window.codeCopy) {
-                    window.codeCopy.enhanceAll();
-                }
+                this.highlightPreview(previewDiv);
             } else {
                 previewDiv.innerHTML = '<p>AsciiDoc preview not available. Please refresh the page.</p>';
             }
+        }
+    }
+
+    highlightPreview(previewDiv) {
+        if (typeof hljs !== 'undefined') {
+            previewDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+        }
+        if (window.codeCopy) {
+            window.codeCopy.enhanceAll();
         }
     }
 }
 
 class WriteTagsPicker {
     constructor() {
-        this.root = document.getElementById('tagsPicker');
-        document.body.addEventListener('htmx:afterSettle', () => this.tryMount());
+        this.mountedRoot = null;
+        this.onBeforeSwap = this.onBeforeSwap.bind(this);
+        this.onAfterSettle = this.onAfterSettle.bind(this);
+        document.addEventListener('htmx:beforeSwap', this.onBeforeSwap);
+        document.body.addEventListener('htmx:afterSettle', this.onAfterSettle);
+        this.tryMount();
+    }
+
+    onBeforeSwap(evt) {
+        const target = evt.detail?.target;
+        if (target?.tagName === 'MAIN') {
+            this.unmount();
+        }
+    }
+
+    onAfterSettle(evt) {
+        const target = evt.detail?.target;
+        if (target && target.tagName !== 'MAIN' && !target.closest?.('main')) {
+            return;
+        }
         this.tryMount();
     }
 
     tryMount() {
         const root = document.getElementById('tagsPicker');
-        if (!root || root.dataset.tagsPickerInit === '1') return;
-        root.dataset.tagsPickerInit = '1';
-        this.root = root;
+        if (!root) {
+            this.unmount();
+            return;
+        }
+        if (root === this.mountedRoot) {
+            return;
+        }
+        this.unmount();
+        this.mountedRoot = root;
         this.chipsEl = document.getElementById('tagsChips');
         this.input = document.getElementById('tagInput');
         this.hidden = document.getElementById('tagsJson');
         this.datalist = document.getElementById('tagSuggestionsList');
-        if (!this.chipsEl || !this.input || !this.hidden || !this.datalist) return;
+        if (!this.chipsEl || !this.input || !this.hidden || !this.datalist) {
+            this.unmount();
+            return;
+        }
         this.labels = this.parseInitial(this.hidden.value);
         this.renderChips();
-        this.input.addEventListener('keydown', (e) => {
+        this.onKeydown = (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 this.commitCurrent();
             }
-        });
-        let suggestTimer;
-        this.input.addEventListener('input', () => {
-            clearTimeout(suggestTimer);
-            suggestTimer = setTimeout(() => this.refreshSuggestions(), 180);
-        });
+        };
+        this.onInput = () => {
+            clearTimeout(this.suggestTimer);
+            this.suggestTimer = setTimeout(() => this.refreshSuggestions(), 180);
+        };
+        this.input.addEventListener('keydown', this.onKeydown);
+        this.input.addEventListener('input', this.onInput);
+    }
+
+    unmount() {
+        if (this.input && this.onKeydown) {
+            this.input.removeEventListener('keydown', this.onKeydown);
+            this.input.removeEventListener('input', this.onInput);
+        }
+        if (this.mountedRoot) {
+            delete this.mountedRoot.dataset.tagsPickerInit;
+            this.mountedRoot = null;
+        }
+        clearTimeout(this.suggestTimer);
+        this.suggestTimer = null;
+        this.onKeydown = null;
+        this.onInput = null;
     }
 
     parseInitial(json) {
@@ -440,6 +701,6 @@ class WriteTagsPicker {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new WriteEditor();
+    window.writeEditor = new WriteEditor();
     new WriteTagsPicker();
 });

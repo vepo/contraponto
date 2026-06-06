@@ -124,6 +124,49 @@ class WriteTest {
     }
 
     @Test
+    void editorBoldDoesNotDuplicateAfterHtmxLeaveAndReturn(App app) {
+        var content = "I am writing a text";
+        var expected = "I am **writing** a text";
+
+        app.login(testUser)
+           .writePage()
+           .fillContent(content)
+           .selectContentRange(5, 12)
+           .clickToolbarCommand("bold")
+           .assertContent(expected)
+           .attemptLeaveViaLogo()
+           .confirmLeaveDiscard();
+
+        app.clickHeaderWriteButton()
+           .fillContent(content)
+           .selectContentRange(5, 12)
+           .clickToolbarCommand("bold")
+           .assertContent(expected);
+    }
+
+    @Test
+    void editorDoesNotPromptAfterSavingDraft(App app) {
+        app.login(testUser)
+           .access()
+           .clickHeaderWriteButton()
+           .fillTitle("Saved draft")
+           .fillContent("Saved body")
+           .saveDraft()
+           .assertToastSuccess("Draft saved successfully!")
+           .attemptLeaveViaLogo()
+           .assertLeaveConfirmNotVisible();
+    }
+
+    @Test
+    void editorDoesNotPromptWhenClean(App app) {
+        app.login(testUser)
+           .access()
+           .clickHeaderWriteButton()
+           .attemptLeaveViaLogo()
+           .assertLeaveConfirmNotVisible();
+    }
+
+    @Test
     void editorFormatRestoredWhenEditingAsciiDocDraft(App app) {
         var draftId = Given.post()
                            .withTitle("AsciiDoc draft")
@@ -151,6 +194,16 @@ class WriteTest {
     }
 
     @Test
+    void editorFormatSwitchWorksAfterHtmxNavigationFromHome(App app) {
+        app.login(testUser)
+           .access()
+           .clickHeaderWriteButton()
+           .fillContent("Draft body")
+           .selectEditorFormat("ASCIIDOC")
+           .assertEditorFormat("ASCIIDOC");
+    }
+
+    @Test
     void editorFormatSwitchWorksAfterSaveDraft(App app) {
         app.login(testUser)
            .writePage()
@@ -162,7 +215,27 @@ class WriteTest {
            .assertEditorFormat("ASCIIDOC");
     }
 
-    // ... many more tests, but they will follow the same pattern.
+    @Test
+    void editorPreviewToggleWorksAfterHtmxNavigationFromHome(App app) {
+        app.login(testUser)
+           .access()
+           .clickHeaderWriteButton()
+           .fillContent("Preview body")
+           .togglePreview()
+           .assertPreviewMode()
+           .togglePreview()
+           .assertEditMode();
+    }
+
+    @Test
+    void editorPromptsToSaveOrLeaveWhenDirty(App app) {
+        app.login(testUser)
+           .access()
+           .clickHeaderWriteButton()
+           .fillContent("Unsaved changes")
+           .attemptLeaveViaLogo()
+           .assertLeaveConfirmVisible();
+    }
 
     @BeforeEach
     void setup() {
