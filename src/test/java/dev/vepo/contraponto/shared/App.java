@@ -1997,6 +1997,18 @@ public class App {
             return this;
         }
 
+        public WritePage assertEditorFormat(String mode) {
+            var format = wait.until(visibilityOfElementLocated(By.id("format")));
+            assertThat(format.getDomProperty("value")).isEqualTo(mode);
+            var label = wait.until(visibilityOfElementLocated(By.id("currentModeLabel")));
+            if ("ASCIIDOC".equals(mode)) {
+                assertThat(label.getText()).isEqualToIgnoringCase("AsciiDoc");
+            } else {
+                assertThat(label.getText()).isEqualToIgnoringCase("Markdown");
+            }
+            return this;
+        }
+
         public WritePage assertTitle(String title) {
             var input = wait.until(visibilityOfElementLocated(cssSelector("#title")));
             assertThat(input.getAttribute("value")).isEqualTo(title);
@@ -2063,6 +2075,18 @@ public class App {
             var saveBtn = wait.until(visibilityOfElementLocated(By.id("saveDraft")));
             reliableClick(saveBtn);
             waitForToast(); // wait for success/error toast
+            return this;
+        }
+
+        public WritePage selectEditorFormat(String mode) {
+            var modeButton = wait.until(elementToBeClickable(By.id("editorModeButton")));
+            reliableClick(modeButton);
+            var wrapper = wait.until(presenceOfElementLocated(By.cssSelector(".editor-mode-wrapper")));
+            wait.until(d -> wrapper.getDomAttribute("class").contains("open"));
+            var option = wait.until(elementToBeClickable(
+                                                         By.cssSelector(".editor-mode-option[data-mode='%s']".formatted(mode))));
+            reliableClick(option);
+            wait.until(d -> !wrapper.getDomAttribute("class").contains("open"));
             return this;
         }
 

@@ -29,7 +29,7 @@
                 {#if row.section}
                 <span>{row.section}</span>
                 {/if}
-                <span>{row.placement}</span>
+                <span data-i18n="{row.placementI18nKey()}">{row.placementLabel()}</span>
                 {#if row.published}
                 <span class="pages-manage__badge pages-manage__badge--published" data-i18n="library.tab.published">Publicados</span>
                 {#else}

@@ -18,6 +18,22 @@ public record CustomPageRow(Long id,
                                  page.isPublished());
     }
 
+    public String placementI18nKey() {
+        return switch (placement) {
+            case FOOTER -> "customPage.form.placementFooter";
+            case SIDEBAR -> "customPage.form.placementSidebar";
+            case NONE -> "customPage.form.placementNone";
+        };
+    }
+
+    public String placementLabel() {
+        return switch (placement) {
+            case FOOTER -> "Rodapé";
+            case SIDEBAR -> "Barra lateral";
+            case NONE -> "Nenhum (somente URL direta)";
+        };
+    }
+
     private static String scopeLabel(CustomPage page) {
         var blog = page.getBlog();
         if (blog == null) {

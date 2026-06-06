@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebTest;
@@ -120,6 +121,45 @@ class WriteTest {
         // Cleanup
         Files.deleteIfExists(firstImage);
         Files.deleteIfExists(secondImage);
+    }
+
+    @Test
+    void editorFormatRestoredWhenEditingAsciiDocDraft(App app) {
+        var draftId = Given.post()
+                           .withTitle("AsciiDoc draft")
+                           .withContent("= Title\n\nAsciiDoc body")
+                           .withFormat(Format.ASCIIDOC)
+                           .withPublished(false)
+                           .withAuthor(testUser)
+                           .persist()
+                           .getId();
+
+        app.login(testUser)
+           .editDraft(draftId)
+           .assertEditorFormat("ASCIIDOC");
+    }
+
+    @Test
+    void editorFormatSwitchUpdatesHiddenField(App app) {
+        app.login(testUser)
+           .writePage()
+           .assertEditorFormat("MARKDOWN")
+           .selectEditorFormat("ASCIIDOC")
+           .assertEditorFormat("ASCIIDOC")
+           .selectEditorFormat("MARKDOWN")
+           .assertEditorFormat("MARKDOWN");
+    }
+
+    @Test
+    void editorFormatSwitchWorksAfterSaveDraft(App app) {
+        app.login(testUser)
+           .writePage()
+           .fillTitle("Format switch draft")
+           .fillContent("Draft body")
+           .saveDraft()
+           .assertToastSuccess("Draft saved successfully!")
+           .selectEditorFormat("ASCIIDOC")
+           .assertEditorFormat("ASCIIDOC");
     }
 
     // ... many more tests, but they will follow the same pattern.

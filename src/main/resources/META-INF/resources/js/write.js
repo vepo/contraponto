@@ -2,60 +2,111 @@ class WriteEditor {
     constructor() {
         this.isPreviewMode = false;
         this.currentMode = 'MARKDOWN';   // 'MARKDOWN' or 'ASCIIDOC'
-        this.setupRichText = this.setupRichText.bind(this);
+        this.onBodyAfterSettle = this.onBodyAfterSettle.bind(this);
+        this.onDocumentClick = this.onDocumentClick.bind(this);
+        this.onToolbarClick = this.onToolbarClick.bind(this);
+        this.onModeButtonClick = this.onModeButtonClick.bind(this);
+        this.onModeDropdownClick = this.onModeDropdownClick.bind(this);
         this.commandButtonCallback = this.commandButtonCallback.bind(this);
         this.togglePreview = this.togglePreview.bind(this);
         this.renderPreview = this.renderPreview.bind(this);
         this.changeMode = this.changeMode.bind(this);
-        document.body.addEventListener('htmx:afterSettle', this.setupRichText);
-        this.setupRichText();
+        document.body.addEventListener('htmx:afterSettle', this.onBodyAfterSettle);
+        document.addEventListener('click', this.onDocumentClick);
+        this.mountEditor();
     }
 
-    setupRichText() {
-        const editorToolbar = document.getElementById('editorToolbar');
-        if (editorToolbar) {
-            editorToolbar.addEventListener('click', (e) => {
-                const button = e.target.closest('[data-command]');
-                if (button) this.commandButtonCallback({ target: button });
-            });
+    onBodyAfterSettle() {
+        if (document.getElementById('editorToolbar')) {
+            this.mountEditor();
         }
+    }
 
-        // Custom mode dropdown
+    mountEditor() {
+        const editorToolbar = document.getElementById('editorToolbar');
+        if (!editorToolbar || editorToolbar.dataset.writeEditorBound === '1') {
+            return;
+        }
+        editorToolbar.dataset.writeEditorBound = '1';
+        this.isPreviewMode = false;
+
+        editorToolbar.addEventListener('click', this.onToolbarClick);
+
         const modeButton = document.getElementById('editorModeButton');
         const modeDropdown = document.getElementById('editorModeDropdown');
-        const modeOptions = document.querySelectorAll('.editor-mode-option');
-
         if (modeButton) {
-            modeButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const wrapper = modeButton.closest('.editor-mode-wrapper');
-                wrapper.classList.toggle('open');
-            });
+            modeButton.addEventListener('click', this.onModeButtonClick);
+        }
+        if (modeDropdown) {
+            modeDropdown.addEventListener('click', this.onModeDropdownClick);
         }
 
-        modeOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                const mode = option.getAttribute('data-mode');
-                this.changeMode(mode);
-                // Update button label and icon
-                const icon = option.querySelector('.editor-mode-option-icon').innerHTML;
-                const label = option.querySelector('.editor-mode-option-label').innerHTML;
-                document.querySelector('.editor-mode-icon').innerHTML = icon;
-                document.getElementById('currentModeLabel').innerText = label;
-                // Close dropdown
-                document.querySelector('.editor-mode-wrapper').classList.remove('open');
-            });
-        });
-
-        // Close dropdown if clicking outside
-        document.addEventListener('click', (e) => {
-            const wrapper = document.querySelector('.editor-mode-wrapper');
-            if (wrapper && !wrapper.contains(e.target)) {
-                wrapper.classList.remove('open');
-            }
-        });
-        // Set initial hint
+        this.syncModeFromForm();
         this.updateHint();
+    }
+
+    syncModeFromForm() {
+        const formatInput = document.getElementById('format');
+        const mode = formatInput?.value?.trim()?.toUpperCase();
+        if (mode === 'MARKDOWN' || mode === 'ASCIIDOC') {
+            this.currentMode = mode;
+        }
+        this.updateModeButtonFromCurrentMode();
+    }
+
+    updateModeButtonFromCurrentMode() {
+        const option = document.querySelector(`.editor-mode-option[data-mode="${this.currentMode}"]`);
+        if (option) {
+            this.updateModeButtonLabel(option);
+            return;
+        }
+        const label = document.getElementById('currentModeLabel');
+        if (label) {
+            label.innerText = this.currentMode === 'ASCIIDOC' ? 'AsciiDoc' : 'Markdown';
+        }
+    }
+
+    updateModeButtonLabel(option) {
+        const icon = option.querySelector('.editor-mode-option-icon')?.innerHTML;
+        const label = option.querySelector('.editor-mode-option-label')?.innerHTML;
+        const iconEl = document.querySelector('#editorModeButton .editor-mode-icon');
+        const labelEl = document.getElementById('currentModeLabel');
+        if (icon && iconEl) {
+            iconEl.innerHTML = icon;
+        }
+        if (label && labelEl) {
+            labelEl.innerText = label;
+        }
+    }
+
+    onToolbarClick(e) {
+        const button = e.target.closest('[data-command]');
+        if (button) {
+            this.commandButtonCallback({ target: button });
+        }
+    }
+
+    onModeButtonClick(e) {
+        e.stopPropagation();
+        e.currentTarget.closest('.editor-mode-wrapper')?.classList.toggle('open');
+    }
+
+    onModeDropdownClick(e) {
+        const option = e.target.closest('.editor-mode-option');
+        if (!option) {
+            return;
+        }
+        const mode = option.getAttribute('data-mode');
+        this.changeMode(mode);
+        this.updateModeButtonLabel(option);
+        document.querySelector('.editor-mode-wrapper')?.classList.remove('open');
+    }
+
+    onDocumentClick(e) {
+        const wrapper = document.querySelector('.editor-mode-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            wrapper.classList.remove('open');
+        }
     }
 
     changeMode(mode) {
