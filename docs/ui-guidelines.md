@@ -94,6 +94,7 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 **Purpose:** Showcases curated featured posts to all visitors.
 
 - **Featured hero:** The first featured post gets a large two‑column layout (cover image + title/excerpt) at the top.
+- **Guest introduction masthead:** Unauthenticated visitors see a short editorial welcome above the hero (message explains curated featured posts). Dismissible per browser; hidden for signed-in users.
 - **Post grid:** Below, the remaining featured posts are displayed in a three‑column card grid.
 - **Load more:** At the bottom, a “Load more” button fetches the next page of featured posts via HTMX without a full page refresh.
 - **Visual priority:** The featured hero uses a larger title and a drop‑shadow on the cover. The grid uses smaller cards with a uniform image height.

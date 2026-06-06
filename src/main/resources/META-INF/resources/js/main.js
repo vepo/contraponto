@@ -584,9 +584,71 @@ class MainManager {
         return this.protectedPaths.includes(pathname);
     }
 }
+
+class HomeGuestMastheadManager {
+    static STORAGE_KEY = '__contraponto_home_guest_masthead_dismissed';
+
+    constructor() {
+        this.onDismissClick = this.onDismissClick.bind(this);
+        this.onAfterSettle = this.onAfterSettle.bind(this);
+        document.addEventListener('click', this.onDismissClick);
+        document.addEventListener('htmx:afterSettle', this.onAfterSettle);
+        this.applyDismissState();
+    }
+
+    onAfterSettle(event) {
+        const target = event.detail?.target;
+        if (!target || (target.id !== 'main-content' && !target.closest?.('main'))) {
+            return;
+        }
+        this.applyDismissState();
+    }
+
+    onDismissClick(event) {
+        const dismiss = event.target.closest('[data-home-guest-masthead-dismiss]');
+        if (!dismiss) {
+            return;
+        }
+        event.preventDefault();
+        this.dismiss();
+    }
+
+    applyDismissState() {
+        const masthead = document.getElementById('home-guest-masthead');
+        if (!masthead) {
+            return;
+        }
+        if (this.isDismissed()) {
+            masthead.hidden = true;
+            masthead.classList.add('u-hidden');
+        }
+    }
+
+    dismiss() {
+        try {
+            localStorage.setItem(HomeGuestMastheadManager.STORAGE_KEY, '1');
+        } catch (_) {
+            /* ignore storage failures */
+        }
+        const masthead = document.getElementById('home-guest-masthead');
+        if (masthead) {
+            masthead.hidden = true;
+            masthead.classList.add('u-hidden');
+        }
+    }
+
+    isDismissed() {
+        try {
+            return localStorage.getItem(HomeGuestMastheadManager.STORAGE_KEY) === '1';
+        } catch (_) {
+            return false;
+        }
+    }
+}
 document.addEventListener('DOMContentLoaded', () => {
     window.main = new MainManager();
     window.imageLightbox = new ImageLightboxManager();
     window.codeCopy = new CodeCopyManager();
     window.codeCopy.enhanceAll();
+    window.homeGuestMasthead = new HomeGuestMastheadManager();
 });

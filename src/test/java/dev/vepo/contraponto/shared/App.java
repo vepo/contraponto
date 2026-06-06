@@ -2237,6 +2237,26 @@ public class App {
         return this;
     }
 
+    public App assertGuestMastheadHidden() {
+        waitForReady();
+        var mastheads = driver.findElements(By.id("home-guest-masthead"));
+        if (mastheads.isEmpty()) {
+            return this;
+        }
+        var masthead = mastheads.get(0);
+        assertThat(masthead.isDisplayed()).isFalse();
+        return this;
+    }
+
+    public App assertGuestMastheadVisible() {
+        waitForReady();
+        var masthead = wait.until(visibilityOfElementLocated(By.id("home-guest-masthead")));
+        var title = masthead.findElement(By.id("home-guest-masthead-title"));
+        assertThat(title.getAttribute("data-i18n")).isEqualTo("home.guestMasthead.title");
+        assertThat(title.getText()).isNotBlank();
+        return this;
+    }
+
     public App assertHeaderControlsVisible() {
         var searchBtn = wait.until(visibilityOfElementLocated(By.id("searchBtn")));
         assertThat(searchBtn.isDisplayed()).isTrue();
@@ -2623,6 +2643,13 @@ public class App {
     public DashboardPage dashboard() {
         _goTo("/manage/dashboard");
         return new DashboardPage();
+    }
+
+    public App dismissGuestMasthead() {
+        var dismiss = wait.until(elementToBeClickable(cssSelector("[data-home-guest-masthead-dismiss]")));
+        reliableClick(dismiss);
+        waitForReady();
+        return this;
     }
 
     public WritePage editDraft(Long draftId) {

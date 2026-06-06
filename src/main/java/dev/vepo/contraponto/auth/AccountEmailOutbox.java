@@ -70,7 +70,9 @@ public class AccountEmailOutbox {
     @Column(name = "last_error", columnDefinition = "TEXT")
     private String lastError;
 
-    public AccountEmailOutbox() {}
+    public AccountEmailOutbox() {
+        // JPA requires a no-args constructor
+    }
 
     void applyRetryFailure(int attemptCount, LocalDateTime nextRetryAt, String error) {
         this.attemptCount = attemptCount;

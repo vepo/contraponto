@@ -1,0 +1,34 @@
+<section id="home-guest-masthead"
+         class="home-guest-masthead"
+         role="region"
+         aria-labelledby="home-guest-masthead-title">
+    <div class="home-guest-masthead__header">
+        <h2 id="home-guest-masthead-title"
+            class="home-guest-masthead__title"
+            data-i18n="home.guestMasthead.title">Ideias em contraponto</h2>
+        <button type="button"
+                class="home-guest-masthead__dismiss"
+                data-home-guest-masthead-dismiss
+                aria-label="Fechar"
+                data-i18n="home.guestMasthead.dismiss"
+                data-i18n-attr="aria-label">×</button>
+    </div>
+    <p class="home-guest-masthead__body"
+       data-i18n="home.guestMasthead.body">Um espaço editorial onde autores publicam blogs independentes e editores destacam as melhores histórias.</p>
+    <div class="home-guest-masthead__actions">
+        <a href="/authors"
+           data-hx-get="/authors"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/authors"
+           class="btn btn--primary"
+           data-i18n="home.guestMasthead.exploreAuthors">Conheça os autores</a>
+        <a href="/page/sobre"
+           data-hx-get="/page/sobre"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/page/sobre"
+           class="btn btn--outline"
+           data-i18n="home.guestMasthead.about">Sobre o projeto</a>
+    </div>
+</section>

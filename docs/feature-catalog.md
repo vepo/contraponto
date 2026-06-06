@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-05 · Mobile-first CSS (stacked layouts, touch targets, hub tabs); mobile layout smoke tests (`MobileLayoutWebTest`)
+**Last verified:** 2026-06-06 · Home guest introduction masthead for unauthenticated visitors
 
 ---
 
@@ -46,7 +46,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 
 | Feature | Audience | URL | Steps | UI path (from `/`) |
 |---------|----------|-----|------:|---------------------|
-| Featured homepage | anyone | `GET /` | 0 | Land on `/` (or click logo). |
+| Featured homepage | anyone | `GET /` | 0 | Land on `/` (or click logo). Guests see an optional dismissible editorial masthead above the featured hero. |
 | Author directory | anyone | `GET /authors` | 1 | On `/` → **Autores** in home right margin (wide screens). |
 | Author profile | anyone | `GET /authors/{username}` | 2 | Home → **Autores** card → author card. |
 | Blog directory | anyone | `GET /explore/blogs` | 1 | On `/` → **Blogs** in home right margin (wide screens). |

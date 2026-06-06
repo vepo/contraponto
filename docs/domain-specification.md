@@ -225,6 +225,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
 | **Home page** | Site landing with **featured** published posts (hero + grid). | `HomeEndpoint` |
+| **Guest introduction masthead** | Short editorial welcome on the **home page** for **guests** only; explains curated featured posts; dismissible per browser (`localStorage`). | `HomeEndpoint/guest-masthead.html`, `HomeGuestMastheadManager` |
 | **Search** | Full-text discovery via modal or `/search` page. | `SearchEndpoint` |
 | **Tag page** | Public listing of posts with a given tag. | `TagPageEndpoint` |
 | **RSS feed** | Syndication for site, blog, serie, or tag. | `rss` package |
@@ -336,6 +337,11 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | RSS feed link | RSS | Blog, tag, serie, home, footer |
 | Home — explore authors card | Autores | Authors | Home **aside** → `/authors` |
 | Home — explore blogs card | Blogs | Blogs | Home **aside** → `/explore/blogs` |
+| Home — guest masthead title | Ideias em contraponto | Counterpoint ideas | `home.guestMasthead.title` |
+| Home — guest masthead body | Um espaço editorial onde autores publicam blogs independentes e editores destacam as melhores histórias. | An editorial space where authors publish independent blogs and editors highlight the best stories. | `home.guestMasthead.body` |
+| Home — guest masthead explore authors | Conheça os autores | Meet the authors | `home.guestMasthead.exploreAuthors` → `/authors` |
+| Home — guest masthead about | Sobre o projeto | About the project | `home.guestMasthead.about` → `/page/sobre` |
+| Home — dismiss guest masthead | Fechar | Close | `home.guestMasthead.dismiss` (× control, `aria-label`) |
 | Author directory — title | Autores | Authors | `/authors` page heading |
 | Blog directory — title | Blogs | Blogs | `/explore/blogs` page heading |
 | Author profile — main blog CTA | Ver blog principal | View main blog | `/authors/{username}` |

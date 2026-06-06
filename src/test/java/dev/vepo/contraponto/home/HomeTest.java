@@ -16,6 +16,7 @@ import dev.vepo.contraponto.user.User;
 class HomeTest {
 
     private Map<String, User> users;
+    private User homeUser;
 
     @Test
     void authModalOpensFromHomePage(App app) {
@@ -85,6 +86,24 @@ class HomeTest {
     }
 
     @Test
+    void guestCanDismissHomeMasthead(App app) {
+        app.access()
+           .assertGuestMastheadVisible()
+           .dismissGuestMasthead()
+           .assertGuestMastheadHidden()
+           .clickFirstPostTitle()
+           .waitForReady()
+           .home()
+           .assertGuestMastheadHidden();
+    }
+
+    @Test
+    void guestSeesHomeMasthead(App app) {
+        app.access()
+           .assertGuestMastheadVisible();
+    }
+
+    @Test
     void homePageLoadsSuccessfully(App app) {
         app.access()
            // Header should be present
@@ -130,12 +149,12 @@ class HomeTest {
         Given.cleanup();
 
         // Create a test user (for modal tests)
-        Given.user()
-             .withUsername("homeuser")
-             .withEmail("home@example.com")
-             .withPassword("homepass123")
-             .withName("Home Tester")
-             .persist();
+        homeUser = Given.user()
+                        .withUsername("homeuser")
+                        .withEmail("home@example.com")
+                        .withPassword("homepass123")
+                        .withName("Home Tester")
+                        .persist();
 
         // Create 15 users and posts to guarantee pagination (page size = 12, need >12
         // to show button)
@@ -167,6 +186,12 @@ class HomeTest {
                           .withCover(Given.randomCover(author.getDefaultBlog()))
                           .persist();
                  });
+    }
+
+    @Test
+    void signedInUserDoesNotSeeHomeMasthead(App app) {
+        app.login(homeUser)
+           .assertGuestMastheadHidden();
     }
 
     private String titleFor(int index) {

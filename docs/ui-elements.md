@@ -135,6 +135,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `user-menu`, `user-menu__*` | `MenuEndpoint/menu.html` | |
 | `article-card`, `article-meta` | Home/blog/tag grids | Post cards |
 | `featured`, `featured__*` | Home/blog featured hero | |
+| `home-guest-masthead`, `home-guest-masthead__*` | `HomeEndpoint/guest-masthead.html` | Guest-only editorial intro on home page |
 | `featured__grid--no-cover` | `HomeEndpoint/featured.html` | Single-column hero when post has no cover |
 | `posts-grid`, `load-more` | Grid partials | |
 | `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |

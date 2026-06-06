@@ -7,6 +7,9 @@
             {#include components/browse-sidebar-nav links=links /}
             <div class="browse-page-shell">
                 <div class="browse-page-shell__main">
+                    {#if !session.isAuthenticated}
+                        {#include HomeEndpoint/guest-masthead /}
+                    {/if}
                     {#if !posts.isEmpty}
                     {#let post = posts.data.get(0)}
                         {#include HomeEndpoint/featured post=post /}
