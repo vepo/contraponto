@@ -33,7 +33,7 @@ public class AccountEmailService {
     record unauthorizedSignupReport(String baseUrl, UnauthorizedSignupReportEvent event)
             implements MailTemplate.MailTemplateInstance {}
 
-    private static final Logger LOG = LoggerFactory.getLogger(AccountEmailService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccountEmailService.class);
 
     private final String mailFrom;
     private final String baseUrl;
@@ -105,11 +105,11 @@ public class AccountEmailService {
                                                                 subject,
                                                                 objectMapper.writeValueAsString(payload),
                                                                 failure.getMessage()));
-            LOG.info("Queued account email for later delivery to {} ({})", recipient, kind);
+            logger.info("Queued account email for later delivery to {} ({})", recipient, kind);
         } catch (JsonProcessingException enqueueFailure) {
-            LOG.error("Failed to serialize account email outbox payload for {} ({})", recipient, kind, enqueueFailure);
+            logger.error("Failed to serialize account email outbox payload for {} ({})", recipient, kind, enqueueFailure);
         } catch (RuntimeException enqueueFailure) {
-            LOG.error("Failed to persist account email outbox entry for {} ({})", recipient, kind, enqueueFailure);
+            logger.error("Failed to persist account email outbox entry for {} ({})", recipient, kind, enqueueFailure);
         }
     }
 
@@ -133,7 +133,7 @@ public class AccountEmailService {
                 .subscribe()
                 .with(ignored -> {},
                       failure -> {
-                          LOG.error("Failed to send account email to {} with subject {}", recipient, subject, failure);
+                          logger.error("Failed to send account email to {} with subject {}", recipient, subject, failure);
                           enqueueFailure(kind, recipient, subject, outboxPayload, failure);
                       });
     }

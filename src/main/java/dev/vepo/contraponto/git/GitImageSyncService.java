@@ -30,7 +30,7 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class GitImageSyncService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GitImageSyncService.class);
+    private static final Logger logger = LoggerFactory.getLogger(GitImageSyncService.class);
 
     private static final Pattern ASCIIDOC_IMAGE =
             Pattern.compile("image::?([^\\s\\[]+)\\[", Pattern.CASE_INSENSITIVE);
@@ -149,7 +149,7 @@ public class GitImageSyncService {
                     String rel = repoRoot.relativize(dest.toAbsolutePath().normalize()).toString().replace('\\', '/');
                     git.add().addFilepattern(rel).call();
                 } catch (IOException | GitAPIException e) {
-                    LOG.warn("Failed to export image uuid={}", uuid, e);
+                    logger.warn("Failed to export image uuid={}", uuid, e);
                 }
             });
         }
@@ -177,7 +177,7 @@ public class GitImageSyncService {
             byte[] content = Files.readAllBytes(source);
             imageService.storeImportedImage(blog, uuid, ext, content, ImageService.contentTypeForExtension(ext), gitAssetRelativePath);
         } catch (IOException e) {
-            LOG.warn("Failed to import image uuid={}", uuid, e);
+            logger.warn("Failed to import image uuid={}", uuid, e);
         }
     }
 
@@ -201,7 +201,7 @@ public class GitImageSyncService {
                                      String ext) {
         Path source = resolveAssetFile(convention.resolveAssets(workspace), assetRelativePath, ext);
         if (source == null) {
-            LOG.debug("Asset not found for import: {}{}", assetRelativePath, ext);
+            logger.debug("Asset not found for import: {}{}", assetRelativePath, ext);
             return;
         }
         String basename = GitFrontMatterResolver.assetBasename(assetRelativePath);

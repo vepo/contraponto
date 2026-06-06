@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.shared.infra;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,16 +54,14 @@ public class LoggedUserProvider {
     @RequestScoped
     public LoggedUser loadLoggedUser() {
         var cookie = request.getCookie(LoginEndpoint.SESSION_COOKIE_NAME);
-        if (Objects.nonNull(cookie)) {
-            var sessionId = cookie.getValue();
-            var loggedUser = find(sessionId);
-            if (loggedUser.isPresent()) {
-                logger.info("Logged cookie={} user={}", sessionId, loggedUser.get());
-                return loggedUser.get();
-            }
+        if (cookie == null) {
+            return new LoggedUser();
         }
-
-        return new LoggedUser();
+        var sessionId = cookie.getValue();
+        return find(sessionId).map(user -> {
+            logger.info("Logged cookie={} user={}", sessionId, user);
+            return user;
+        }).orElseGet(LoggedUser::new);
     }
 
     public LoggedUser login(User user) {

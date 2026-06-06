@@ -15,7 +15,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class AccountEmailOutboxService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AccountEmailOutboxService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccountEmailOutboxService.class);
 
     private static final List<Duration> RETRY_BACKOFF = List.of(
                                                                 Duration.ofMinutes(1),
@@ -45,13 +45,12 @@ public class AccountEmailOutboxService {
                 accountEmailService.resendOutboxEntry(entry);
                 outboxRepository.delete(entry);
             } catch (RuntimeException failure) {
-                int attemptCount = entry.getAttemptCount() + 1;
-                LocalDateTime nextRetryAt = now.plus(retryDelay(attemptCount));
-                LOG.warn("Account email outbox retry failed for id={} recipient={} attempt={}",
-                         entry.getId(),
-                         entry.getRecipient(),
-                         attemptCount,
-                         failure);
+                var attemptCount = entry.getAttemptCount() + 1;
+                var nextRetryAt = now.plus(retryDelay(attemptCount));
+                logger.warn("Account email outbox retry failed entry={} attempt={}",
+                            entry,
+                            attemptCount,
+                            failure);
                 outboxRepository.recordFailure(entry, attemptCount, nextRetryAt, failure.getMessage());
             }
         }

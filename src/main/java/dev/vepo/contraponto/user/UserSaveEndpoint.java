@@ -90,7 +90,7 @@ public class UserSaveEndpoint {
         }
 
         var user = userService.createUser(form.getUsername(), form.getName(), form.getEmail(), form.getPassword(), roles, true);
-        logger.info("Created user id={} username={}", user.getId(), user.getUsername());
+        logger.info("Created user {}", user);
 
         return Toast.ok()
                     .i18nKey(I18nKeys.TOAST_USER_CREATED, I18nDefaults.USER_CREATED)
@@ -174,7 +174,7 @@ public class UserSaveEndpoint {
             accountEmailService.sendPasswordChanged(user);
         }
 
-        logger.info("Updated user id={} username={}", user.getId(), user.getUsername());
+        logger.info("Updated user {}", user);
 
         return Toast.ok()
                     .i18nKey(I18nKeys.TOAST_USER_SAVED, I18nDefaults.USER_SAVED)

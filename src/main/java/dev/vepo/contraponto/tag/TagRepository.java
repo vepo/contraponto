@@ -85,18 +85,16 @@ public class TagRepository {
 
     @Transactional
     public Tag findOrCreateByLabel(String label) {
-        String trimmed = label.trim();
-        String slug = Slug.slugify(trimmed);
+        var trimmed = label.trim();
+        var slug = Slug.slugify(trimmed);
         if (slug.isEmpty()) {
             throw new IllegalArgumentException("Invalid tag label");
         }
-        Optional<Tag> existing = findBySlug(slug);
-        if (existing.isPresent()) {
-            return existing.get();
-        }
-        Tag created = new Tag(slug, trimmed, null);
-        entityManager.persist(created);
-        return created;
+        return findBySlug(slug).orElseGet(() -> {
+            var created = new Tag(slug, trimmed, null);
+            entityManager.persist(created);
+            return created;
+        });
     }
 
     public Page<Tag> findPageForManagement(PageQuery query) {

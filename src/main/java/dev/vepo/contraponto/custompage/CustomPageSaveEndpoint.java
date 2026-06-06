@@ -228,7 +228,7 @@ public class CustomPageSaveEndpoint {
         customPageRepository.save(page);
         customPageImageDependencyService.syncDependencies(page);
         customPageChangedEvents.fire(new CustomPageChangedEvent(page.getId()));
-        logger.info("Saved custom page id={} slug={}", page.getId(), page.getSlug());
+        logger.info("Saved custom page {}", page);
 
         return Toast.ok()
                     .i18nKey(I18nKeys.TOAST_PAGE_SAVED, I18nDefaults.PAGE_SAVED)

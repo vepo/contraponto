@@ -141,7 +141,7 @@ public class BlogSaveEndpoint {
         blogBannerService.applyDefaultBannerOnCreate(blog);
         blogBannerService.applyBannerFromForm(blog, form.getBannerId());
         blogRepository.save(blog);
-        logger.info("Created blog id={} slug={}", blog.getId(), blog.getSlug());
+        logger.info("Created blog {}", blog);
         triggerGitWarmupIfConfigured(blog);
         return successList(form.getHub());
     }
@@ -175,7 +175,7 @@ public class BlogSaveEndpoint {
 
         blog.setActive(false);
         blogRepository.save(blog);
-        logger.info("Deactivated blog id={}", blog.getId());
+        logger.info("Deactivated blog {}", blog);
         return successList(hub);
     }
 
@@ -274,7 +274,7 @@ public class BlogSaveEndpoint {
         }
         blogBannerService.applyBannerFromForm(blog, form.getBannerId());
         blogRepository.save(blog);
-        logger.info("Updated blog id={} slug={}", blog.getId(), blog.getSlug());
+        logger.info("Updated blog {}", blog);
         triggerGitWarmupIfConfigured(blog);
         return successList(form.getHub());
     }

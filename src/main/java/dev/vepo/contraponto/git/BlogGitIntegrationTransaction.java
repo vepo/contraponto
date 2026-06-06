@@ -19,7 +19,7 @@ import jakarta.transaction.Transactional.TxType;
 @ApplicationScoped
 public class BlogGitIntegrationTransaction {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BlogGitIntegrationTransaction.class);
+    private static final Logger logger = LoggerFactory.getLogger(BlogGitIntegrationTransaction.class);
 
     private static boolean isConfiguredForGit(Blog blog) {
         return blog.isGitEnabled()
@@ -89,7 +89,7 @@ public class BlogGitIntegrationTransaction {
             GitSyncRunContext.setRunId(runId.get());
             self.get().exportPost(postId);
         } catch (RuntimeException e) {
-            LOG.error("Git export failed postId={}", postId, e);
+            logger.error("Git export failed postId={}", postId, e);
         } finally {
             GitSyncRunContext.clear();
         }
@@ -105,7 +105,7 @@ public class BlogGitIntegrationTransaction {
             GitSyncRunContext.setRunId(runId.get());
             self.get().syncBlogFromGit(blogId);
         } catch (RuntimeException e) {
-            LOG.error("Git import failed blogId={}", blogId, e);
+            logger.error("Git import failed blogId={}", blogId, e);
         } finally {
             GitSyncRunContext.clear();
         }

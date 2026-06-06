@@ -70,7 +70,7 @@ public class AccountSecurityUpdateEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response update(@BeanParam AccountSecurityUpdateRequest request) {
-        logger.info("Updating account security for user id={}", loggedUser.getId());
+        logger.info("Updating account security for user {}", loggedUser);
         if (!loggedUser.isAuthenticated()) {
             return Response.status(Status.FORBIDDEN).build();
         }

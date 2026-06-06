@@ -50,7 +50,7 @@ public class BlogGitIntegrationService {
 
     private record ConventionLoad(JekyllLayoutConvention convention, String configSource, String parseWarning) {}
 
-    private static final Logger LOG = LoggerFactory.getLogger(BlogGitIntegrationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BlogGitIntegrationService.class);
 
     private static GitSyncOutcome aggregatePostOutcomes(List<GitSyncPostResult> results) {
         if (results.isEmpty()) {
@@ -414,7 +414,7 @@ public class BlogGitIntegrationService {
             ObjectId oldId = repo.resolve(lastKnown);
             ObjectId newId = repo.resolve(head);
             if (oldId == null) {
-                LOG.info("Last known commit {} not in workspace; importing all posts.", lastKnown);
+                logger.info("Last known commit {} not in workspace; importing all posts.", lastKnown);
                 return listAllPostFiles(workspace, convention);
             }
             if (newId == null || oldId.equals(newId)) {
@@ -465,7 +465,7 @@ public class BlogGitIntegrationService {
                                           null);
             }
         } catch (IOException | IllegalArgumentException e) {
-            LOG.warn("Could not parse {}, using defaults: {}", cfg.toAbsolutePath(), e.toString());
+            logger.warn("Could not parse config={}, using defaults: {}", cfg, e);
             return new ConventionLoad(JekyllLayoutConvention.defaults(), "defaults", e.toString());
         }
         return new ConventionLoad(JekyllLayoutConvention.defaults(), "defaults", null);
@@ -489,7 +489,7 @@ public class BlogGitIntegrationService {
         Path gitDot = workspace.resolve(".git");
         if (!Files.isDirectory(gitDot)) {
             if (directoryHasOccupyingChildren(workspace)) {
-                LOG.warn("Refusing clone into occupied directory {}", workspace);
+                logger.warn("Refusing clone into occupied directory {}", workspace);
                 return false;
             }
 
@@ -526,7 +526,7 @@ public class BlogGitIntegrationService {
             ObjectId oid = git.getRepository().resolve(Constants.HEAD);
             return oid != null ? oid.name() : null;
         } catch (IOException ex) {
-            LOG.warn("Could not resolve HEAD in {}", workspace, ex);
+            logger.warn("Could not resolve HEAD in {}", workspace, ex);
             return null;
         }
     }
@@ -549,7 +549,7 @@ public class BlogGitIntegrationService {
             }
             return Optional.of(ref.getObjectId().name());
         } catch (GitAPIException e) {
-            LOG.warn("Could not resolve remote HEAD for blogId={}: {}", blog.getId(), e.toString());
+            logger.warn("Could not resolve remote HEAD for blog={}: {}", blog, e);
             return Optional.empty();
         }
     }

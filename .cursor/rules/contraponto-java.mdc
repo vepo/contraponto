@@ -15,9 +15,57 @@ alwaysApply: false
 
 ## Style
 
-- 4 spaces, K&R braces, ~120 char lines, `var` when type is obvious.
-- **Imports:** add an `import` for every Java type; do not use fully qualified names (`java.util.List`, `dev.vepo.contraponto.shared.App`, …). Use FQN only when two imported types share the same simple name.
+- 4 spaces, K&R braces, ~120 char lines.
+- **Imports:** add an `import` for every Java type; do not use fully qualified names (`java.util.List`, `dev.vepo.contraponto.shared.App`, …). Use FQN only when two imported types share the same simple name. Remove unused imports; do not leave dead imports after refactors.
+- **Dead code:** remove unused local variables, parameters, fields, and private methods in every change you touch. Do not suppress with `@SuppressWarnings("unused")` unless the compiler requires it (e.g. framework callbacks).
 - String building: [contraponto-strings.mdc](contraponto-strings.mdc) — `.formatted()` first, `StringBuilder` for loops; no `+` concatenation.
+
+## `var` and local variables
+
+- Prefer **`var`** whenever the type is clear from the right-hand side. Do not repeat an explicit type unless it aids readability (public API signatures, fields, unclear literals, or numeric widening).
+- **Inline** instead of assigning throwaway locals. Prefer `return calcY(getX())` over `var x = getX(); var y = calcY(x); return y;` when each value is used once and the call chain stays readable (~120 char line limit).
+- Keep a local when the value is reused, when splitting improves debugging, or when a long chain would hurt clarity.
+
+## Functional style
+
+- Prefer **streams**, **`Optional`**, and **`map` / `filter` / `flatMap`** over imperative loops and null checks when the transformation is a straight pipeline.
+- Prefer **`toList()`** / **`Collectors`** over manual list building when grouping or mapping collections.
+- Use **`ifPresentOrElse`**, **`orElseThrow`**, and **`orElseGet`** instead of `isPresent()` + `get()` branches.
+- Imperative code is fine when streams would be longer or obscure (multi-step mutations, side effects per element, complex Criteria/JPA setup).
+
+## Logging
+
+- Always **SLF4J** — never `System.out`, `System.err`, or `java.util.logging`.
+- One static logger per class:
+
+```java
+private static final Logger logger = LoggerFactory.getLogger(MyClass.class);
+```
+
+- Use **parameterized** messages — not string concatenation.
+- **Production code only** (`src/main/java/**`): **do not call methods in log arguments**; arguments are evaluated even when the level is disabled. Test code may call methods in log arguments when it aids diagnostics.
+
+```java
+// ❌ production
+logger.info("Something {}", x.value());
+
+// ✅ production
+logger.info("Something {}", x);
+```
+
+When you need a specific field in production, assign it first or log the enclosing object:
+
+```java
+var postId = post.getId();
+logger.info("Published post id={}", postId);
+// or
+logger.info("Published post {}", post);
+```
+- **`debug`:** detailed flow useful when diagnosing (repository filters, cache hits, Git sync steps).
+- **`info`:** meaningful business events (publish, login, import completed).
+- **`warn`:** unexpected or suspicious behaviour that did **not** fail the operation — stale cache, missing optional data, fallback path taken, retry succeeded, deprecated code path still hit.
+- **`error`:** failures and unexpected exceptions (include context ids; pass the exception as the last argument).
+- Do not log secrets, passwords, or full session tokens.
 
 ## Entities
 

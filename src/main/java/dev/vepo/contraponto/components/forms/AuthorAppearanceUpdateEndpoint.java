@@ -85,7 +85,7 @@ public class AuthorAppearanceUpdateEndpoint {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response update(@BeanParam AuthorAppearanceUpdateRequest request) {
-        logger.info("Updating author appearance for user id={}", loggedUser.getId());
+        logger.info("Updating author appearance for user {}", loggedUser);
         if (!loggedUser.isAuthenticated()) {
             return Response.status(Status.FORBIDDEN).build();
         }

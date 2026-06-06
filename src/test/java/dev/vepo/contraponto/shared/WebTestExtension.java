@@ -54,6 +54,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
             logger.warn("Test cleanup failed", e);
         }
         driver.manage().logs().get(LogType.BROWSER).getAll()
+              // only log the message, not the entire log entry
               .forEach(logEntry -> logger.info("Browser console: {}", logEntry.getMessage()));
         driver.get("about:blank");
     }

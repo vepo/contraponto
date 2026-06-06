@@ -45,7 +45,8 @@ public final class AsciiDoctor implements Renderer {
             if (asciidoctorScript.isEmpty()) {
                 throw new RendererException("Asciidoctor script is empty – check the file path");
             }
-            logger.debug("Loaded Asciidoctor.js, length: {} bytes", asciidoctorScript.length());
+            var scriptLength = asciidoctorScript.length();
+            logger.debug("Loaded Asciidoctor.js, length: {} bytes", scriptLength);
             engine.eval(asciidoctorScript);
 
             // 3. Define the rendering function (uses the global Asciidoctor factory)

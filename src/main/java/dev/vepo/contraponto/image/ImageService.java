@@ -93,7 +93,7 @@ public class ImageService {
 
         imageContentRepository.deleteByImageId(image.getId());
         imageRepository.softDelete(uuid);
-        logger.info("Image deleted successfully! id={}", image.getId());
+        logger.info("Image deleted successfully! {}", image);
     }
 
     private String getFileExtension(String filename) {

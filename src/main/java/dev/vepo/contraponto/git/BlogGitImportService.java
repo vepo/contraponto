@@ -77,7 +77,7 @@ public class BlogGitImportService {
         DRAFTS_FOLDER
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(BlogGitImportService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BlogGitImportService.class);
 
     private static Optional<Boolean> parseBoolean(Object raw) {
         if (raw == null) {
@@ -345,7 +345,7 @@ public class BlogGitImportService {
             return GitSyncPostResult.success(draft.post().getId(), pathLabel,
                                              "Imported post \"%s\".".formatted(draft.slug()));
         } catch (Exception ex) {
-            LOG.warn("Import failed markdown={}: {}", markdownPath, ex.toString());
+            logger.warn("Import failed markdown={} error={}", markdownPath, ex);
             GitImportFailureMapper.ClassifiedImportFailure classified = gitImportFailureMapper.classify(ex);
             return GitSyncPostResult.failed(pathLabel,
                                             classified.message(),

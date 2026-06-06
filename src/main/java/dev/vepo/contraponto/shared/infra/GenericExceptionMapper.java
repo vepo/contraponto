@@ -77,9 +77,9 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
         // Log the error with stack trace for server-side debugging
         if (status >= 500) {
-            logger.error("Internal server error: {}", exception.getMessage(), exception);
+            logger.error("Internal server error", exception);
         } else {
-            logger.warn("Client error {}: {}", status, exception.getMessage());
+            logger.warn("Client error status={} exception={}", status, exception);
         }
 
         // Render error page

@@ -168,7 +168,7 @@ public class PostRepository {
             return false;
         }
         entityManager.remove(post);
-        logger.info("Deleted post: {}", post.getSlug());
+        logger.info("Deleted post: {}", post);
         return true;
     }
 
@@ -588,14 +588,14 @@ public class PostRepository {
             entityManager.persist(post);
         }
         entityManager.flush();
-        logger.info("Updated post: {}", post.getSlug());
+        logger.info("Updated post: {}", post);
         return post;
     }
 
     @Transactional
     public Post saveFromGit(Post post) {
         entityManager.persist(post);
-        logger.info("Git import persisted new post slug={}", post.getSlug());
+        logger.info("Git import persisted new post {}", post);
         return post;
     }
 
