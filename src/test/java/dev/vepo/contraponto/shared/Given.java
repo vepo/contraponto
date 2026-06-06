@@ -156,6 +156,7 @@ public interface Given {
         private String slug;
         private boolean published;
         private boolean featured;
+        private LocalDateTime publishedAt;
         private java.util.List<String> tagLabels = new java.util.ArrayList<>();
         private String serieTitle;
 
@@ -182,7 +183,7 @@ public interface Given {
                                .blog(Optional.ofNullable(blog).orElseGet(() -> author.getDefaultBlog()))
                                .published(published)
                                .featured(featured)
-                               .publishedAt(TestTimes.REFERENCE)
+                               .publishedAt(Optional.ofNullable(publishedAt).orElseGet(TestTimes::nextPublishedAt))
                                .build();
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));
@@ -249,6 +250,11 @@ public interface Given {
 
         public PostBuilder withPublished(boolean published) {
             this.published = published;
+            return this;
+        }
+
+        public PostBuilder withPublishedAt(LocalDateTime publishedAt) {
+            this.publishedAt = publishedAt;
             return this;
         }
 
@@ -357,6 +363,7 @@ public interface Given {
     }
 
     public static void cleanup() {
+        TestTimes.reset();
         transaction(() -> {
             Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Image.class, Blog.class, User.class)
                   .sequential()

@@ -3,6 +3,7 @@ package dev.vepo.contraponto.shared;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Fixed timestamps for deterministic tests. Do not use
@@ -19,6 +20,20 @@ public final class TestTimes {
 
     /** Cutoff that includes any outbox row scheduled at persist time. */
     public static final LocalDateTime FAR_FUTURE = LocalDateTime.of(2099, 12, 31, 23, 59);
+
+    private static final AtomicInteger PUBLISH_SEQUENCE = new AtomicInteger();
+
+    /**
+     * Monotonic publish instants for {@link Given} posts (newest post = highest
+     * minute offset).
+     */
+    public static LocalDateTime nextPublishedAt() {
+        return REFERENCE.plusMinutes(PUBLISH_SEQUENCE.getAndIncrement());
+    }
+
+    public static void reset() {
+        PUBLISH_SEQUENCE.set(0);
+    }
 
     private TestTimes() {}
 }
