@@ -1998,7 +1998,7 @@ public class App {
         }
 
         public WritePage assertEditorFormat(String mode) {
-            var format = wait.until(visibilityOfElementLocated(By.id("format")));
+            var format = wait.until(presenceOfElementLocated(By.id("format")));
             assertThat(format.getDomProperty("value")).isEqualTo(mode);
             var label = wait.until(visibilityOfElementLocated(By.id("currentModeLabel")));
             if ("ASCIIDOC".equals(mode)) {
