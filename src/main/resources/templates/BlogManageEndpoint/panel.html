@@ -1,7 +1,7 @@
 {#if hubContext.authorMode()}
-{#include components/hub-panel-header title='My Blogs' subtitle='Your default blog lives at your profile URL and supports Git sync. Create secondary blogs for separate topics.' actionHref='/blogs/new?hub=writing' actionLabel='New Blog' /}
+{#include components/hub-panel-header title='Meus blogs' titleKey='blog.manageAuthorTitle' subtitle='Seu blog principal fica na URL do perfil e suporta sincronização Git. Crie blogs secundários para outros temas.' subtitleKey='blog.manageAuthorSubtitle' actionHref='/blogs/new?hub=writing' actionLabel='Novo blog' actionLabelKey='blog.newBlog' /}
 {#else}
-{#include components/hub-panel-header title='All Blogs' subtitle='Manage all blogs on the platform. Every user keeps a default blog at their profile URL.' /}
+{#include components/hub-panel-header title='Todos os blogs' titleKey='blog.managePlatformTitle' subtitle='Gerencie todos os blogs da plataforma. Cada usuário mantém um blog principal na URL do perfil.' subtitleKey='blog.managePlatformSubtitle' /}
 {/if}
 
 {#if blogs.isEmpty()}
@@ -19,14 +19,14 @@
                 <span class="pages-manage__badge">{row.owner}</span>
                 {/if}
                 {#if row.main}
-                <span class="pages-manage__badge pages-manage__badge--published">Default</span>
+                <span class="pages-manage__badge pages-manage__badge--published" data-i18n="blog.defaultBadge">Principal</span>
                 {#else}
                 <span class="pages-manage__badge">{row.slug}</span>
                 {/if}
                 {#if row.active}
-                <span class="pages-manage__badge pages-manage__badge--published">Active</span>
+                <span class="pages-manage__badge pages-manage__badge--published" data-i18n="blog.activeBadge">Ativo</span>
                 {#else}
-                <span class="pages-manage__badge pages-manage__badge--draft">Inactive</span>
+                <span class="pages-manage__badge pages-manage__badge--draft" data-i18n="blog.inactiveBadge">Inativo</span>
                 {/if}
             </div>
             {#if row.description}
@@ -49,8 +49,8 @@
                hx-swap="outerHTML"
                hx-push-url="/blogs/{row.id}/settings"
                class="btn btn--secondary btn--small"
-               data-nav>
-                Settings
+               data-nav data-i18n="blog.settings">
+                Configurações
             </a>
             {/if}
             {#if row.canDeactivate && !row.main && row.active}
@@ -60,8 +60,10 @@
                     hx-select="main"
                     hx-target="main"
                     hx-swap="outerHTML"
-                    hx-confirm="Deactivate this blog? Posts will remain but the blog URL will stop working.">
-                Deactivate
+                    hx-confirm="Desativar este blog? As publicações permanecem, mas a URL do blog deixará de funcionar."
+                    data-i18n-attr="hx-confirm"
+                    data-i18n="blog.deactivateConfirm">
+                <span data-i18n="blog.deactivate">Desativar</span>
             </button>
             {/if}
         </div>

@@ -70,7 +70,7 @@ public class NavigationHubService {
         return switch (hub) {
             case WRITING -> new HubMeta("Writing", "Writing", "Library, images, your blogs, and author appearance.");
             case READING -> new HubMeta("Reading", "Reading", "Your highlights and notes across posts.");
-            case MANAGE -> new HubMeta("Manage", "Manage", "Dashboard, custom pages, comments, and platform blogs.");
+            case MANAGE -> new HubMeta("Gerenciar", "Gerenciar", "Painel, páginas personalizadas, comentários e blogs da plataforma.");
             case ACCOUNT -> new HubMeta("Account", "Account", "Notifications, subscriptions, and account security.");
             case REVIEW -> new HubMeta("Review", "Review", "Editorial tools for featured posts and tags.");
             case ADMINISTRATION -> new HubMeta("Administration", "Administration", "Platform administration.");
@@ -116,7 +116,7 @@ public class NavigationHubService {
         return Templates.shellPage(meta.pageTitle(),
                                    meta.hubTitle(),
                                    hub.path(),
-                                   breadcrumbService.hubSection(hub, section.label()),
+                                   breadcrumbService.hubSection(hub, section.label(), section.i18nKey()),
                                    navGroups,
                                    registry.isSingleSectionHub(hub, loggedUser),
                                    sectionSlug,

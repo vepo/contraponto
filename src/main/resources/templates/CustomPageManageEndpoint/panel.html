@@ -1,7 +1,7 @@
 {#if editorView}
-{#include components/hub-panel-header title='Custom Pages' subtitle='Manage application and blog pages. Content is stored as HTML.' actionHref='/pages/new' actionLabel='New Page' /}
+{#include components/hub-panel-header title='Páginas personalizadas' titleKey='manage.nav.customPages' subtitle='Gerencie páginas da aplicação e dos blogs. O conteúdo é armazenado em HTML.' subtitleKey='customPage.manageSubtitleEditor' actionHref='/pages/new' actionLabel='Nova página' actionLabelKey='customPage.newPage' /}
 {#else}
-{#include components/hub-panel-header title='Custom Pages' subtitle='Create and edit pages for your blogs. Content is stored as HTML.' actionHref='/pages/new' actionLabel='New Page' /}
+{#include components/hub-panel-header title='Páginas personalizadas' titleKey='manage.nav.customPages' subtitle='Crie e edite páginas dos seus blogs. O conteúdo é armazenado em HTML.' subtitleKey='customPage.manageSubtitleAuthor' actionHref='/pages/new' actionLabel='Nova página' actionLabelKey='customPage.newPage' /}
 {/if}
 
 {#if pages.isEmpty()}
@@ -13,8 +13,9 @@
        hx-swap="outerHTML"
        hx-push-url="/pages/new"
        class="btn btn--secondary"
-       data-nav>
-        Create your first page
+       data-nav
+       data-i18n="customPage.createFirstPage">
+        Crie sua primeira página
     </a>
 </div>
 {#else}
@@ -32,7 +33,7 @@
                 {#if row.published}
                 <span class="pages-manage__badge pages-manage__badge--published" data-i18n="library.tab.published">Publicados</span>
                 {#else}
-                <span class="pages-manage__badge pages-manage__badge--draft">Draft</span>
+                <span class="pages-manage__badge pages-manage__badge--draft" data-i18n="customPage.draftBadge">Rascunho</span>
                 {/if}
             </div>
             <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
@@ -51,8 +52,10 @@
                     hx-select="main"
                     hx-target="main"
                     hx-swap="outerHTML"
-                    hx-confirm="Delete this page?">
-                Delete
+                    hx-confirm="Excluir esta página?"
+                    data-i18n-attr="hx-confirm"
+                    data-i18n="customPage.deletePageConfirm">
+                <span data-i18n="customPage.deletePage">Excluir</span>
             </button>
         </div>
     </article>

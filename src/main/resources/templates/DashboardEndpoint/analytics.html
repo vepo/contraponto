@@ -1,7 +1,7 @@
 <div id="dashboardAnalytics" class="dashboard-analytics">
     <div id="dashboardAnalytics-controls" class="dashboard-analytics__toolbar">
         <div class="dashboard-analytics__blog">
-            <label class="dashboard-analytics__label" for="dashboardBlogSelect">Blog</label>
+            <label class="dashboard-analytics__label" for="dashboardBlogSelect" data-i18n="dashboard.blogSelector">Blog</label>
             <select id="dashboardBlogSelect"
                     name="blogId"
                     class="dashboard-analytics__select"
@@ -53,9 +53,9 @@
     <section class="dashboard-chart" aria-labelledby="dashboardViewsTitle">
         <h3 id="dashboardViewsTitle" class="dashboard-chart__title" data-i18n="dashboard.dailyViews">Visualizações diárias</h3>
         <p class="dashboard-chart__summary">
-            {analytics.views.total} views this month
+            <span data-i18n="dashboard.viewsThisMonth" data-i18n-params='{"n": "{analytics.views.total}"}'>{analytics.views.total} visualizações este mês</span>
             {#if analytics.viewsComparison}
-            · {analytics.viewsPercentChange}% vs previous month
+            <span data-i18n="dashboard.viewsComparisonSuffix" data-i18n-params='{"percent": "{analytics.viewsPercentChange}"}'> · {analytics.viewsPercentChange}% em relação ao mês anterior</span>
             {/if}
         </p>
         {#if analytics.viewsComparison}
@@ -87,7 +87,7 @@
     <section class="dashboard-chart" aria-labelledby="dashboardReadingTimeTitle">
         <h3 id="dashboardReadingTimeTitle" class="dashboard-chart__title" data-i18n="dashboard.dailyReadingTime">Tempo de leitura diário</h3>
         <p class="dashboard-chart__summary">
-            {analytics.readingTime.total.formatReadingTimeTotal} reading time this month
+            <span data-i18n="dashboard.readingTimeThisMonth" data-i18n-params='{"duration": "{analytics.readingTime.total.formatReadingTimeTotal}"}'>{analytics.readingTime.total.formatReadingTimeTotal} de tempo de leitura este mês</span>
         </p>
         <div class="dashboard-chart__plot" role="img" aria-label="Daily reading time for {analytics.monthLabel}">
             {#for day in analytics.readingTime.days}
@@ -107,7 +107,7 @@
     <section class="dashboard-chart" aria-labelledby="dashboardFollowersTitle">
         <h3 id="dashboardFollowersTitle" class="dashboard-chart__title" data-i18n="dashboard.newFollowers">Novos seguidores</h3>
         <p class="dashboard-chart__summary">
-            +{analytics.newFollowers.total} new this month · {analytics.totalFollowers} followers total
+            <span data-i18n="dashboard.followersSummary" data-i18n-params='{"n": "{analytics.newFollowers.total}", "m": "{analytics.totalFollowers}"}'>+{analytics.newFollowers.total} novos este mês · {analytics.totalFollowers} seguidores no total</span>
         </p>
         <div class="dashboard-chart__plot" role="img" aria-label="New followers for {analytics.monthLabel}">
             {#for day in analytics.newFollowers.days}
@@ -126,7 +126,7 @@
     <section class="dashboard-chart" aria-labelledby="dashboardSubscribersTitle">
         <h3 id="dashboardSubscribersTitle" class="dashboard-chart__title" data-i18n="dashboard.newSubscribers">Novos assinantes por e-mail</h3>
         <p class="dashboard-chart__summary">
-            +{analytics.newSubscribers.total} new this month · {analytics.totalSubscribers} subscribers total
+            <span data-i18n="dashboard.subscribersSummary" data-i18n-params='{"n": "{analytics.newSubscribers.total}", "m": "{analytics.totalSubscribers}"}'>+{analytics.newSubscribers.total} novos este mês · {analytics.totalSubscribers} assinantes no total</span>
         </p>
         <div class="dashboard-chart__plot" role="img" aria-label="New email subscribers for {analytics.monthLabel}">
             {#for day in analytics.newSubscribers.days}

@@ -69,12 +69,16 @@ public class NavigationHubRegistry {
     private List<HubNavGroup> manageGroups(LoggedUser user) {
         var contentSections = new ArrayList<HubSectionNav>();
         if (user != null && user.isEditor()) {
-            contentSections.add(new HubSectionNav("blogs", "Blogs"));
+            contentSections.add(new HubSectionNav("blogs", "Blogs", "manage.nav.blogs"));
         }
-        contentSections.add(new HubSectionNav("pages", "Custom Pages"));
-        return List.of(new HubNavGroup("Overview", List.of(new HubSectionNav("dashboard", "Dashboard"))),
-                       new HubNavGroup("Content", List.copyOf(contentSections)),
-                       new HubNavGroup("Community", List.of(new HubSectionNav("comments", "Comments"))));
+        contentSections.add(new HubSectionNav("pages", "Páginas personalizadas", "manage.nav.customPages"));
+        return List.of(new HubNavGroup("Visão geral",
+                                       "manage.nav.overview",
+                                       List.of(new HubSectionNav("dashboard", "Painel", "manage.nav.dashboard"))),
+                       new HubNavGroup("Conteúdo", "manage.nav.content", List.copyOf(contentSections)),
+                       new HubNavGroup("Comunidade",
+                                       "manage.nav.community",
+                                       List.of(new HubSectionNav("comments", "Comentários", "manage.nav.comments"))));
     }
 
     private List<HubNavGroup> readingGroups() {

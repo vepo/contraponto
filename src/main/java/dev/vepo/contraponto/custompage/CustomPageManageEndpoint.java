@@ -98,7 +98,7 @@ public class CustomPageManageEndpoint {
                                                                  page.getBlog() == null),
                                           links,
                                           loggedUser,
-                                          breadcrumbService.manageCustomPageForm("Edit Page")))
+                                          breadcrumbService.manageCustomPageForm("Editar página", "customPage.editPage")))
                        .build();
     }
 
@@ -145,7 +145,7 @@ public class CustomPageManageEndpoint {
                                                                  editorView),
                                           links,
                                           loggedUser,
-                                          breadcrumbService.manageCustomPageForm("New Page")))
+                                          breadcrumbService.manageCustomPageForm("Nova página", "customPage.newPage")))
                        .build();
     }
 

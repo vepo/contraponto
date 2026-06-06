@@ -12,7 +12,8 @@
         <nav class="hub-nav" aria-label="{hubTitle} sections">
             {#for group in navGroups}
             {#if group.title}
-            <h2 class="hub-nav__group-title">{group.title}</h2>
+            <h2 class="hub-nav__group-title"
+                {#if group.titleI18nKey?? && group.titleI18nKey}data-i18n="{group.titleI18nKey}"{/if}>{group.title}</h2>
             {/if}
             <ul class="hub-nav__list">
                 {#for section in group.sections}
@@ -23,7 +24,8 @@
                        hx-swap="outerHTML"
                        hx-push-url="{hubBasePath}/{section.slug}"
                        class="hub-nav__link{#if section.slug == activeSlug} hub-nav__link--active{/if}"
-                       data-nav>
+                       data-nav
+                       {#if section.i18nKey?? && section.i18nKey}data-i18n="{section.i18nKey}"{/if}>
                         {section.label}
                     </a>
                 </li>

@@ -84,6 +84,14 @@ class ReviewTest {
            .assertLoadMoreIsNotVisible();
     }
 
+    @Test
+    void reviewRowLinksOpenPostInNewTab(App app) {
+        app.access()
+           .login(editorUser)
+           .goToReview()
+           .assertPostOpenLink(mainPost1);
+    }
+
     @BeforeEach
     void setup() {
         Given.cleanup();

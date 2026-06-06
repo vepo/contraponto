@@ -32,8 +32,16 @@ public class BreadcrumbService {
         return new BreadcrumbItem(label, null);
     }
 
+    private static BreadcrumbItem current(String label, String i18nKey) {
+        return new BreadcrumbItem(label, null, i18nKey);
+    }
+
     private static BreadcrumbItem link(String label, String href) {
         return new BreadcrumbItem(label, href);
+    }
+
+    private static BreadcrumbItem link(String label, String href, String i18nKey) {
+        return new BreadcrumbItem(label, href, i18nKey);
     }
 
     private static String pageTitle(CustomPage page) {
@@ -193,67 +201,72 @@ public class BreadcrumbService {
     }
 
     public BreadcrumbTrail hub(NavigationHub hub) {
-        return trail(current(hub.label()));
+        return trail(current(hub.label(), hub.i18nKey()));
     }
 
     public BreadcrumbTrail hubSection(NavigationHub hub, String sectionLabel) {
-        return trail(link(hub.label(), hubRegistry.defaultSectionPath(hub)), current(sectionLabel));
+        return hubSection(hub, sectionLabel, null);
+    }
+
+    public BreadcrumbTrail hubSection(NavigationHub hub, String sectionLabel, String sectionI18nKey) {
+        return trail(link(hub.label(), hubRegistry.defaultSectionPath(hub), hub.i18nKey()),
+                     sectionI18nKey == null ? current(sectionLabel) : current(sectionLabel, sectionI18nKey));
     }
 
     public BreadcrumbTrail manageBlogEdit(Blog blog) {
-        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
-                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE), NavigationHub.MANAGE.i18nKey()),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs"), "manage.nav.blogs"),
                      current(blog.getName()));
     }
 
     public BreadcrumbTrail manageBlogGitSync(Blog blog) {
-        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
-                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE), NavigationHub.MANAGE.i18nKey()),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs"), "manage.nav.blogs"),
                      link(blog.getName(), "/blogs/%s/edit".formatted(blog.getId())),
-                     current("Git sync history"));
+                     current("Histórico de sincronização Git", "blog.gitSyncHistory"));
     }
 
     public BreadcrumbTrail manageBlogGitSyncRun(Blog blog, String runLabel) {
-        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
-                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE), NavigationHub.MANAGE.i18nKey()),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs"), "manage.nav.blogs"),
                      link(blog.getName(), "/blogs/%s/edit".formatted(blog.getId())),
-                     link("Git sync history", "/blogs/%s/git-sync".formatted(blog.getId())),
+                     link("Histórico de sincronização Git", "/blogs/%s/git-sync".formatted(blog.getId()), "blog.gitSyncHistory"),
                      current(runLabel));
     }
 
     public BreadcrumbTrail manageBlogImages(Blog blog) {
-        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
-                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE), NavigationHub.MANAGE.i18nKey()),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs"), "manage.nav.blogs"),
                      link(blog.getName(), "/blogs/%s/edit".formatted(blog.getId())),
-                     current("Images"));
+                     current("Imagens", "image.pageTitle"));
     }
 
     public BreadcrumbTrail manageBlogNew() {
-        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
-                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs")),
-                     current("New Blog"));
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE), NavigationHub.MANAGE.i18nKey()),
+                     link("Blogs", hubRegistry.sectionPath(NavigationHub.MANAGE, "blogs"), "manage.nav.blogs"),
+                     current("Novo blog", "blog.newBlog"));
     }
 
     public BreadcrumbTrail manageBlogs() {
-        return hubSection(NavigationHub.MANAGE, "Blogs");
+        return hubSection(NavigationHub.MANAGE, "Blogs", "manage.nav.blogs");
     }
 
     public BreadcrumbTrail manageComments() {
-        return hubSection(NavigationHub.MANAGE, "Comments");
+        return hubSection(NavigationHub.MANAGE, "Comentários", "manage.nav.comments");
     }
 
-    public BreadcrumbTrail manageCustomPageForm(String currentLabel) {
-        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE)),
-                     link("Custom Pages", hubRegistry.sectionPath(NavigationHub.MANAGE, "pages")),
-                     current(currentLabel));
+    public BreadcrumbTrail manageCustomPageForm(String currentLabel, String currentI18nKey) {
+        return trail(link(NavigationHub.MANAGE.label(), hubRegistry.defaultSectionPath(NavigationHub.MANAGE), NavigationHub.MANAGE.i18nKey()),
+                     link("Páginas personalizadas", hubRegistry.sectionPath(NavigationHub.MANAGE, "pages"), "manage.nav.customPages"),
+                     current(currentLabel, currentI18nKey));
     }
 
     public BreadcrumbTrail manageCustomPages() {
-        return hubSection(NavigationHub.MANAGE, "Custom Pages");
+        return hubSection(NavigationHub.MANAGE, "Páginas personalizadas", "manage.nav.customPages");
     }
 
     public BreadcrumbTrail manageDashboard() {
-        return hubSection(NavigationHub.MANAGE, "Dashboard");
+        return hubSection(NavigationHub.MANAGE, "Painel", "manage.nav.dashboard");
     }
 
     public BreadcrumbTrail reviewFeaturedPosts() {

@@ -189,7 +189,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `library-tab`, `library-tabs` | `LibraryEndpoint/panel.html`, `LibraryEndpoint/tab.html` | Writing hub library |
 | `draft-card`, `drafts-page` | `LibraryEndpoint/tab.html` | |
 | `post-card` | Library published tab | |
-| `review-page`, `review-row` | `ReviewEndpoint/*` | |
+| `review-row`, `review-row__*` | `ReviewEndpoint/*` | Review queue rows; `review-row__open` opens post in new tab |
 | `pages-manage`, `pages-manage__*` | User/blog/tag/custom page manage | Shared CRUD shell |
 | `pages-form`, `user-roles` | Manage forms | |
 | `notifications-page`, `notification-list` | `NotificationEndpoint/notifications.html` | |

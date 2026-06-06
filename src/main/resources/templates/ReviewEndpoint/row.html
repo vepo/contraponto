@@ -5,6 +5,11 @@
         <span class="review-row__date">{post.publishedAt.formatDate}</span>
     </div>
     <div class="review-row__actions">
+        <a href="{post.url}"
+           target="_blank"
+           rel="noopener"
+           class="btn btn--outline btn--small review-row__open"
+           data-i18n="review.openPost">Abrir publicação</a>
         <button class="btn btn--small {#if post.featured}btn--featured{/if}"
                 hx-put="/editor/review/components/{post.id}/featured/toggle"
                 hx-target="#post-row-{post.id}"

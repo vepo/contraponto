@@ -690,6 +690,13 @@
     color: var(--color-text-muted);
 }
 
+.review-row__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
 .btn--featured {
     background: var(--color-primary);
     color: white;

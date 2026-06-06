@@ -26,7 +26,7 @@ class BreadcrumbServiceTest {
         var trail = breadcrumbService.manageBlogEdit(blog);
 
         assertThat(trail.items()).hasSize(3);
-        assertThat(trail.items().get(0).label()).isEqualTo("Manage");
+        assertThat(trail.items().get(0).label()).isEqualTo("Gerenciar");
         assertThat(trail.items().get(0).href()).isEqualTo("/manage/dashboard");
         assertThat(trail.items().get(1).href()).isEqualTo("/manage/blogs");
         assertThat(trail.items().get(2).label()).isEqualTo("Notes");

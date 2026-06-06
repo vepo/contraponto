@@ -326,6 +326,7 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Blog audience — email (on) | Subscribed | Blog page |
 | Post — editor feature | Featured / ★ Featured | Post action bar, review row |
 | Post — editor not featured | ☆ Not Featured | Review row |
+| Review — open post | Abrir publicação | `review.openPost` | Review row link (new tab) |
 | Post — code block copy | Copy | Code block toolbar |
 | Post — code block copied | Copied | After successful copy |
 | Home / blog hero | Featured | Category label on featured card |

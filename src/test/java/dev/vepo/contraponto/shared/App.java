@@ -623,16 +623,17 @@ public class App {
             assertThat(items).hasSizeGreaterThan(index);
             var meta = items.get(index).findElement(cssSelector(".recent-list__meta"));
             var viewsSpan = meta.findElements(cssSelector("span")).stream()
-                                .filter(span -> span.getText().contains("views"))
+                                .filter(span -> span.getText().matches(".*(views|visualizações|visualizaciones).*"))
                                 .findFirst()
                                 .orElseThrow();
-            assertThat(viewsSpan.getText()).contains(expectedViews + " views");
+            assertThat(viewsSpan.getText()).contains(String.valueOf(expectedViews));
             return this;
         }
 
         public DashboardPage assertViewsSummary(long expectedViews) {
             var summary = wait.until(visibilityOfElementLocated(cssSelector("#dashboardViewsTitle + .dashboard-chart__summary")));
-            assertThat(summary.getText()).contains(expectedViews + " views this month");
+            assertThat(summary.getText()).contains(String.valueOf(expectedViews));
+            assertThat(summary.getText()).matches(".*(views this month|visualizações este mês|vistas este mes).*");
             return this;
         }
 
@@ -1583,7 +1584,7 @@ public class App {
 
         public ReviewPage assertPostFeatured(Post post, boolean featured) {
             var row = wait.until(visibilityOfElementLocated(By.id("post-row-%d".formatted(post.getId()))));
-            var btn = row.findElement(By.cssSelector(".btn"));
+            var btn = row.findElement(By.cssSelector("button.btn"));
             if (featured) {
                 assertThat(btn.getAttribute("class")).contains("btn--featured");
             } else {
@@ -1595,13 +1596,23 @@ public class App {
         public ReviewPage assertPostFeaturedToggleLabel(Post post, String label) {
             wait.until(d -> {
                 var row = d.findElement(By.id("post-row-%d".formatted(post.getId())));
-                return row.findElement(By.cssSelector(".btn")).getText().contains(label);
+                return row.findElement(By.cssSelector("button.btn")).getText().contains(label);
             });
             return this;
         }
 
+        public ReviewPage assertPostOpenLink(Post post) {
+            var row = wait.until(visibilityOfElementLocated(By.id("post-row-%d".formatted(post.getId()))));
+            var link = row.findElement(By.cssSelector("a.review-row__open"));
+            assertThat(link.getAttribute("target")).isEqualTo("_blank");
+            assertThat(link.getAttribute("rel")).contains("noopener");
+            assertThat(link.getAttribute("href")).contains("/post/" + post.getSlug());
+            return this;
+        }
+
         public ReviewPage toggleFeatured(Post post) {
-            var toggleBtn = wait.until(visibilityOfElementLocated(By.cssSelector("#post-row-%d .btn".formatted(post.getId()))));
+            var toggleBtn = wait.until(visibilityOfElementLocated(
+                                                                  By.cssSelector("#post-row-%d button.btn".formatted(post.getId()))));
             reliableClick(toggleBtn);
             waitForReady();
             return this;

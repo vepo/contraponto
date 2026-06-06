@@ -2,9 +2,9 @@
 <html lang="{localeLang}">
     {#include components/head}
     {#if formView.page.id}
-    Edit Page - {siteName}
+    Editar página - {siteName}
     {#else}
-    New Page - {siteName}
+    Nova página - {siteName}
     {/if}
     {/include}
     <body>
@@ -15,10 +15,10 @@
                 <div class="pages-manage__header">
                     <div>
                         <h1 class="pages-manage__title">
-                            {#if formView.page.id}Edit Page{#else}New Page{/if}
+                            {#if formView.page.id}<span data-i18n="customPage.editPage">Editar página</span>{#else}<span data-i18n="customPage.newPage">Nova página</span>{/if}
                         </h1>
-                        <p class="pages-manage__subtitle">
-                            Write page content as HTML. Markdown and AsciiDoc are not used here.
+                        <p class="pages-manage__subtitle" data-i18n="customPage.formSubtitle">
+                            Escreva o conteúdo da página em HTML. Markdown e AsciiDoc não são usados aqui.
                         </p>
                     </div>
                     <a data-hx-get="/pages"
@@ -27,14 +27,15 @@
                        hx-swap="outerHTML"
                        hx-push-url="/pages"
                        class="btn btn--secondary"
-                       data-nav>
-                        Back to list
+                       data-nav
+                       data-i18n="customPage.backToList">
+                        Voltar à lista
                     </a>
                 </div>
 
                 {#if formView.publicUrl}
                 <p class="pages-manage__preview">
-                    Public URL:
+                    <span data-i18n="customPage.publicUrl">URL pública:</span>
                     <a href="{formView.publicUrl}" target="_blank" rel="noopener">{formView.publicUrl}</a>
                 </p>
                 {/if}
@@ -52,22 +53,22 @@
 
                     {#if formView.editorView}
                     <div class="form-group">
-                        <label>Scope</label>
+                        <label data-i18n="customPage.form.scope">Escopo</label>
                         <select name="scope" id="pageScope">
-                            <option value="application" {#if formView.applicationScope}selected{/if}>Application (home)</option>
-                            <option value="blog" {#if !formView.applicationScope}selected{/if}>User blog</option>
+                            <option value="application" {#if formView.applicationScope}selected{/if} data-i18n="customPage.form.scopeApplication">Aplicação (início)</option>
+                            <option value="blog" {#if !formView.applicationScope}selected{/if} data-i18n="customPage.form.scopeBlog">Blog do usuário</option>
                         </select>
                     </div>
                     {/if}
 
                     <div class="form-group{#if formView.editorView && formView.applicationScope} u-hidden{/if}" id="blogSelectGroup">
-                        <label>Blog</label>
+                        <label data-i18n="customPage.form.blog">Blog</label>
                         <select name="blogId" {#if !formView.editorView}required{/if}>
                             {#for blog in formView.blogs}
                             <option value="{blog.id}"
                                     {#if formView.page.blog != null && formView.page.blog.id == blog.id}selected{/if}>
                                 {#if blog.main}
-                                {blog.owner.username} (default)
+                                {blog.owner.username} (<span data-i18n="customPage.form.defaultBlog">principal</span>)
                                 {#else}
                                 {blog.owner.username} / {blog.slug} — {blog.name}
                                 {/if}
@@ -77,21 +78,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Title</label>
+                        <label data-i18n="customPage.form.title">Título</label>
                         <input type="text" name="title" value="{formView.page.title}" required>
                     </div>
 
                     <div class="form-group">
-                        <label>Slug</label>
+                        <label data-i18n="customPage.form.slug">Slug</label>
                         <div class="pages-form__slug-hint">
                             {#if formView.applicationScope}
-                            Appears at <code>/page/<em>slug</em></code>
+                            <span data-i18n="customPage.form.slugHintApplication">Aparece em <code>/page/<em>slug</em></code></span>
                             {#else if formView.page.blog != null && formView.page.blog.main}
-                            Appears at <code>/{formView.page.blog.owner.username}/page/<em>slug</em></code>
+                            <span data-i18n="customPage.form.slugHintMainBlog">Aparece em <code>/{formView.page.blog.owner.username}/page/<em>slug</em></code></span>
                             {#else if formView.page.blog != null}
-                            Appears at <code>/{formView.page.blog.owner.username}/{formView.page.blog.slug}/page/<em>slug</em></code>
+                            <span data-i18n="customPage.form.slugHintSecondaryBlog">Aparece em <code>/{formView.page.blog.owner.username}/{formView.page.blog.slug}/page/<em>slug</em></code></span>
                             {#else}
-                            Appears at <code>/page/<em>slug</em></code> or under your blog URL
+                            <span data-i18n="customPage.form.slugHintFallback">Aparece em <code>/page/<em>slug</em></code> ou na URL do seu blog</span>
                             {/if}
                         </div>
                         <input type="text" name="slug"
@@ -101,28 +102,28 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Footer section</label>
+                        <label data-i18n="customPage.form.footerSection">Seção do rodapé</label>
                         <input type="text" name="section" value="{formView.page.section}" required>
                     </div>
 
                     <div class="form-group">
-                        <label>Placement</label>
+                        <label data-i18n="customPage.form.placement">Posicionamento</label>
                         <select name="placement">
-                            <option value="FOOTER" {#if formView.page.placement == 'FOOTER'}selected{/if}>Footer</option>
-                            <option value="SIDEBAR" {#if formView.page.placement == 'SIDEBAR'}selected{/if}>Sidebar</option>
-                            <option value="NONE" {#if formView.page.placement == 'NONE'}selected{/if}>None (direct URL only)</option>
+                            <option value="FOOTER" {#if formView.page.placement == 'FOOTER'}selected{/if} data-i18n="customPage.form.placementFooter">Rodapé</option>
+                            <option value="SIDEBAR" {#if formView.page.placement == 'SIDEBAR'}selected{/if} data-i18n="customPage.form.placementSidebar">Barra lateral</option>
+                            <option value="NONE" {#if formView.page.placement == 'NONE'}selected{/if} data-i18n="customPage.form.placementNone">Nenhum (somente URL direta)</option>
                         </select>
                     </div>
 
                     <div class="form-group form-group--checkbox">
                         <label>
                             <input type="checkbox" name="published" {#if formView.page.published}checked{/if}>
-                            Published
+                            <span data-i18n="customPage.form.published">Publicado</span>
                         </label>
                     </div>
 
                     <div class="form-group">
-                        <label>Content (HTML)</label>
+                        <label data-i18n="customPage.form.content">Conteúdo (HTML)</label>
                         <textarea name="content" class="pages-form__content" rows="18" required>{formView.page.content}</textarea>
                     </div>
 
@@ -136,8 +137,10 @@
                                 hx-select="main"
                                 hx-target="main"
                                 hx-swap="outerHTML"
-                                hx-confirm="Delete this page?">
-                            Delete
+                                hx-confirm="Excluir esta página?"
+                                data-i18n-attr="hx-confirm"
+                                data-i18n="customPage.deletePageConfirm">
+                            <span data-i18n="customPage.deletePage">Excluir</span>
                         </button>
                         {/if}
                     </div>

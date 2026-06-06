@@ -58,6 +58,6 @@ public class AccountEmailOutboxService {
     }
 
     private Duration retryDelay(int attemptCount) {
-        return RETRY_BACKOFF.get(Math.clamp(attemptCount - 1, 0, RETRY_BACKOFF.size() - 1));
+        return RETRY_BACKOFF.get(Math.clamp(attemptCount - 1l, 0, RETRY_BACKOFF.size() - 1));
     }
 }
