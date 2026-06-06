@@ -2,6 +2,8 @@ package dev.vepo.contraponto.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.TestTimes;
 import io.quarkus.mailer.MockMailbox;
 import jakarta.inject.Inject;
 
@@ -58,7 +61,7 @@ class AccountEmailOutboxTest {
                                                             objectMapper.writeValueAsString(payload),
                                                             "SMTP unavailable"));
 
-        assertThat(outboxRepository.findDue(java.time.LocalDateTime.now().plusMinutes(1), 10)).hasSize(1);
+        assertThat(outboxRepository.findDue(TestTimes.FAR_FUTURE, 10)).hasSize(1);
 
         outboxService.processDue();
 
@@ -66,6 +69,6 @@ class AccountEmailOutboxTest {
         assertThat(messages).hasSize(1);
         assertThat(messages.get(0).getSubject()).isEqualTo(copy.subject());
         assertThat(messages.get(0).getHtml()).contains(activateUrl);
-        assertThat(outboxRepository.findDue(java.time.LocalDateTime.now().plusMinutes(1), 10)).isEmpty();
+        assertThat(outboxRepository.findDue(TestTimes.FAR_FUTURE, 10)).isEmpty();
     }
 }

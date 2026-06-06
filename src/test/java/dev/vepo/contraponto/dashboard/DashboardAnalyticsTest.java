@@ -4,7 +4,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -14,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.TestTimes;
 import dev.vepo.contraponto.shared.WebTest;
 import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
 import dev.vepo.contraponto.user.User;
@@ -56,7 +57,7 @@ class DashboardAnalyticsTest {
     }
 
     @Test
-    void dashboardBlogSelectorChangesMetrics(dev.vepo.contraponto.shared.App app) {
+    void dashboardBlogSelectorChangesMetrics(App app) {
         var secondaryBlog = Given.blog()
                                  .withUser(testUser)
                                  .withSlug("secondary-blog")
@@ -70,10 +71,12 @@ class DashboardAnalyticsTest {
                         .withAuthor(testUser)
                         .withPublished(true)
                         .persist();
-        seedViews(post, LocalDateTime.now(), 4);
+        seedViews(post, TestTimes.REFERENCE, 4);
 
         app.login(testUser)
-           .dashboard()
+           .goToDashboardAnalytics(testUser.getDefaultBlog().getId(),
+                                   TestTimes.REFERENCE_MONTH.getYear(),
+                                   TestTimes.REFERENCE_MONTH.getMonthValue())
            .assertAnalyticsLoaded()
            .assertViewsSummary(0)
            .selectBlog("Secondary Blog")
@@ -81,7 +84,7 @@ class DashboardAnalyticsTest {
     }
 
     @Test
-    void dashboardCompareShowsLegend(dev.vepo.contraponto.shared.App app) {
+    void dashboardCompareShowsLegend(App app) {
         var blogId = testUser.getDefaultBlog().getId();
         app.login(testUser)
            .dashboard()
@@ -94,38 +97,42 @@ class DashboardAnalyticsTest {
     }
 
     @Test
-    void dashboardPreviousMonthNavigation(dev.vepo.contraponto.shared.App app) {
+    void dashboardPreviousMonthNavigation(App app) {
         var post = Given.post()
                         .withTitle("Last Month Post")
                         .withContent("Content")
                         .withAuthor(testUser)
                         .withPublished(true)
                         .persist();
-        var lastMonth = YearMonth.now().minusMonths(1);
-        seedViews(post, lastMonth.atDay(15).atTime(12, 0), 2);
+        var previousMonth = TestTimes.REFERENCE_MONTH.minusMonths(1);
+        seedViews(post, previousMonth.atDay(15).atTime(12, 0), 2);
 
         app.login(testUser)
-           .dashboard()
+           .goToDashboardAnalytics(testUser.getDefaultBlog().getId(),
+                                   TestTimes.REFERENCE_MONTH.getYear(),
+                                   TestTimes.REFERENCE_MONTH.getMonthValue())
            .assertAnalyticsLoaded()
            .assertViewsSummary(0)
            .clickPreviousMonth()
-           .assertMonthLabel(lastMonth.format(MONTH_LABEL))
+           .assertMonthLabel(previousMonth.format(MONTH_LABEL))
            .assertViewsSummary(2);
     }
 
     @Test
-    void dashboardShowsNewFollowersSummary(dev.vepo.contraponto.shared.App app) {
+    void dashboardShowsNewFollowersSummary(App app) {
         var blog = testUser.getDefaultBlog();
-        seedFollowNotification(blog, LocalDateTime.now());
+        seedFollowNotification(blog, TestTimes.REFERENCE);
 
         app.login(testUser)
-           .dashboard()
+           .goToDashboardAnalytics(blog.getId(),
+                                   TestTimes.REFERENCE_MONTH.getYear(),
+                                   TestTimes.REFERENCE_MONTH.getMonthValue())
            .assertAnalyticsLoaded()
            .assertNewFollowersSummary(1, 0);
     }
 
     @Test
-    void dashboardShowsViewsThisMonth(dev.vepo.contraponto.shared.App app) {
+    void dashboardShowsViewsThisMonth(App app) {
         var post = Given.post()
                         .withTitle("Analytics Post")
                         .withContent("Content")
@@ -133,10 +140,12 @@ class DashboardAnalyticsTest {
                         .withPublished(true)
                         .persist();
         var blog = post.getBlog();
-        seedViews(post, LocalDateTime.now(), 3);
+        seedViews(post, TestTimes.REFERENCE, 3);
 
         app.login(testUser)
-           .dashboard()
+           .goToDashboardAnalytics(blog.getId(),
+                                   TestTimes.REFERENCE_MONTH.getYear(),
+                                   TestTimes.REFERENCE_MONTH.getMonthValue())
            .assertAnalyticsLoaded()
            .assertViewsSummary(3)
            .selectBlog(blog.getName())

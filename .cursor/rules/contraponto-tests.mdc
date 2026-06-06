@@ -32,3 +32,9 @@ Always run Maven with `GITHUB_ACTIONS=true` so `WebTestExtension` matches CI hea
 ## URLs in tests
 
 - Use relative paths matching production routes; prefer `@TestHTTPResource` for base URL when needed.
+
+## Time
+
+- Do **not** call the system clock in tests: no `LocalDateTime.now()`, `YearMonth.now()`, `Instant.now()`, `System.currentTimeMillis()`, `Clock.systemDefaultZone()`, or `new Date()`.
+- Use fixed constants from [`TestTimes`](../../src/test/java/dev/vepo/contraponto/shared/TestTimes.java) (`REFERENCE`, `REFERENCE_MONTH`, `REFERENCE_DATE`, `FAR_FUTURE`) or an explicit `LocalDateTime.of` / `YearMonth.of` when a different instant is required.
+- Dashboard and other UI tests that depend on “current month” in production must open analytics (or seed data) with explicit `year` / `month` query params — do not rely on the JVM clock matching seeded timestamps.

@@ -1,6 +1,6 @@
 ---
 description: Java endpoint, repository, and entity conventions
-globs: src/main/java/**/*.java
+globs: "**/*.java"
 alwaysApply: false
 ---
 
@@ -16,6 +16,7 @@ alwaysApply: false
 ## Style
 
 - 4 spaces, K&R braces, ~120 char lines, `var` when type is obvious.
+- **Imports:** add an `import` for every Java type; do not use fully qualified names (`java.util.List`, `dev.vepo.contraponto.shared.App`, …). Use FQN only when two imported types share the same simple name.
 - String building: [contraponto-strings.mdc](contraponto-strings.mdc) — `.formatted()` first, `StringBuilder` for loops; no `+` concatenation.
 
 ## Entities

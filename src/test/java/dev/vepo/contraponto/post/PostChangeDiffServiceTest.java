@@ -2,13 +2,13 @@ package dev.vepo.contraponto.post;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.TestTimes;
 import jakarta.inject.Inject;
 
 @QuarkusIntegrationTest
@@ -22,7 +22,7 @@ class PostChangeDiffServiceTest {
         p.setContent(content);
         p.setFormat(Format.MARKDOWN);
         p.setSlug("slug");
-        p.setPublishedAt(LocalDateTime.now());
+        p.setPublishedAt(TestTimes.REFERENCE);
         return p;
     }
 

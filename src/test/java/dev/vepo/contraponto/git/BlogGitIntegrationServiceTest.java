@@ -6,8 +6,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -18,6 +21,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.TestTimes;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
@@ -81,7 +85,7 @@ class BlogGitIntegrationServiceTest {
         if (!Files.exists(root)) {
             return;
         }
-        try (java.util.stream.Stream<Path> stream = Files.walk(root)) {
+        try (Stream<Path> stream = Files.walk(root)) {
             stream.sorted(Comparator.reverseOrder()).forEach(p -> {
                 try {
                     Files.deleteIfExists(p);
@@ -106,7 +110,7 @@ class BlogGitIntegrationServiceTest {
     ContrapontoGitSettings contrapontoGitSettings;
 
     private User persistUserLinkedToUpstream(Path upstream, String branch) {
-        int token = java.util.concurrent.ThreadLocalRandom.current().nextInt();
+        int token = ThreadLocalRandom.current().nextInt();
         User u =
                 Given.user()
                      .withUsername("g_%06x".formatted(Integer.toUnsignedLong(token)))
@@ -201,8 +205,9 @@ class BlogGitIntegrationServiceTest {
         assertThat(pub).isPresent();
         integrationTransaction.exportPost(pub.get().getId());
 
-        LocalDate exportDay =
-                Optional.ofNullable(pub.get().getPublishedAt()).map(java.time.LocalDateTime::toLocalDate).orElse(LocalDate.now());
+        LocalDate exportDay = Optional.ofNullable(pub.get().getPublishedAt())
+                                      .map(LocalDateTime::toLocalDate)
+                                      .orElse(TestTimes.REFERENCE_DATE);
         Path publishedMd = workspace.resolve("custom/posts/" + exportDay + "-pub-post.md");
         assertThat(publishedMd).exists();
         String written = Files.readString(publishedMd, StandardCharsets.UTF_8);

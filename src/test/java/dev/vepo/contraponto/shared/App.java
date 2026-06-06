@@ -2659,6 +2659,17 @@ public class App {
         return new ImageControlPage();
     }
 
+    public DashboardPage goToDashboardAnalytics(long blogId, int year, int month) {
+        dashboard();
+        var path = "/manage/dashboard/components/analytics?blogId=%d&year=%d&month=%d".formatted(blogId, year, month);
+        ((JavascriptExecutor) driver).executeScript("""
+                                                    htmx.ajax('GET', arguments[0], {target: '#dashboardAnalytics', swap: 'outerHTML'});
+                                                    """, path);
+        waitForReady();
+        wait.until(visibilityOfElementLocated(cssSelector("#dashboardAnalytics .dashboard-chart")));
+        return new DashboardPage();
+    }
+
     public GitSyncHistoryPage goToGitSyncHistory(long blogId) {
         _goTo("/blogs/" + blogId + "/git-sync");
         return new GitSyncHistoryPage();

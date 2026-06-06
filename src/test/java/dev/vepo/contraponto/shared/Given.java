@@ -182,7 +182,7 @@ public interface Given {
                                .blog(Optional.ofNullable(blog).orElseGet(() -> author.getDefaultBlog()))
                                .published(published)
                                .featured(featured)
-                               .publishedAt(LocalDateTime.now())
+                               .publishedAt(TestTimes.REFERENCE)
                                .build();
                 if (Objects.isNull(post.getSlug()) || post.getSlug().isBlank()) {
                     post.setSlug(post.getTitle().toLowerCase().replaceAll("[^a-zA-Z0-9\\-]", "-"));

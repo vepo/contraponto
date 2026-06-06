@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.seo;
 
+import static java.util.Objects.requireNonNull;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -21,10 +23,11 @@ public record SeoMetadata(String title,
         description = description != null ? description : "";
         canonicalUrl = canonicalUrl != null ? canonicalUrl : "";
         ogType = ogType != null ? ogType : SeoOgType.WEBSITE;
-        ogImageUrl = ogImageUrl != null ? ogImageUrl : Optional.empty();
-        jsonLd = jsonLd != null ? jsonLd : Optional.empty();
-        articlePublishedAt = articlePublishedAt != null ? articlePublishedAt : Optional.empty();
-        articleModifiedAt = articleModifiedAt != null ? articleModifiedAt : Optional.empty();
+        requireNonNull(ogImageUrl, "SeoMetadata.ogImageUrl must not be null");
+        requireNonNull(jsonLd, "SeoMetadata.jsonLd must not be null");
+        requireNonNull(articlePublishedAt, "SeoMetadata.articlePublishedAt must not be null");
+        requireNonNull(articleModifiedAt, "SeoMetadata.articleModifiedAt must not be null");
+
     }
 
     public SeoMetadata(String title,
