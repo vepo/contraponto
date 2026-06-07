@@ -2114,6 +2114,13 @@ public class App {
             return this;
         }
 
+        public WritePage fillSlug(String slug) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("#slug")));
+            input.clear();
+            input.sendKeys(slug);
+            return this;
+        }
+
         public WritePage fillTitle(String title) {
             var input = wait.until(visibilityOfElementLocated(cssSelector("#title")));
             input.clear();
@@ -2187,6 +2194,17 @@ public class App {
             reliableClick(item);
             wait.until(invisibilityOfElementLocated(By.id("imagePickerModal")));
             wait.until(d -> driver.findElement(By.id("coverPreview")).isDisplayed());
+            return this;
+        }
+
+        public WritePage setContent(String content) {
+            wait.until(visibilityOfElementLocated(cssSelector("#content")));
+            ((JavascriptExecutor) driver).executeScript("""
+                                                        const ta = document.getElementById('content');
+                                                        ta.value = arguments[0];
+                                                        ta.dispatchEvent(new Event('input', { bubbles: true }));
+                                                        """,
+                                                        content);
             return this;
         }
 

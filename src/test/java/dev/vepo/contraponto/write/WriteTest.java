@@ -92,6 +92,19 @@ class WriteTest {
     }
 
     @Test
+    void canSaveDraftWithContentAndSlugAboveDefaultFormAttributeLimit(App app) {
+        var content = "Paragraph. ".repeat(250);
+
+        app.login(testUser)
+           .writePage()
+           .fillTitle("Long article")
+           .setContent(content)
+           .fillSlug("long-article-slug")
+           .saveDraft()
+           .assertToastSuccess("Draft saved successfully!");
+    }
+
+    @Test
     void changeCoverImageWhenEditingDraft(App app) throws IOException {
         var firstImage = Given.randomImage();
         var secondImage = Given.randomImage();
