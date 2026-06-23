@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.github.difflib.DiffUtils;
-import com.github.difflib.patch.AbstractDelta;
 import com.github.difflib.patch.DeltaType;
-import com.github.difflib.patch.Patch;
 
 import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,12 +65,12 @@ public class PostChangeDiffService {
         if (newestFirst == null || newestFirst.isEmpty()) {
             return List.of();
         }
-        List<PostPublication> ordered = newestFirst.reversed();
+        var ordered = newestFirst.reversed();
 
-        List<VersionDiff> result = new ArrayList<>();
+        var result = new ArrayList<VersionDiff>();
         PostPublication previous = null;
         for (PostPublication current : ordered) {
-            PublicationDiff diff = previous == null ? null : diff(previous, current);
+            var diff = previous == null ? null : diff(previous, current);
             result.add(new VersionDiff(current, diff));
             previous = current;
         }
@@ -80,10 +78,10 @@ public class PostChangeDiffService {
     }
 
     public PublicationDiff diff(PostPublication previous, PostPublication current) {
-        boolean titleChanged = !Objects.equals(nullToEmpty(previous.getTitle()), nullToEmpty(current.getTitle()));
-        boolean descriptionChanged = !Objects.equals(nullToEmpty(previous.getDescription()),
-                                                     nullToEmpty(current.getDescription()));
-        String contentDiffHtml = renderContentDiff(previous.getContent(), current.getContent());
+        var titleChanged = !Objects.equals(nullToEmpty(previous.getTitle()), nullToEmpty(current.getTitle()));
+        var descriptionChanged = !Objects.equals(nullToEmpty(previous.getDescription()),
+                                                 nullToEmpty(current.getDescription()));
+        var contentDiffHtml = renderContentDiff(previous.getContent(), current.getContent());
         boolean contentChanged = !contentDiffHtml.isBlank();
         return new PublicationDiff(titleChanged,
                                    descriptionChanged,
@@ -94,16 +92,16 @@ public class PostChangeDiffService {
     }
 
     public String renderContentDiff(String before, String after) {
-        List<String> beforeLines = splitLines(before);
-        List<String> afterLines = splitLines(after);
-        Patch<String> patch = DiffUtils.diff(beforeLines, afterLines);
+        var beforeLines = splitLines(before);
+        var afterLines = splitLines(after);
+        var patch = DiffUtils.diff(beforeLines, afterLines);
         if (patch.getDeltas().isEmpty()) {
             return "";
         }
 
-        StringBuilder html = new StringBuilder();
+        var html = new StringBuilder();
         html.append("<pre class=\"post-history__diff\">");
-        for (AbstractDelta<String> delta : patch.getDeltas()) {
+        for (var delta : patch.getDeltas()) {
             if (delta.getType() == DeltaType.DELETE || delta.getType() == DeltaType.CHANGE) {
                 for (String line : delta.getSource().getLines()) {
                     html.append("<span class=\"post-history__diff-del\">- ")

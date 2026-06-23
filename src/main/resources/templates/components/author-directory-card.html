@@ -11,9 +11,9 @@
             {#if row.excerpt}
             <p class="author-directory-card__excerpt">{row.excerpt}</p>
             {/if}
-            {#include components/profile-tag-list topTags=row.topTags /}
         </div>
     </a>
+    {#include components/profile-tag-list topTags=row.topTags /}
     <div class="author-directory-card__footer">
         <p class="author-directory-card__meta">{row.postCount} publicações</p>
     </div>

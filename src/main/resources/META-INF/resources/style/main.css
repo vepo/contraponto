@@ -1117,7 +1117,7 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin: 0.5rem 0;
+  margin: 0 1.35rem 1.35rem 1.35rem;
 }
 
 .author-profile {
@@ -2291,7 +2291,7 @@ a {
 
 .code-block__copy {
   position: absolute;
-  top: var(--spacing-sm);
+  top: calc(var(--spacing-sm) - (var(--text-xs)) / 2);
   right: var(--spacing-sm);
   z-index: 1;
   padding: 0.35rem 0.75rem;
