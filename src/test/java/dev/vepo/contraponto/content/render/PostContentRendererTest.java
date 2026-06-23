@@ -81,9 +81,22 @@ class PostContentRendererTest {
     }
 
     @Test
-    void rendersGithubLinkCard() {
+    void rendersGithubLinkCardInAsciiDoc() {
+        String content = "{% github https://github.com/vepo/contraponto %}";
+        String html = renderer.render(content, Format.ASCIIDOC);
+        assertThat(html).contains("github.com/vepo/contraponto");
+        assertThat(html).contains("content-render--github");
+        assertThat(html).doesNotContain("content-render--error");
+        assertThat(html).doesNotContain("Invalid GitHub URL");
+    }
+
+    @Test
+    void rendersGithubLinkCardInMarkdown() {
         String content = "{% github https://github.com/vepo/imersao-kafka %}";
-        assertThat(renderer.render(content, Format.MARKDOWN)).contains("github.com/vepo/imersao-kafka");
+        String html = renderer.render(content, Format.MARKDOWN);
+        assertThat(html).contains("github.com/vepo/imersao-kafka");
+        assertThat(html).contains("content-render--github");
+        assertThat(html).doesNotContain("content-render--error");
     }
 
     @Test

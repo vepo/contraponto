@@ -35,12 +35,11 @@ public class PostContentRenderer {
         }
         String withoutMarkers = contentImageMarkerService.toEditorContent(content)
                                                          .replace("//api/images/", "/api/images/");
-        // AsciiDoc safe mode escapes raw HTML, so render tags must be expanded after
-        // conversion.
-        // Markdown allows inline HTML, so tags are expanded first for clean block embed
-        // markup.
+        // Expand render tags before conversion. AsciiDoc safe mode escapes raw HTML and
+        // autolinks URLs inside tags, so plugin HTML is wrapped in passthrough blocks
+        // first.
         String html = format == Format.ASCIIDOC
-                                                ? tagProcessor.apply(Renderer.get(format).render(withoutMarkers))
+                                                ? Renderer.get(format).render(tagProcessor.applyWithAsciiDocPassthrough(withoutMarkers))
                                                 : Renderer.get(format).render(tagProcessor.apply(withoutMarkers));
         html = htmlSanitizer.sanitizePostHtml(html);
         return renderedHtmlEnricher.enrichHtml(html);
