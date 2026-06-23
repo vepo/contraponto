@@ -188,7 +188,11 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Highlight note tooltip** | Hover preview of the reader's note on a **noted highlight mark**. | `#post-highlight-note-tooltip` |
 | **Text selection bar** | Floating UI after text selection in `.article-page__content`. | `PostHighlightManager` |
 | **Highlights library** | Reader's list of own highlights and notes. | Reading hub — `GET /reading/highlights` (`GET /highlights` redirects) |
-| **Reading hub** | Signed-in reader hub for highlights and notes. | `ReadingHubEndpoint` — `GET /reading`; user menu **Reading** |
+| **Reading list** | Reader's private queue of whole posts saved to read later, with explicit read/unread state. | Reading hub — `GET /reading/saved`; post page **Salvar para ler** |
+| **Reading list item** | One published post saved by a reader; unread until **marked as read**. | `ReadingListItem` — `tb_reading_list_items` |
+| **Save to reading list** | Add or re-queue a post as unread on the reader's list. | `POST /forms/posts/{postId}/reading-list` |
+| **Mark as read** | Record that the reader finished the post; removes from Unread tab. | `POST /forms/reading-list/{itemId}/read` |
+| **Reading hub** | Signed-in reader hub for saved posts, highlights, and notes. | `ReadingHubEndpoint` — `GET /reading`; user menu **Reading** |
 | **Highlight moderation** | Author queue: proposals, public notes, post responses. | `HighlightManageEndpoint` — `GET /writing/highlights` |
 | **Post response** | **Published post** on responder's blog that responds to another **published post**. | `PostResponse` |
 | **Source post** | Post being responded to. | `PostResponse.sourcePost` |

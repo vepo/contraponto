@@ -27,6 +27,13 @@
                                 {#include PostEndpoint/toggle post=view.post user=user /}
                             {/if}
                             {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
+                            <div id="post-reading-list"
+                                 class="reading-list-action--loading"
+                                 hx-get="{view.post.url}/components/reading-list"
+                                 hx-trigger="load, {authRefreshTrigger}"
+                                 hx-target="#post-reading-list"
+                                 hx-swap="innerHTML">
+                            </div>
                         {/actions}
                         {/include}
 

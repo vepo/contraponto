@@ -3921,6 +3921,18 @@ hr:after {
   gap: 0.5rem;
 }
 
+.page-top__actions .reading-list-action,
+.page-top__actions .reading-list-action__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reading-list-action__status {
+  pointer-events: none;
+}
+
 .btn--icon {
     display: inline-flex;
     align-items: center;

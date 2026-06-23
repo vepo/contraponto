@@ -1244,6 +1244,28 @@ public class App {
             return this;
         }
 
+        public PostPage assertReadingListSavedUnread() {
+            waitForReadingListAction();
+            wait.until(visibilityOfElementLocated(
+                                                  cssSelector("#post-reading-list [data-i18n='reading.saved.savedUnread']")));
+            return this;
+        }
+
+        public PostPage assertReadingListSaveVisible() {
+            waitForReadingListAction();
+            wait.until(visibilityOfElementLocated(
+                                                  cssSelector("#post-reading-list [data-i18n='reading.saved.save']")));
+            return this;
+        }
+
+        public PostPage assertReadingListSignInGateVisible() {
+            waitForReadingListAction();
+            var button = wait.until(visibilityOfElementLocated(
+                                                               cssSelector("#post-reading-list [data-i18n='reading.saved.signInToSave']")));
+            assertThat(button.isDisplayed()).isTrue();
+            return this;
+        }
+
         public PostPage assertSerieNavCurrentPart(String title) {
             var nav = wait.until(visibilityOfElementLocated(cssSelector(".post-serie-nav")));
             var current = nav.findElement(cssSelector(".post-serie-nav__item--current"));
@@ -1381,6 +1403,33 @@ public class App {
             return assertHighlightActionBarVisible("remove-mark");
         }
 
+        public PostPage clickReadingListMarkRead() {
+            waitForReadingListAction();
+            var button = wait.until(elementToBeClickable(
+                                                         cssSelector("#post-reading-list form[hx-post*='/read'] button[type='submit']")));
+            reliableClick(button);
+            waitForReady();
+            return this;
+        }
+
+        public PostPage clickReadingListRemove() {
+            waitForReadingListAction();
+            var button = wait.until(elementToBeClickable(
+                                                         cssSelector("#post-reading-list form[hx-delete] button[type='submit']")));
+            reliableClick(button);
+            waitForReady();
+            return this;
+        }
+
+        public PostPage clickReadingListSave() {
+            waitForReadingListAction();
+            var button = wait.until(elementToBeClickable(
+                                                         cssSelector("#post-reading-list form[hx-post*='/reading-list'] button[type='submit']")));
+            reliableClick(button);
+            waitForReady();
+            return this;
+        }
+
         public PostPage closeChangeHistoryModal() {
             var modal = wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
             var closeBtn = modal.findElement(cssSelector(".modal__close"));
@@ -1488,6 +1537,14 @@ public class App {
             waitForReady();
             return this;
         }
+
+        public PostPage waitForReadingListAction() {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var actions = driver.findElements(cssSelector("#post-reading-list .reading-list-action"));
+                return !actions.isEmpty() && actions.get(0).isDisplayed();
+            });
+            return this;
+        }
     }
 
     public class ProfilePage extends Page<ProfilePage> {
@@ -1568,6 +1625,39 @@ public class App {
 
         public ProfilePage submit() {
             reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
+            waitForReady();
+            return this;
+        }
+    }
+
+    public final class ReadingSavedPage extends Page<ReadingSavedPage> {
+        private ReadingSavedPage() {}
+
+        public ReadingSavedPage assertPostTitleAbsent(String title) {
+            wait.until(d -> d.findElements(
+                                           By.xpath("//li[contains(@class,'reading-list-page__row')]//*[contains(text(),'" + title + "')]"))
+                             .isEmpty());
+            return this;
+        }
+
+        public ReadingSavedPage assertPostTitleVisible(String title) {
+            wait.until(visibilityOfElementLocated(
+                                                  By.xpath("//li[contains(@class,'reading-list-page__row')]//*[contains(text(),'" + title + "')]")));
+            return this;
+        }
+
+        public ReadingSavedPage markFirstUnreadAsRead() {
+            var button = wait.until(elementToBeClickable(
+                                                         cssSelector(".reading-list-page__row form[hx-post*='/read'] button[type='submit']")));
+            reliableClick(button);
+            waitForReady();
+            return this;
+        }
+
+        public ReadingSavedPage switchTab(String tab) {
+            var tabButton = wait.until(elementToBeClickable(cssSelector(".library-tab[data-tab='" + tab + "']")));
+            reliableClick(tabButton);
+            wait.until(visibilityOfElementLocated(cssSelector(".library-tab.library-tab--active[data-tab='" + tab + "']")));
             waitForReady();
             return this;
         }
@@ -2990,6 +3080,11 @@ public class App {
         _goTo("/account/security");
         waitForReady();
         return new ProfilePage();
+    }
+
+    public ReadingSavedPage readingSaved() {
+        _goTo("/reading/saved");
+        return new ReadingSavedPage();
     }
 
     public App refresh() {
