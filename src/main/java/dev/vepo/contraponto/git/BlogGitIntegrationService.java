@@ -125,6 +125,24 @@ public class BlogGitIntegrationService {
         return post.getFormat() == Format.ASCIIDOC ? ".adoc" : ".md";
     }
 
+    private static Optional<ObjectId> resolveReadableCommit(Repository repo, String ref) {
+        if (ref == null || ref.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            ObjectId id = repo.resolve(ref);
+            if (id == null) {
+                return Optional.empty();
+            }
+            try (RevWalk walk = new RevWalk(repo)) {
+                walk.parseCommit(id);
+                return Optional.of(id);
+            }
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
     private static AbstractTreeIterator treeParser(Repository repo, ObjectId objectId) throws IOException {
         try (RevWalk walk = new RevWalk(repo)) {
             RevCommit commit = walk.parseCommit(objectId);
@@ -403,18 +421,18 @@ public class BlogGitIntegrationService {
         }
         try (Git git = Git.open(workspace.toFile())) {
             Repository repo = git.getRepository();
-            ObjectId oldId = repo.resolve(lastKnown);
-            ObjectId newId = repo.resolve(head);
-            if (oldId == null) {
+            Optional<ObjectId> oldId = resolveReadableCommit(repo, lastKnown);
+            if (oldId.isEmpty()) {
                 logger.info("Last known commit {} not in workspace; importing all posts.", lastKnown);
                 return listAllPostFiles(workspace, convention);
             }
-            if (newId == null || oldId.equals(newId)) {
+            Optional<ObjectId> newId = resolveReadableCommit(repo, head);
+            if (newId.isEmpty() || oldId.get().equals(newId.get())) {
                 return List.of();
             }
             List<DiffEntry> diffs = git.diff()
-                                       .setOldTree(treeParser(repo, oldId))
-                                       .setNewTree(treeParser(repo, newId))
+                                       .setOldTree(treeParser(repo, oldId.get()))
+                                       .setNewTree(treeParser(repo, newId.get()))
                                        .call();
             Path repoRoot = workspace.toAbsolutePath().normalize();
             List<Path> changed = new ArrayList<>();

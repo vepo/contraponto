@@ -1,7 +1,7 @@
 package dev.vepo.contraponto.blog;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.net.URL;
@@ -48,6 +48,27 @@ class BlogSaveEndpointTest {
                         equalTo("{\"toast:show\":{\"i18nKey\":\"toast.blog.saved\",\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"))
                 .header("HX-Trigger-After-Settle",
                         equalTo("{\"toast:show\":{\"i18nKey\":\"toast.blog.saved\",\"message\":\"Blog saved successfully.\",\"duration\":10000,\"type\":\"Success\"}}"));
+    }
+
+    @Test
+    void createBlogWithProfilePictureRendersSuccessPage() {
+        var picture = Given.randomCover(owner.getDefaultBlog());
+        Given.transaction(() -> {
+            var managed = entityManager.find(User.class, owner.getId());
+            managed.setProfilePicture(picture);
+        });
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("name", "Photo Blog")
+                .formParam("slug", "photo")
+                .formParam("description", "With avatar")
+                .formParam("active", "on")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200)
+                .header("X-Toast-Type", equalTo("Success"))
+                .body(containsString(picture.getUrl()));
     }
 
     @Test

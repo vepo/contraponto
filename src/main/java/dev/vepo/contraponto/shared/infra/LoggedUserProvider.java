@@ -36,7 +36,7 @@ public class LoggedUserProvider {
 
     public Optional<LoggedUser> find(String sessionId) {
         return sessionStore.findUserId(sessionId)
-                           .flatMap(userRepository::findById)
+                           .flatMap(userRepository::findByIdForSession)
                            .flatMap(user -> {
                                if (!user.isActive()) {
                                    sessionStore.remove(sessionId);

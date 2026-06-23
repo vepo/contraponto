@@ -365,7 +365,11 @@ public interface Given {
     public static void cleanup() {
         TestTimes.reset();
         transaction(() -> {
-            Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Image.class, Blog.class, User.class)
+            var entityManager = inject(EntityManager.class);
+            entityManager.createQuery("UPDATE Blog b SET b.banner = null").executeUpdate();
+            entityManager.createQuery("UPDATE User u SET u.profilePicture = null, u.defaultBlogBanner = null")
+                         .executeUpdate();
+            Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Blog.class, Image.class, User.class)
                   .sequential()
                   .forEachOrdered(Given::deleteAll);
         });

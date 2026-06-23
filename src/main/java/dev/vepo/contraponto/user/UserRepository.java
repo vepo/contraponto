@@ -105,6 +105,21 @@ public class UserRepository {
         return Optional.ofNullable(entityManager.find(User.class, userId));
     }
 
+    /**
+     * Loads a user for the request session with associations needed by global
+     * templates (avatar URL in the header menu) after the request transaction ends.
+     */
+    public Optional<User> findByIdForSession(long userId) {
+        return entityManager.createQuery("""
+                                         SELECT u FROM User u
+                                         LEFT JOIN FETCH u.profilePicture
+                                         WHERE u.id = :userId
+                                         """, User.class)
+                            .setParameter("userId", userId)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public Optional<User> findByUsername(String username) {
         return entityManager.createQuery("FROM User WHERE username = :username", User.class)
                             .setParameter("username", username)
