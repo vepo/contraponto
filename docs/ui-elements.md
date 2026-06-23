@@ -164,6 +164,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `post-highlight-notes`, `post-highlight-notes__*` | `HighlightComponentEndpoint/highlights.html` | Reader's notes on current post |
 | `official-highlight-notes`, `official-highlight-notes__*` | `HighlightComponentEndpoint/highlights.html` | Approved public notes on official highlights |
 | `post-response-banner`, `post-responses-section`, `post-responses-section__*` | `HighlightComponentEndpoint/highlights.html` | Post response link-back and approved responses list |
+| `post-action-bar`, `post-action-btn`, `post-action-bar__badge` | `PostEndpoint/post.html`, audience/reading-list fragments | Post page action pill bar (follow, subscribe, save, read state) |
 | `blog-audience` | `BlogAudienceComponentEndpoint/audienceControls.html` | Follow / subscribe; no top margin inside `article-page__actions` (blog header keeps spacing below title) |
 | `notification-bell`, `notification-bell__badge` | `NotificationBadgeEndpoint/badge.html` | Header bell + unread count |
 | `notification-menu`, `notification-menu__dropdown` | `NotificationBadgeEndpoint/badge.html` | Overlay shell |

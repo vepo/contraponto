@@ -1247,7 +1247,7 @@ public class App {
         public PostPage assertReadingListSavedUnread() {
             waitForReadingListAction();
             wait.until(visibilityOfElementLocated(
-                                                  cssSelector("#post-reading-list [data-i18n='reading.saved.savedUnread']")));
+                                                  cssSelector("#post-reading-list [data-i18n='reading.saved.statusUnread']")));
             return this;
         }
 
