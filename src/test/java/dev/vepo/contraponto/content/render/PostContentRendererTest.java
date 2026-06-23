@@ -102,6 +102,53 @@ class PostContentRendererTest {
     }
 
     @Test
+    void rendersPortugueseAsciiDocBodyWithYoutubePluginLikePublishedPost() {
+        String content =
+                """
+                Isso leva para um outro problema aparecendo no horizonte: a Bolha da IA. Por enquanto, tudo o que existe é especulação.
+
+                {% youtube 1QMlkS53h7M %}
+
+                Enquanto isso, há uma demanda crescente para que essa promessa se realize. Toda essa paranoia se baseia na ideia de que, se construirmos um modelo com parâmetros suficientes, este conseguirá se tornar consciente e atingir a tão sonhada SINGULARIDADE.
+                """;
+        String html = renderer.render(content, Format.ASCIIDOC);
+        assertThat(html).contains("Bolha da IA");
+        assertThat(html).contains("SINGULARIDADE");
+        assertThat(html).contains("youtube.com/embed/1QMlkS53h7M");
+    }
+
+    @Test
+    void rendersPortugueseMarkdownBodyWithYoutubePlugin() {
+        String content = """
+                         Isso leva para um outro problema aparecendo no horizonte: a Bolha da IA.
+
+                         {% youtube 1QMlkS53h7M %}
+
+                         Enquanto isso, há uma demanda crescente para que essa promessa se realize.
+                         """;
+        String html = renderer.render(content, Format.MARKDOWN);
+        assertThat(html).contains("Bolha da IA");
+        assertThat(html).contains("youtube.com/embed/1QMlkS53h7M");
+    }
+
+    @Test
+    void rendersYoutubePluginInAsciiDocBody() {
+        String content = """
+                         Isso leva para um outro problema aparecendo no horizonte: a Bolha da IA.
+
+                         {% youtube 1QMlkS53h7M %}
+
+                         Enquanto isso, há uma demanda crescente para que essa promessa se realize.
+                         """;
+        String html = renderer.render(content, Format.ASCIIDOC);
+        assertThat(html).contains("Bolha da IA");
+        assertThat(html).contains("youtube.com/embed/1QMlkS53h7M");
+        assertThat(html).contains("content-render--youtube");
+        assertThat(html).doesNotContain("{% youtube");
+        assertThat(html).doesNotContain("&lt;iframe");
+    }
+
+    @Test
     void rendersYoutubePluginInMarkdownBody() {
         String content = "# Title\n\n{% youtube hPoHp0WhglA %}";
         assertThat(renderer.render(content, Format.MARKDOWN)).contains("youtube.com/embed/hPoHp0WhglA");
