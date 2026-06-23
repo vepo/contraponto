@@ -143,6 +143,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `post-related-aside`, `post-related-aside__*` | `PostEndpoint/related-posts-aside.html` | Related posts rail (fixed right margin; inline below article ≤1280px) |
 | `.imageblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor block images | Centered figure, caption in `.title`; styles in main.css / write.css |
 | `.verseblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor verse / poetry | Lines in `pre.content`, attribution in `.attribution`; styles in main.css / write.css |
+| `.quoteblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor block quotes | Quote in `blockquote` / `.paragraph`, attribution in `.attribution` (`cite` for citetitle); styles in main.css / write.css |
 | `.tableblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor tables | `table.tableblock` with caption `.title`, cell text in `p.tableblock`; horizontal scroll via `.sectionbody:has(> table.tableblock)`; styles in main.css / write.css |
 | `image-lightbox`, `image-lightbox__*` | `#image-lightbox` in `components/head.html` | Post body image expand overlay; `main.js` + main.css |
 | `.listingblock`, `code-block`, `code-block__copy` | Asciidoctor listing blocks; `CodeCopyManager` on `.listingblock` / `pre` | Card panel: info left accent, `.title` caption bar (`--color-surface-muted`), `.content` / `pre` on `--color-code-block-bg`; copy top-right; `main.js` + main.css |

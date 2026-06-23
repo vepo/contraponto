@@ -49,6 +49,25 @@ public class PostPublicationService {
         this.postPublishedEvents = postPublishedEvents;
     }
 
+    /**
+     * Aligns {@link Post#getPublishedAt()} and the live {@link PostPublication}
+     * timestamp after Git import when only the publish date changed (publish skips
+     * an identical content snapshot).
+     */
+    public void alignPublicationTimestampFromGit(Post post) {
+        if (!post.isPublished()) {
+            return;
+        }
+        LocalDateTime publishedAt = post.getPublishedAt();
+        if (publishedAt == null) {
+            return;
+        }
+        PostPublication live = post.getLivePublication();
+        if (live != null && !Objects.equals(live.getPublishedAt(), publishedAt)) {
+            live.setPublishedAt(publishedAt);
+        }
+    }
+
     public boolean hasUnpublishedChanges(Post post) {
         if (!post.isPublished() || post.getLivePublication() == null) {
             return false;

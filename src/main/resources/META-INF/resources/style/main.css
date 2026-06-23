@@ -1983,7 +1983,7 @@ a {
     min-height: calc(4.2rem - 1.4rem);
 }
 
-/* Blockquotes */
+/* Blockquotes (Markdown and other non-AsciiDoc) */
 .article-page__content blockquote {
   font-family: var(--font-serif);
   font-size: 1.1rem;
@@ -2109,6 +2109,65 @@ a {
   font-style: normal;
   color: var(--color-text-muted);
   text-align: right;
+}
+
+/* AsciiDoc quote blocks (Asciidoctor .quoteblock) */
+.article-page__content .quoteblock {
+  margin: var(--spacing-xl) auto;
+  max-width: 36rem;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-bg-offset);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.article-page__content .quoteblock > .title {
+  margin-bottom: var(--spacing-sm);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--color-text-light);
+}
+
+.article-page__content .quoteblock blockquote {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--color-text);
+}
+
+.article-page__content .quoteblock .paragraph {
+  margin: 0;
+}
+
+.article-page__content .quoteblock .paragraph p {
+  margin: 0;
+}
+
+.article-page__content .quoteblock .paragraph + .paragraph {
+  margin-top: var(--spacing-sm);
+}
+
+.article-page__content .quoteblock .attribution {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-xs);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-style: normal;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.article-page__content .quoteblock .attribution cite {
+  font-style: normal;
 }
 
 /* AsciiDoc tables (Asciidoctor .tableblock) */

@@ -20,6 +20,31 @@ class PostPublicationServiceTest {
     @Inject
     PostPublicationRepository publicationRepository;
 
+    @Test
+    void alignPublicationTimestampFromGitUpdatesLiveSnapshotWhenDatesDiffer() {
+        User author = Given.user()
+                           .withUsername("pubauthor6")
+                           .withEmail("pubauthor6@example.com")
+                           .withPassword("pw123456789")
+                           .withName("Pub Author Six")
+                           .persist();
+        LocalDateTime originalPublishedAt = LocalDateTime.of(2019, 6, 12, 8, 30);
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Title")
+                        .withContent("Body")
+                        .withSlug("align-date-test")
+                        .withPublished(true)
+                        .withPublishedAt(originalPublishedAt)
+                        .persist();
+
+        LocalDateTime gitPublishedAt = LocalDateTime.of(2020, 2, 1, 14, 0);
+        post.setPublishedAt(gitPublishedAt);
+        publicationService.alignPublicationTimestampFromGit(post);
+
+        assertThat(post.getLivePublication().getPublishedAt()).isEqualTo(gitPublishedAt);
+    }
+
     @org.junit.jupiter.api.BeforeEach
     void clean() {
         Given.cleanup();

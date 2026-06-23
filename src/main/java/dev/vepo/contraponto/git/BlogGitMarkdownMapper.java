@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.git;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,10 +35,7 @@ final class BlogGitMarkdownMapper {
 
         fm.put("featured", post.isFeatured());
         fm.put("published", post.isPublished());
-        if (post.getPublishedAt() != null) {
-            fm.put("published_at",
-                   post.getPublishedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime().toString());
-        }
+        putPublishedAt(fm, exportPublishedAt(post));
         fm.put("format", post.getFormat().name());
         return fm;
     }
@@ -61,12 +59,23 @@ final class BlogGitMarkdownMapper {
 
         fm.put("featured", post.isFeatured());
         fm.put("published", post.isPublished());
-        if (live.getPublishedAt() != null) {
-            fm.put("published_at",
-                   live.getPublishedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime().toString());
-        }
+        putPublishedAt(fm, exportPublishedAt(post));
         fm.put("format", live.getFormat().name());
         return fm;
+    }
+
+    static LocalDateTime exportPublishedAt(Post post) {
+        PostPublication live = post.getLivePublication();
+        if (live != null && live.getPublishedAt() != null) {
+            return live.getPublishedAt();
+        }
+        return post.getPublishedAt();
+    }
+
+    private static void putPublishedAt(LinkedHashMap<String, Object> fm, LocalDateTime publishedAt) {
+        if (publishedAt != null) {
+            fm.put("published_at", publishedAt.atZone(ZoneId.systemDefault()).toOffsetDateTime().toString());
+        }
     }
 
     private BlogGitMarkdownMapper() {}

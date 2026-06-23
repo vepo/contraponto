@@ -63,6 +63,24 @@ class PostContentRendererTest {
     }
 
     @Test
+    void rendersAsciiDocQuoteBlockWithAttribution() {
+        String content = """
+                         [quote, Anthropic CEO, Dario Amodei]
+                         ____
+                         We might be 6-12 months away from models doing all of what Software Engineers do End-to-End.
+                         ____
+                         """;
+
+        String html = renderer.render(content, Format.ASCIIDOC);
+
+        assertThat(html).contains("quoteblock");
+        assertThat(html).contains("<blockquote>");
+        assertThat(html).contains("class=\"attribution\"");
+        assertThat(html).contains("Anthropic CEO");
+        assertThat(html).contains("<cite>Dario Amodei</cite>");
+    }
+
+    @Test
     void rendersGithubLinkCard() {
         String content = "{% github https://github.com/vepo/imersao-kafka %}";
         assertThat(renderer.render(content, Format.MARKDOWN)).contains("github.com/vepo/imersao-kafka");

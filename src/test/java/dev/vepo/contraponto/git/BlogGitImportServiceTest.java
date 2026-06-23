@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -363,6 +364,47 @@ class BlogGitImportServiceTest {
         assertThat(p.isFeatured()).isTrue();
         assertThat(p.getContent()).contains("Renewal");
         assertThat(p.isPublished()).isTrue();
+    }
+
+    @Test
+    void ingestUpdatesPublishedAtOnExistingPostWhenOnlyPublishDateChanges() throws Exception {
+        User user = baselineUser();
+        Blog blog = user.getDefaultBlog();
+        LocalDateTime originalPublishedAt = LocalDateTime.of(2026, 1, 10, 12, 0);
+        Post existing = Given.post()
+                             .withAuthor(user)
+                             .withBlog(blog)
+                             .withTitle("Stable")
+                             .withSlug("stable-slug")
+                             .withContent("Same body")
+                             .withPublished(true)
+                             .withPublishedAt(originalPublishedAt)
+                             .persist();
+        long id = existing.getId();
+        LocalDateTime newPublishedAt = LocalDateTime.of(2026, 3, 15, 9, 30);
+
+        Path dated = ingestDir().resolve("2026-03-15-stable-slug.md");
+        Files.writeString(dated,
+                          """
+                          ---
+                          contraponto_post_id: %d
+                          title: Stable
+                          description: Stable
+                          published: true
+                          published_at: 2026-03-15T09:30:00
+                          ---
+                          Same body""".formatted(id),
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), dated, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> fetched = postRepository.findByIdWithTags(id);
+        assertThat(fetched).isPresent();
+        Post p = fetched.get();
+        assertThat(p.getPublishedAt()).isEqualTo(newPublishedAt);
+        assertThat(p.getLivePublication()).isNotNull();
+        assertThat(p.getLivePublication().getPublishedAt()).isEqualTo(newPublishedAt);
+        assertThat(p.getLivePublication().getVersion()).isEqualTo(1);
     }
 
     @BeforeEach

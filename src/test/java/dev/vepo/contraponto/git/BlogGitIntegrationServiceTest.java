@@ -109,6 +109,43 @@ class BlogGitIntegrationServiceTest {
     @Inject
     ContrapontoGitSettings contrapontoGitSettings;
 
+    @Test
+    void exportRemovesStaleDatedFileWhenPublishDateDayChanges() throws Exception {
+        Path upstream = Files.createTempDirectory("git-export-date-");
+        String branch = bootstrapUpstreamRepo(upstream);
+        User user = persistUserLinkedToUpstream(upstream, branch);
+
+        LocalDateTime original = LocalDateTime.of(2026, 6, 1, 10, 0);
+        Post post = Given.post()
+                         .withAuthor(user)
+                         .withSlug("dated-post")
+                         .withTitle("Dated")
+                         .withContent("Body")
+                         .withPublished(true)
+                         .withPublishedAt(original)
+                         .persist();
+
+        integrationTransaction.exportPost(post.getId());
+        Path workspace = workspaceDir(blogId(user));
+        Path oldFile = workspace.resolve("custom/posts/2026-06-01-dated-post.md");
+        assertThat(oldFile).exists();
+
+        LocalDateTime updated = LocalDateTime.of(2026, 7, 20, 10, 0);
+        Given.transaction(() -> {
+            jakarta.persistence.EntityManager em = Given.inject(jakarta.persistence.EntityManager.class);
+            Post managed = em.find(Post.class, post.getId());
+            managed.setPublishedAt(updated);
+            managed.getLivePublication().setPublishedAt(updated);
+        });
+
+        integrationTransaction.exportPost(post.getId());
+
+        Path newFile = workspace.resolve("custom/posts/2026-07-20-dated-post.md");
+        assertThat(newFile).exists();
+        assertThat(oldFile).doesNotExist();
+        assertThat(Files.readString(newFile, StandardCharsets.UTF_8)).contains("published_at");
+    }
+
     private User persistUserLinkedToUpstream(Path upstream, String branch) {
         int token = ThreadLocalRandom.current().nextInt();
         User u =

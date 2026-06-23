@@ -5,10 +5,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -243,6 +245,7 @@ public class BlogGitIntegrationService {
 
                 JekyllLayoutConvention convention = loaded.convention();
                 Path markdownPath = markdownPathForPost(post, convention, workspace);
+                removeObsoleteGitPostPaths(git, workspace, markdownPath, post, convention);
                 Files.createDirectories(markdownPath.getParent());
 
                 PostPublication live = post.getLivePublication();
@@ -486,8 +489,10 @@ public class BlogGitIntegrationService {
         if (!post.isPublished()) {
             return convention.resolveDrafts(repoRoot).resolve(post.getSlug() + ext);
         }
-        LocalDate pub =
-                post.getPublishedAt() != null ? post.getPublishedAt().toLocalDate() : LocalDate.now(java.time.ZoneId.systemDefault());
+        LocalDateTime publishedAt = BlogGitMarkdownMapper.exportPublishedAt(post);
+        LocalDate pub = publishedAt != null
+                                            ? publishedAt.toLocalDate()
+                                            : LocalDate.now(java.time.ZoneId.systemDefault());
         String name = "%s-%s%s".formatted(pub.format(DateTimeFormatter.ISO_LOCAL_DATE), post.getSlug(), ext);
         return convention.resolvePosts(repoRoot).resolve(name);
     }
@@ -523,6 +528,45 @@ public class BlogGitIntegrationService {
         try (Git git = Git.open(workspace.toFile())) {
             fetchAndPull(git, credentials);
             return true;
+        }
+    }
+
+    private void removeObsoleteGitPostPaths(Git git,
+                                            Path workspace,
+                                            Path targetMarkdownPath,
+                                            Post post,
+                                            JekyllLayoutConvention convention)
+            throws GitAPIException, IOException {
+        Path repoRoot = workspace.toAbsolutePath().normalize();
+        Path targetAbs = targetMarkdownPath.toAbsolutePath().normalize();
+        String ext = postExtension(post);
+        String slugSuffix = "-%s%s".formatted(post.getSlug(), ext).toLowerCase(Locale.ROOT);
+
+        Path postsRoot = convention.resolvePosts(workspace);
+        if (Files.isDirectory(postsRoot)) {
+            List<Path> stalePublishedFiles = new ArrayList<>();
+            try (Stream<Path> files = Files.list(postsRoot)) {
+                files.filter(Files::isRegularFile)
+                     .filter(path -> {
+                         Path fileNamePath = path.getFileName();
+                         if (fileNamePath == null) {
+                             return false;
+                         }
+                         String name = fileNamePath.toString().toLowerCase(Locale.ROOT);
+                         return name.endsWith(slugSuffix) && !path.toAbsolutePath().normalize().equals(targetAbs);
+                     })
+                     .forEach(stalePublishedFiles::add);
+            }
+            for (Path stale : stalePublishedFiles) {
+                stageGitDelete(git, repoRoot, stale);
+            }
+        }
+
+        if (post.isPublished()) {
+            Path draftPath = convention.resolveDrafts(workspace).resolve(post.getSlug() + ext);
+            if (!draftPath.toAbsolutePath().normalize().equals(targetAbs)) {
+                stageGitDelete(git, repoRoot, draftPath);
+            }
         }
     }
 
@@ -578,6 +622,14 @@ public class BlogGitIntegrationService {
 
     public void scheduleExportPost(long postId, GitSyncTrigger trigger) {
         CompletableFuture.runAsync(() -> integrationTransaction.runScheduledExport(postId, trigger));
+    }
+
+    private void stageGitDelete(Git git, Path repoRoot, Path file) throws GitAPIException, IOException {
+        if (!Files.isRegularFile(file)) {
+            return;
+        }
+        String rel = posixPath(repoRoot.relativize(file.toAbsolutePath().normalize()));
+        git.rm().addFilepattern(rel).call();
     }
 
     void syncBlogFromGitTransactional(long blogId) throws IOException, GitAPIException {

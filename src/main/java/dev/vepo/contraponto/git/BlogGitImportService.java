@@ -295,6 +295,7 @@ public class BlogGitImportService {
         postImageDependencyService.syncPostDependencies(post);
         if (draft.published()) {
             publicationService.publish(post);
+            publicationService.alignPublicationTimestampFromGit(post);
         }
         postRepository.flush();
         String rawDescription = Objects.requireNonNullElse(trimToNull(doc.frontMatter().get("description")), "");

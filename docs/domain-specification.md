@@ -219,6 +219,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Data loadable** | Remote was reachable and clone/fetch/pull succeeded. | Flag on `GitSyncRun` |
 | **Git sync log entry** | One step or per-post result within a run (phase, message, remediation). | `GitSyncRunEntry` |
 | **Legacy Jekyll front matter** | Import-only YAML aliases (`permalink`, `image`, `publish_date`, `series`) mapped to slug, cover, publish time, and serie; native keys win when both are set. | `GitFrontMatterResolver` |
+| **Git publish date alignment** | On import, when only `published_at` / `publish_date` (or the dated filename) changes, Contraponto updates both the post and the **live publication** timestamp without creating a new version. On export, filename date and front matter `published_at` use the same live snapshot timestamp; stale dated files for the same slug are removed from the repo. | `PostPublicationService.alignPublicationTimestampFromGit`, `BlogGitIntegrationService` |
 
 ### Discovery & feeds
 

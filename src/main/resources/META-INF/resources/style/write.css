@@ -664,6 +664,62 @@
     text-align: right;
 }
 
+/* AsciiDoc quote blocks — mirrors .article-page__content .quoteblock */
+.write-preview .quoteblock {
+    margin: 2rem auto;
+    max-width: 36rem;
+    padding: 1.5rem 2rem;
+    background: #fafafa;
+    border-left: 3px solid #c41e3a;
+    border-radius: 0 8px 8px 0;
+}
+
+.write-preview .quoteblock > .title {
+    margin-bottom: 0.75rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 0.875rem;
+    font-style: italic;
+    font-weight: 500;
+    color: #4a4a4a;
+}
+
+.write-preview .quoteblock blockquote {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.75;
+    color: #1a1a1a;
+}
+
+.write-preview .quoteblock .paragraph {
+    margin: 0;
+}
+
+.write-preview .quoteblock .paragraph p {
+    margin: 0;
+}
+
+.write-preview .quoteblock .paragraph + .paragraph {
+    margin-top: 0.75rem;
+}
+
+.write-preview .quoteblock .attribution {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 0.875rem;
+    color: #6b6b6b;
+    text-align: right;
+}
+
+.write-preview .quoteblock .attribution cite {
+    font-style: normal;
+}
+
 /* AsciiDoc tables — mirrors .article-page__content table.tableblock */
 .write-preview .sectionbody:has(> table.tableblock) {
     overflow-x: auto;
