@@ -138,19 +138,12 @@ public class BlogGitIntegrationService {
 
     private final ContrapontoGitSettings gitSettings;
     private final BlogRepository blogRepository;
-
     private final PostRepository postRepository;
-
     private final BlogGitImportService blogGitImportService;
-
     private final PostGitMarkdownCodec markdownCodec;
-
     private final GitImageSyncService gitImageSyncService;
-
     private final BlogGitIntegrationTransaction integrationTransaction;
-
     private final GitSyncRunService gitSyncRunService;
-
     private final GitSyncErrorClassifier errorClassifier;
 
     @Inject
@@ -183,26 +176,26 @@ public class BlogGitIntegrationService {
         return new UsernamePasswordCredentialsProvider(user, pass);
     }
 
-    void exportPostTransactional(long postId) throws Exception {
-        Optional<Post> opt = postRepository.findByIdWithTags(postId);
-        if (opt.isEmpty()) {
+    protected void exportPostTransactional(long postId) throws GitAPIException, IOException {
+        var maybePost = postRepository.findByIdWithTags(postId);
+        if (maybePost.isEmpty()) {
             finalizeSkipped("Post was not found.");
             return;
         }
-        Post post = opt.get();
-        Blog blog = post.getBlog();
-        if (!(blog.isActive() && isConfiguredForGit(blog))) {
+        var post = maybePost.get();
+        var postBlog = post.getBlog();
+        if (!(postBlog.isActive() && isConfiguredForGit(postBlog))) {
             finalizeSkipped("Git integration is not configured for this blog.");
             return;
         }
 
-        Path workspace = workspaceForBlog(blog.getId());
+        Path workspace = workspaceForBlog(postBlog.getId());
         boolean dataLoadable = false;
         boolean repositoryReadable = false;
         String conventionSnapshot = null;
 
         try {
-            if (!prepareWorkspace(blog, workspace)) {
+            if (!prepareWorkspace(postBlog, workspace)) {
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.error(
                                                                                 GitSyncPhase.WORKSPACE,
                                                                                 "Git workspace could not be prepared.",
@@ -216,7 +209,7 @@ public class BlogGitIntegrationService {
             gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                            GitSyncPhase.WORKSPACE, "Git workspace prepared."));
 
-            CredentialsProvider credentials = credentialsOrNull();
+            var credentials = credentialsOrNull();
             try (Git git = Git.open(workspace.toFile())) {
                 fetchAndPull(git, credentials);
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
@@ -235,8 +228,7 @@ public class BlogGitIntegrationService {
                 Files.createDirectories(markdownPath.getParent());
 
                 PostPublication live = post.getLivePublication();
-                LinkedHashMap<String, Object> fm =
-                        BlogGitMarkdownMapper.buildFrontMatter(post, convention);
+                var fm = BlogGitMarkdownMapper.buildFrontMatter(post, convention);
                 gitImageSyncService.addCoverFrontMatter(fm, post, convention);
                 String rawBody;
                 if (live != null && live.getContent() != null) {
@@ -283,7 +275,7 @@ public class BlogGitIntegrationService {
                                                                                    GitSyncPhase.PUSH, "No changes to push."));
                 }
 
-                Blog managed = blogRepository.findById(blog.getId()).orElseThrow();
+                Blog managed = blogRepository.findById(postBlog.getId()).orElseThrow();
                 ObjectId headId = git.getRepository().resolve(Constants.HEAD);
                 String commitAfter = headId != null ? headId.name() : null;
                 if (commitAfter != null) {

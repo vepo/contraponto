@@ -2,6 +2,8 @@ package dev.vepo.contraponto.post;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.Given;
@@ -21,6 +23,30 @@ class PostPublicationServiceTest {
     @org.junit.jupiter.api.BeforeEach
     void clean() {
         Given.cleanup();
+    }
+
+    @Test
+    void first_publish_uses_post_published_at_when_already_set() {
+        User author = Given.user()
+                           .withUsername("pubauthor4")
+                           .withEmail("pubauthor4@example.com")
+                           .withPassword("pw123456789")
+                           .withName("Pub Author Four")
+                           .persist();
+        LocalDateTime gitPublishedAt = LocalDateTime.of(2019, 6, 12, 8, 30);
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Imported")
+                        .withContent("Body")
+                        .withSlug("git-date-test")
+                        .withPublished(false)
+                        .withPublishedAt(gitPublishedAt)
+                        .persist();
+
+        publicationService.publish(post);
+
+        assertThat(post.getPublishedAt()).isEqualTo(gitPublishedAt);
+        assertThat(post.getLivePublication().getPublishedAt()).isEqualTo(gitPublishedAt);
     }
 
     @Test
@@ -74,6 +100,35 @@ class PostPublicationServiceTest {
         assertThat(post.getDescription()).hasSize(PostPublicationDescriptions.MAX_LENGTH);
         assertThat(post.getLivePublication().getDescription()).isEqualTo(post.getDescription());
         assertThat(publicationService.hasUnpublishedChanges(post)).isFalse();
+    }
+
+    @Test
+    void republish_uses_current_time_even_when_post_published_at_is_older() {
+        User author = Given.user()
+                           .withUsername("pubauthor5")
+                           .withEmail("pubauthor5@example.com")
+                           .withPassword("pw123456789")
+                           .withName("Pub Author Five")
+                           .persist();
+        LocalDateTime originalPublishedAt = LocalDateTime.of(2019, 6, 12, 8, 30);
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Title")
+                        .withContent("Body v1")
+                        .withSlug("republish-date-test")
+                        .withPublished(false)
+                        .withPublishedAt(originalPublishedAt)
+                        .persist();
+
+        publicationService.publish(post);
+        assertThat(post.getLivePublication().getPublishedAt()).isEqualTo(originalPublishedAt);
+
+        post.setContent("Body v2");
+        publicationService.publish(post);
+
+        assertThat(post.getPublishedAt()).isEqualTo(originalPublishedAt);
+        assertThat(post.getLivePublication().getVersion()).isEqualTo(2);
+        assertThat(post.getLivePublication().getPublishedAt()).isAfter(originalPublishedAt);
     }
 
     @Test

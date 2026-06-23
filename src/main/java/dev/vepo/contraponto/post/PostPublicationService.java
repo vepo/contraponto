@@ -95,7 +95,7 @@ public class PostPublicationService {
 
         int nextVersion = publicationRepository.findMaxVersion(post.getId()).orElse(0) + 1;
         candidate.setVersion(nextVersion);
-        candidate.setPublishedAt(LocalDateTime.now(ZoneId.systemDefault()));
+        candidate.setPublishedAt(resolvePublicationTimestamp(post, live));
         publicationRepository.save(candidate);
         publicationRepository.flush();
         postImageDependencyService.snapshotPublicationDependencies(candidate, post);
@@ -111,6 +111,14 @@ public class PostPublicationService {
                                                         post.getBlog().getId(),
                                                         authorUserId));
         return published;
+    }
+
+    private LocalDateTime resolvePublicationTimestamp(Post post, PostPublication live) {
+        boolean firstPublication = live == null;
+        if (firstPublication && post.getPublishedAt() != null) {
+            return post.getPublishedAt();
+        }
+        return LocalDateTime.now(ZoneId.systemDefault());
     }
 
     public PostPublication snapshotFrom(Post post) {

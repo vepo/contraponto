@@ -11,11 +11,11 @@ import dev.vepo.contraponto.tag.Tag;
 final class BlogGitMarkdownMapper {
 
     static LinkedHashMap<String, Object> buildFrontMatter(Post post, JekyllLayoutConvention c) {
-        PostPublication live = post.getLivePublication();
+        var live = post.getLivePublication();
         if (live != null) {
             return buildFrontMatter(live, post, c);
         }
-        LinkedHashMap<String, Object> fm = new LinkedHashMap<>();
+        var fm = new LinkedHashMap<String, Object>();
         if (post.getId() != null) {
             fm.put(JekyllLayoutConvention.FM_POST_ID, post.getId());
         }

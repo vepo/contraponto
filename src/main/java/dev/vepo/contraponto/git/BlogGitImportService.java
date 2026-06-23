@@ -3,7 +3,6 @@ package dev.vepo.contraponto.git;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -268,8 +268,8 @@ public class BlogGitImportService {
             post.setPublishedAt(null);
             return;
         }
-        LocalDateTime fmTime = GitFrontMatterResolver.resolvePublishedAt(doc.frontMatter(), draft.stem().optionalPublishedDay());
-        LocalDateTime effective = fmTime != null ? fmTime : now;
+        var fmTime = GitFrontMatterResolver.resolvePublishedAt(doc.frontMatter(), draft.stem().optionalPublishedDay());
+        var effective = fmTime != null ? fmTime : now;
         if (!draft.existedBefore() || fmTime != null) {
             post.setPublishedAt(effective);
         } else if (post.getPublishedAt() == null) {

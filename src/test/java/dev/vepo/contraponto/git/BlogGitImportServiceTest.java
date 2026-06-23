@@ -167,7 +167,10 @@ class BlogGitImportServiceTest {
         assertThat(found).isPresent();
         Post p = found.get();
         assertThat(p.isPublished()).isTrue();
-        assertThat(p.getPublishedAt()).isEqualTo(java.time.LocalDateTime.of(2023, 9, 26, 15, 39, 23));
+        var expectedPublishedAt = java.time.LocalDateTime.of(2023, 9, 26, 15, 39, 23);
+        assertThat(p.getPublishedAt()).isEqualTo(expectedPublishedAt);
+        assertThat(p.getLivePublication()).isNotNull();
+        assertThat(p.getLivePublication().getPublishedAt()).isEqualTo(expectedPublishedAt);
         assertThat(p.getCover()).isNotNull();
         assertThat(p.getFormat()).isEqualTo(Format.MARKDOWN);
     }
