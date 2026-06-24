@@ -37,7 +37,8 @@ class AssetLoader {
         '/js/third-party/languages/protobuf.min.js',
         '/js/third-party/languages/dockerfile.min.js',
         '/js/third-party/marked.min.js',
-        '/js/third-party/asciidoctor.min.js'
+        '/js/third-party/asciidoctor.min.js',
+        '/js/asciidoctor-bridge.js'
     ];
 
     constructor() {
@@ -100,7 +101,7 @@ class AssetLoader {
     }
 
     writeAssetsPresent() {
-        return this.hasScript('/js/third-party/asciidoctor.min.js');
+        return this.hasScript('/js/asciidoctor-bridge.js');
     }
 
     postAssetsPresent() {

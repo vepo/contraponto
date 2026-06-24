@@ -19,7 +19,7 @@ Before adding JS, try (in order): inline/OOB HTML in the mutation response → `
 ## Where code lives
 
 - App JS: `src/main/resources/META-INF/resources/js/{concern}.js` (kebab-case).
-- Extend an existing module when the concern matches (`header.js`, `toast.js`, …); otherwise add a file and a `<script src>` in [components/head.html](../../src/main/resources/templates/components/head.html) after `htmx.js`, respecting load order.
+- Extend an existing module when the concern matches (`header.js`, `toast.js`, …); otherwise add a file and a `<script src>` in [components/head.html](../../src/main/resources/templates/components/head.html) after `htmx.min.js`, respecting load order.
 - **Never** edit `js/third-party/`. No npm, webpack, or `import`/`export`.
 
 ## Class module pattern

@@ -48,6 +48,7 @@ public final class AsciiDoctor implements Renderer {
             var scriptLength = asciidoctorScript.length();
             logger.debug("Loaded Asciidoctor.js, length: {} bytes", scriptLength);
             engine.eval(asciidoctorScript);
+            engine.eval("var Asciidoctor = module$build$asciidoctor_browser.default;");
 
             // 3. Define the rendering function (uses the global Asciidoctor factory)
             engine.eval("""

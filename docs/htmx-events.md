@@ -195,7 +195,7 @@ Full built-in catalog: [htmx.org reference — Events](https://htmx.org/referenc
 
 ## 6. Built-in HTMX events (reference)
 
-Shipped in `META-INF/resources/js/third-party/htmx.js`. Prefix: `htmx:`.
+Shipped in `META-INF/resources/js/third-party/htmx.min.js`. Prefix: `htmx:`.
 
 | Phase | Events |
 |-------|--------|

@@ -1,0 +1,4 @@
+htmx.org 2.0.10 (htmx.min.js)
+marked 18.0.5 (marked.min.js)
+@asciidoctor/core 3.0.4 (asciidoctor.min.js)
+highlight.js 11.11.1 (highlight.min.js, languages/*.min.js, default.min.css)
