@@ -549,11 +549,12 @@ a {
   margin-bottom: 16px;
   overflow: hidden;
   border-radius: var(--border-radius);
+  aspect-ratio: 560 / 220;
 }
 
 .article-card__image img {
   width: 100%;
-  height: 220px;
+  height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -1381,6 +1382,10 @@ a {
 }
 
 /* ========== HOME GUEST MASTHEAD ========== */
+html.home-guest-masthead--dismissed #home-guest-masthead {
+  display: none !important;
+}
+
 .home-guest-masthead {
   margin-bottom: var(--spacing-lg);
   padding: var(--spacing-md) var(--spacing-lg);
@@ -1481,9 +1486,17 @@ a {
   line-height: 1.5;
 }
 
+.featured__image {
+  aspect-ratio: 560 / 315;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+}
+
 .featured__image img {
   width: 100%;
-  border-radius: var(--border-radius);
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
 
 /* ========== POSTS GRID ========== */
@@ -2603,10 +2616,11 @@ hr:after {
 
 .article-page__cover {
   margin: 1rem 0 1.5rem 0;
+  max-height: 200px;
 }
 
 .article-page__cover-image {
-  max-height: 200px;
+  max-height: none;
 }
 
 @media (min-width: 480px) {
@@ -2694,7 +2708,7 @@ hr:after {
     gap: 1.5rem;
   }
 
-  .article-page__cover-image {
+  .article-page__cover {
     max-height: 300px;
   }
 
@@ -2723,9 +2737,6 @@ hr:after {
 
   .article-page__cover {
     margin: 0 0 2rem 0;
-  }
-
-  .article-page__cover-image {
     max-height: 500px;
   }
 
@@ -3483,14 +3494,20 @@ hr:after {
 
 /* Article Cover Image */
 .article-page__cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 300px;
   border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: var(--shadow-md);
 }
 
 .article-page__cover-image {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
   display: block;
   transition: transform 0.3s ease;
@@ -3718,6 +3735,7 @@ hr:after {
 .user-blog-header__banner {
     display: block;
     width: 100%;
+    aspect-ratio: 21 / 9;
     max-height: 280px;
     object-fit: cover;
     border-radius: 8px;

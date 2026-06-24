@@ -5,7 +5,16 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/style/fonts.css"/>
+    <link rel="preload" href="/style/fonts/Inter/Inter-6.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/style/fonts/PlayfairDisplay/PlayfairDisplay-3.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/style/main.css"/>
+    <script>
+        try {
+            if (localStorage.getItem('__contraponto_home_guest_masthead_dismissed') === '1') {
+                document.documentElement.classList.add('home-guest-masthead--dismissed');
+            }
+        } catch (e) {}
+    </script>
     {#if pageAssets.manage}
     <link rel="stylesheet" href="/style/manage.css"/>
     {/if}

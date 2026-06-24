@@ -638,6 +638,7 @@ class HomeGuestMastheadManager {
             return;
         }
         if (this.isDismissed()) {
+            document.documentElement.classList.add('home-guest-masthead--dismissed');
             masthead.hidden = true;
             masthead.classList.add('u-hidden');
         }
@@ -649,6 +650,7 @@ class HomeGuestMastheadManager {
         } catch (_) {
             /* ignore storage failures */
         }
+        document.documentElement.classList.add('home-guest-masthead--dismissed');
         const masthead = document.getElementById('home-guest-masthead');
         if (masthead) {
             masthead.hidden = true;

@@ -634,7 +634,6 @@ public class App {
             assertThat(viewsSpan.getText()).contains(String.valueOf(expectedViews));
             return this;
         }
-   
 
         public DashboardPage assertViewsSummary(long expectedViews) {
             var summary = wait.until(visibilityOfElementLocated(cssSelector("#dashboardViewsTitle + .dashboard-chart__summary")));

@@ -32,11 +32,12 @@
                                 {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
                                 <div class="post-action-bar__divider" aria-hidden="true"></div>
                                 <div id="post-reading-list"
-                                     class="post-action-bar__segment post-action-bar__segment--reading reading-list-action--loading"
+                                     class="post-action-bar__segment post-action-bar__segment--reading"
                                      hx-get="{view.post.url}/components/reading-list"
-                                     hx-trigger="load, {authRefreshTrigger}"
+                                     hx-trigger="{authRefreshTrigger}"
                                      hx-target="#post-reading-list"
                                      hx-swap="innerHTML">
+                                    {#include ReadingListComponentEndpoint/readingListAction view=readingListView /}
                                 </div>
                             </div>
                         {/actions}
@@ -44,7 +45,7 @@
 
                         {#if view.post.coverUrl}
                         <div class="article-page__cover">
-                            <img src="{view.post.coverUrl}" alt="{view.liveTitle}" class="article-page__cover-image"/>
+                            <img src="{view.post.coverUrl}" alt="{view.liveTitle}" class="article-page__cover-image" width="1200" height="675" decoding="async"/>
                         </div>
                         {/if}
 

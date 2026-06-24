@@ -21,6 +21,7 @@ import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.post.PublishedPostView;
+import dev.vepo.contraponto.readinglist.ReadingListService;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.shared.Slug;
@@ -75,6 +76,7 @@ public class PublishEndpoint {
     private final BreadcrumbService breadcrumbService;
     private final PostResponseService postResponseService;
     private final SeoService seoService;
+    private final ReadingListService readingListService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -90,7 +92,8 @@ public class PublishEndpoint {
                            LoggedUser loggedUser,
                            BreadcrumbService breadcrumbService,
                            PostResponseService postResponseService,
-                           SeoService seoService) {
+                           SeoService seoService,
+                           ReadingListService readingListService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -105,6 +108,7 @@ public class PublishEndpoint {
         this.breadcrumbService = breadcrumbService;
         this.postResponseService = postResponseService;
         this.seoService = seoService;
+        this.readingListService = readingListService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -154,6 +158,7 @@ public class PublishEndpoint {
                                                       0L,
                                                       0L,
                                                       audienceComponentEndpoint.buildView(blog),
+                                                      readingListService.buildActionView(post, loggedUser.getId()),
                                                       breadcrumb,
                                                       seoService.forPost(view, breadcrumb)))
                     .build();

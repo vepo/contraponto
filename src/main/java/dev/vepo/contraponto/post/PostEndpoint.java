@@ -18,6 +18,8 @@ import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.user.LoggedUser;
+import dev.vepo.contraponto.readinglist.ReadingListActionView;
+import dev.vepo.contraponto.readinglist.ReadingListService;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.seo.SeoMetadata;
 import dev.vepo.contraponto.seo.SeoService;
@@ -59,6 +61,7 @@ public class PostEndpoint {
                                                    long viewCount,
                                                    long averageReadingSeconds,
                                                    BlogAudienceView audience,
+                                                   ReadingListActionView readingListView,
                                                    BreadcrumbTrail breadcrumb,
                                                    SeoMetadata seo);
 
@@ -86,6 +89,7 @@ public class PostEndpoint {
     private final SeoService seoService;
     private final BlogRepository blogRepository;
     private final PostSlugAliasRepository postSlugAliasRepository;
+    private final ReadingListService readingListService;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -101,7 +105,8 @@ public class PostEndpoint {
                         BreadcrumbService breadcrumbService,
                         SeoService seoService,
                         BlogRepository blogRepository,
-                        PostSlugAliasRepository postSlugAliasRepository) {
+                        PostSlugAliasRepository postSlugAliasRepository,
+                        ReadingListService readingListService) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -116,6 +121,7 @@ public class PostEndpoint {
         this.seoService = seoService;
         this.blogRepository = blogRepository;
         this.postSlugAliasRepository = postSlugAliasRepository;
+        this.readingListService = readingListService;
     }
 
     @GET
@@ -224,6 +230,7 @@ public class PostEndpoint {
         PostPublication live = post.getLivePublication();
         PublishedPostView view = new PublishedPostView(post, live);
         BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
+        ReadingListActionView readingListView = readingListService.buildActionView(post, viewerUserId);
         BreadcrumbTrail breadcrumb = breadcrumbService.forPost(view);
         TemplateInstance template = Templates.post(view,
                                                    seriePostsFor(post),
@@ -233,6 +240,7 @@ public class PostEndpoint {
                                                    viewCount,
                                                    averageReadingSeconds,
                                                    audience,
+                                                   readingListView,
                                                    breadcrumb,
                                                    seoService.forPost(view, breadcrumb));
         ResponseBuilder response = Response.ok(template);

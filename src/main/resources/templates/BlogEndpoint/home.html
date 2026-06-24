@@ -10,7 +10,7 @@
                     {#include components/breadcrumb trail=breadcrumb /}
                     <header class="user-blog-header">
                         {#if mainBlog.bannerUrl}
-                        <img src="{mainBlog.bannerUrl}" alt="" class="user-blog-header__banner"/>
+                        <img src="{mainBlog.bannerUrl}" alt="" class="user-blog-header__banner" width="1260" height="540" decoding="async"/>
                         {/if}
                         <h1 class="user-blog__name">{#if mainBlog.main}{author.name}{#else}{mainBlog.name}{/if}</h1>
                         {#if !mainBlog.main}
