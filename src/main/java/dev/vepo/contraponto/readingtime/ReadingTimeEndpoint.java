@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostEngagementService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
 import dev.vepo.contraponto.view.SessionIdProvider;
@@ -27,16 +28,19 @@ public class ReadingTimeEndpoint {
 
     private final PostRepository postRepository;
     private final ReadingTimeRepository readingTimeRepository;
+    private final PostEngagementService postEngagementService;
     private final SessionIdProvider sessionIdProvider;
     private final LoggedUser loggedUser;
 
     @Inject
     public ReadingTimeEndpoint(PostRepository postRepository,
                                ReadingTimeRepository readingTimeRepository,
+                               PostEngagementService postEngagementService,
                                SessionIdProvider sessionIdProvider,
                                LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.readingTimeRepository = readingTimeRepository;
+        this.postEngagementService = postEngagementService;
         this.sessionIdProvider = sessionIdProvider;
         this.loggedUser = loggedUser;
     }
@@ -56,7 +60,13 @@ public class ReadingTimeEndpoint {
         String sessionId = sessionIdProvider.getOrCreateSessionId(viewCookie);
         Long userId = loggedUser.isAuthenticated() ? loggedUser.getId() : null;
 
-        readingTimeRepository.addSeconds(post, userId, sessionId, HEARTBEAT_SECONDS, LocalDateTime.now(ZoneId.systemDefault()));
+        if (postEngagementService.shouldRecordReaderEngagement(post, userId)) {
+            readingTimeRepository.addSeconds(post,
+                                             userId,
+                                             sessionId,
+                                             HEARTBEAT_SECONDS,
+                                             LocalDateTime.now(ZoneId.systemDefault()));
+        }
 
         Response.ResponseBuilder response = Response.noContent();
         if (viewCookie == null) {

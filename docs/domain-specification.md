@@ -246,11 +246,12 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Browse page shell** | Home and blog listing layout: main column at **reading width** (`container-narrow`); **SIDEBAR** custom pages in the left margin; explore + RSS in the right margin. Sidebars do not shrink the main column. Post pages reuse the shell with **related posts only** in the right margin (no left SIDEBAR, no explore/RSS). | `browse-page-shell`, `browse-page--article`, `components/browse-sidebar-nav.html`, `components/home-explore-aside.html`, `PostEndpoint/related-posts-aside.html` |
 | **Sitemap** | Machine-readable list of public URLs for crawlers. | `GET /sitemap.xml`, `SitemapEndpoint` |
 | **Robots policy** | Crawl rules and sitemap reference for crawlers. | `GET /robots.txt`, `RobotsEndpoint` |
-| **View count** | Read metric per post load (one row per page GET per session). | `View` |
+| **View count** | Read metric per post load (one row per page GET per session). Author rows are not stored (see **Author self-access**). | `View`, `PostEngagementService` |
 | **Estimated read time** | Word-count hint on post cards (e.g. "5 min read"); not tracked engagement. | `TemplateExtensions.readTime` |
-| **Reading time** | Actual seconds a reader spends on a published post while the browser tab is **visible**; extended by 5-second client heartbeats. | `ReadingSession` |
-| **Reading session** | One post + `__view_session` (+ optional user) row accumulating `total_seconds`. | `ReadingSession` |
+| **Reading time** | Actual seconds a reader spends on a published post while the browser tab is **visible**; extended by 5-second client heartbeats. Author rows are not stored (see **Author self-access**). | `ReadingSession`, `PostEngagementService` |
+| **Reading session** | One post + `__view_session` (+ optional user) row accumulating `total_seconds`. Not persisted for **author self-access**. | `ReadingSession` |
 | **Average reading time** | Mean `total_seconds` across reading sessions for a post; shown on post metadata. | `ReadingTimeRepository.averageSecondsByPost` |
+| **Author self-access** | When the post author loads their own published post while signed in, view count and reading time are not recorded. Historical author-attributed rows are removed by Flyway migration; login session migration skips the author's own posts. | `PostEngagementService`, `PostEndpoint`, `ReadingTimeEndpoint`, `V0.0.7__purge_author_engagement.sql` |
 
 ### Author workspaces
 

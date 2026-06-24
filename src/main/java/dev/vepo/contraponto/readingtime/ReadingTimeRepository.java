@@ -110,10 +110,13 @@ public class ReadingTimeRepository {
         int updated = entityManager.createQuery("""
                                                 UPDATE ReadingSession rs
                                                 SET rs.user = :user
-                                                WHERE rs.user IS NULL AND rs.sessionId = :sessionId
+                                                WHERE rs.user IS NULL
+                                                  AND rs.sessionId = :sessionId
+                                                  AND rs.post.blog.owner.id <> :userId
                                                 """)
                                    .setParameter("user", entityManager.getReference(User.class, userId))
                                    .setParameter("sessionId", sessionId)
+                                   .setParameter("userId", userId)
                                    .executeUpdate();
 
         if (updated > 0) {

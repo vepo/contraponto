@@ -78,6 +78,7 @@ public class PostEndpoint {
     private final LoggedUser loggedUser;
     private final ViewRepository viewRepository;
     private final ReadingTimeRepository readingTimeRepository;
+    private final PostEngagementService postEngagementService;
 
     private final SessionIdProvider sessionIdProvider;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
@@ -94,6 +95,7 @@ public class PostEndpoint {
                         LoggedUser loggedUser,
                         ViewRepository viewRepository,
                         ReadingTimeRepository readingTimeRepository,
+                        PostEngagementService postEngagementService,
                         SessionIdProvider sessionIdProvider,
                         BlogAudienceComponentEndpoint audienceComponentEndpoint,
                         BreadcrumbService breadcrumbService,
@@ -107,6 +109,7 @@ public class PostEndpoint {
         this.loggedUser = loggedUser;
         this.viewRepository = viewRepository;
         this.readingTimeRepository = readingTimeRepository;
+        this.postEngagementService = postEngagementService;
         this.sessionIdProvider = sessionIdProvider;
         this.audienceComponentEndpoint = audienceComponentEndpoint;
         this.breadcrumbService = breadcrumbService;
@@ -209,12 +212,11 @@ public class PostEndpoint {
     }
 
     private Response renderPost(Post post, HttpHeaders headers) {
-        // Record view
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));
-        viewRepository.recordView(post,
-                                  loggedUser.isAuthenticated() ? loggedUser.getId() : null,
-                                  sessionId,
-                                  LocalDateTime.now(ZoneId.systemDefault()));
+        Long viewerUserId = loggedUser.isAuthenticated() ? loggedUser.getId() : null;
+        if (postEngagementService.shouldRecordReaderEngagement(post, viewerUserId)) {
+            viewRepository.recordView(post, viewerUserId, sessionId, LocalDateTime.now(ZoneId.systemDefault()));
+        }
 
         long viewCount = viewRepository.countByPost(post);
         long averageReadingSeconds = readingTimeRepository.averageSecondsByPost(post);

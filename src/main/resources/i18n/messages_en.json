@@ -281,6 +281,8 @@
   "library.title": "My Library",
   "library.subtitle": "Drafts and published posts in one place.",
   "library.emptyPosts": "No {type} posts yet.",
+  "library.emptyDrafts": "No drafts yet.",
+  "library.emptyPublished": "No published posts yet.",
   "library.lastEdited": "Last edited:",
   "library.deleteDraftConfirm": "Are you sure you want to delete this draft?",
   "library.unpublish": "Unpublish",

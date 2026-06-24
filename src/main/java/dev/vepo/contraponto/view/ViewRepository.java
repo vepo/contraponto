@@ -86,14 +86,16 @@ public class ViewRepository {
 
     @Transactional
     public void migrateAnonymousViewsToUser(Long userId, String sessionId) {
-        // Update all anonymous views with matching session ID to this user
         int updated = entityManager.createQuery("""
                                                 UPDATE View v
                                                 SET v.user = :user
-                                                WHERE v.user IS NULL AND v.sessionId = :sessionId
+                                                WHERE v.user IS NULL
+                                                  AND v.sessionId = :sessionId
+                                                  AND v.post.blog.owner.id <> :userId
                                                 """)
                                    .setParameter("user", entityManager.getReference(User.class, userId))
                                    .setParameter("sessionId", sessionId)
+                                   .setParameter("userId", userId)
                                    .executeUpdate();
 
         if (updated > 0) {
@@ -101,15 +103,8 @@ public class ViewRepository {
         }
     }
 
-    /**
-     * Record a view if not already recorded for this user/session in the last N
-     * minutes. We use a unique constraint to prevent duplicates.
-     */
     @Transactional
     public void recordView(Post post, Long userId, String sessionId, LocalDateTime viewedAt) {
-        // Try to insert – if duplicate key, it will be ignored (thanks to unique
-        // constraint)
-        // Using native query to handle conflict gracefully.
         logger.info("Creating view for post! userId={} post={}", userId, post);
         // Native: direct INSERT for view deduplication relies on unique constraint
         // handling.

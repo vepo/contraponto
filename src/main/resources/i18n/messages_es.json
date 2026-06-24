@@ -278,6 +278,8 @@
   "library.title": "Mi biblioteca",
   "library.subtitle": "Borradores y publicaciones en un solo lugar.",
   "library.emptyPosts": "Aún no hay publicaciones {type}.",
+  "library.emptyDrafts": "Aún no hay borradores.",
+  "library.emptyPublished": "Aún no hay publicaciones publicadas.",
   "library.lastEdited": "Última edición:",
   "library.deleteDraftConfirm": "¿Seguro que deseas eliminar este borrador?",
   "library.unpublish": "Despublicar",

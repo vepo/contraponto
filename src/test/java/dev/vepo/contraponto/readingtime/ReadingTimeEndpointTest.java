@@ -27,7 +27,35 @@ class ReadingTimeEndpointTest {
     @Inject
     EntityManager entityManager;
 
+    @Inject
+    ReadingTimeRepository readingTimeRepository;
+
     private User author;
+
+    @Test
+    void authorHeartbeatDoesNotRecordReadingTime() {
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Author read")
+                        .withContent("Body")
+                        .withSlug("author-read-post")
+                        .withPublished(true)
+                        .persist();
+
+        TestHttp.authenticated(author)
+                .when()
+                .post("/forms/posts/" + post.getId() + "/reading-time")
+                .then()
+                .statusCode(204);
+
+        Number count = (Number) entityManager.createNativeQuery("""
+                                                                SELECT COUNT(*) FROM tb_reading_sessions
+                                                                WHERE post_id = :postId
+                                                                """)
+                                             .setParameter("postId", post.getId())
+                                             .getSingleResult();
+        assertThat(count.intValue()).isZero();
+    }
 
     @Test
     void draftPostReturnsNotFound() {

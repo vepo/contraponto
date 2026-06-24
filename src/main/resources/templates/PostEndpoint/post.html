@@ -4,8 +4,10 @@
     <body>
         {#include components/header /}
         <main hx-history-elt class="article-page browse-page browse-page--article" id="main-content"
+              {#if !user.isAuthenticated || user.id != view.post.author.id}
               data-reading-time-post-id="{view.post.id}"
-              data-reading-time-url="/forms/posts/{view.post.id}/reading-time">
+              data-reading-time-url="/forms/posts/{view.post.id}/reading-time"
+              {/if}>
             <div class="browse-page-shell">
                 <div class="browse-page-shell__main">
                         {#include components/breadcrumb trail=breadcrumb /}

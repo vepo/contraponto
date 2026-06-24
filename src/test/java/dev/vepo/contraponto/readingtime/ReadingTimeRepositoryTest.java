@@ -60,6 +60,25 @@ class ReadingTimeRepositoryTest {
         assertThat(counts.get(LocalDate.from(day))).isEqualTo(300L);
     }
 
+    @Test
+    void migrateAnonymousSessionsToUserSkipsOwnPosts() {
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Author migrate")
+                        .withContent("Body")
+                        .withSlug("author-migrate-post")
+                        .withPublished(true)
+                        .persist();
+        var recordedAt = TestTimes.REFERENCE;
+        var sessionId = "migrate-reading-session";
+
+        readingTimeRepository.addSeconds(post, null, sessionId, 120, recordedAt);
+
+        readingTimeRepository.migrateAnonymousSessionsToUser(author.getId(), sessionId);
+
+        assertThat(readingTimeRepository.averageSecondsByPost(post)).isEqualTo(120L);
+    }
+
     @BeforeEach
     void setUp() {
         Given.cleanup();

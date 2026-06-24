@@ -28,6 +28,26 @@ class DashboardTest {
     }
 
     @Test
+    void authorSelfVisitDoesNotIncrementViewCount(App app) {
+        var post = Given.post()
+                        .withTitle("Author Own Post")
+                        .withContent("Content")
+                        .withAuthor(testUser)
+                        .withPublished(true)
+                        .persist();
+
+        app.access()
+           .login(testUser)
+           .goToPost(testUser, post.getSlug())
+           .waitForReady();
+
+        app.access()
+           .login(testUser)
+           .dashboard()
+           .assertViewCountForRecentPublished(0, 0);
+    }
+
+    @Test
     void clickingRecentDraftNavigatesToEditPage(App app) {
         var draft = Given.post()
                          .withTitle("Recent Draft")

@@ -1,12 +1,14 @@
 {#if posts.isEmpty()}
-<div class="drafts-page__empty">
-    <p data-i18n="library.emptyPosts">Nenhuma publicação {type} ainda.</p>
+<div class="pages-manage__empty">
     {#if type == 'drafts'}
+    <p data-i18n="library.emptyDrafts">Nenhum rascunho ainda.</p>
     <a data-hx-get="/write"
        hx-select="main"
        hx-target="main"
        hx-push-url="/write"
        class="btn btn--primary" data-i18n="dashboard.writeNew">✍️ Escrever nova história</a>
+    {#else}
+    <p data-i18n="library.emptyPublished">Nenhuma publicação publicada ainda.</p>
     {/if}
 </div>
 {#else}
