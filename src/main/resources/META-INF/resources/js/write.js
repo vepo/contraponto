@@ -701,6 +701,23 @@ class WriteTagsPicker {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.writeEditor = new WriteEditor();
-    new WriteTagsPicker();
+    if (document.querySelector('script[src*="asciidoctor.min.js"]')) {
+        initWriteModules();
+    }
 });
+
+document.addEventListener('contraponto:assets-ready', (evt) => {
+    if (evt.detail?.profile === 'write') {
+        initWriteModules();
+    }
+});
+
+function initWriteModules() {
+    if (!window.writeEditor) {
+        window.writeEditor = new WriteEditor();
+    }
+    if (!window.writeTagsPicker) {
+        window.writeTagsPicker = new WriteTagsPicker();
+    }
+    window.writeEditor.tryMount();
+}

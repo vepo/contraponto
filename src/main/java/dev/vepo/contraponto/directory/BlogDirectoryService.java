@@ -29,22 +29,27 @@ public class BlogDirectoryService {
     }
 
     public List<BlogDirectoryRow> buildRows() {
-        List<BlogDirectoryRow> rows = new ArrayList<>();
-        for (Blog blog : blogRepository.findAllActiveWithOwner()) {
-            if (!hasPublishedPosts(blog)) {
-                continue;
-            }
-            long postCount = postRepository.countPublishedByBlog(blog.getId());
-            var topTags = tagProfileService.topTagsForBlog(blog.getId(), CARD_TAG_LIMIT);
+        var blogs = blogRepository.findAllActiveWithOwnerForDirectory();
+        if (blogs.isEmpty()) {
+            return List.of();
+        }
+        var blogIds = blogs.stream().map(Blog::getId).toList();
+        var postCounts = postRepository.countPublishedByBlogIds(blogIds);
+        var blogsWithPosts = blogs.stream()
+                                  .filter(blog -> postCounts.getOrDefault(blog.getId(), 0L) > 0)
+                                  .toList();
+        if (blogsWithPosts.isEmpty()) {
+            return List.of();
+        }
+        var activeBlogIds = blogsWithPosts.stream().map(Blog::getId).toList();
+        var topTagsByBlog = tagProfileService.topTagsForBlogs(activeBlogIds, CARD_TAG_LIMIT);
+        var rows = new ArrayList<BlogDirectoryRow>();
+        for (Blog blog : blogsWithPosts) {
             rows.add(new BlogDirectoryRow(blog,
-                                          postCount,
+                                          postCounts.getOrDefault(blog.getId(), 0L),
                                           ProfileExcerpt.forBlog(blog),
-                                          topTags));
+                                          topTagsByBlog.getOrDefault(blog.getId(), List.of())));
         }
         return rows;
-    }
-
-    private boolean hasPublishedPosts(Blog blog) {
-        return postRepository.countPublishedByBlog(blog.getId()) > 0;
     }
 }

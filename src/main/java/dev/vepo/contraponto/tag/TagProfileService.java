@@ -2,8 +2,8 @@ package dev.vepo.contraponto.tag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,5 +40,9 @@ public class TagProfileService {
 
     public List<TagUsage> topTagsForBlog(long blogId, int limit) {
         return tagRepository.findTopTagUsagesForBlog(blogId, limit);
+    }
+
+    public Map<Long, List<TagUsage>> topTagsForBlogs(List<Long> blogIds, int limit) {
+        return tagRepository.findTopTagUsagesForBlogIds(blogIds, limit);
     }
 }

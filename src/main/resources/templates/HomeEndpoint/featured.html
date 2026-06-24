@@ -30,7 +30,7 @@
             </div>
             {#if post.coverUrl}
             <div class="featured__image">
-                <img src="{post.coverUrl}" alt="{post.liveTitle}"/>
+                <img src="{post.cardCoverUrl}" alt="{post.liveTitle}" fetchpriority="high" decoding="async" width="560" height="315"/>
             </div>
             {/if}
         </div>

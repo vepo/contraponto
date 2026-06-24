@@ -507,15 +507,25 @@ class MainManager {
                 }
             });
         if (this.shouldHighlightCode(evt)) {
-            const main = document.querySelector('main');
-            if (main) {
-                main.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
-            } else {
-                hljs.highlightAll();
-            }
-            if (window.codeCopy) {
-                window.codeCopy.enhanceAll();
-            }
+            void this.highlightCodeBlocks();
+        }
+    }
+
+    async highlightCodeBlocks() {
+        if (window.assetLoader) {
+            await window.assetLoader.ensurePostAssets();
+        }
+        if (typeof hljs === 'undefined') {
+            return;
+        }
+        const main = document.querySelector('main');
+        if (main) {
+            main.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+        } else {
+            hljs.highlightAll();
+        }
+        if (window.codeCopy) {
+            window.codeCopy.enhanceAll();
         }
     }
 

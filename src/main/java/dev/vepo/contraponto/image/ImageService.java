@@ -71,13 +71,17 @@ public class ImageService {
 
     private final ImageDependencyRepository dependencyRepository;
 
+    private final ImageResizeService imageResizeService;
+
     @Inject
     public ImageService(ImageRepository imageRepository,
                         ImageContentRepository imageContentRepository,
-                        ImageDependencyRepository dependencyRepository) {
+                        ImageDependencyRepository dependencyRepository,
+                        ImageResizeService imageResizeService) {
         this.imageRepository = imageRepository;
         this.imageContentRepository = imageContentRepository;
         this.dependencyRepository = dependencyRepository;
+        this.imageResizeService = imageResizeService;
     }
 
     @Transactional
@@ -101,6 +105,10 @@ public class ImageService {
     }
 
     public ImageData getImage(String filename) {
+        return getImage(filename, null);
+    }
+
+    public ImageData getImage(String filename, Integer maxWidth) {
         int lastDot = filename.lastIndexOf('.');
         if (lastDot <= 0) {
             throw new WebApplicationException("Image not found", Response.Status.NOT_FOUND);
@@ -114,7 +122,11 @@ public class ImageService {
         byte[] data = imageContentRepository.findContentByImageId(image.getId())
                                             .orElseThrow(() -> new WebApplicationException("Image content not found",
                                                                                            Response.Status.NOT_FOUND));
-        return new ImageData(data, contentTypeForFilename(filename, image.getContentType()), image.getSize());
+        var original = new ImageData(data, contentTypeForFilename(filename, image.getContentType()), image.getSize());
+        if (maxWidth == null || maxWidth <= 0) {
+            return original;
+        }
+        return imageResizeService.resize(original, maxWidth, filename);
     }
 
     private boolean isValidImageType(String contentType) {

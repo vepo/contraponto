@@ -6,45 +6,59 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/style/fonts.css"/>
     <link rel="stylesheet" href="/style/main.css"/>
+    {#if pageAssets.manage}
     <link rel="stylesheet" href="/style/manage.css"/>
+    {/if}
+    {#if pageAssets.write}
     <link rel="stylesheet" href="/style/write.css"/>
+    {/if}
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     {#if rssAlternateUrl?? && rssAlternateUrl}
     <link rel="alternate" type="application/rss+xml" href="{rssAlternateUrl}" title="{rssAlternateTitle.or('RSS')}">
     {/if}
-    <script src="/js/third-party/htmx.js"></script>
-    <script src="/js/i18n.js"></script>
+    <script defer src="/js/third-party/htmx.js"></script>
+    <script defer src="/js/i18n.js"></script>
+    <script defer src="/js/asset-loader.js"></script>
     <script>
-        document.addEventListener('htmx:configRequest', function (evt) {
-            var meta = document.querySelector('meta[name="csrf-token"]');
-            if (meta && meta.content) {
-                evt.detail.headers['X-CSRF-Token'] = meta.content;
-            }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('htmx:configRequest', function (evt) {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta && meta.content) {
+                    evt.detail.headers['X-CSRF-Token'] = meta.content;
+                }
+            });
         });
     </script>
-    <script src="/js/toast.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/confirm-modal.js"></script>
-    <script src="/js/reading-time.js"></script>
-    <script src="/js/highlight.js"></script>
-    <script src="/js/forms.js"></script>
-    <script src="/js/authentication.js"></script>
-    <script src="/js/header.js"></script>
-    <script src="/js/image-picker.js"></script>
-    <script src="/js/write.js"></script>
-    <script src="/js/image-upload.js"></script>
+    <script defer src="/js/toast.js"></script>
+    <script defer src="/js/main.js"></script>
+    <script defer src="/js/confirm-modal.js"></script>
+    {#if pageAssets.post || pageAssets.write}
+    <script defer src="/js/reading-time.js"></script>
+    <script defer src="/js/highlight.js"></script>
+    {/if}
+    <script defer src="/js/forms.js"></script>
+    <script defer src="/js/authentication.js"></script>
+    <script defer src="/js/header.js"></script>
+    {#if pageAssets.write}
+    <script defer src="/js/image-picker.js"></script>
+    <script defer src="/js/write.js"></script>
+    <script defer src="/js/image-upload.js"></script>
     <link rel="stylesheet" href="/style/third-party/default.min.css">
-    <script src="/js/third-party/highlight.min.js"></script>
-    <script src="/js/third-party/languages/java.min.js"></script>
-    <script src="/js/third-party/languages/yaml.min.js"></script>
-    <script src="/js/third-party/languages/json.min.js"></script>
-    <script src="/js/third-party/languages/bash.min.js"></script>
-    <script src="/js/third-party/languages/graphql.min.js"></script>
-    <script src="/js/third-party/languages/xml.min.js"></script>
-    <script src="/js/third-party/languages/protobuf.min.js"></script>
-    <script src="/js/third-party/languages/dockerfile.min.js"></script>
-    <script src="/js/third-party/marked.min.js"></script>
-    <script src="/js/third-party/asciidoctor.min.js"></script>
+    <script defer src="/js/third-party/highlight.min.js"></script>
+    <script defer src="/js/third-party/languages/java.min.js"></script>
+    <script defer src="/js/third-party/languages/yaml.min.js"></script>
+    <script defer src="/js/third-party/languages/json.min.js"></script>
+    <script defer src="/js/third-party/languages/bash.min.js"></script>
+    <script defer src="/js/third-party/languages/graphql.min.js"></script>
+    <script defer src="/js/third-party/languages/xml.min.js"></script>
+    <script defer src="/js/third-party/languages/protobuf.min.js"></script>
+    <script defer src="/js/third-party/languages/dockerfile.min.js"></script>
+    <script defer src="/js/third-party/marked.min.js"></script>
+    <script defer src="/js/third-party/asciidoctor.min.js"></script>
+    {#else if pageAssets.post}
+    <link rel="stylesheet" href="/style/third-party/default.min.css">
+    <script defer src="/js/third-party/highlight.min.js"></script>
+    {/if}
     {#if seo??}
     <title id="page-title">{seo.title}</title>
     <div id="seo-head">

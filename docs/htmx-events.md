@@ -37,6 +37,17 @@ On every `main` swap, `main.js` (`setupSeoSync`) refetches `GET /components/seo?
 
 Manage/auth surfaces pass `noindex` metadata via `SeoService.forPrivatePage(...)`.
 
+### Page asset bundles (HTMX navigation)
+
+Public pages load a minimal `<head>` bundle (`PageAssets` in [`PageAssetsFilter`](../src/main/java/dev/vepo/contraponto/shared/infra/PageAssetsFilter.java)). Write, post-reading, and manage assets are omitted on first paint when not needed.
+
+Because HTMX swaps `#main` only, [`asset-loader.js`](../src/main/resources/META-INF/resources/js/asset-loader.js) injects missing bundles when:
+
+- the user navigates to `/write`, a published post (`/post/`), or a manage hub path;
+- or hovers a Write trigger (preload).
+
+After dynamic injection, `asset-loader` dispatches `contraponto:assets-ready` with `{ profile: 'write' | 'post' | 'manage' }`. `write.js` mounts the editor on that event; `main.js` awaits post assets before running `hljs`.
+
 ---
 
 ## 2. Auth session change (login / signup / logout)

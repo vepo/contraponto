@@ -14,7 +14,8 @@
                 hx-select="main"
                 hx-target="main"
                 hx-push-url="{post.url}">
-                <img src="{post.coverUrl}" alt="{post.liveTitle}"/>
+                <img src="{post.cardCoverUrl}" alt="{post.liveTitle}"
+                     loading="lazy" decoding="async" width="560" height="220"/>
             </a>
         </div>
         {/if}

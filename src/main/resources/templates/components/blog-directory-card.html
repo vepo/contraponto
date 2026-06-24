@@ -5,8 +5,9 @@
        hx-target="main"
        hx-push-url="{row.blog.url}"
        class="blog-directory-card__link">
-        {#if row.blog.bannerUrl}
-        <img src="{row.blog.bannerUrl}" alt="" class="blog-directory-card__banner"/>
+        {#if row.blog.cardBannerUrl}
+        <img src="{row.blog.cardBannerUrl}" alt="" class="blog-directory-card__banner"
+             loading="lazy" decoding="async" width="280" height="120"/>
         {#else}
         <div class="blog-directory-card__banner blog-directory-card__banner--placeholder" aria-hidden="true"></div>
         {/if}

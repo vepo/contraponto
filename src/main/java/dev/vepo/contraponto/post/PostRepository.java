@@ -1,7 +1,9 @@
 package dev.vepo.contraponto.post;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -111,6 +113,27 @@ public class PostRepository {
                                          """, Long.class)
                             .setParameter("blogId", blogId)
                             .getSingleResult();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<Long, Long> countPublishedByBlogIds(java.util.Collection<Long> blogIds) {
+        if (blogIds == null || blogIds.isEmpty()) {
+            return Map.of();
+        }
+        var counts = new HashMap<Long, Long>();
+        List<Object[]> rows = entityManager.createQuery("""
+                                                        SELECT p.blog.id, COUNT(p)
+                                                        FROM Post p
+                                                        WHERE p.blog.id IN :blogIds AND
+                                                              p.published = true
+                                                        GROUP BY p.blog.id
+                                                        """)
+                                           .setParameter("blogIds", blogIds)
+                                           .getResultList();
+        for (Object[] row : rows) {
+            counts.put((Long) row[0], (Long) row[1]);
+        }
+        return counts;
     }
 
     private long countPublishedByTagSlug(String tagSlug) {

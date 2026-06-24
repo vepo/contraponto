@@ -4,7 +4,8 @@
        hx-target="main"
        hx-push-url="/authors/{row.author.username}"
        class="author-directory-card__link">
-        <img src="{row.author.avatarUrl}" alt="" class="author-directory-card__avatar" width="64" height="64"/>
+        <img src="{row.author.avatarUrl}" alt="" class="author-directory-card__avatar"
+             width="64" height="64" loading="lazy" decoding="async"/>
         <div class="author-directory-card__body">
             <h2 class="author-directory-card__name">{row.author.name}</h2>
             <p class="author-directory-card__username">@{row.author.username}</p>

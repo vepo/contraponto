@@ -2691,6 +2691,12 @@ public class App {
         return this;
     }
 
+    public App assertPageSourceDoesNotContain(String text) {
+        waitForReady();
+        assertThat(driver.getPageSource()).doesNotContain(text);
+        return this;
+    }
+
     public App assertPageTopPresent() {
         wait.until(visibilityOfElementLocated(cssSelector(".page-top")));
         wait.until(visibilityOfElementLocated(cssSelector("main .breadcrumb")));

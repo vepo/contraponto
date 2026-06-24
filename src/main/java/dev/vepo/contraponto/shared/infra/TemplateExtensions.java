@@ -11,6 +11,7 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.git.GitSyncRun;
 import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.blog.BlogPaths;
+import dev.vepo.contraponto.image.ImageDisplayWidth;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.notification.Notification;
 import dev.vepo.contraponto.notification.NotificationType;
@@ -82,6 +83,16 @@ public class TemplateExtensions {
     @TemplateExtension
     public static String blogGridLoadMorePath(String username) {
         return "/%s/components/grid".formatted(username);
+    }
+
+    @TemplateExtension
+    public static String cardBannerUrl(Blog blog) {
+        return sizedImageUrl(bannerUrl(blog), ImageDisplayWidth.BANNER);
+    }
+
+    @TemplateExtension
+    public static String cardCoverUrl(Post post) {
+        return sizedImageUrl(coverUrl(post), ImageDisplayWidth.CARD);
     }
 
     @TemplateExtension
@@ -395,6 +406,16 @@ public class TemplateExtensions {
     public static boolean showUpdated(PublishedPostView view) {
         PostPublication live = liveOf(view);
         return live != null && live.getVersion() > 1;
+    }
+
+    private static String sizedImageUrl(String url, ImageDisplayWidth width) {
+        if (url == null || url.isBlank() || width == null) {
+            return url;
+        }
+        if (!url.startsWith("/api/images/")) {
+            return url;
+        }
+        return "%s?w=%d".formatted(url, width.pixels());
     }
 
     @TemplateExtension

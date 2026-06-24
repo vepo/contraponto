@@ -19,6 +19,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.WebApplicationException;
@@ -64,9 +65,10 @@ public class ImageEndpoint {
     @GET
     @Path("/{filename}")
     @Produces({ "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif", "image/svg+xml" })
-    public Response getImage(@PathParam("filename") String filename) {
+    public Response getImage(@PathParam("filename") String filename,
+                             @QueryParam("w") Integer maxWidth) {
         try {
-            ImageData imageData = imageService.getImage(filename);
+            ImageData imageData = imageService.getImage(filename, maxWidth);
             var cacheControl = new CacheControl();
             cacheControl.setMaxAge(31536000);
             cacheControl.setPrivate(false);

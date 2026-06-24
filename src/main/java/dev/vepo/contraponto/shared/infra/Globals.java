@@ -68,6 +68,15 @@ public class Globals {
         return CDI.current().select(NotificationHtmxConfig.class).get().badgeTrigger();
     }
 
+    @TemplateGlobal(name = "pageAssets")
+    public static PageAssets pageAssets() {
+        var current = CDI.current().select(CurrentPageAssets.class);
+        if (!current.isResolvable()) {
+            return PageAssets.PUBLIC_READ;
+        }
+        return current.get().get();
+    }
+
     @TemplateGlobal(name = "session")
     public static LoggedUser session() {
         var loggedUser = CDI.current().select(LoggedUser.class);

@@ -96,6 +96,18 @@ public class BlogRepository {
                             .getResultList();
     }
 
+    public List<Blog> findAllActiveWithOwnerForDirectory() {
+        return entityManager.createQuery("""
+                                         FROM Blog b
+                                         JOIN FETCH b.owner o
+                                         LEFT JOIN FETCH b.banner
+                                         LEFT JOIN FETCH o.defaultBlogBanner
+                                         WHERE b.active
+                                         ORDER BY o.username, b.main DESC, b.name
+                                         """, Blog.class)
+                            .getResultList();
+    }
+
     public List<Blog> findAllForManagement() {
         return entityManager.createQuery("""
                                          FROM Blog b
