@@ -625,12 +625,16 @@ public class App {
             assertThat(items).hasSizeGreaterThan(index);
             var meta = items.get(index).findElement(cssSelector(".recent-list__meta"));
             var viewsSpan = meta.findElements(cssSelector("span")).stream()
-                                .filter(span -> span.getText().matches(".*(views|visualizações|visualizaciones).*"))
+                                .filter(span -> {
+                                    var text = span.getText().toLowerCase();
+                                    return text.contains("views") || text.contains("visualizações") || text.contains("visualizaciones");
+                                })
                                 .findFirst()
                                 .orElseThrow();
             assertThat(viewsSpan.getText()).contains(String.valueOf(expectedViews));
             return this;
         }
+   
 
         public DashboardPage assertViewsSummary(long expectedViews) {
             var summary = wait.until(visibilityOfElementLocated(cssSelector("#dashboardViewsTitle + .dashboard-chart__summary")));
@@ -1342,8 +1346,9 @@ public class App {
                           .filter(a -> title.equals(a.getText()))
                           .findFirst()
                           .orElseThrow(() -> new AssertionError("No linked serie part titled: " + title));
-            assertThat(link.getAttribute("href")).isNull();
-            assertThat(link.getAttribute("data-hx-get")).isNotBlank();
+            String hxGet = link.getAttribute("data-hx-get");
+            assertThat(hxGet).isNotBlank();
+            assertThat(link.getAttribute("href")).endsWith(hxGet);
             return this;
         }
 

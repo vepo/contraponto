@@ -177,6 +177,28 @@ public class SeoService {
                           .build();
     }
 
+    public SeoMetadata forError(int status) {
+        String pageTitle = switch (status) {
+            case 400 -> "Requisição inválida";
+            case 403 -> "Acesso negado";
+            case 404 -> "Página não encontrada";
+            default -> "Erro";
+        };
+        String description = switch (status) {
+            case 400 -> "O servidor não entendeu a requisição.";
+            case 403 -> "Você não tem permissão para acessar este recurso.";
+            case 404 -> "A página que você procura não existe ou foi movida.";
+            default -> "Ocorreu um erro inesperado.";
+        };
+        return SeoMetadata.builder()
+                          .title("%s · %s".formatted(pageTitle, siteBranding.seoName()))
+                          .description(description)
+                          .canonicalUrl(publicSiteUrl.absolute("/"))
+                          .ogType(SeoOgType.WEBSITE)
+                          .noindex(true)
+                          .build();
+    }
+
     public SeoMetadata forHome() {
         return SeoMetadata.builder()
                           .title(siteBranding.seoName())
@@ -196,6 +218,11 @@ public class SeoService {
         User author = post.getAuthor();
         String title = "%s · %s · %s".formatted(PostTemplateExtensions.liveTitle(view), author.getName(), siteBranding.seoName());
         String description = describePost(view);
+        if (description.isBlank()) {
+            description = "%s por %s no %s.".formatted(PostTemplateExtensions.liveTitle(view),
+                                                       author.getName(),
+                                                       siteBranding.seoName());
+        }
         String path = PostPaths.extractUrl(post);
         PostPublication live = view.live();
         var builder = SeoMetadata.builder()
@@ -222,7 +249,7 @@ public class SeoService {
     public SeoMetadata forPrivatePage(String pageTitle) {
         return SeoMetadata.builder()
                           .title("%s · %s".formatted(pageTitle, siteBranding.seoName()))
-                          .description("")
+                          .description("%s no %s.".formatted(pageTitle, siteBranding.seoName()))
                           .canonicalUrl(publicSiteUrl.absolute("/"))
                           .ogType(SeoOgType.WEBSITE)
                           .noindex(true)

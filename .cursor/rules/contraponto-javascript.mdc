@@ -45,6 +45,7 @@ Before adding JS, try (in order): inline/OOB HTML in the mutation response → `
 ## Templates
 
 - Prefer `hx-get` / `hx-post`, `data-hx-get`, `hx-target`, OOB, and `HX-Trigger` over new JS.
+- **Navigation anchors:** every `<a>` with `data-hx-get` or `hx-get` MUST also have an `href` to the same URL so crawlers can follow links (see [contraponto-seo.mdc](contraponto-seo.mdc)).
 - **Do not add** new inline `<script>` blocks or `onclick` handlers (existing debt: locale picker, modal close, error retry — do not expand).
 - Do not add a third CSRF copy in templates (`main.js` and `head.html` already set `X-CSRF-Token`).
 

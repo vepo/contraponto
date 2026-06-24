@@ -18,7 +18,7 @@
             <ul class="hub-nav__list">
                 {#for section in group.sections}
                 <li>
-                    <a data-hx-get="{hubBasePath}/{section.slug}"
+                    <a href="{hubBasePath}/{section.slug}" data-hx-get="{hubBasePath}/{section.slug}"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"

@@ -13,7 +13,7 @@
         <div class="reading-list-page__main">
             <h3 class="reading-list-page__title {#if !row.available}reading-list-page__title--unavailable{/if}">
                 {#if row.available}
-                <a data-hx-get="{row.postUrl}"
+                <a href="{row.postUrl}" data-hx-get="{row.postUrl}"
                    hx-select="main"
                    hx-target="main"
                    hx-swap="outerHTML"

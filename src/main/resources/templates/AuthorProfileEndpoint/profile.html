@@ -15,7 +15,7 @@
                     {/if}
                     {#include components/author-social-links socialLinks=socialLinks /}
                     <p class="author-profile-header__actions">
-                        <a data-hx-get="/{author.username}"
+                        <a href="/{author.username}" data-hx-get="/{author.username}"
                            hx-select="main"
                            hx-target="main"
                            hx-push-url="/{author.username}"
@@ -37,7 +37,7 @@
                     <div class="directory-grid directory-grid--compact">
                         {#for blog in blogs}
                         <article class="blog-directory-card blog-directory-card--compact">
-                            <a data-hx-get="{blog.url}"
+                            <a href="{blog.url}" data-hx-get="{blog.url}"
                                hx-select="main"
                                hx-target="main"
                                hx-push-url="{blog.url}"
@@ -63,7 +63,7 @@
                         <article class="article-card">
                             <div class="article-card__content">
                                 <h3 class="article-card__title">
-                                    <a data-hx-get="{post.url}"
+                                    <a href="{post.url}" data-hx-get="{post.url}"
                                        hx-select="main"
                                        hx-target="main"
                                        hx-push-url="{post.url}">{post.liveTitle}</a>

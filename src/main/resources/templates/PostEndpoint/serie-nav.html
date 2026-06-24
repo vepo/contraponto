@@ -1,7 +1,7 @@
 {#if serie}
 <nav class="post-serie-nav" aria-label="Navegação da série" data-i18n="post.serieNavAria" data-i18n-attr="aria-label">
     <h2 class="post-serie-nav__heading">
-        <a data-hx-get="{serie.url}"
+        <a href="{serie.url}" data-hx-get="{serie.url}"
            hx-select="main"
            hx-target="main"
            hx-push-url="{serie.url}"
@@ -16,7 +16,7 @@
             </li>
             {#else}
             <li class="post-serie-nav__item">
-                <a data-hx-get="{seriePost.url}"
+                <a href="{seriePost.url}" data-hx-get="{seriePost.url}"
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="{seriePost.url}"

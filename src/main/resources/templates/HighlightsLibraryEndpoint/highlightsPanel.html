@@ -8,7 +8,7 @@
     {#for entry in highlights.data}
     <article class="highlights-library-page__row">
         <h3 class="highlights-library-page__post-title">
-            <a data-hx-get="/{entry.highlight.authorUsername}/post/{entry.highlight.postSlug}"
+            <a href="/{entry.highlight.authorUsername}/post/{entry.highlight.postSlug}" data-hx-get="/{entry.highlight.authorUsername}/post/{entry.highlight.postSlug}"
                hx-select="main" hx-target="main"
                hx-push-url="/{entry.highlight.authorUsername}/post/{entry.highlight.postSlug}">{entry.highlight.postTitle}</a>
         </h3>

@@ -12,7 +12,7 @@
             {/if}
 
             <div class="logo">
-                <a data-hx-get="/"
+                <a href="/" data-hx-get="/"
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="/">
@@ -63,7 +63,7 @@
                     <ul class="sidebar__links">
                         {#for link in section.itens}
                             <li>
-                                <a data-hx-get="{link.href}"
+                                <a href="{link.href}" data-hx-get="{link.href}"
                                    hx-select="main"
                                    hx-target="main"
                                    hx-push-url="{link.href}"

@@ -13,7 +13,7 @@
             <div class="user-menu__email">{user.email.escapeHtml}</div>
         </div>
 
-        <a data-hx-get="/{user.username}"
+        <a href="/{user.username}" data-hx-get="/{user.username}"
            hx-select="main"
            hx-target="main"
            hx-push-url="/{user.username}"
@@ -26,7 +26,7 @@
             <span class="user-menu__label" data-i18n="menu.myBlog">Meu blog</span>
         </a>
 
-        <a data-hx-get="/writing"
+        <a href="/writing" data-hx-get="/writing"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
@@ -39,7 +39,7 @@
             <span class="user-menu__label" data-i18n="menu.writing">Escrita</span>
         </a>
 
-        <a data-hx-get="/reading"
+        <a href="/reading" data-hx-get="/reading"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
@@ -53,7 +53,7 @@
             <span class="user-menu__label" data-i18n="menu.reading">Leitura</span>
         </a>
 
-        <a data-hx-get="/manage"
+        <a href="/manage" data-hx-get="/manage"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
@@ -66,7 +66,7 @@
             <span class="user-menu__label" data-i18n="menu.manage">Administrar</span>
         </a>
 
-        <a data-hx-get="/account"
+        <a href="/account" data-hx-get="/account"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
@@ -80,7 +80,7 @@
         </a>
 
         {#if user.isEditor}
-        <a data-hx-get="/editor"
+        <a href="/editor" data-hx-get="/editor"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
@@ -96,7 +96,7 @@
         {/if}
 
         {#if user.isUserAdministrator}
-        <a data-hx-get="/administration"
+        <a href="/administration" data-hx-get="/administration"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"

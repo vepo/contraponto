@@ -75,11 +75,37 @@ class SeoServiceTest {
     }
 
     @Test
+    void forError_includesDescriptionAndNoindex() {
+        SeoMetadata notFound = seoService.forError(404);
+        assertThat(notFound.title()).contains("Página não encontrada");
+        assertThat(notFound.description()).isNotBlank();
+        assertThat(notFound.noindex()).isTrue();
+
+        SeoMetadata server = seoService.forError(500);
+        assertThat(server.description()).isNotBlank();
+    }
+
+    @Test
     void forHome_hasSiteTitleAndDescription() {
         SeoMetadata meta = seoService.forHome();
         assertThat(meta.title()).contains("Contraponto");
         assertThat(meta.description()).isNotBlank();
         assertThat(meta.noindex()).isFalse();
+    }
+
+    @Test
+    void forPost_blankBodyUsesTitleFallback() {
+        Post post = Given.post()
+                         .withAuthor(author)
+                         .withTitle("Title Only Post")
+                         .withContent("   ")
+                         .withSlug("title-only")
+                         .withPublished(true)
+                         .persist();
+        PublishedPostView view = new PublishedPostView(post, post.getLivePublication());
+
+        SeoMetadata meta = seoService.forPost(view);
+        assertThat(meta.description()).contains("Title Only Post");
     }
 
     @Test
@@ -131,6 +157,7 @@ class SeoServiceTest {
     void forPrivatePage_readingHubIsNoindex() {
         SeoMetadata meta = seoService.forPrivatePage("Reading");
         assertThat(meta.title()).contains("Reading");
+        assertThat(meta.description()).isNotBlank();
         assertThat(meta.noindex()).isTrue();
     }
 

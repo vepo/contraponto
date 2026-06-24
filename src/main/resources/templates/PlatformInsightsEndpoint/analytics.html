@@ -1,14 +1,14 @@
 <div id="platformInsightsAnalytics" class="dashboard-analytics">
     <div id="platformInsightsAnalytics-controls" class="dashboard-analytics__toolbar">
         <div class="dashboard-analytics__month-nav">
-            <a class="dashboard-analytics__month-link"
+            <a href="/administration/insights/components/analytics?year={insights.previousYear}&month={insights.previousMonth}" class="dashboard-analytics__month-link"
                data-hx-get="/administration/insights/components/analytics?year={insights.previousYear}&month={insights.previousMonth}"
                hx-target="#platformInsightsAnalytics"
                hx-swap="outerHTML"
                hx-push-url="false" data-i18n="dashboard.previousMonth">Mês anterior</a>
             <span class="dashboard-analytics__month-label">{insights.monthLabel}</span>
             {#if insights.canGoNextMonth}
-            <a class="dashboard-analytics__month-link"
+            <a href="/administration/insights/components/analytics?year={insights.nextYear}&month={insights.nextMonth}" class="dashboard-analytics__month-link"
                data-hx-get="/administration/insights/components/analytics?year={insights.nextYear}&month={insights.nextMonth}"
                hx-target="#platformInsightsAnalytics"
                hx-swap="outerHTML"

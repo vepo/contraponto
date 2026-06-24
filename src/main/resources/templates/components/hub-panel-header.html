@@ -6,7 +6,7 @@
         {/if}
     </div>
     {#if actionHref?? && actionHref}
-    <a data-hx-get="{actionHref}"
+    <a href="{actionHref}" data-hx-get="{actionHref}"
        hx-select="main"
        hx-target="main"
        hx-swap="outerHTML"

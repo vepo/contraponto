@@ -1,0 +1,50 @@
+---
+description: SEO — meta descriptions and crawlable HTMX links
+globs: src/main/resources/templates/**/*.html,src/main/java/dev/vepo/contraponto/seo/**/*.java
+alwaysApply: false
+---
+
+# SEO conventions
+
+Google Search Console flags missing meta descriptions and anchors without crawlable `href` values. Follow these rules on every public page and shared chrome change.
+
+## Meta description
+
+- **Full pages** rendered with [components/head.html](../../src/main/resources/templates/components/head.html) MUST pass `seo=seo` from the endpoint (or hub service) using [SeoService](../../src/main/java/dev/vepo/contraponto/seo/SeoService.java).
+- **Indexable pages** (`noindex == false`) MUST have a non-blank `SeoMetadata.description()` — add a fallback in `SeoService` when source text is empty (see `forBlogHome`, `forAuthorProfile`, `forPost`).
+- **Error pages** use `SeoService.forError(status)` via [GenericExceptionMapper](../../src/main/java/dev/vepo/contraponto/shared/infra/GenericExceptionMapper.java).
+- **Private / hub pages** use `SeoService.forPrivatePage(...)` (includes description + `noindex`).
+- Do not add a second `<meta name="description">` outside [components/seo-meta-tags.html](../../src/main/resources/templates/components/seo-meta-tags.html).
+
+## Crawlable links
+
+Every `<a>` that navigates via HTMX MUST include a real **`href`** matching the navigation target:
+
+```html
+<a href="{post.url}"
+   data-hx-get="{post.url}"
+   hx-select="main"
+   hx-target="main"
+   hx-push-url="{post.url}">…</a>
+```
+
+- Put `href` on the same element as `data-hx-get` / `hx-get` (or `hx-push-url` when that is the canonical URL).
+- **Shared chrome** ([header.html](../../src/main/resources/templates/components/header.html), [footer.html](../../src/main/resources/templates/components/footer.html), [breadcrumb.html](../../src/main/resources/templates/components/breadcrumb.html)) affects every page — fix these first.
+- Modal-only triggers may keep `href="#"` when they do not navigate (login/signup modals). Do not use `#` for real routes.
+
+Reference pattern: [blog-directory-card.html](../../src/main/resources/templates/components/blog-directory-card.html).
+
+## HTMX SEO refresh
+
+After in-app navigation, [SeoComponentEndpoint](../../src/main/java/dev/vepo/contraponto/seo/SeoComponentEndpoint.java) updates `#seo-head` and `#page-title` via OOB swap. New public routes must be mappable in `SeoService.resolveFromPath`.
+
+## Verification
+
+Before finishing template or SEO changes:
+
+```bash
+scripts/audit-template-seo.sh
+GITHUB_ACTIONS=true ./mvnw -B test -Dtest=SeoServiceTest,SeoWebTest
+```
+
+Extend `SeoServiceTest` / `SeoWebTest` when adding new public routes or head rendering paths.

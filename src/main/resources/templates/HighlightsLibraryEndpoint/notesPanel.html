@@ -8,7 +8,7 @@
     {#for row in notes.data}
     <article class="highlights-library-page__row">
         <h3 class="highlights-library-page__post-title">
-            <a data-hx-get="/{row.authorUsername}/post/{row.postSlug}"
+            <a href="/{row.authorUsername}/post/{row.postSlug}" data-hx-get="/{row.authorUsername}/post/{row.postSlug}"
                hx-select="main" hx-target="main"
                hx-push-url="/{row.authorUsername}/post/{row.postSlug}">{row.postTitle}</a>
         </h3>

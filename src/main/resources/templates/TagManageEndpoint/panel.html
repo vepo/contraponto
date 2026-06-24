@@ -22,7 +22,7 @@
             <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
         </div>
         <div class="pages-manage__row-actions">
-            <a data-hx-get="/tags/{row.slug}/edit"
+            <a href="/tags/{row.slug}/edit" data-hx-get="/tags/{row.slug}/edit"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"

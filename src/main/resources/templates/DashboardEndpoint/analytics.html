@@ -17,14 +17,14 @@
         </div>
 
         <div class="dashboard-analytics__month-nav">
-            <a class="dashboard-analytics__month-link"
+            <a href="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.previousYear}&month={analytics.previousMonth}{#if analytics.compareViews}&compare=true{/if}" class="dashboard-analytics__month-link"
                data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.previousYear}&month={analytics.previousMonth}{#if analytics.compareViews}&compare=true{/if}"
                hx-target="#dashboardAnalytics"
                hx-swap="outerHTML"
                hx-push-url="false" data-i18n="dashboard.previousMonth">Mês anterior</a>
             <span class="dashboard-analytics__month-label">{analytics.monthLabel}</span>
             {#if analytics.canGoNextMonth}
-            <a class="dashboard-analytics__month-link"
+            <a href="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.nextYear}&month={analytics.nextMonth}{#if analytics.compareViews}&compare=true{/if}" class="dashboard-analytics__month-link"
                data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.nextYear}&month={analytics.nextMonth}{#if analytics.compareViews}&compare=true{/if}"
                hx-target="#dashboardAnalytics"
                hx-swap="outerHTML"
@@ -33,13 +33,13 @@
         </div>
 
         {#if analytics.compareViews}
-        <a class="dashboard-analytics__compare-link"
+        <a href="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}" class="dashboard-analytics__compare-link"
            data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}"
            hx-target="#dashboardAnalytics"
            hx-swap="outerHTML"
            hx-push-url="false" data-i18n="dashboard.hideComparison">Ocultar comparação</a>
         {#else}
-        <a class="dashboard-analytics__compare-link"
+        <a href="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}&compare=true" class="dashboard-analytics__compare-link"
            data-hx-get="/manage/dashboard/components/analytics?blogId={analytics.blog.id}&year={analytics.year}&month={analytics.month}&compare=true"
            hx-target="#dashboardAnalytics"
            hx-swap="outerHTML"

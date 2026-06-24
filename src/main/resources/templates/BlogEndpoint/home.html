@@ -16,7 +16,7 @@
                         {#if !mainBlog.main}
                         <p class="user-blog__byline">
                             <span data-i18n="directory.byAuthor">por </span>
-                            <a data-hx-get="/authors/{author.username}"
+                            <a href="/authors/{author.username}" data-hx-get="/authors/{author.username}"
                                hx-select="main"
                                hx-target="main"
                                hx-push-url="/authors/{author.username}">{author.name}</a>

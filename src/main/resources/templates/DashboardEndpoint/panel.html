@@ -11,7 +11,7 @@
     <div class="stat-card">
         <div class="stat-card__value">{page.draftsCount}</div>
         <div class="stat-card__label" data-i18n="library.tab.drafts">Rascunhos</div>
-        <a data-hx-get="/writing/library"
+        <a href="/writing/library" data-hx-get="/writing/library"
            hx-select="main"
            hx-target="main"
            hx-push-url="/writing/library"
@@ -20,7 +20,7 @@
     <div class="stat-card">
         <div class="stat-card__value">{page.publishedCount}</div>
         <div class="stat-card__label" data-i18n="dashboard.publishedPosts">Publicações</div>
-        <a data-hx-get="/writing/library"
+        <a href="/writing/library" data-hx-get="/writing/library"
            hx-select="main"
            hx-target="main"
            hx-push-url="/writing/library"
@@ -34,13 +34,13 @@
         {#if page.recentDrafts.isEmpty()}
         <p class="recent-section__empty">
             <span data-i18n="dashboard.noDraftsPrefix">Ainda não há rascunhos.</span>
-            <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write" data-i18n="dashboard.writeFirstStory">Escreva sua primeira história</a>.
+            <a href="/write" data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write" data-i18n="dashboard.writeFirstStory">Escreva sua primeira história</a>.
         </p>
         {#else}
         <ul class="recent-list">
             {#for draft in page.recentDrafts}
             <li class="recent-list__item">
-                <a data-hx-get="/write/draft/{draft.id}"
+                <a href="/write/draft/{draft.id}" data-hx-get="/write/draft/{draft.id}"
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="/write/draft/{draft.id}"
@@ -59,13 +59,13 @@
         {#if page.recentPublished.isEmpty()}
         <p class="recent-section__empty">
             <span data-i18n="dashboard.noPublishedPrefix">Ainda não há publicações.</span>
-            <a data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write" data-i18n="dashboard.writeFirstPost">Escreva sua primeira publicação</a>.
+            <a href="/write" data-hx-get="/write" hx-select="main" hx-target="main" hx-push-url="/write" data-i18n="dashboard.writeFirstPost">Escreva sua primeira publicação</a>.
         </p>
         {#else}
         <ul class="recent-list">
             {#for post in page.recentPublished}
             <li class="recent-list__item">
-                <a data-hx-get="{post.url}"
+                <a href="{post.url}" data-hx-get="{post.url}"
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="{post.url}"
@@ -84,7 +84,7 @@
 </div>
 
 <div class="dashboard-action">
-    <a data-hx-get="/write"
+    <a href="/write" data-hx-get="/write"
        hx-select="main"
        hx-target="main"
        hx-push-url="/write"

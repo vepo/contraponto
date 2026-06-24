@@ -28,7 +28,7 @@
                         </p>
                     </div>
                     {#if blog.isPresent && hubContext.authorMode() && coreFormOnly}
-                    <a data-hx-get="/blogs/{blog.get().id}/settings"
+                    <a href="/blogs/{blog.get().id}/settings" data-hx-get="/blogs/{blog.get().id}/settings"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"
@@ -36,7 +36,7 @@
                        class="btn btn--secondary"
                        data-nav>Settings</a>
                     {/if}
-                    <a data-hx-get="{#if hubContext.authorMode()}/writing/blogs{#else}/manage/blogs{/if}"
+                    <a href="{#if hubContext.authorMode()}/writing/blogs{#else}/manage/blogs{/if}" data-hx-get="{#if hubContext.authorMode()}/writing/blogs{#else}/manage/blogs{/if}"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"

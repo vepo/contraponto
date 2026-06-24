@@ -10,7 +10,7 @@
             <span class="breadcrumb__text"
                   {#if item.i18nKey?? && item.i18nKey}data-i18n="{item.i18nKey}"{/if}>{item.label}</span>
             {#else}
-            <a data-hx-get="{item.href}"
+            <a href="{item.href}" data-hx-get="{item.href}"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"

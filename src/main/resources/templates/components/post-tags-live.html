@@ -1,7 +1,7 @@
 {#if !tags.isEmpty}
 <div class="post-tags" aria-label="Tags">
     {#for tag in tags}
-    <a data-hx-get="{tag.url}"
+    <a href="{tag.url}" data-hx-get="{tag.url}"
        hx-select="main"
        hx-target="main"
        hx-push-url="{tag.url}"

@@ -12,12 +12,12 @@
     <div class="manage-pagination__controls">
         {#if page.hasPrevious}
         {#if fragmentTarget}
-        <a hx-get="{basePath}?page={page.previousPage}{extraQuery}"
+        <a href="{basePath}?page={page.previousPage}{extraQuery}" hx-get="{basePath}?page={page.previousPage}{extraQuery}"
            hx-target="{fragmentTarget}"
            hx-swap="innerHTML"
            class="manage-pagination__link" data-i18n="pagination.previous">Anterior</a>
         {#else}
-        <a data-hx-get="{basePath}?page={page.previousPage}{extraQuery}"
+        <a href="{basePath}?page={page.previousPage}{extraQuery}" data-hx-get="{basePath}?page={page.previousPage}{extraQuery}"
            hx-select="main"
            hx-target="main"
            hx-push-url="{basePath}?page={page.previousPage}{extraQuery}"
@@ -31,12 +31,12 @@
         {/if}
         {#if page.hasNext}
         {#if fragmentTarget}
-        <a hx-get="{basePath}?page={page.nextPage}{extraQuery}"
+        <a href="{basePath}?page={page.nextPage}{extraQuery}" hx-get="{basePath}?page={page.nextPage}{extraQuery}"
            hx-target="{fragmentTarget}"
            hx-swap="innerHTML"
            class="manage-pagination__link" data-i18n="pagination.next">Próximo</a>
         {#else}
-        <a data-hx-get="{basePath}?page={page.nextPage}{extraQuery}"
+        <a href="{basePath}?page={page.nextPage}{extraQuery}" data-hx-get="{basePath}?page={page.nextPage}{extraQuery}"
            hx-select="main"
            hx-target="main"
            hx-push-url="{basePath}?page={page.nextPage}{extraQuery}"

@@ -7,7 +7,7 @@
 {#if pages.isEmpty()}
 <div class="pages-manage__empty">
     <p data-i18n="customPage.manageEmpty">Nenhuma página personalizada ainda.</p>
-    <a data-hx-get="/pages/new"
+    <a href="/pages/new" data-hx-get="/pages/new"
        hx-select="main"
        hx-target="main"
        hx-swap="outerHTML"
@@ -39,7 +39,7 @@
             <a href="{row.publicUrl}" class="pages-manage__row-url" target="_blank" rel="noopener">{row.publicUrl}</a>
         </div>
         <div class="pages-manage__row-actions">
-            <a data-hx-get="/pages/{row.id}/edit"
+            <a href="/pages/{row.id}/edit" data-hx-get="/pages/{row.id}/edit"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"

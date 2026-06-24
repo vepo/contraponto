@@ -16,7 +16,7 @@
 {#if notifications.isEmpty()}
 <p class="notification-overlay__empty" data-i18n="notifications.overlay.empty">Nenhuma notificação</p>
 <p class="notification-overlay__footer-link">
-    <a data-hx-get="/account/notifications"
+    <a href="/account/notifications" data-hx-get="/account/notifications"
        hx-select="main"
        hx-target="main"
        hx-swap="outerHTML"
@@ -27,7 +27,7 @@
 <ul class="notification-overlay__list">
     {#for n in notifications}
     <li class="notification-overlay__item">
-        <a data-hx-get="{n.linkUrl}"
+        <a href="{n.linkUrl}" data-hx-get="{n.linkUrl}"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
@@ -53,7 +53,7 @@
         <button type="submit" class="btn btn--outline btn--small" data-i18n="notifications.markAllRead">Marcar tudo como lido</button>
     </form>
     {/if}
-    <a data-hx-get="/account/notifications"
+    <a href="/account/notifications" data-hx-get="/account/notifications"
        hx-select="main"
        hx-target="main"
        hx-swap="outerHTML"

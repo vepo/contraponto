@@ -17,7 +17,7 @@
     <div class="container">
         <div class="footer__grid">
             <div class="footer__logo">
-                <a data-hx-get="/"
+                <a href="/" data-hx-get="/"
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="/">
@@ -31,7 +31,7 @@
                 <div class="footer__column">
                     <h4>{section.name}</h4>
                     {#for link in section.itens}
-                        <a data-hx-get="{link.href}" 
+                        <a href="{link.href}" data-hx-get="{link.href}" 
                            hx-select="main" 
                            hx-target="main" 
                            hx-push-url="{link.href}" 

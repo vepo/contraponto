@@ -2,7 +2,7 @@
 <div class="pages-manage__empty">
     {#if type == 'drafts'}
     <p data-i18n="library.emptyDrafts">Nenhum rascunho ainda.</p>
-    <a data-hx-get="/write"
+    <a href="/write" data-hx-get="/write"
        hx-select="main"
        hx-target="main"
        hx-push-url="/write"
@@ -17,7 +17,7 @@
     <article class="draft-card" data-post-id="{post.id}">
         <div class="draft-card__content">
             <h2 class="draft-card__title">
-                <a data-hx-get="/write/draft/{post.id}"
+                <a href="/write/draft/{post.id}" data-hx-get="/write/draft/{post.id}"
                    hx-select="main"
                    hx-target="main"
                    hx-push-url="/write/draft/{post.id}">
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="draft-card__actions">
-            <a data-hx-get="/write/draft/{post.id}"
+            <a href="/write/draft/{post.id}" data-hx-get="/write/draft/{post.id}"
                hx-select="main"
                hx-target="main"
                hx-push-url="/write/draft/{post.id}"

@@ -36,14 +36,14 @@
         </div>
         <div class="pages-manage__row-actions">
             {#if row.canEdit && hubContext.authorMode()}
-            <a data-hx-get="/blogs/{row.id}/edit?hub=writing"
+            <a href="/blogs/{row.id}/edit?hub=writing" data-hx-get="/blogs/{row.id}/edit?hub=writing"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"
                hx-push-url="/blogs/{row.id}/edit?hub=writing"
                class="btn btn--secondary btn--small"
                data-nav data-i18n="common.edit">Editar</a>
-            <a data-hx-get="/blogs/{row.id}/settings"
+            <a href="/blogs/{row.id}/settings" data-hx-get="/blogs/{row.id}/settings"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"

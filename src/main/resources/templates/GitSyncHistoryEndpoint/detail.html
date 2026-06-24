@@ -13,7 +13,7 @@
                         <h1 class="pages-manage__title">Git sync run #{run.id}</h1>
                         <p class="pages-manage__subtitle">{blog.name}</p>
                     </div>
-                    <a data-hx-get="/blogs/{blog.id}/git-sync"
+                    <a href="/blogs/{blog.id}/git-sync" data-hx-get="/blogs/{blog.id}/git-sync"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"

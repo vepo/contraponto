@@ -25,6 +25,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | UI feature catalog (paths & step counts) | ✅ | — | — | ✅ [feature-catalog.md](feature-catalog.md) + `feature-catalog.mdc` |
 | HTMX events / scoped refresh | ✅ | — | — | ✅ [htmx-events.md](htmx-events.md) |
 | JavaScript modules / HTMX-first | ✅ | — | — | ✅ `contraponto-javascript.mdc` |
+| SEO (meta description, crawlable links) | ✅ | — | — | ✅ `contraponto-seo.mdc` + `scripts/audit-template-seo.sh` |
 | CSS authoring (tokens, bundles) | — | — | ✅ [ui-elements.md](ui-elements.md) | ✅ `contraponto-css.mdc` |
 
 ## Conventions to adopt or document

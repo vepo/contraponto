@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="{localeLang}">
-    {#include components/head}
-    Erro – {siteName}
-    {/include}
+    {#include components/head seo=seo /}
     <body>
         {#include components/header /}
         <main hx-history-elt class="error-page" id="main-content">
@@ -48,7 +46,7 @@
                     </details>
                     {/if}
                     <div class="error-actions">
-                        <a data-hx-get="/"
+                        <a href="/" data-hx-get="/"
                            hx-select="main"
                            hx-target="main"
                            hx-swap="outerHTML"

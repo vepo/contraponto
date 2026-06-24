@@ -22,7 +22,7 @@
             <p class="pages-manage__row-description">{row.rolesLabel}</p>
         </div>
         <div class="pages-manage__row-actions">
-            <a data-hx-get="/users/{row.id}/edit"
+            <a href="/users/{row.id}/edit" data-hx-get="/users/{row.id}/edit"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"

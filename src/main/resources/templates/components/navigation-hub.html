@@ -8,7 +8,7 @@
     <ul class="nav-hub__cards">
         {#for link in section.links}
         <li>
-            <a data-hx-get="{link.path}"
+            <a href="{link.path}" data-hx-get="{link.path}"
                hx-select="main"
                hx-target="main"
                hx-swap="outerHTML"

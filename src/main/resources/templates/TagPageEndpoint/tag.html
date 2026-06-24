@@ -15,7 +15,7 @@
                         {/if}
                         <p class="tag-page__actions">
                             {#if user.isEditor}
-                            <a data-hx-get="/tags/{tag.slug}/edit"
+                            <a href="/tags/{tag.slug}/edit" data-hx-get="/tags/{tag.slug}/edit"
                                hx-select="main"
                                hx-target="main"
                                hx-push-url="/tags/{tag.slug}/edit"

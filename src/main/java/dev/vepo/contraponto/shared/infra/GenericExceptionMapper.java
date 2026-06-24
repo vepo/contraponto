@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.user.LoggedUser;
 
 @Provider
@@ -27,16 +28,19 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
     private final Template error;
     private final FooterLinksProvider footerLinksProvider;
     private final LoggedUser loggedUser;
+    private final SeoService seoService;
     private final boolean showErrorDetails;
 
     @Inject
     public GenericExceptionMapper(Template error,
                                   FooterLinksProvider footerLinksProvider,
                                   LoggedUser loggedUser,
+                                  SeoService seoService,
                                   @ConfigProperty(name = "app.show-error-details", defaultValue = "false") boolean showErrorDetails) {
         this.error = error;
         this.footerLinksProvider = footerLinksProvider;
         this.loggedUser = loggedUser;
+        this.seoService = seoService;
         this.showErrorDetails = showErrorDetails;
     }
 
@@ -87,6 +91,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                            .data("description", userMessage)
                            .data("links", footerLinksProvider.loadGlobalLinks())
                            .data("dev", showErrorDetails)
+                           .data("seo", seoService.forError(status))
                            .render();
 
         return Response.status(status)

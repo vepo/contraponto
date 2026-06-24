@@ -17,7 +17,7 @@
 <ul class="notification-list">
     {#for n in notifications.data}
     <li class="notification-list__item {#if !n.read}notification-list__item--unread{/if}">
-        <a data-hx-get="{n.linkUrl}"
+        <a href="{n.linkUrl}" data-hx-get="{n.linkUrl}"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"

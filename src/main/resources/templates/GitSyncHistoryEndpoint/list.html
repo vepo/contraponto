@@ -13,7 +13,7 @@
                         <h1 class="pages-manage__title" data-i18n="git.historyTitle">Histórico de sincronização Git</h1>
                         <p class="pages-manage__subtitle">{blog.name}</p>
                     </div>
-                    <a data-hx-get="/blogs/{blog.id}/edit"
+                    <a href="/blogs/{blog.id}/edit" data-hx-get="/blogs/{blog.id}/edit"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"
@@ -33,7 +33,7 @@
                         <div class="pages-manage__row-main">
                             <div class="git-sync-history__row-head">
                                 <h2 class="pages-manage__row-title">
-                                    <a data-hx-get="/blogs/{blog.id}/git-sync/{run.id}"
+                                    <a href="/blogs/{blog.id}/git-sync/{run.id}" data-hx-get="/blogs/{blog.id}/git-sync/{run.id}"
                                        hx-select="main"
                                        hx-target="main"
                                        hx-swap="outerHTML"

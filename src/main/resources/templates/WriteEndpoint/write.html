@@ -76,7 +76,7 @@
                                 <div class="write-form__hint">Escolha em qual blog publicar.</div>
                             {/if}
                             <div class="write-form__hint">
-                                <a data-hx-get="/blogs/{writePage.selectedBlogId}/images"
+                                <a href="/blogs/{writePage.selectedBlogId}/images" data-hx-get="/blogs/{writePage.selectedBlogId}/images"
                                    hx-select="main"
                                    hx-target="main"
                                    hx-swap="outerHTML"

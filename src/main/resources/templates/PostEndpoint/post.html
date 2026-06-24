@@ -15,7 +15,7 @@
                         {#actions}
                             {#if user.isAuthenticated}
                                 {#if user.id == view.post.author.id}
-                                <a data-hx-get="/write/draft/{view.post.id}"
+                                <a href="/write/draft/{view.post.id}" data-hx-get="/write/draft/{view.post.id}"
                                    hx-select="main"
                                    hx-target="main"
                                    hx-push-url="/write/draft/{view.post.id}"
@@ -53,7 +53,7 @@
                         {#include components/post-tags-live tags=view.liveTags /}
 
                         <div class="article-page__byline">
-                            By <a data-hx-get="/{view.post.author.username}"
+                            By <a href="/{view.post.author.username}" data-hx-get="/{view.post.author.username}"
                                 hx-select="main"
                                 hx-target="main"
                                 hx-push-url="/{view.post.author.username}"

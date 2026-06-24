@@ -28,8 +28,11 @@ class SeoWebTest {
 
         app.access()
            .assertPageSourceContains("browse-explore-aside__link")
+           .assertPageSourceContains("href=\"/authors\"")
            .assertPageSourceContains("data-hx-get=\"/authors\"")
-           .assertPageSourceContains("data-hx-get=\"/explore/blogs\"");
+           .assertPageSourceContains("href=\"/explore/blogs\"")
+           .assertPageSourceContains("data-hx-get=\"/explore/blogs\"")
+           .assertPageSourceContains("<meta name=\"description\"");
     }
 
     @Test
@@ -54,6 +57,15 @@ class SeoWebTest {
            .accessPost()
            .waitForReady()
            .assertDocumentTitleContains("HTMX SEO Post");
+    }
+
+    @Test
+    void notFoundPageHasMetaDescriptionAndCrawlableHomeLink(App app) {
+        app.goToPath("/no-such-page-for-seo-test");
+
+        app.assertPageSourceContains("<meta name=\"description\"")
+           .assertPageSourceContains("href=\"/\"")
+           .assertPageSourceContains("data-hx-get=\"/\"");
     }
 
     @BeforeEach
