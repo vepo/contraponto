@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload JUnit test results
         if: always()
-        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
         with:
           name: test-results-${{ matrix.suite }}
           path: |
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload JaCoCo execution data
         if: success()
-        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
         with:
           name: jacoco-${{ matrix.suite }}
           path: target/jacoco-quarkus.exec
@@ -146,7 +146,7 @@ jobs:
         run: mvn ${{ env.MAVEN_CLI_OPTS }} package -DskipTests
 
       - name: Upload Quarkus application bundle
-        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
         with:
           name: build-quarkus-app
           path: target/quarkus-app/
@@ -213,7 +213,7 @@ jobs:
 
       - name: Upload coverage report
         if: success()
-        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
         with:
           name: coverage-report
           path: |
