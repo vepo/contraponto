@@ -22,6 +22,10 @@ public class BlogTemplateExtensions {
 
     @TemplateExtension
     public static String blogGridLoadMorePath(Blog blog) {
+        var service = selectPublicUrlService();
+        if (service != null) {
+            return service.blogGridLoadMorePath(blog);
+        }
         if (blog.isMain()) {
             return blogGridLoadMorePath(blog.getOwner().getUsername());
         }
@@ -56,7 +60,20 @@ public class BlogTemplateExtensions {
 
     @TemplateExtension
     public static String rssFeedUrl(Blog blog) {
-        return blog == null ? null : RssFeedPaths.blogFeed(blog);
+        if (blog == null) {
+            return null;
+        }
+        var service = selectPublicUrlService();
+        return service != null ? service.rssFeedPath(blog) : RssFeedPaths.blogFeed(blog);
+    }
+
+    private static BlogPublicUrlService selectPublicUrlService() {
+        try {
+            var service = CDI.current().select(BlogPublicUrlService.class);
+            return service.isResolvable() ? service.get() : null;
+        } catch (IllegalStateException _) {
+            return null;
+        }
     }
 
     private static String sizedImageUrl(String url, ImageDisplayWidth width) {
@@ -71,7 +88,7 @@ public class BlogTemplateExtensions {
 
     @TemplateExtension
     public static String url(Blog blog) {
-        return BlogPaths.extractUrl(blog);
+        return CDI.current().select(BlogPublicUrlService.class).get().relativePath(blog);
     }
 
     private BlogTemplateExtensions() {

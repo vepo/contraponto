@@ -3,7 +3,9 @@ package dev.vepo.contraponto.post;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogDescriptionRenderer;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.content.render.PostContentRenderer;
 import dev.vepo.contraponto.image.ImageDisplayWidth;
 import dev.vepo.contraponto.tag.Tag;
@@ -166,7 +168,7 @@ public class PostTemplateExtensions {
 
     @TemplateExtension
     public static String url(Post post) {
-        return PostPaths.extractUrl(post);
+        return CDI.current().select(BlogPublicUrlService.class).get().relativePath(post);
     }
 
     private PostTemplateExtensions() {

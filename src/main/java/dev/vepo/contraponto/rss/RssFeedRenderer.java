@@ -7,14 +7,14 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 
 public final class RssFeedRenderer {
 
-    public record Channel(String title, String linkPath, String description) {}
+    public record Channel(String title, String link, String description) {}
 
     private static final DateTimeFormatter RFC1123 =
             DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH).withZone(ZoneOffset.UTC);
@@ -40,8 +40,8 @@ public final class RssFeedRenderer {
         return RFC1123.format(zdt);
     }
 
-    static URI itemUri(URI baseUri, Post post) {
-        return resolve(baseUri, PostPaths.extractUrl(post));
+    static URI itemUri(String absoluteLink) {
+        return URI.create(absoluteLink);
     }
 
     private static String liveTitle(Post post, PostPublication live) {
@@ -73,8 +73,8 @@ public final class RssFeedRenderer {
         return post.getUpdatedAt();
     }
 
-    public static String render(Channel channel, List<Post> posts, URI baseUri) {
-        URI channelLink = resolve(baseUri, channel.linkPath());
+    public static String render(Channel channel, List<Post> posts, Function<Post, String> itemLink) {
+        URI channelLink = itemUri(channel.link());
         StringBuilder sb = new StringBuilder(4096);
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.append("<rss version=\"2.0\"><channel>");
@@ -89,14 +89,14 @@ public final class RssFeedRenderer {
                       formatRfc1123(newest != null ? newest : LocalDateTime.now(ZoneOffset.UTC)));
 
         for (Post post : posts) {
-            URI itemLink = itemUri(baseUri, post);
+            URI itemLinkUri = itemUri(itemLink.apply(post));
             PostPublication live = post.getLivePublication();
             LocalDateTime pub = publicationTimestamp(post, live);
             String title = liveTitle(post, live);
             sb.append("<item>");
             appendElement(sb, "title", escapeXml(title));
-            appendElement(sb, "link", escapeXml(itemLink.toString()));
-            sb.append("<guid isPermaLink=\"true\">").append(escapeXml(itemLink.toString())).append("</guid>");
+            appendElement(sb, "link", escapeXml(itemLinkUri.toString()));
+            sb.append("<guid isPermaLink=\"true\">").append(escapeXml(itemLinkUri.toString())).append("</guid>");
             appendElement(sb, "pubDate", formatRfc1123(pub != null ? pub : post.getCreatedAt()));
             String summary = live != null ? live.getDescription() : post.getDescription();
             if (summary == null || summary.isBlank()) {
@@ -108,11 +108,6 @@ public final class RssFeedRenderer {
 
         sb.append("</channel></rss>");
         return sb.toString();
-    }
-
-    private static URI resolve(URI baseUri, String pathStartingWithSlash) {
-        String relative = pathStartingWithSlash.startsWith("/") ? pathStartingWithSlash.substring(1) : pathStartingWithSlash;
-        return baseUri.resolve(relative);
     }
 
     private RssFeedRenderer() {

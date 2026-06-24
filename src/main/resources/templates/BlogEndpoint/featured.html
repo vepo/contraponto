@@ -15,11 +15,11 @@
                 {/if}
                 {#include components/post-tags post=post /}
                 <div class="article-meta">
-                    <a href="/{post.author.username}"
-                        data-hx-get="/{post.author.username}"
+                    <a href="{post.blog.url}"
+                        data-hx-get="{post.blog.url}"
                         hx-select="main"
                         hx-target="main"
-                        hx-push-url="/{post.author.username}">
+                        hx-push-url="{post.blog.url}">
                         <span class="article-meta__author">{post.author.name}</span>
                     </a>
                     <span class="article-meta__dot">•</span>

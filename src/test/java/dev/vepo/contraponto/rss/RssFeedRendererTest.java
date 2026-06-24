@@ -4,7 +4,6 @@ import dev.vepo.contraponto.shared.UnitTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -26,7 +25,7 @@ class RssFeedRendererTest {
             DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
     private static RssFeedRenderer.Channel channel() {
-        return new RssFeedRenderer.Channel("Test feed", "/alice", "Description");
+        return new RssFeedRenderer.Channel("Test feed", "https://example.com/alice", "Description");
     }
 
     private static Post postWithLivePublication(String slug, String title, String description, LocalDateTime publishedAt) {
@@ -59,24 +58,16 @@ class RssFeedRendererTest {
     }
 
     @Test
-    void itemUriResolvesSecondaryBlogPost() {
-        User owner = new User();
-        owner.setUsername("bob");
-        Blog blog = new Blog(owner, "notes", "Notes", "Notes blog");
-        Post post = new Post();
-        post.setBlog(blog);
-        post.setSlug("my-post");
-
-        URI item = RssFeedRenderer.itemUri(URI.create("https://example.com/"), post);
-
-        assertThat(item.toString()).isEqualTo("https://example.com/bob/notes/post/my-post");
+    void itemUriUsesAbsoluteLink() {
+        assertThat(RssFeedRenderer.itemUri("https://alice.example/post/my-post").toString())
+                                                                                            .isEqualTo("https://alice.example/post/my-post");
     }
 
     @Test
     void newestTimestampPicksLatestPublication() {
         Post older = postWithLivePublication("older", "Older", "Summary", LocalDateTime.of(2024, 1, 1, 10, 0));
         Post newer = postWithLivePublication("newer", "Newer", "Summary", LocalDateTime.of(2024, 6, 1, 10, 0));
-        String xml = RssFeedRenderer.render(channel(), List.of(older, newer), URI.create("https://example.com/"));
+        String xml = RssFeedRenderer.render(channel(), List.of(older, newer), post -> "https://example.com/alice/post/" + post.getSlug());
 
         String expectedLastBuild = RFC1123.format(ZonedDateTime.of(2024, 6, 1, 10, 0, 0, 0, ZoneOffset.UTC));
         assertThat(xml).contains("<lastBuildDate>" + expectedLastBuild + "</lastBuildDate>");
@@ -85,14 +76,14 @@ class RssFeedRendererTest {
     @Test
     void renderUsesTitleWhenSummaryBlank() {
         Post post = postWithLivePublication("my-post", "Post Title", "", LocalDateTime.of(2024, 3, 1, 12, 0));
-        String xml = RssFeedRenderer.render(channel(), List.of(post), URI.create("https://example.com/"));
+        String xml = RssFeedRenderer.render(channel(), List.of(post), ignored -> "https://example.com/alice/post/my-post");
 
         assertThat(xml).contains("<description>Post Title</description>");
     }
 
     @Test
     void renderWithEmptyPostList() {
-        String xml = RssFeedRenderer.render(channel(), List.of(), URI.create("https://example.com/"));
+        String xml = RssFeedRenderer.render(channel(), List.of(), ignored -> "https://example.com/unused");
 
         assertThat(xml).contains("<rss version=\"2.0\">").contains("<lastBuildDate>");
     }

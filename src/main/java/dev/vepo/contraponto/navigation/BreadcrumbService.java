@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogPaths;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.custompage.CustomPage;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PublishedPostView;
@@ -25,8 +25,8 @@ public class BreadcrumbService {
 
     public static final String TAGS_SEGMENT_LABEL = "Tag";
 
-    private static String authorBlogUrl(User author) {
-        return "/%s".formatted(author.getUsername());
+    private static String authorBlogUrl(BlogPublicUrlService blogPublicUrlService, User author) {
+        return blogPublicUrlService.relativeMainBlogHome(author);
     }
 
     private static BreadcrumbItem current(String label) {
@@ -71,9 +71,12 @@ public class BreadcrumbService {
 
     private final NavigationHubRegistry hubRegistry;
 
+    private final BlogPublicUrlService blogPublicUrlService;
+
     @Inject
-    public BreadcrumbService(NavigationHubRegistry hubRegistry) {
+    public BreadcrumbService(NavigationHubRegistry hubRegistry, BlogPublicUrlService blogPublicUrlService) {
         this.hubRegistry = hubRegistry;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     public BreadcrumbTrail accountNotifications() {
@@ -133,9 +136,9 @@ public class BreadcrumbService {
             return trail(items);
         }
         var author = blog.getOwner();
-        items.add(link(author.getName(), authorBlogUrl(author)));
+        items.add(link(author.getName(), authorBlogUrl(blogPublicUrlService, author)));
         if (!blog.isMain()) {
-            items.add(link(blog.getName(), BlogPaths.extractUrl(blog)));
+            items.add(link(blog.getName(), blogPublicUrlService.relativePath(blog)));
         }
         items.add(current(pageTitle(page)));
         return trail(items);
@@ -162,9 +165,9 @@ public class BreadcrumbService {
         var author = blog.getOwner();
         var items = new ArrayList<BreadcrumbItem>();
         items.add(link(HOME_LABEL, HOME_PATH));
-        items.add(link(author.getName(), authorBlogUrl(author)));
+        items.add(link(author.getName(), authorBlogUrl(blogPublicUrlService, author)));
         if (!blog.isMain()) {
-            items.add(link(blog.getName(), BlogPaths.extractUrl(blog)));
+            items.add(link(blog.getName(), blogPublicUrlService.relativePath(blog)));
         }
         items.add(current(title == null || title.isBlank() ? "Untitled" : title));
         return trail(items);
@@ -180,7 +183,7 @@ public class BreadcrumbService {
 
     public BreadcrumbTrail forSecondaryBlog(User author, Blog blog) {
         return trail(link(HOME_LABEL, HOME_PATH),
-                     link(author.getName(), authorBlogUrl(author)),
+                     link(author.getName(), authorBlogUrl(blogPublicUrlService, author)),
                      current(blog.getName()));
     }
 
@@ -189,9 +192,9 @@ public class BreadcrumbService {
         var author = blog.getOwner();
         var items = new ArrayList<BreadcrumbItem>();
         items.add(link(HOME_LABEL, HOME_PATH));
-        items.add(link(author.getName(), authorBlogUrl(author)));
+        items.add(link(author.getName(), authorBlogUrl(blogPublicUrlService, author)));
         if (!blog.isMain()) {
-            items.add(link(blog.getName(), BlogPaths.extractUrl(blog)));
+            items.add(link(blog.getName(), blogPublicUrlService.relativePath(blog)));
         }
         items.add(current(serie.getTitle()));
         return trail(items);

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.navigation.BreadcrumbItem;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.post.Post;
@@ -35,11 +36,15 @@ public class StructuredDataBuilder {
 
     private final SiteBranding siteBranding;
     private final PublicSiteUrl publicSiteUrl;
+    private final BlogPublicUrlService blogPublicUrlService;
 
     @Inject
-    public StructuredDataBuilder(SiteBranding siteBranding, PublicSiteUrl publicSiteUrl) {
+    public StructuredDataBuilder(SiteBranding siteBranding,
+                                 PublicSiteUrl publicSiteUrl,
+                                 BlogPublicUrlService blogPublicUrlService) {
         this.siteBranding = siteBranding;
         this.publicSiteUrl = publicSiteUrl;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     public String blogPosting(PublishedPostView view, BreadcrumbTrail breadcrumb) {
@@ -53,9 +58,10 @@ public class StructuredDataBuilder {
         Post post = view.post();
         PostPublication live = view.live();
         User author = post.getAuthor();
+        Blog blog = post.getBlog();
         String title = PostTemplateExtensions.liveTitle(view);
         String description = SeoDescription.toPlainText(PostTemplateExtensions.liveDescription(post));
-        String url = publicSiteUrl.absolute(PostPaths.extractUrl(post));
+        String url = blogPublicUrlService.canonicalOrPlatformAbsolute(post);
         LocalDateTime publishedAt = live != null && live.getPublishedAt() != null
                                                                                   ? live.getPublishedAt()
                                                                                   : post.getPublishedAt();
@@ -75,18 +81,15 @@ public class StructuredDataBuilder {
         node.put("author", Map.of(
                                   "@type", "Person",
                                   "name", author.getName(),
-                                  "url", publicSiteUrl.absolute("/%s".formatted(author.getUsername()))));
+                                  "url", blogPublicUrlService.authorBlogCanonical(author)));
         String imageUrl = resolveCoverUrl(post, live);
         if (imageUrl != null) {
             node.put("image", imageUrl);
         }
-        Blog blog = post.getBlog();
         node.put("publisher", Map.of(
                                      "@type", "Organization",
                                      "name", blog.isMain() ? author.getName() : blog.getName(),
-                                     "url", publicSiteUrl.absolute(blog.isMain()
-                                                                                 ? "/%s".formatted(author.getUsername())
-                                                                                 : "/%s/%s".formatted(author.getUsername(), blog.getSlug()))));
+                                     "url", blogPublicUrlService.canonicalOrPlatformAbsolute(blog)));
         return node;
     }
 
@@ -189,15 +192,19 @@ public class StructuredDataBuilder {
         }
     }
 
-    public String webPage(String name, String pagePath, String description, BreadcrumbTrail breadcrumb) {
+    public String webPage(String name, String absoluteUrl, String description, BreadcrumbTrail breadcrumb) {
         var node = new LinkedHashMap<String, Object>();
         node.put("@type", "WebPage");
         node.put("name", name);
-        node.put("url", publicSiteUrl.absolute(pagePath));
+        node.put("url", absoluteUrl);
         if (description != null && !description.isBlank()) {
             node.put("description", description);
         }
         return graphWithBreadcrumb(node, breadcrumb);
+    }
+
+    public String webPageFromPath(String name, String pagePath, String description, BreadcrumbTrail breadcrumb) {
+        return webPage(name, publicSiteUrl.absolute(pagePath), description, breadcrumb);
     }
 
     public String webSite() {

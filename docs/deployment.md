@@ -36,9 +36,25 @@ export QUARKUS_PROFILE=prod
 | Variable | Required | Purpose |
 |----------|:--------:|---------|
 | `APP_PUBLIC_URL` | yes | HTTPS origin, e.g. `https://contraponto.example` — used in emails, RSS links, HTML sanitization, SEO canonical/Open Graph URLs, and `Sitemap:` in `robots.txt` (`image.base.url`) |
+| `APP_BLOG_SUBDOMAIN_BASE_DOMAIN` | when subdomains enabled | Base domain for author blogs, e.g. `commit-mestre.dev` → public URLs at `https://{username}.commit-mestre.dev/post/{slug}` (requires `app.blog-subdomain.enabled=true`, set automatically in `%prod`) |
+| `APP_SESSION_COOKIE_DOMAIN` | recommended with subdomains | Cookie `Domain` attribute for shared login across platform and author subdomains, e.g. `.commit-mestre.dev` |
 | `APP_SITE_NAME` | no | White-label display name for header, footer, page titles, SEO, and emails (default `contraponto`; title-case derived for SEO, e.g. `commit-mestre` → Commit Mestre) |
 | `APP_SITE_INTEGRATION_SCRIPT_URL` | no | HTTPS URL of an optional async script in page `<head>` (e.g. analytics); requires `APP_SITE_INTEGRATION_SCRIPT_DATA_TOKEN` |
 | `APP_SITE_INTEGRATION_SCRIPT_DATA_TOKEN` | no | `data-token` attribute for the integration script; both integration env vars must be set to enable the tag |
+
+### Author blog subdomains
+
+When `APP_BLOG_SUBDOMAIN_BASE_DOMAIN` is set (enabled automatically in `%prod`), each author’s main blog is also served at `https://{username}.{base-domain}/` with posts at `/post/{slug}`. Secondary blogs use `https://{username}.{base-domain}/{blogSlug}/post/{slug}`. Platform-path URLs (`https://blogs.example/{username}/post/{slug}`) remain valid; canonical SEO URLs use the subdomain form.
+
+**DNS:** point `*.your-base-domain` (wildcard) to the same host as the platform (`blogs.your-base-domain`).
+
+**TLS:** a wildcard certificate for `*.your-base-domain` requires Let’s Encrypt **DNS-01** validation (HTTP-01 webroot cannot issue wildcard certs). With **Squarespace DNS**, use the manual DNS-01 flow in [`contraponto-prod/docs/MOP-DEPLOYMENT.md`](../../contraponto-prod/docs/MOP-DEPLOYMENT.md) (`init-letsencrypt.sh`, Squarespace `_acme-challenge` TXT records, `renew-wildcard-cert.sh` every ~60 days). Example with an automated DNS plugin elsewhere:
+
+```bash
+certbot certonly --dns-<provider> -d "*.commit-mestre.dev" -d "commit-mestre.dev"
+```
+
+Configure nginx (or your ingress) with `server_name blogs.example *.example`, forward `Host` and `X-Forwarded-Proto` to the app, and set `APP_SESSION_COOKIE_DOMAIN=.example` so sessions work on both platform and author subdomains.
 
 ## 3. SMTP (mailer)
 

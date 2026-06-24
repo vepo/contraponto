@@ -3,9 +3,9 @@ package dev.vepo.contraponto.seo;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public record SitemapUrl(String path, Optional<LocalDateTime> lastModified, Optional<String> imagePath) {
+public record SitemapUrl(String loc, Optional<LocalDateTime> lastModified, Optional<String> imagePath) {
 
-    public SitemapUrl(String path, Optional<LocalDateTime> lastModified) {
-        this(path, lastModified, Optional.empty());
+    public SitemapUrl(String loc, Optional<LocalDateTime> lastModified) {
+        this(loc, lastModified, Optional.empty());
     }
 }

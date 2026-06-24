@@ -1,8 +1,8 @@
 package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.shared.infra.SiteBranding;
 import dev.vepo.contraponto.user.User;
@@ -24,6 +24,7 @@ public class PostNotificationEmailService {
     private final String mailFrom;
     private final String baseUrl;
     private final SiteBranding siteBranding;
+    private final BlogPublicUrlService blogPublicUrlService;
 
     @Inject
     public PostNotificationEmailService(Mailer mailer,
@@ -31,13 +32,15 @@ public class PostNotificationEmailService {
                                         @Location("notification/post-published-email") Template postPublishedEmail,
                                         @ConfigProperty(name = "quarkus.mailer.from", defaultValue = "noreply@contraponto.blog") String mailFrom,
                                         @ConfigProperty(name = "image.base.url", defaultValue = "http://localhost:8080") String baseUrl,
-                                        SiteBranding siteBranding) {
+                                        SiteBranding siteBranding,
+                                        BlogPublicUrlService blogPublicUrlService) {
         this.mailer = mailer;
         this.logRepository = logRepository;
         this.postPublishedEmail = postPublishedEmail;
         this.mailFrom = mailFrom;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.siteBranding = siteBranding;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     @Transactional
@@ -46,7 +49,7 @@ public class PostNotificationEmailService {
             return;
         }
 
-        String postUrl = "%s%s".formatted(baseUrl, PostPaths.extractUrl(post));
+        String postUrl = blogPublicUrlService.canonicalOrPlatformAbsolute(post);
         String title = publication.getTitle() != null ? publication.getTitle() : publication.getSlug();
         String excerpt = publication.getDescription();
         if (excerpt == null || excerpt.isBlank()) {

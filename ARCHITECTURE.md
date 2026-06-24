@@ -29,15 +29,17 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 
 ### Public URL patterns
 
-| Resource | Main blog | Secondary blog |
-|----------|-----------|----------------|
-| Blog home | `GET /{username}` | `GET /{username}/{blogSlug}` |
-| Post | `GET /{username}/post/{slug}` | `GET /{username}/{blogSlug}/post/{slug}` |
-| Serie | `GET /{username}/serie/{serieSlug}` | `GET /{username}/{blogSlug}/serie/{serieSlug}` |
-| Custom page | `GET /{username}/page/{slug}` | `GET /{username}/{blogSlug}/page/{slug}` |
-| Global custom page | `GET /page/{slug}` | — |
+Each blog and post has a **dual blog URL**: platform path (below) and author **blog subdomain** (`https://{username}.{base-domain}/post/{slug}` for main blogs; secondary blogs add `/{blogSlug}`). Canonical links in SEO, sitemap, RSS, and email use the subdomain form when `app.blog-subdomain.enabled=true`.
 
-Use `PostPaths.extractUrl(post)` and `CustomPagePaths.publicUrl(page)` in code — do not duplicate path logic or add pass-through wrappers (see `.cursor/rules/contraponto-no-method-bypass-allowed.mdc`).
+| Resource | Main blog (platform path) | Secondary blog (platform path) | Main blog (subdomain) | Secondary blog (subdomain) |
+|----------|---------------------------|--------------------------------|------------------------|------------------------------|
+| Blog home | `GET /{username}` | `GET /{username}/{blogSlug}` | `GET /` on `{username}.{base}` | `GET /{blogSlug}` |
+| Post | `GET /{username}/post/{slug}` | `GET /{username}/{blogSlug}/post/{slug}` | `GET /post/{slug}` | `GET /{blogSlug}/post/{slug}` |
+| Serie | `GET /{username}/serie/{serieSlug}` | `GET /{username}/{blogSlug}/serie/{serieSlug}` | `GET /serie/{serieSlug}` | `GET /{blogSlug}/serie/{serieSlug}` |
+| Custom page | `GET /{username}/page/{slug}` | `GET /{username}/{blogSlug}/page/{slug}` | `GET /page/{slug}` | `GET /{blogSlug}/page/{slug}` |
+| Global custom page | `GET /page/{slug}` | — | — (platform host only) | — |
+
+Use `BlogPublicUrlService` in templates, SEO, RSS, and emails for reader-facing links. Internal path builders `PostPaths.extractUrl(post)` and `BlogPaths.extractUrl(blog)` remain the platform-path form used after `BlogSubdomainFilter` rewrites subdomain requests.
 
 `CustomPageFilter` rewrites public custom-page URLs to `/_custom_page/...`; `CustomPageEndpoint` loads published pages via `CustomPageCache` (in-memory, invalidated on `CustomPageChangedEvent`).
 

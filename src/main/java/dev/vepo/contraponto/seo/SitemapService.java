@@ -6,17 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogPaths;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.custompage.CustomPage;
-import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostPublicationRepository;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
-import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.shared.qute.SharedTemplateExtensions;
@@ -50,6 +47,8 @@ public class SitemapService {
     private final SerieRepository serieRepository;
     private final UserRepository userRepository;
 
+    private final BlogPublicUrlService blogPublicUrlService;
+
     @Inject
     public SitemapService(PublicSiteUrl publicSiteUrl,
                           PostRepository postRepository,
@@ -58,7 +57,8 @@ public class SitemapService {
                           TagRepository tagRepository,
                           CustomPageRepository customPageRepository,
                           SerieRepository serieRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          BlogPublicUrlService blogPublicUrlService) {
         this.publicSiteUrl = publicSiteUrl;
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
@@ -67,35 +67,38 @@ public class SitemapService {
         this.customPageRepository = customPageRepository;
         this.serieRepository = serieRepository;
         this.userRepository = userRepository;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     public List<SitemapUrl> buildUrls() {
         Optional<LocalDateTime> siteLastModified = publicationRepository.findMaxPublishedAtSiteWide();
         List<SitemapUrl> urls = new ArrayList<>();
-        urls.add(new SitemapUrl("/", siteLastModified));
-        urls.add(new SitemapUrl("/authors", siteLastModified));
-        urls.add(new SitemapUrl("/explore/blogs", siteLastModified));
+        urls.add(new SitemapUrl(platformLoc("/"), siteLastModified));
+        urls.add(new SitemapUrl(platformLoc("/authors"), siteLastModified));
+        urls.add(new SitemapUrl(platformLoc("/explore/blogs"), siteLastModified));
         for (User author : userRepository.findAuthorsWithPublishedPosts()) {
-            urls.add(new SitemapUrl(AuthorProfilePaths.url(author), Optional.ofNullable(author.getUpdatedAt())));
+            urls.add(new SitemapUrl(platformLoc(AuthorProfilePaths.url(author)), Optional.ofNullable(author.getUpdatedAt())));
         }
 
         for (Post post : postRepository.findPublishedForSitemap()) {
             Optional<String> cover = Optional.ofNullable(PostTemplateExtensions.coverUrl(post));
-            urls.add(new SitemapUrl(PostPaths.extractUrl(post), lastModified(post), cover));
+            urls.add(new SitemapUrl(blogPublicUrlService.canonicalOrPlatformAbsolute(post), lastModified(post), cover));
         }
         for (Blog blog : blogRepository.findAllActiveWithOwner()) {
-            urls.add(new SitemapUrl(BlogPaths.extractUrl(blog), publicationRepository.findMaxPublishedAtByBlogId(blog.getId())));
+            urls.add(new SitemapUrl(blogPublicUrlService.canonicalOrPlatformAbsolute(blog),
+                                    publicationRepository.findMaxPublishedAtByBlogId(blog.getId())));
         }
         for (Tag tag : tagRepository.listAllForManagement()) {
             if (hasPublishedPostsForTag(tag.getSlug())) {
-                urls.add(new SitemapUrl(TagPaths.url(tag), publicationRepository.findMaxPublishedAtByTagSlug(tag.getSlug())));
+                urls.add(new SitemapUrl(platformLoc(TagPaths.url(tag)), publicationRepository.findMaxPublishedAtByTagSlug(tag.getSlug())));
             }
         }
         for (Serie serie : serieRepository.findAllWithPublishedPosts()) {
-            urls.add(new SitemapUrl(SeriePaths.extractUrl(serie), publicationRepository.findMaxPublishedAtBySerieId(serie.getId())));
+            urls.add(new SitemapUrl(blogPublicUrlService.canonicalOrPlatformAbsolute(serie),
+                                    publicationRepository.findMaxPublishedAtBySerieId(serie.getId())));
         }
         for (CustomPage page : customPageRepository.findPublishedForSitemap()) {
-            urls.add(new SitemapUrl(CustomPagePaths.publicUrl(page), Optional.ofNullable(page.getUpdatedAt())));
+            urls.add(new SitemapUrl(blogPublicUrlService.canonicalOrPlatformAbsolute(page), Optional.ofNullable(page.getUpdatedAt())));
         }
         return urls;
     }
@@ -111,6 +114,10 @@ public class SitemapService {
         return Optional.ofNullable(post.getPublishedAt());
     }
 
+    private String platformLoc(String path) {
+        return publicSiteUrl.absolute(path);
+    }
+
     @CacheResult(cacheName = "sitemap")
     public String renderXml() {
         var builder = new StringBuilder();
@@ -119,7 +126,7 @@ public class SitemapService {
         builder.append(" xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">\n");
         for (SitemapUrl url : buildUrls()) {
             builder.append("  <url>\n");
-            builder.append("    <loc>").append(escapeXml(publicSiteUrl.absolute(url.path()))).append("</loc>\n");
+            builder.append("    <loc>").append(escapeXml(url.loc())).append("</loc>\n");
             url.lastModified().ifPresent(lastmod -> builder.append("    <lastmod>")
                                                            .append(escapeXml(lastmod.toLocalDate().toString()))
                                                            .append("</lastmod>\n"));

@@ -4,17 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
-import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.UnitTest;
-import dev.vepo.contraponto.shared.security.SessionConstants;
 
 @UnitTest
 class SessionCookieSupportTest {
 
     @Test
+    void buildSessionCookieAddsDomainWhenConfigured() {
+        var support = new SessionCookieSupport(true, 86400, ".example.test");
+
+        var cookie = support.buildSessionCookie("abc-123");
+
+        assertThat(cookie).contains("Domain=.example.test");
+        assertThat(cookie).endsWith("; Secure");
+    }
+
+    @Test
     void buildSessionCookieAddsSecureWhenEnabled() {
-        var support = new SessionCookieSupport(true, 2592000);
+        var support = new SessionCookieSupport(true, 2592000, (String) null);
 
         var cookie = support.buildSessionCookie("abc-123");
 
@@ -26,7 +33,7 @@ class SessionCookieSupportTest {
 
     @Test
     void buildSessionCookieUsesLaxSameSiteAndConfiguredTtl() {
-        var support = new SessionCookieSupport(false, 86400);
+        var support = new SessionCookieSupport(false, 86400, (String) null);
 
         var cookie = support.buildSessionCookie("abc-123");
 

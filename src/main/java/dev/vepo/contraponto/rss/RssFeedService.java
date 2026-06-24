@@ -1,15 +1,13 @@
 package dev.vepo.contraponto.rss;
 
-import java.net.URI;
 import java.util.List;
 
 import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogPaths;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
-import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagRepository;
@@ -38,6 +36,7 @@ public class RssFeedService {
 
     private final TagRepository tagRepository;
     private final SiteBranding siteBranding;
+    private final BlogPublicUrlService blogPublicUrlService;
 
     @Inject
     public RssFeedService(PostRepository postRepository,
@@ -45,49 +44,51 @@ public class RssFeedService {
                           BlogRepository blogRepository,
                           SerieRepository serieRepository,
                           TagRepository tagRepository,
-                          SiteBranding siteBranding) {
+                          SiteBranding siteBranding,
+                          BlogPublicUrlService blogPublicUrlService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
         this.serieRepository = serieRepository;
         this.tagRepository = tagRepository;
         this.siteBranding = siteBranding;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     @CacheResult(cacheName = "rss-feeds")
     public String blogFeed(String username, String blogSlug, String baseUri) {
         Blog blog = blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug)
                                   .orElseThrow(NotFoundException::new);
-        return renderBlogFeed(blog, baseUri);
+        return renderBlogFeed(blog);
     }
 
     @CacheResult(cacheName = "rss-feeds")
     public String mainBlogFeed(String username, String baseUri) {
         User user = requireUser(username);
         Blog main = blogRepository.findMainByOwnerId(user.getId()).orElseThrow(NotFoundException::new);
-        return renderBlogFeed(main, baseUri);
+        return renderBlogFeed(main);
     }
 
     @CacheResult(cacheName = "rss-feeds")
     public String mainBlogSerieFeed(String username, String serieSlug, String baseUri) {
         Serie serie = serieRepository.findMainBlogSerie(username, serieSlug).orElseThrow(NotFoundException::new);
-        return renderSerieFeed(serie, baseUri);
+        return renderSerieFeed(serie);
     }
 
-    private String renderBlogFeed(Blog blog, String baseUri) {
+    private String renderBlogFeed(Blog blog) {
         var posts = postRepository.findPublishedFeedByBlog(blog.getId(), RssFeedPaths.FEED_LIMIT);
         var channel = new RssFeedRenderer.Channel(blog.getName(),
-                                                  BlogPaths.extractUrl(blog),
+                                                  blogPublicUrlService.canonicalOrPlatformAbsolute(blog),
                                                   descriptionOr(blog.getDescription(), blog.getName()));
-        return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
+        return RssFeedRenderer.render(channel, posts, blogPublicUrlService::canonicalOrPlatformAbsolute);
     }
 
-    private String renderSerieFeed(Serie serie, String baseUri) {
+    private String renderSerieFeed(Serie serie) {
         List<Post> posts = postRepository.findPublishedFeedBySerie(serie.getId(), RssFeedPaths.FEED_LIMIT);
         var channel = new RssFeedRenderer.Channel(serie.getTitle(),
-                                                  SeriePaths.extractUrl(serie),
+                                                  blogPublicUrlService.canonicalOrPlatformAbsolute(serie),
                                                   serie.getTitle());
-        return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
+        return RssFeedRenderer.render(channel, posts, blogPublicUrlService::canonicalOrPlatformAbsolute);
     }
 
     private User requireUser(String username) {
@@ -98,14 +99,16 @@ public class RssFeedService {
     public String secondaryBlogSerieFeed(String username, String blogSlug, String serieSlug, String baseUri) {
         Serie serie = serieRepository.findSecondaryBlogSerie(username, blogSlug, serieSlug)
                                      .orElseThrow(NotFoundException::new);
-        return renderSerieFeed(serie, baseUri);
+        return renderSerieFeed(serie);
     }
 
     @CacheResult(cacheName = "rss-feeds")
     public String siteWideFeed(String baseUri) {
         var posts = postRepository.findPublishedFeedGlobal(RssFeedPaths.FEED_LIMIT);
-        var channel = new RssFeedRenderer.Channel(siteBranding.seoName(), "/", "Recently published posts");
-        return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
+        var channel = new RssFeedRenderer.Channel(siteBranding.seoName(),
+                                                  blogPublicUrlService.platformAbsolute("/"),
+                                                  "Recently published posts");
+        return RssFeedRenderer.render(channel, posts, blogPublicUrlService::canonicalOrPlatformAbsolute);
     }
 
     @CacheResult(cacheName = "rss-feeds")
@@ -117,16 +120,19 @@ public class RssFeedService {
         if (desc == null || desc.isBlank()) {
             desc = "Posts tagged %s".formatted(tag.getName());
         }
-        var channel = new RssFeedRenderer.Channel(tag.getName(), "/tags/%s".formatted(tagSlug), desc);
-        return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
+        var channel = new RssFeedRenderer.Channel(tag.getName(),
+                                                  blogPublicUrlService.platformAbsolute("/tags/%s".formatted(tagSlug)),
+                                                  desc);
+        return RssFeedRenderer.render(channel, posts, blogPublicUrlService::canonicalOrPlatformAbsolute);
     }
 
     @CacheResult(cacheName = "rss-feeds")
     public String userFeed(String username, String baseUri) {
         User user = requireUser(username);
         var posts = postRepository.findPublishedFeedByAuthor(user.getId(), RssFeedPaths.FEED_LIMIT);
-        var channel =
-                new RssFeedRenderer.Channel(user.getName(), "/%s".formatted(username), "Posts by %s".formatted(user.getName()));
-        return RssFeedRenderer.render(channel, posts, URI.create(baseUri));
+        var channel = new RssFeedRenderer.Channel(user.getName(),
+                                                  blogPublicUrlService.authorBlogCanonical(user),
+                                                  "Posts by %s".formatted(user.getName()));
+        return RssFeedRenderer.render(channel, posts, blogPublicUrlService::canonicalOrPlatformAbsolute);
     }
 }
