@@ -73,6 +73,14 @@ logger.info("Published post {}", post);
 - Lazy associations by default; `JOIN FETCH` in queries when templates need them.
 - Posts belong to a `Blog` (`blog_id`), not directly to `User`.
 
+## Tell, Don't Ask
+
+- Encapsulate domain decisions in intent methods — [contraponto-tell-dont-ask.mdc](contraponto-tell-dont-ask.mdc). Tell services and entities to act; do not query state and mutate externally.
+
+## Law of Demeter
+
+- No train-wreck getter chains for business logic — [contraponto-law-of-demeter.mdc](contraponto-law-of-demeter.mdc). Use entity helpers (`isOwnedBy`, `getAuthorUserId`) or `*Access` instead of `getX().getY().getId()`.
+
 ## Method bypass
 
 - No pass-through wrappers — [contraponto-no-method-bypass-allowed.mdc](contraponto-no-method-bypass-allowed.mdc). Call the canonical method directly (e.g. `TagPaths.url`, not `TagPageEndpoint.url`).

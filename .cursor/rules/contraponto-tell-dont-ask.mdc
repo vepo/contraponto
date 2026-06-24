@@ -1,0 +1,73 @@
+---
+description: Tell, Don't Ask — encapsulate domain decisions in intent methods
+globs: src/**/*.java
+alwaysApply: false
+---
+
+# Tell, Don't Ask
+
+**Tell:** call an intent method (`publish`, `approveProposal`, `cancel`) that owns the decision and state change.
+
+**Don't ask:** avoid `if (entity.getStatus() == X) { entity.setStatus(Y); … }` spread across callers — that leaks invariants and duplicates business rules.
+
+Naming must follow [domain-model.mdc](domain-model.mdc) ubiquitous language. See also [contraponto-law-of-demeter.mdc](contraponto-law-of-demeter.mdc).
+
+## Layers
+
+```
+*Endpoint  →  tell  →  *Service  →  tell  →  Entity / *Repository
+```
+
+- **Endpoint:** parse input, authorize, then **one** service call — no business branching on entity getters.
+- **Service:** orchestrate workflows; when logic depends on entity state **and** mutation, expose a single intent method (e.g. `PostPublicationService.publish(Post)`).
+- **Entity:** prefer domain verbs when adding or changing invariants (`approve()`, `reject()`); keep getters for reads and templates.
+
+## Violations vs fixes
+
+```java
+// ❌ Caller owns the state machine
+if (proposal.getStatus() != ProposalStatus.PENDING) {
+    throw new BadRequestException("Proposal is not pending.");
+}
+proposal.setStatus(ProposalStatus.APPROVED);
+proposal.setResolvedAt(now);
+
+// ✅ Entity or service owns the transition
+proposal.approve(owner);
+// or highlightService.approveProposal(...) when orchestration spans repos/events
+```
+
+```java
+// ❌ Scattered publish logic
+if (!post.isPublished()) { post.setPublished(true); /* … */ }
+
+// ✅
+postPublicationService.publish(post);
+```
+
+```java
+// ❌ Same guard duplicated in many callers
+if (!post.isPublished() || post.getLivePublication() == null) { … }
+
+// ✅ One place
+post.requirePublished(); // or postPublicationService.ensureReadableByReader(post)
+```
+
+## Allowed "ask"
+
+- **Read-only / presentation:** view models, row DTOs, RSS metadata (`post.isPublished()` for display).
+- **Authorization:** `*Access` classes (`UserAccess.canManageUsers`) — their job is to answer capability questions.
+- **Persistence queries:** repository Criteria/JPQL filters (`WHERE published = true`).
+- **Boundary guards** that immediately delegate: `if (!post.isPublished()) return notFound();` then call a service — acceptable at the HTTP edge; prefer a single service method when the guard repeats.
+
+## Pragmatic guidance
+
+- **Do not** mandate a big-bang refactor of anemic JPA entities (e.g. `Post` with `setPublished`).
+- **Do** apply Tell, Don't Ask on **new or touched** behavior: new transitions, new endpoints, duplicated `if (getStatus())` blocks.
+- When touching legacy ask-then-set code, **consolidate** into the nearest `*Service` or entity method in the same change (same spirit as [contraponto-no-method-bypass-allowed.mdc](contraponto-no-method-bypass-allowed.mdc)).
+
+## Never
+
+- Add business rules in endpoints that belong in a service or entity.
+- Expose mutable state (`setStatus`, `setPublished`) from new code when an intent method would enforce invariants.
+- Copy the same state-check + mutation block into a second caller — extract a tell method instead.

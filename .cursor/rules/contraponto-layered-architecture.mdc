@@ -17,11 +17,12 @@ Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) §9 and §11. Dependencies flow 
 - Map path/query/form input to domain calls; build `Response` and template view models.
 - **May** inject `*Repository` for trivial read-only lookups (single `find`, existence check) with no business rules.
 - **Must** inject `*Service` when logic spans entities, enforces invariants, fires CDI events, or coordinates writes.
+- Delegate via intent methods — [contraponto-tell-dont-ask.mdc](contraponto-tell-dont-ask.mdc).
 
 ## *Service — business logic
 
 - `@ApplicationScoped`; name `XxxService`.
-- Orchestrate repositories, apply domain rules, fire events (`PostPublishedEvent`, etc.).
+- Orchestrate repositories, apply domain rules, fire events (`PostPublishedEvent`, etc.); expose intent methods callers tell instead of ask-then-set ([contraponto-tell-dont-ask.mdc](contraponto-tell-dont-ask.mdc)).
 - **Inject** `*Repository` (and other services); **never** `EntityManager`, raw SQL, or JPQL.
 - **Never** depend on `*Endpoint`, JAX-RS types (`Response`, `@PathParam`), or Qute templates.
 
@@ -36,7 +37,7 @@ Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) §9 and §11. Dependencies flow 
 
 | Kind | Role |
 |------|------|
-| `*Access` | Authorization checks; callable from endpoints |
+| `*Access` | Authorization checks; callable from endpoints; owns ownership/capability traversal ([contraponto-law-of-demeter.mdc](contraponto-law-of-demeter.mdc)) |
 | `*Observer` | React to CDI events; no HTTP |
 | `*Filter` | Cross-cutting HTTP in `shared/` |
 

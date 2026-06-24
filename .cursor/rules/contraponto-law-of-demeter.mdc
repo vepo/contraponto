@@ -1,0 +1,62 @@
+---
+description: Law of Demeter — no train wrecks; talk to direct collaborators only
+globs: src/**/*.java
+alwaysApply: false
+---
+
+# Law of Demeter
+
+**Principle of least knowledge:** a method may call only on itself, objects it creates, its parameters, and its **direct** components — not on objects returned by those calls.
+
+**Train wreck:** chained getters used for business logic or authorization (`a.getB().getC().getD()`).
+
+Complements [contraponto-tell-dont-ask.mdc](contraponto-tell-dont-ask.mdc): Tell avoids external state machines; Demeter avoids reaching through object graphs to read that state.
+
+## Violations vs fixes
+
+```java
+// ❌ Train wreck — caller navigates the graph
+long authorUserId = post.getBlog().getOwner().getId();
+if (!comment.getPost().getAuthor().getId().equals(ownerUserId)) { … }
+if (!note.getHighlight().getPost().getAuthor().getId().equals(ownerUserId)) { … }
+
+// ✅ Entity exposes what callers need (one hop)
+long authorUserId = post.getAuthorUserId();
+if (!comment.getPost().isOwnedBy(ownerUserId)) { … }
+
+// ✅ Authorization centralized in *Access
+if (!postAccess.canModerate(comment.getPost(), loggedUser)) { … }
+```
+
+`Post.getAuthor()` is an acceptable **one-hop** component accessor (blog owner); still prefer `getAuthorUserId()` / `isOwnedBy(...)` when the caller only needs an id or ownership check — do not chain `.getId()` in services.
+
+Existing `*Access` classes (`BlogAccess`, `CustomPageAccess`, `UserAccess`, `ImageAccess`) are the home for capability and ownership questions. Add `PostAccess` (or extend the nearest aggregate helper) when a new check would otherwise duplicate traversal.
+
+## Where it applies
+
+| Layer | Rule |
+|-------|------|
+| **Endpoint / Service** | No train wrecks for business rules, authorization, or event payloads. |
+| **\*Access** | May use limited hops internally, but consolidate here — not spread across services. |
+| **Entity** | Add `getOwnerId()`, `isOwnedBy(userId)`, `getAuthorUserId()` when multiple callers need the same hop. |
+| **Repository** | JPQL/Criteria paths and `JOIN FETCH` are fine — persistence layer owns the graph. |
+
+## Allowed chains
+
+- **Templates / view models:** Qute may use `{post.author.username}` for display when the template already receives a loaded graph.
+- **One direct component:** `post.getBlog()`, `blog.getOwner()` when that object is the value you need next (not its nested fields for decisions).
+- **Repository queries:** `post.getBlog().getId()` inside a repository method building a query is acceptable.
+- **Framework types:** `requestContext.getUriInfo().getPath()` — not domain logic.
+
+## Pragmatic guidance
+
+- **Do not** mandate a big-bang refactor of existing train wrecks.
+- **Do** stop adding new chains; when touching legacy traversal, replace with an entity helper or `*Access` method in the same change (same spirit as [contraponto-no-method-bypass-allowed.mdc](contraponto-no-method-bypass-allowed.mdc)).
+- Prefer **ids** over loading associations when the graph exists only for `.getId()`.
+- Method names follow [domain-model.mdc](domain-model.mdc) ubiquitous language.
+
+## Never
+
+- Copy the same `getX().getY().getId()` ownership check into a second service — extract to `*Access` or the entity.
+- Reach through aggregates in endpoints (`post.getBlog().getOwner().getUsername()` for authorization).
+- Add a getter chain “because the association is already loaded” when a domain helper would keep callers stable if the model changes.
