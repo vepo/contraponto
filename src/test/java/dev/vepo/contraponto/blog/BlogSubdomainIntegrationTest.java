@@ -3,6 +3,8 @@ package dev.vepo.contraponto.blog;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.net.URL;
 
@@ -57,40 +59,15 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
-    void subdomainHost_platformRouteRedirectsToPlatformHost() {
+    void subdomainHost_discoveryRouteRedirectsToPlatformHost() {
         given().header("Host", "subdom-author.localhost")
                .redirects()
                .follow(false)
                .when()
-               .get("/manage")
+               .get("/authors")
                .then()
                .statusCode(302)
-               .header("Location", "https://blogs.localhost/manage");
-    }
-
-    @Test
-    void subdomainHost_platformRouteReturnsHxRedirectForHtmx() {
-        given().header("Host", "subdom-author.localhost")
-               .header("HX-Request", "true")
-               .redirects()
-               .follow(false)
-               .when()
-               .get("/administration")
-               .then()
-               .statusCode(200)
-               .header("HX-Redirect", "https://blogs.localhost/administration");
-    }
-
-    @Test
-    void subdomainHost_readingRedirectsToPlatformHost() {
-        given().header("Host", "subdom-author.localhost")
-               .redirects()
-               .follow(false)
-               .when()
-               .get("/reading")
-               .then()
-               .statusCode(302)
-               .header("Location", "https://blogs.localhost/reading");
+               .header("Location", "https://blogs.localhost/authors");
     }
 
     @Test
@@ -125,5 +102,30 @@ class BlogSubdomainIntegrationTest {
                .then()
                .statusCode(200)
                .body(containsString("Subdomain Post"));
+    }
+
+    @Test
+    void subdomainHost_workspaceHubHasNoHxRedirectToPlatform() {
+        given().header("Host", "subdom-author.localhost")
+               .header("HX-Request", "true")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/administration")
+               .then()
+               .statusCode(303)
+               .header("HX-Redirect", nullValue());
+    }
+
+    @Test
+    void subdomainHost_workspaceHubStaysOnAuthorHost() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/administration")
+               .then()
+               .statusCode(303)
+               .header("Location", not(containsString("blogs.localhost")));
     }
 }

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import dev.vepo.contraponto.custompage.CustomPagePaths;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -17,7 +16,31 @@ public class BlogSubdomainConfig {
 
     private static final Set<String> SUBDOMAIN_AUTHOR_ROOT_SEGMENTS = Set.of("components", "feed", "main-blog", "page", "post", "serie");
 
-    private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("auth", "js", "style", "images", "i18n", "q", "api");
+    /**
+     * Platform workspace routes served on the author subdomain without /{username}
+     * rewrite or platform redirect.
+     */
+    private static final Set<String> SUBDOMAIN_WORKSPACE_ROOT_SEGMENTS = Set.of("write",
+                                                                                "writing",
+                                                                                "reading",
+                                                                                "manage",
+                                                                                "account",
+                                                                                "editor",
+                                                                                "administration",
+                                                                                "search",
+                                                                                "library",
+                                                                                "dashboard",
+                                                                                "profile",
+                                                                                "review",
+                                                                                "pages",
+                                                                                "blogs",
+                                                                                "users",
+                                                                                "comments",
+                                                                                "notifications",
+                                                                                "subscriptions",
+                                                                                "tags");
+
+    private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("auth", "js", "style", "images", "i18n", "q", "api", "forms");
 
     private static final Set<String> SKIP_REWRITE_EXACT = Set.of("favicon.ico", "favicon.svg", "robots.txt");
 
@@ -104,7 +127,10 @@ public class BlogSubdomainConfig {
         if (SUBDOMAIN_AUTHOR_ROOT_SEGMENTS.contains(segment)) {
             return false;
         }
-        return CustomPagePaths.isReservedSegment(segment) || PLATFORM_ONLY_ROOT_SEGMENTS.contains(segment);
+        if (SUBDOMAIN_WORKSPACE_ROOT_SEGMENTS.contains(segment)) {
+            return false;
+        }
+        return PLATFORM_ONLY_ROOT_SEGMENTS.contains(segment);
     }
 
     public Optional<String> parseUserSubdomain(String hostHeader) {
@@ -152,6 +178,10 @@ public class BlogSubdomainConfig {
         }
         var normalized = path.startsWith("/") ? path.substring(1) : path;
         if (SKIP_REWRITE_EXACT.contains(normalized)) {
+            return true;
+        }
+        var firstSegment = normalized.indexOf('/') >= 0 ? normalized.substring(0, normalized.indexOf('/')) : normalized;
+        if (SUBDOMAIN_WORKSPACE_ROOT_SEGMENTS.contains(firstSegment)) {
             return true;
         }
         for (var prefix : SKIP_REWRITE_PREFIXES) {

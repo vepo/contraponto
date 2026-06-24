@@ -29,9 +29,11 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 - **Ctrl/Cmd/Shift/middle-click** on those anchors: `main.js` (`setupModifierKeyNavigation`) cancels the HTMX request and opens `href` (or `hx-push-url`) in a new tab. Without `href`, the browser cannot open a new tab; without the handler, HTMX would still swap `#main` in place.
 - **`loggedOut`** on a **protected path**: `main.js` redirects to `/` (documented exception).
 
-### Author subdomain → platform hub (blog subdomain enabled)
+### Author subdomain · workspace vs discovery routes
 
-On `{username}.{base-domain}`, reserved platform paths (`/manage`, `/administration`, `/reading`, …) are not rewritten to `/{username}/…`. A normal GET returns **302** to the platform host (`blogs.{base-domain}`). HTMX cannot follow that cross-origin redirect, so `BlogSubdomainFilter` responds to **`HX-Request: true`** with **`HX-Redirect`** (full-page navigation to the same platform URL). Auth modals stay on the author host (`/auth/modal` is not redirected). Blog pagination fragments (`/components/grid`) rewrite to `/{username}/components/grid` on the author host.
+On `{username}.{base-domain}`, **author content** (`/`, `/post/…`, `/feed`, …) is rewritten to `/{username}/…`. **Workspace hubs** (`/writing`, `/manage`, `/administration`, `/account`, …) are served on the **same author host** without redirecting to the platform host — menu HTMX links stay same-origin.
+
+**Discovery / global routes** (`/authors`, `/explore`, `/sitemap.xml`, …) still redirect to the platform host. For those, `BlogSubdomainFilter` responds to **`HX-Request: true`** with **`HX-Redirect`** (full-page navigation).
 
 ### SEO head sync (HTMX navigation)
 

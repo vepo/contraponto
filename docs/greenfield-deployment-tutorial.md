@@ -224,7 +224,7 @@ Log in on `https://PLATFORM_HOST`, reload, then open `https://<your-username>.YO
 
 ### 5.3 Hub navigation from author subdomain
 
-Open the user menu on an author subdomain and choose **Manage** or **Administration**. HTMX should full-navigate to the platform host (no blocked cross-origin redirect). See [htmx-events.md § Author subdomain](htmx-events.md#author-subdomain--platform-hub-blog-subdomain-enabled).
+Open the user menu on an author subdomain and choose **Manage** or **Administration**. The URL should stay on `{username}.YOUR_DOMAIN` (same-origin HTMX navigation). See [htmx-events.md § Author subdomain](htmx-events.md#author-subdomain--workspace-vs-discovery-routes).
 
 ### 5.4 Email
 
