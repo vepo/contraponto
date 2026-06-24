@@ -1,11 +1,10 @@
-package dev.vepo.contraponto.shared.infra;
+package dev.vepo.contraponto.user;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import dev.vepo.contraponto.user.Role;
-import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.shared.infra.DisplayNameInitials;
 
 public class LoggedUser {
 
@@ -54,7 +53,7 @@ public class LoggedUser {
     }
 
     public User getUser() {
-        return this.user;
+        return user;
     }
 
     public String getUsername() {
@@ -79,6 +78,6 @@ public class LoggedUser {
 
     @Override
     public String toString() {
-        return "Image[user=%s, sessionId=%s]".formatted(user, sessionId);
+        return "LoggedUser[user=%s, sessionId=%s]".formatted(user, sessionId);
     }
 }

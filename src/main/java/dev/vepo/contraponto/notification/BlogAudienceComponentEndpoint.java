@@ -2,7 +2,7 @@ package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;

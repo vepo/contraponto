@@ -134,27 +134,42 @@ Use when logic spans entities or fires events: `PostPublicationService`, `TagSer
 
 ## 10. Package layout
 
+Bounded contexts and allowed dependencies: [docs/domain-specification.md](docs/domain-specification.md) §Bounded contexts. CDI event catalog: [docs/cdi-events.md](docs/cdi-events.md).
+
 ```
 dev.vepo.contraponto/
-├── admin/          # Editor review (featured posts) — /review
-├── navigation/     # Menu hubs (/writing, /manage, /account, /editor, /administration) + BreadcrumbService
-├── auth/           # Password hashing
-├── blog/           # Blog CRUD, public blog pages
-├── components/     # Header, menu, forms (login, publish, draft)
-├── custompage/     # Static pages, filter, cache
-├── dashboard/      library/  profile/  search/  write/
-├── git/            # Jekyll/Git sync
-├── home/           # Featured homepage
-├── image/          # Upload & storage
-├── notification/   # Follow, subscribe, in-app notifications
-├── post/           # Posts, publications, public post view
-├── renderer/       # Markdown / AsciiDoc
-├── rss/            # RSS endpoints
-├── serie/          # Series pages
-├── shared/         # infra (LoggedUser, TemplateExtensions), test (App, Given)
-├── tag/            # Tag pages & editor tools
-├── user/           # Users, roles, /users admin
-└── view/           # View counts
+├── admin/            # Author workspace — editor review (featured posts) — /review
+├── auth/             # Identity & access — passwords, account email, tokens
+├── blog/             # Content publishing — blog CRUD, public blog pages
+├── comment/          # Reader engagement — post comments
+├── components/       # Presentation shell — header, menu, forms (login, publish, draft)
+├── content/          # Content publishing — render plugins, post body rendering
+├── custompage/       # Customization — static pages, filter, cache
+├── dashboard/        # Author workspace — manage analytics
+├── directory/        # Discovery — author/blog directories
+├── git/              # Integration — Jekyll/Git sync
+├── highlight/        # Reader engagement — text highlights, proposals, notes
+├── home/             # Discovery — featured homepage
+├── image/            # Media — upload & storage
+├── library/          # Author workspace — drafts/published library
+├── navigation/       # Presentation shell — menu hubs, breadcrumbs
+├── notification/     # Reader engagement — follow, subscribe, in-app notifications
+├── platforminsights/ # Platform insights — admin visitor analytics
+├── post/             # Content publishing — posts, publications, public post view
+├── postresponse/     # Reader engagement — author responses to highlights
+├── profile/          # Author workspace — author profile edit
+├── readinglist/      # Reader engagement — saved posts, mark as read
+├── readingtime/      # Reader engagement — reading progress
+├── renderer/         # Content publishing — Markdown / AsciiDoc
+├── rss/              # Discovery — RSS endpoints
+├── search/           # Discovery — site search
+├── seo/              # Discovery — sitemap, robots, metadata
+├── serie/            # Content publishing — series pages
+├── shared/           # Shared kernel — infra, i18n, pagination, security (test: App, Given)
+├── tag/              # Content publishing — tag pages & editor tools
+├── user/             # Identity & access — users, roles, session, /users admin
+├── view/             # Discovery — view counts
+└── write/            # Content publishing — write editor entry
 ```
 
 ## 11. Naming

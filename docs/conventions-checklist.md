@@ -35,7 +35,8 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 - [x] **Update [ui-guidelines.md](ui-guidelines.md)** — notification bell/inbox, follow/subscribe, tag/serie, comments, subscriptions, version history (see §18–23).
 - [x] **UI element catalog** — [ui-elements.md](ui-elements.md); Cursor rule `contraponto-ui.mdc`; CSS split main / manage / write.
 - [ ] **Service layer guideline** — when logic belongs in `XxxService` vs endpoint vs repository (ARCHITECTURE §5 is a start; add examples per package).
-- [ ] **CDI events catalog** — table of events, producers, observers, and transactional boundaries (`PostPublishedEvent`, `CustomPageChangedEvent`, `PostGitSyncRequestedEvent`, …).
+- [x] **CDI events catalog** — [cdi-events.md](cdi-events.md): events, producers, observers, transactional boundaries.
+- [x] **Java idioms audit** — `scripts/audit-java-idioms.java` → `reports/java-idioms-audit.md`; production `isPresent()`/`get()` chains and session/template splits done; test `isPresent()` in assertions remains acceptable.
 - [ ] **Component vs form routes** — naming rule `/forms/*` (mutations) vs `/components/*` (fragments); document in application-guidelines §11.
 
 ### Medium priority (inconsistent or implicit)

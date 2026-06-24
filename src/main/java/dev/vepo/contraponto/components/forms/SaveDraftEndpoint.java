@@ -14,7 +14,7 @@ import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -106,23 +106,21 @@ public class SaveDraftEndpoint {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response save(@BeanParam SaveDraftRequest request) {
         var validationError = validateRequest(request);
-        if (validationError.isPresent()) {
-            return validationError.get();
-        }
+        return validationError.orElseGet(() -> {
+            Blog blog = postWriteService.requireEditableBlog(request.blogId(), loggedUser);
+            Post post = postWriteService.resolvePostForWrite(request.id(), blog, loggedUser);
+            updateCoverImageIfProvided(post, request, blog);
+            setFormat(post, request);
+            fillPostMetadata(post, request);
+            serieService.applySerieTitleToPost(post, request.serieTitle());
+            postRepository.save(post);
+            tagService.syncPostTags(post, request.tagsJson());
+            postImageDependencyService.syncPostDependencies(post);
 
-        Blog blog = postWriteService.requireEditableBlog(request.blogId(), loggedUser);
-        Post post = postWriteService.resolvePostForWrite(request.id(), blog, loggedUser);
-        updateCoverImageIfProvided(post, request, blog);
-        setFormat(post, request);
-        fillPostMetadata(post, request);
-        serieService.applySerieTitleToPost(post, request.serieTitle());
-        postRepository.save(post);
-        tagService.syncPostTags(post, request.tagsJson());
-        postImageDependencyService.syncPostDependencies(post);
+            postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.DRAFT_SAVE));
 
-        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.DRAFT_SAVE));
-
-        return buildSuccessResponse(post);
+            return buildSuccessResponse(post);
+        });
     }
 
     private void setFormat(Post post, SaveDraftRequest request) {

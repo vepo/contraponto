@@ -32,6 +32,28 @@ erDiagram
 
 ---
 
+## Bounded contexts
+
+Contraponto is a **modular monolith**: one deployable, many bounded contexts under `dev.vepo.contraponto.*`. Contexts communicate via **CDI events**, `*Paths` URL builders, and service calls at documented boundaries — not by reaching into another context's repositories from services.
+
+| Context | Packages | May depend on |
+|---------|----------|---------------|
+| **Shared kernel** | `shared` | JDK/Jakarta only (after kernel cleanup) |
+| **Identity & access** | `auth`, `user` | shared |
+| **Content publishing** | `blog`, `post`, `write`, `tag`, `serie`, `renderer`, `content` | shared, identity, media |
+| **Reader engagement** | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse` | shared, identity, publishing |
+| **Discovery & syndication** | `home`, `search`, `directory`, `rss`, `seo`, `view` | shared, publishing |
+| **Media** | `image` | shared, identity |
+| **Customization** | `custompage` | shared, identity, media |
+| **Integration** | `git` | shared, publishing, media |
+| **Author workspace** | `library`, `dashboard`, `admin`, `profile` | shared, identity, publishing |
+| **Presentation shell** | `components`, `navigation` | shared + all contexts (HTTP composition only) |
+| **Platform insights** | `platforminsights` | shared, view, identity |
+
+**Rules:** Feature services must not depend on unrelated contexts (e.g. `git` must not depend on `notification`). Publish side-effects (notifications, RSS, sitemap, Git export) use [CDI events](cdi-events.md). `@TemplateExtension` classes live in their owning context, not in `shared`.
+
+---
+
 ## Ubiquitous Language
 
 Terms below are the **only** approved names for aggregates, entities, value objects, states, actions, and user-visible labels unless this document is updated first.

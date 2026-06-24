@@ -3,6 +3,7 @@ package dev.vepo.contraponto.components.forms;
 import dev.vepo.contraponto.auth.AccountActivationService;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.toast.Toast;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.UserService;
@@ -21,7 +22,7 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class SignUpEndpoint {
 
-    public static final String SESSION_COOKIE_NAME = LoginEndpoint.SESSION_COOKIE_NAME;
+    public static final String SESSION_COOKIE_NAME = SessionConstants.SESSION_COOKIE_NAME;
     private static final String MODAL_CLEAR_OOB =
             "<div id=\"modal-container\" hx-swap-oob=\"innerHTML\"></div>";
 
@@ -58,18 +59,17 @@ public class SignUpEndpoint {
         }
 
         var validationError = userService.validateNewUser(username, name, email, password);
-        if (validationError.isPresent()) {
-            return buildErrorResponse(validationError.get());
-        }
+        return validationError.map(this::buildErrorResponse)
+                              .orElseGet(() -> {
+                                  var newUser = userService.createUser(username, name, email, password, java.util.Set.of(Role.USER), false);
+                                  accountActivationService.sendActivationEmail(newUser);
 
-        var newUser = userService.createUser(username, name, email, password, java.util.Set.of(Role.USER), false);
-        accountActivationService.sendActivationEmail(newUser);
-
-        return Toast.ok()
-                    .i18nKey(I18nKeys.AUTH_SIGNUP_ACTIVATION_SENT, I18nDefaults.SIGNUP_ACTIVATION_SENT)
-                    .type(Toast.Type.SUCCESS)
-                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .html(MODAL_CLEAR_OOB)
-                    .build();
+                                  return Toast.ok()
+                                              .i18nKey(I18nKeys.AUTH_SIGNUP_ACTIVATION_SENT, I18nDefaults.SIGNUP_ACTIVATION_SENT)
+                                              .type(Toast.Type.SUCCESS)
+                                              .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                                              .html(MODAL_CLEAR_OOB)
+                                              .build();
+                              });
     }
 }

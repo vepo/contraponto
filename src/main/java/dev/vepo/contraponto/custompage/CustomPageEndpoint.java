@@ -5,7 +5,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.seo.SeoService;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;

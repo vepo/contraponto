@@ -9,10 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import io.quarkus.test.common.http.TestHTTPResource;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 
 @QuarkusIntegrationTest
 class HeaderComponentsTest {
@@ -30,7 +34,7 @@ class HeaderComponentsTest {
                         .persist();
         var sessionId = Given.inject(LoggedUserProvider.class).login(user).getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/account/security")
                .then()
                .statusCode(200)
@@ -56,7 +60,7 @@ class HeaderComponentsTest {
                         .persist();
         var sessionId = Given.inject(LoggedUserProvider.class).login(user).getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/components/write-btn")
                .then()
                .statusCode(200)

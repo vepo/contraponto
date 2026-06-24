@@ -27,7 +27,7 @@ import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.tag.TagService;
 import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -175,30 +175,28 @@ public class PublishEndpoint {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response publish(@BeanParam SaveDraftRequest request) {
         var validationError = validateRequest(request);
-        if (validationError.isPresent()) {
-            return validationError.get();
-        }
+        return validationError.orElseGet(() -> {
+            Blog blog = postWriteService.requireEditableBlog(request.blogId(), loggedUser);
+            Post post = postWriteService.resolvePostForWrite(request.id(), blog, loggedUser);
+            setFormatIfProvided(post, request);
+            updateCoverImage(post, request, blog);
+            fillPostMetadata(post, request);
+            applyResolvedSlug(post, request);
+            serieService.applySerieTitleToPost(post, request.serieTitle());
+            postRepository.save(post);
+            tagService.syncPostTags(post, request.tagsJson());
+            postImageDependencyService.syncPostDependencies(post);
+            PostPublication published = publicationService.publish(post);
 
-        Blog blog = postWriteService.requireEditableBlog(request.blogId(), loggedUser);
-        Post post = postWriteService.resolvePostForWrite(request.id(), blog, loggedUser);
-        setFormatIfProvided(post, request);
-        updateCoverImage(post, request, blog);
-        fillPostMetadata(post, request);
-        applyResolvedSlug(post, request);
-        serieService.applySerieTitleToPost(post, request.serieTitle());
-        postRepository.save(post);
-        tagService.syncPostTags(post, request.tagsJson());
-        postImageDependencyService.syncPostDependencies(post);
-        PostPublication published = publicationService.publish(post);
+            if (request.respondsTo() != null) {
+                postResponseService.createOnPublish(post, request.respondsTo(), loggedUser.getId());
+            }
 
-        if (request.respondsTo() != null) {
-            postResponseService.createOnPublish(post, request.respondsTo(), loggedUser.getId());
-        }
+            postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.PUBLISH));
 
-        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.PUBLISH));
-
-        Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
-        return buildSuccessResponse(new PublishedPostView(rendered, published));
+            Post rendered = postRepository.findByIdWithTags(post.getId()).orElse(post);
+            return buildSuccessResponse(new PublishedPostView(rendered, published));
+        });
     }
 
     private String resolveSlug(SaveDraftRequest request) {

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.shared.UnitTest;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 

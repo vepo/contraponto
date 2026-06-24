@@ -18,8 +18,8 @@ import dev.vepo.contraponto.git.GitImageSyncService;
 import dev.vepo.contraponto.git.JekyllLayoutConvention;
 import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
@@ -95,7 +95,7 @@ class InlineContentImageTest {
                         .withPublished(true)
                         .persist();
 
-        String html = TemplateExtensions.render(post);
+        String html = PostTemplateExtensions.render(post);
         assertThat(html).contains(BLOCK_TITLE_CAPTION);
         assertThat(html).doesNotContain("contraponto:image");
         assertThat(html).doesNotContain("image::");
@@ -125,7 +125,7 @@ class InlineContentImageTest {
                         .withPublished(true)
                         .persist();
 
-        assertInlineImageShown(TemplateExtensions.render(post), image);
+        assertInlineImageShown(PostTemplateExtensions.render(post), image);
     }
 
     @Test
@@ -140,7 +140,7 @@ class InlineContentImageTest {
                         .withPublished(true)
                         .persist();
 
-        assertInlineImageShown(TemplateExtensions.render(post), image);
+        assertInlineImageShown(PostTemplateExtensions.render(post), image);
     }
 
     @BeforeEach

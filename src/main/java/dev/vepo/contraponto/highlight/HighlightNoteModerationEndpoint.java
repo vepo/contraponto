@@ -3,7 +3,7 @@ package dev.vepo.contraponto.highlight;
 import dev.vepo.contraponto.navigation.NavigationHub;
 import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

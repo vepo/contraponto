@@ -22,7 +22,7 @@ import dev.vepo.contraponto.notification.SubscriptionEndpoint;
 import dev.vepo.contraponto.platforminsights.PlatformInsightsEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.tag.TagManageEndpoint;
 import dev.vepo.contraponto.user.UserManageEndpoint;
 import dev.vepo.contraponto.view.ViewRepository;

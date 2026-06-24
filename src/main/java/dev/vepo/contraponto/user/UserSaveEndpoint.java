@@ -8,8 +8,8 @@ import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.navigation.NavigationHub;
 import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.user.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUserProvider;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
@@ -80,25 +80,23 @@ public class UserSaveEndpoint {
 
     private Response create(UserManageForm form) {
         var validationError = userService.validateNewUser(form.getUsername(), form.getName(), form.getEmail(), form.getPassword());
-        if (validationError.isPresent()) {
-            return badRequest(validationError.get());
-        }
+        return validationError.map(this::badRequest).orElseGet(() -> {
+            var roles = userAccess.parseRoles(loggedUser, form.getRoles());
+            if (roles.isEmpty()) {
+                roles = java.util.Set.of(Role.USER);
+            }
 
-        var roles = userAccess.parseRoles(loggedUser, form.getRoles());
-        if (roles.isEmpty()) {
-            roles = java.util.Set.of(Role.USER);
-        }
+            var user = userService.createUser(form.getUsername(), form.getName(), form.getEmail(), form.getPassword(), roles, true);
+            logger.info("Created user {}", user);
 
-        var user = userService.createUser(form.getUsername(), form.getName(), form.getEmail(), form.getPassword(), roles, true);
-        logger.info("Created user {}", user);
-
-        return Toast.ok()
-                    .i18nKey(I18nKeys.TOAST_USER_CREATED, I18nDefaults.USER_CREATED)
-                    .type(Toast.Type.SUCCESS)
-                    .duration(Toast.TOAST_DEFAULT_DURATION_MS)
-                    .url("/administration/users")
-                    .page(navigationHubService.shell(NavigationHub.ADMINISTRATION, "users", 1))
-                    .build();
+            return Toast.ok()
+                        .i18nKey(I18nKeys.TOAST_USER_CREATED, I18nDefaults.USER_CREATED)
+                        .type(Toast.Type.SUCCESS)
+                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                        .url("/administration/users")
+                        .page(navigationHubService.shell(NavigationHub.ADMINISTRATION, "users", 1))
+                        .build();
+        });
     }
 
     private Response forbidden() {

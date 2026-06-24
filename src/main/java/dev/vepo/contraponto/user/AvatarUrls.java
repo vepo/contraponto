@@ -1,9 +1,7 @@
-package dev.vepo.contraponto.shared.infra;
+package dev.vepo.contraponto.user;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import dev.vepo.contraponto.user.User;
 
 public final class AvatarUrls {
 

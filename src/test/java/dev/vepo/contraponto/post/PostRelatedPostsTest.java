@@ -9,9 +9,10 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 
@@ -43,7 +44,7 @@ class PostRelatedPostsTest {
                                .withAuthor(author)
                                .withTags("shared-topic")
                                .persist();
-        String postPath = TemplateExtensions.url(primaryPost);
+        String postPath = PostTemplateExtensions.url(primaryPost);
 
         String html = given().when()
                              .get(postPath)
@@ -58,7 +59,7 @@ class PostRelatedPostsTest {
         int asideIndex = html.indexOf("post-related-aside");
         assertThat(contentIndex).isGreaterThan(-1);
         assertThat(asideIndex).isGreaterThan(contentIndex);
-        assertThat(html).contains(TemplateExtensions.url(relatedPost));
+        assertThat(html).contains(PostTemplateExtensions.url(relatedPost));
     }
 
     @BeforeEach

@@ -3,7 +3,6 @@ package dev.vepo.contraponto.shared.infra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.custompage.CustomPageRepository;
 import io.quarkus.qute.Template;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,6 +16,8 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import dev.vepo.contraponto.user.LoggedUser;
+
 @Provider
 @ApplicationScoped
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
@@ -24,17 +25,17 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
     private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
 
     private final Template error;
-    private final CustomPageRepository customPageRepository;
+    private final FooterLinksProvider footerLinksProvider;
     private final LoggedUser loggedUser;
     private final boolean showErrorDetails;
 
     @Inject
     public GenericExceptionMapper(Template error,
-                                  CustomPageRepository customPageRepository,
+                                  FooterLinksProvider footerLinksProvider,
                                   LoggedUser loggedUser,
                                   @ConfigProperty(name = "app.show-error-details", defaultValue = "false") boolean showErrorDetails) {
         this.error = error;
-        this.customPageRepository = customPageRepository;
+        this.footerLinksProvider = footerLinksProvider;
         this.loggedUser = loggedUser;
         this.showErrorDetails = showErrorDetails;
     }
@@ -70,24 +71,21 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
-        // Determine HTTP status
         int status = getStatus(exception);
         String userMessage = getUserMessage(status);
         String technicalMessage = showErrorDetails ? exception.getMessage() : null;
 
-        // Log the error with stack trace for server-side debugging
         if (status >= 500) {
             logger.error("Internal server error", exception);
         } else {
             logger.warn("Client error status={} exception={}", status, exception);
         }
 
-        // Render error page
         String html = error.data("user", loggedUser)
                            .data("status", status)
                            .data("message", technicalMessage)
                            .data("description", userMessage)
-                           .data("links", customPageRepository.loadLinks())
+                           .data("links", footerLinksProvider.loadGlobalLinks())
                            .data("dev", showErrorDetails)
                            .render();
 

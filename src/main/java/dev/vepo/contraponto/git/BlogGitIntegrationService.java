@@ -652,7 +652,7 @@ public class BlogGitIntegrationService {
         try {
             Optional<String> remoteHead = resolveRemoteHead(blog);
             String lastKnown = blog.getGitLastKnownCommit();
-            if (remoteHead.isPresent() && remoteHead.get().equals(lastKnown)) {
+            if (remoteHead.filter(head -> java.util.Objects.equals(head, lastKnown)).isPresent()) {
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                GitSyncPhase.FETCH,
                                                                                "Remote unchanged at %s.".formatted(

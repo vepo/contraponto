@@ -3,7 +3,7 @@ package dev.vepo.contraponto.comment;
 import java.util.List;
 
 import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 
 public record CommentsSectionView(Post post,
                                   String commentsUrl,

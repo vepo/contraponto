@@ -7,7 +7,7 @@ import java.util.Objects;
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.DeltaType;
 
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
+import dev.vepo.contraponto.shared.qute.SharedTemplateExtensions;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -40,7 +40,7 @@ public class PostChangeDiffService {
     }
 
     private static String escape(String value) {
-        return TemplateExtensions.escapeHtml(value == null ? "" : value);
+        return SharedTemplateExtensions.escapeHtml(value == null ? "" : value);
     }
 
     private static String nullToEmpty(String value) {

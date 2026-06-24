@@ -4,7 +4,7 @@ import dev.vepo.contraponto.git.BlogGitIntegrationTransaction;
 import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
 import dev.vepo.contraponto.notification.PostUnpublishedEvent;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;

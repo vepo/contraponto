@@ -1,0 +1,43 @@
+---
+description: Modular monolith bounded contexts and dependency rules
+alwaysApply: true
+---
+
+# Bounded contexts (modular monolith)
+
+Single Maven module; logical boundaries in `dev.vepo.contraponto.*`. Full table: [docs/domain-specification.md](../../docs/domain-specification.md) §Bounded contexts. CDI events: [docs/cdi-events.md](../../docs/cdi-events.md).
+
+## Context map
+
+| Context | Packages |
+|---------|----------|
+| Shared kernel | `shared` |
+| Identity & access | `auth`, `user` |
+| Content publishing | `blog`, `post`, `write`, `tag`, `serie`, `renderer`, `content` |
+| Reader engagement | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse` |
+| Discovery & syndication | `home`, `search`, `directory`, `rss`, `seo`, `view` |
+| Media | `image` |
+| Customization | `custompage` |
+| Integration | `git` |
+| Author workspace | `library`, `dashboard`, `admin`, `profile` |
+| Presentation shell | `components`, `navigation` |
+| Platform insights | `platforminsights` |
+
+## Dependency rules
+
+- Feature contexts **may depend on** `shared` and contexts listed in the domain spec table for that row.
+- **`shared` kernel** must not import other `dev.vepo.contraponto.*` packages (except during documented migration).
+- **`..*Repository`** must not depend on `..*Endpoint` or `..*Service` ([contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc)).
+- **Cross-context side effects:** use CDI events (`PostPublishedEvent`, `CustomPageChangedEvent`, …) — not service calls from publishing into notification/RSS/SEO/Git.
+- **`@TemplateExtension`** classes belong in the owning context package, not `shared.infra`.
+- **Presentation shell** may compose endpoints across contexts at the HTTP boundary only.
+
+## Enforcement
+
+ArchUnit tests in `src/test/java/dev/vepo/contraponto/shared/architecture/BoundedContextRulesTest.java` — keep green on every change.
+
+## When adding a feature
+
+1. Place code in the correct context package (extend domain spec if new vocabulary).
+2. Fire or observe CDI events for cross-context reactions; update [cdi-events.md](../../docs/cdi-events.md).
+3. Do not add domain imports to `shared`.

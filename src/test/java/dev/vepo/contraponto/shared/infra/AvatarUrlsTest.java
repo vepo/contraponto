@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.user.AvatarUrls;
 import dev.vepo.contraponto.user.User;
 
 @UnitTest

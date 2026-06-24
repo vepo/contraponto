@@ -10,7 +10,8 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.tag.Tag;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
+import dev.vepo.contraponto.shared.qute.SharedTemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -170,7 +171,7 @@ public class BreadcrumbService {
     }
 
     public BreadcrumbTrail forPost(PublishedPostView view) {
-        return forPost(view.post(), TemplateExtensions.liveTitle(view));
+        return forPost(view.post(), PostTemplateExtensions.liveTitle(view));
     }
 
     public BreadcrumbTrail forSearch() {

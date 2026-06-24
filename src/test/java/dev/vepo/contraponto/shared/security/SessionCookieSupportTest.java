@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.UnitTest;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 
 @UnitTest
 class SessionCookieSupportTest {
@@ -16,7 +18,7 @@ class SessionCookieSupportTest {
 
         var cookie = support.buildSessionCookie("abc-123");
 
-        assertThat(cookie).startsWith(LoginEndpoint.SESSION_COOKIE_NAME + "=abc-123");
+        assertThat(cookie).startsWith(SessionConstants.SESSION_COOKIE_NAME + "=abc-123");
         assertThat(cookie).contains("Max-Age=2592000");
         assertThat(cookie).contains("SameSite=Lax");
         assertThat(cookie).endsWith("; Secure");

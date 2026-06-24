@@ -13,7 +13,7 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.notification.BlogAudienceRepository;
 import dev.vepo.contraponto.notification.NotificationRepository;
 import dev.vepo.contraponto.notification.NotificationType;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.view.ViewRepository;
 import jakarta.enterprise.context.ApplicationScoped;

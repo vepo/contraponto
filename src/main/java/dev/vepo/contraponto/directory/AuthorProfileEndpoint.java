@@ -15,7 +15,7 @@ import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.seo.SeoMetadata;
 import dev.vepo.contraponto.seo.SeoService;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.tag.TagProfileService;
 import dev.vepo.contraponto.tag.TagUsage;

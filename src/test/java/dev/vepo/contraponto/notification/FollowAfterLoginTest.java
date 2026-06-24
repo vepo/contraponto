@@ -10,16 +10,26 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.components.forms.SignUpEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.App;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import io.quarkus.test.common.http.TestHTTPResource;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import jakarta.inject.Inject;
 
 @QuarkusIntegrationTest
@@ -44,11 +54,11 @@ class FollowAfterLoginRestTest {
                .statusCode(200)
                .body(containsString("hx-get=\"/auth/modal?mode=login\""));
 
-        var sessionId = Given.inject(dev.vepo.contraponto.shared.infra.LoggedUserProvider.class)
+        var sessionId = Given.inject(dev.vepo.contraponto.user.LoggedUserProvider.class)
                              .login(reader)
                              .getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/components/blogs/" + blogId + "/audience")
                .then()
                .statusCode(200)
@@ -65,12 +75,12 @@ class FollowAfterLoginRestTest {
                                .then()
                                .statusCode(200)
                                .extract()
-                               .cookie(LoginEndpoint.SESSION_COOKIE_NAME);
+                               .cookie(SessionConstants.SESSION_COOKIE_NAME);
 
-        var bootstrap = given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId).get("/");
+        var bootstrap = given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId).get("/");
         String csrf = bootstrap.getCookie(dev.vepo.contraponto.shared.security.CsrfTokenService.COOKIE_NAME);
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .cookie(dev.vepo.contraponto.shared.security.CsrfTokenService.COOKIE_NAME, csrf)
                .header(dev.vepo.contraponto.shared.security.CsrfTokenService.HEADER_NAME, csrf)
                .post("/forms/blogs/" + blogId + "/follow")

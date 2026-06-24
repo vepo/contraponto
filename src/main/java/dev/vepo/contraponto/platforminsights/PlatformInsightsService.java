@@ -12,7 +12,7 @@ import dev.vepo.contraponto.comment.PostCommentRepository;
 import dev.vepo.contraponto.dashboard.DailyMetric;
 import dev.vepo.contraponto.dashboard.MonthSeries;
 import dev.vepo.contraponto.highlight.PostTextHighlightRepository;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.UserAccess;
 import dev.vepo.contraponto.view.DailyUniqueVisitors;
 import dev.vepo.contraponto.view.ViewRepository;

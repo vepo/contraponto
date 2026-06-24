@@ -17,7 +17,7 @@ import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
 import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.seo.SeoMetadata;
 import dev.vepo.contraponto.seo.SeoService;
@@ -244,22 +244,18 @@ public class PostEndpoint {
 
     private Response resolveMainBlogPost(String username, String slug, HttpHeaders headers) {
         var post = postRepository.findMainBlogPost(username, slug);
-        if (post.isPresent()) {
-            return renderPost(post.get(), headers);
-        }
-        return blogRepository.findMainByOwnerUsername(username)
-                             .flatMap(blog -> redirectViaAlias(blog, slug))
-                             .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
+        return post.map(p -> renderPost(p, headers))
+                   .orElseGet(() -> blogRepository.findMainByOwnerUsername(username)
+                                                  .flatMap(blog -> redirectViaAlias(blog, slug))
+                                                  .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))));
     }
 
     private Response resolveSecondaryBlogPost(String username, String blogSlug, String slug, HttpHeaders headers) {
         var post = postRepository.findBlogPost(username, blogSlug, slug);
-        if (post.isPresent()) {
-            return renderPost(post.get(), headers);
-        }
-        return blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug)
-                             .flatMap(blog -> redirectViaAlias(blog, slug))
-                             .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug)));
+        return post.map(p -> renderPost(p, headers))
+                   .orElseGet(() -> blogRepository.findActiveByOwnerUsernameAndSlug(username, blogSlug)
+                                                  .flatMap(blog -> redirectViaAlias(blog, slug))
+                                                  .orElseThrow(() -> new NotFoundException("Post not found! username=%s slug=%s".formatted(username, slug))));
     }
 
     private List<Post> seriePostsFor(Post post) {

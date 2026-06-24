@@ -22,7 +22,8 @@ import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.serie.SerieRepository;
 import dev.vepo.contraponto.shared.infra.SiteBranding;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
+import dev.vepo.contraponto.shared.qute.SharedTemplateExtensions;
 import dev.vepo.contraponto.directory.AuthorProfilePaths;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.tag.AuthorTagUsage;
@@ -89,7 +90,7 @@ public class SeoService {
     }
 
     private String describePost(PublishedPostView view) {
-        String description = SeoDescription.toPlainText(TemplateExtensions.liveDescription(view.post()));
+        String description = SeoDescription.toPlainText(PostTemplateExtensions.liveDescription(view.post()));
         if (!description.isBlank()) {
             return description;
         }
@@ -193,7 +194,7 @@ public class SeoService {
     public SeoMetadata forPost(PublishedPostView view, BreadcrumbTrail breadcrumb) {
         Post post = view.post();
         User author = post.getAuthor();
-        String title = "%s · %s · %s".formatted(TemplateExtensions.liveTitle(view), author.getName(), siteBranding.seoName());
+        String title = "%s · %s · %s".formatted(PostTemplateExtensions.liveTitle(view), author.getName(), siteBranding.seoName());
         String description = describePost(view);
         String path = PostPaths.extractUrl(post);
         PostPublication live = view.live();
@@ -203,7 +204,7 @@ public class SeoService {
                                  .canonicalUrl(publicSiteUrl.absolute(path))
                                  .ogType(SeoOgType.ARTICLE)
                                  .jsonLd(structuredData.blogPosting(view, breadcrumb));
-        String cover = TemplateExtensions.coverUrl(post);
+        String cover = PostTemplateExtensions.coverUrl(post);
         if (cover != null) {
             builder.ogImageUrl(publicSiteUrl.absolute(cover));
         }

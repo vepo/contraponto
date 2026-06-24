@@ -12,7 +12,7 @@ import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import io.quarkus.qute.CheckedTemplate;

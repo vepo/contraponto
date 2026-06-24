@@ -18,7 +18,8 @@ import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SeriePaths;
 import dev.vepo.contraponto.serie.SerieRepository;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
+import dev.vepo.contraponto.shared.qute.SharedTemplateExtensions;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.directory.AuthorProfilePaths;
 import dev.vepo.contraponto.tag.TagPaths;
@@ -79,7 +80,7 @@ public class SitemapService {
         }
 
         for (Post post : postRepository.findPublishedForSitemap()) {
-            Optional<String> cover = Optional.ofNullable(TemplateExtensions.coverUrl(post));
+            Optional<String> cover = Optional.ofNullable(PostTemplateExtensions.coverUrl(post));
             urls.add(new SitemapUrl(PostPaths.extractUrl(post), lastModified(post), cover));
         }
         for (Blog blog : blogRepository.findAllActiveWithOwner()) {

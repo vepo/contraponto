@@ -1,6 +1,6 @@
 package dev.vepo.contraponto.blog;
 
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped

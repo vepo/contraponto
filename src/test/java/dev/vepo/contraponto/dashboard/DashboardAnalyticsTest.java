@@ -11,14 +11,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.App;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.TestTimes;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.WebTest;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import io.quarkus.test.common.http.TestHTTPResource;
 import jakarta.persistence.EntityManager;
 
@@ -37,7 +46,7 @@ class DashboardAnalyticsTest {
         var blogId = testUser.getDefaultBlog().getId();
         var sessionId = Given.inject(LoggedUserProvider.class).login(testUser).getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/manage/dashboard/components/analytics?blogId=" + blogId)
                .then()
                .statusCode(200)
@@ -49,7 +58,7 @@ class DashboardAnalyticsTest {
         var blogId = testUser.getDefaultBlog().getId();
         var sessionId = Given.inject(LoggedUserProvider.class).login(testUser).getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/manage/dashboard/components/analytics?blogId=" + blogId + "&compare=true")
                .then()
                .statusCode(200)
@@ -214,7 +223,7 @@ class DashboardAnalyticsTest {
         io.restassured.RestAssured.port = baseUrl.getPort();
         io.restassured.RestAssured.basePath = "";
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/manage/dashboard/components/analytics?blogId=" + otherBlogId)
                .then()
                .statusCode(404);

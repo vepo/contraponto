@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
@@ -24,7 +25,7 @@ class TemplateExtensionsRenderTest {
                         .withContent("# Heading")
                         .withPublished(true)
                         .persist();
-        assertThat(TemplateExtensions.render(post)).contains("<h1");
+        assertThat(PostTemplateExtensions.render(post)).contains("<h1");
     }
 
     @Test
@@ -37,7 +38,7 @@ class TemplateExtensionsRenderTest {
                         .withContent("{% youtube hPoHp0WhglA %}")
                         .withPublished(true)
                         .persist();
-        assertThat(TemplateExtensions.render(post)).contains("youtube.com/embed/hPoHp0WhglA");
+        assertThat(PostTemplateExtensions.render(post)).contains("youtube.com/embed/hPoHp0WhglA");
     }
 
     @BeforeEach

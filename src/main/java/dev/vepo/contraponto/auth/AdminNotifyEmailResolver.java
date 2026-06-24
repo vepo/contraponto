@@ -24,13 +24,12 @@ public class AdminNotifyEmailResolver {
     }
 
     public List<String> resolve() {
-        if (configuredEmails.isPresent() && !configuredEmails.get().isBlank()) {
-            return Arrays.stream(configuredEmails.get().split(","))
-                         .map(String::trim)
-                         .filter(email -> !email.isBlank())
-                         .distinct()
-                         .toList();
-        }
-        return userRepository.findAdministratorEmails();
+        return configuredEmails.filter(email -> !email.isBlank())
+                               .map(email -> Arrays.stream(email.split(","))
+                                                   .map(String::trim)
+                                                   .filter(part -> !part.isBlank())
+                                                   .distinct()
+                                                   .toList())
+                               .orElseGet(userRepository::findAdministratorEmails);
     }
 }

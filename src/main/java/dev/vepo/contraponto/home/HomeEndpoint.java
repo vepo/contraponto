@@ -12,7 +12,7 @@ import dev.vepo.contraponto.tag.AuthorTagUsage;
 import dev.vepo.contraponto.tag.TagUsage;
 import java.util.Collections;
 import java.util.List;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import io.quarkus.qute.CheckedTemplate;

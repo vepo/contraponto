@@ -1,4 +1,4 @@
-package dev.vepo.contraponto.shared.infra;
+package dev.vepo.contraponto.user;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -6,10 +6,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.security.SessionStore;
-import dev.vepo.contraponto.user.User;
-import dev.vepo.contraponto.user.UserRepository;
 import io.vertx.core.http.HttpServerRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
@@ -53,7 +51,7 @@ public class LoggedUserProvider {
     @Produces
     @RequestScoped
     public LoggedUser loadLoggedUser() {
-        var cookie = request.getCookie(LoginEndpoint.SESSION_COOKIE_NAME);
+        var cookie = request.getCookie(SessionConstants.SESSION_COOKIE_NAME);
         if (cookie == null) {
             return new LoggedUser();
         }

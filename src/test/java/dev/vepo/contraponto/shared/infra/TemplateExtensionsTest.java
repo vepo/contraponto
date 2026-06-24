@@ -10,14 +10,21 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogTemplateExtensions;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.notification.Notification;
+import dev.vepo.contraponto.notification.NotificationTemplateExtensions;
 import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.tag.Tag;
+import dev.vepo.contraponto.tag.TagTemplateExtensions;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.user.UserTemplateExtensions;
+import dev.vepo.contraponto.shared.qute.SharedTemplateExtensions;
 
 @UnitTest
 class TemplateExtensionsTest {
@@ -27,8 +34,8 @@ class TemplateExtensionsTest {
         var user = new User();
         user.setName("José Silva");
         var logged = new LoggedUser(user, "session");
-        assertThat(TemplateExtensions.avatarUrl(logged)).startsWith("/components/avatar?name=");
-        assertThat(TemplateExtensions.avatarUrl((LoggedUser) null)).isEmpty();
+        assertThat(UserTemplateExtensions.avatarUrl(logged)).startsWith("/components/avatar?name=");
+        assertThat(UserTemplateExtensions.avatarUrl((LoggedUser) null)).isEmpty();
     }
 
     @Test
@@ -38,7 +45,7 @@ class TemplateExtensionsTest {
         var user = new User();
         user.setName("Ada Lovelace");
         user.setProfilePicture(picture);
-        assertThat(TemplateExtensions.avatarUrl(user)).isEqualTo("/api/images/profile.png");
+        assertThat(UserTemplateExtensions.avatarUrl(user)).isEqualTo("/api/images/profile.png");
     }
 
     @Test
@@ -49,12 +56,12 @@ class TemplateExtensionsTest {
         blog.setOwner(owner);
         blog.setSlug("architecture-notes");
         blog.setMain(false);
-        assertThat(TemplateExtensions.blogGridLoadMorePath(blog)).isEqualTo("/bob/architecture-notes/components/grid");
+        assertThat(BlogTemplateExtensions.blogGridLoadMorePath(blog)).isEqualTo("/bob/architecture-notes/components/grid");
     }
 
     @Test
     void blogGridLoadMorePathFormatsUsername() {
-        assertThat(TemplateExtensions.blogGridLoadMorePath("alice")).isEqualTo("/alice/components/grid");
+        assertThat(BlogTemplateExtensions.blogGridLoadMorePath("alice")).isEqualTo("/alice/components/grid");
     }
 
     @Test
@@ -63,7 +70,7 @@ class TemplateExtensionsTest {
         cover.setUrl("/api/images/draft.png");
         var post = new Post();
         post.setCover(cover);
-        assertThat(TemplateExtensions.coverUrl(post)).isEqualTo("/api/images/draft.png");
+        assertThat(PostTemplateExtensions.coverUrl(post)).isEqualTo("/api/images/draft.png");
     }
 
     @Test
@@ -74,58 +81,58 @@ class TemplateExtensionsTest {
         live.setCover(cover);
         var post = new Post();
         post.setLivePublication(live);
-        assertThat(TemplateExtensions.coverUrl(post)).isEqualTo("/api/images/cover.png");
+        assertThat(PostTemplateExtensions.coverUrl(post)).isEqualTo("/api/images/cover.png");
     }
 
     @Test
     void coverUrlReturnsNullWhenPostMissing() {
-        assertThat(TemplateExtensions.coverUrl(null)).isNull();
+        assertThat(PostTemplateExtensions.coverUrl(null)).isNull();
     }
 
     @Test
     void escapeHtmlEscapesSpecialCharacters() {
-        assertThat(TemplateExtensions.escapeHtml("<a & \"'>")).isEqualTo("&lt;a &amp; &quot;&#39;&gt;");
+        assertThat(SharedTemplateExtensions.escapeHtml("<a & \"'>")).isEqualTo("&lt;a &amp; &quot;&#39;&gt;");
     }
 
     @Test
     void escapeHtmlReturnsNullLiteralForNull() {
-        assertThat(TemplateExtensions.escapeHtml(null)).isEqualTo("null");
+        assertThat(SharedTemplateExtensions.escapeHtml(null)).isEqualTo("null");
     }
 
     @Test
     void firstNameReturnsEmptyWhenUserMissing() {
-        assertThat(TemplateExtensions.firstName(null)).isEmpty();
+        assertThat(UserTemplateExtensions.firstName(null)).isEmpty();
     }
 
     @Test
     void firstNameReturnsLeadingTokenFromFullName() {
         var user = new User();
         user.setName("Ada Lovelace");
-        assertThat(TemplateExtensions.firstName(new LoggedUser(user, "s"))).isEqualTo("Ada");
+        assertThat(UserTemplateExtensions.firstName(new LoggedUser(user, "s"))).isEqualTo("Ada");
     }
 
     @Test
     void formatDateFormatsTimestamp() {
-        var formatted = TemplateExtensions.formatDate(LocalDateTime.of(2026, 5, 17, 14, 30));
+        var formatted = SharedTemplateExtensions.formatDate(LocalDateTime.of(2026, 5, 17, 14, 30));
         assertThat(formatted).isEqualTo("17/05/2026 14:30");
     }
 
     @Test
     void formatDateReturnsEmptyForNull() {
-        assertThat(TemplateExtensions.formatDate(null)).isEmpty();
+        assertThat(SharedTemplateExtensions.formatDate(null)).isEmpty();
     }
 
     @Test
     void formatReadingDurationFormatsMinutesAndHours() {
-        assertThat(TemplateExtensions.formatReadingDuration(30)).isEqualTo("< 1 min");
-        assertThat(TemplateExtensions.formatReadingDuration(120)).isEqualTo("2 min");
-        assertThat(TemplateExtensions.formatReadingDuration(3900)).isEqualTo("1h 5m");
+        assertThat(SharedTemplateExtensions.formatReadingDuration(30)).isEqualTo("< 1 min");
+        assertThat(SharedTemplateExtensions.formatReadingDuration(120)).isEqualTo("2 min");
+        assertThat(SharedTemplateExtensions.formatReadingDuration(3900)).isEqualTo("1h 5m");
     }
 
     @Test
     void formatReadingTimeTotalFormatsMonthTotals() {
-        assertThat(TemplateExtensions.formatReadingTimeTotal(0)).isEqualTo("0 min");
-        assertThat(TemplateExtensions.formatReadingTimeTotal(5400)).isEqualTo("1h 30m");
+        assertThat(SharedTemplateExtensions.formatReadingTimeTotal(0)).isEqualTo("0 min");
+        assertThat(SharedTemplateExtensions.formatReadingTimeTotal(5400)).isEqualTo("1h 30m");
     }
 
     @Test
@@ -139,7 +146,7 @@ class TemplateExtensionsTest {
         var notification = new Notification();
         notification.setType(NotificationType.NEW_FOLLOW);
         notification.setBlog(blog);
-        assertThat(TemplateExtensions.linkUrl(notification)).isEqualTo("/bob");
+        assertThat(NotificationTemplateExtensions.linkUrl(notification)).isEqualTo("/bob");
     }
 
     @Test
@@ -152,8 +159,8 @@ class TemplateExtensionsTest {
         live.setPublishedAt(LocalDateTime.of(2026, 2, 1, 9, 0));
         post.setLivePublication(live);
         var view = new PublishedPostView(post, live);
-        assertThat(TemplateExtensions.liveContent(post)).isEqualTo("live");
-        assertThat(TemplateExtensions.livePublishedAt(view)).isEqualTo(live.getPublishedAt());
+        assertThat(PostTemplateExtensions.liveContent(post)).isEqualTo("live");
+        assertThat(PostTemplateExtensions.livePublishedAt(view)).isEqualTo(live.getPublishedAt());
     }
 
     @Test
@@ -162,9 +169,9 @@ class TemplateExtensionsTest {
         post.setDescription("Draft **summary**");
         var live = new PostPublication();
         live.setDescription("Published **summary**");
-        assertThat(TemplateExtensions.liveDescription(post)).isEqualTo("Draft **summary**");
+        assertThat(PostTemplateExtensions.liveDescription(post)).isEqualTo("Draft **summary**");
         post.setLivePublication(live);
-        assertThat(TemplateExtensions.liveDescription(post)).isEqualTo("Published **summary**");
+        assertThat(PostTemplateExtensions.liveDescription(post)).isEqualTo("Published **summary**");
     }
 
     @Test
@@ -175,14 +182,14 @@ class TemplateExtensionsTest {
         post.setTags(List.of());
         var live = new PostPublication();
         live.setTags(List.of(tag));
-        assertThat(TemplateExtensions.liveTags(new PublishedPostView(post, live))).containsExactly(tag);
+        assertThat(PostTemplateExtensions.liveTags(new PublishedPostView(post, live))).containsExactly(tag);
     }
 
     @Test
     void liveTitleOnPostFallsBackToDraftTitle() {
         var post = new Post();
         post.setTitle("Draft title");
-        assertThat(TemplateExtensions.liveTitle(post)).isEqualTo("Draft title");
+        assertThat(PostTemplateExtensions.liveTitle(post)).isEqualTo("Draft title");
     }
 
     @Test
@@ -191,7 +198,7 @@ class TemplateExtensionsTest {
         post.setTitle("Draft");
         var live = new PostPublication();
         live.setTitle("Published");
-        assertThat(TemplateExtensions.liveTitle(new PublishedPostView(post, live))).isEqualTo("Published");
+        assertThat(PostTemplateExtensions.liveTitle(new PublishedPostView(post, live))).isEqualTo("Published");
     }
 
     @Test
@@ -199,12 +206,12 @@ class TemplateExtensionsTest {
         var post = new Post();
         var live = new PostPublication();
         live.setVersion(3);
-        assertThat(TemplateExtensions.liveVersion(new PublishedPostView(post, live))).isEqualTo(3);
+        assertThat(PostTemplateExtensions.liveVersion(new PublishedPostView(post, live))).isEqualTo(3);
     }
 
     @Test
     void liveVersionReturnsZeroWithoutPublication() {
-        assertThat(TemplateExtensions.liveVersion(new PublishedPostView(new Post(), null))).isZero();
+        assertThat(PostTemplateExtensions.liveVersion(new PublishedPostView(new Post(), null))).isZero();
     }
 
     @Test
@@ -220,7 +227,7 @@ class TemplateExtensionsTest {
         notification.setType(NotificationType.GIT_SYNC_FAILED);
         notification.setBlog(blog);
 
-        assertThat(TemplateExtensions.message(notification)).isEqualTo("Git sync failed for Alice on Systems");
+        assertThat(NotificationTemplateExtensions.message(notification)).isEqualTo("Git sync failed for Alice on Systems");
     }
 
     @Test
@@ -242,24 +249,24 @@ class TemplateExtensionsTest {
         proposal.setType(NotificationType.COMMON_HIGHLIGHT_PROPOSAL);
         proposal.setBlog(blog);
         proposal.setPost(post);
-        assertThat(TemplateExtensions.message(proposal)).contains("highlighted");
-        assertThat(TemplateExtensions.linkUrl(proposal)).isEqualTo("/writing/highlights");
+        assertThat(NotificationTemplateExtensions.message(proposal)).contains("highlighted");
+        assertThat(NotificationTemplateExtensions.linkUrl(proposal)).isEqualTo("/writing/highlights");
 
         var publicNote = new Notification();
         publicNote.setType(NotificationType.PUBLIC_HIGHLIGHT_NOTE);
         publicNote.setBlog(blog);
         publicNote.setPost(post);
         publicNote.setActor(actor);
-        assertThat(TemplateExtensions.message(publicNote)).contains("public highlight note");
-        assertThat(TemplateExtensions.linkUrl(publicNote)).isEqualTo("/writing/highlights");
+        assertThat(NotificationTemplateExtensions.message(publicNote)).contains("public highlight note");
+        assertThat(NotificationTemplateExtensions.linkUrl(publicNote)).isEqualTo("/writing/highlights");
 
         var response = new Notification();
         response.setType(NotificationType.POST_RESPONSE);
         response.setBlog(blog);
         response.setPost(post);
         response.setActor(actor);
-        assertThat(TemplateExtensions.message(response)).contains("response");
-        assertThat(TemplateExtensions.linkUrl(response)).isEqualTo("/writing/highlights");
+        assertThat(NotificationTemplateExtensions.message(response)).contains("response");
+        assertThat(NotificationTemplateExtensions.linkUrl(response)).isEqualTo("/writing/highlights");
     }
 
     @Test
@@ -281,8 +288,8 @@ class TemplateExtensionsTest {
         notification.setPost(post);
         notification.setActor(actor);
 
-        assertThat(TemplateExtensions.message(notification)).isEqualTo("Alice commented on launch");
-        assertThat(TemplateExtensions.linkUrl(notification)).isEqualTo("/bob/post/launch#comments");
+        assertThat(NotificationTemplateExtensions.message(notification)).isEqualTo("Alice commented on launch");
+        assertThat(NotificationTemplateExtensions.linkUrl(notification)).isEqualTo("/bob/post/launch#comments");
     }
 
     @Test
@@ -302,8 +309,8 @@ class TemplateExtensionsTest {
         notification.setBlog(blog);
         notification.setPost(post);
 
-        assertThat(TemplateExtensions.message(notification)).isEqualTo("Bob Blog published Launch");
-        assertThat(TemplateExtensions.linkUrl(notification)).isEqualTo("/bob/post/launch");
+        assertThat(NotificationTemplateExtensions.message(notification)).isEqualTo("Bob Blog published Launch");
+        assertThat(NotificationTemplateExtensions.linkUrl(notification)).isEqualTo("/bob/post/launch");
     }
 
     @Test
@@ -316,13 +323,13 @@ class TemplateExtensionsTest {
         follow.setType(NotificationType.NEW_FOLLOW);
         follow.setBlog(blog);
         follow.setActor(actor);
-        assertThat(TemplateExtensions.message(follow)).isEqualTo("Fan started following Studio");
+        assertThat(NotificationTemplateExtensions.message(follow)).isEqualTo("Fan started following Studio");
 
         var subscribe = new Notification();
         subscribe.setType(NotificationType.NEW_SUBSCRIBE);
         subscribe.setBlog(blog);
         subscribe.setActor(actor);
-        assertThat(TemplateExtensions.message(subscribe)).isEqualTo("Fan subscribed by email to Studio");
+        assertThat(NotificationTemplateExtensions.message(subscribe)).isEqualTo("Fan subscribed by email to Studio");
     }
 
     @Test
@@ -341,24 +348,24 @@ class TemplateExtensionsTest {
         notification.setType(NotificationType.NEW_POST);
         notification.setBlog(blog);
         notification.setPost(post);
-        assertThat(TemplateExtensions.message(notification)).isEqualTo("Bob Blog published quiet-launch");
+        assertThat(NotificationTemplateExtensions.message(notification)).isEqualTo("Bob Blog published quiet-launch");
     }
 
     @Test
     void readTimeReturnsOneMinuteForBriefContent() {
-        assertThat(TemplateExtensions.readTime("hello")).isEqualTo("1 min read");
+        assertThat(SharedTemplateExtensions.readTime("hello")).isEqualTo("1 min read");
     }
 
     @Test
     void readTimeReturnsZeroMinutesForEmptyContent() {
-        assertThat(TemplateExtensions.readTime(null)).isEqualTo("0 min read");
-        assertThat(TemplateExtensions.readTime("   ")).isEqualTo("0 min read");
+        assertThat(SharedTemplateExtensions.readTime(null)).isEqualTo("0 min read");
+        assertThat(SharedTemplateExtensions.readTime("   ")).isEqualTo("0 min read");
     }
 
     @Test
     void readTimeRoundsUpWordCount() {
         String words = "word ".repeat(250).trim();
-        assertThat(TemplateExtensions.readTime(words)).isEqualTo("2 min read");
+        assertThat(SharedTemplateExtensions.readTime(words)).isEqualTo("2 min read");
     }
 
     @Test
@@ -366,11 +373,11 @@ class TemplateExtensionsTest {
         var post = new Post();
         var live = new PostPublication();
         live.setVersion(2);
-        assertThat(TemplateExtensions.showUpdated(new PublishedPostView(post, live))).isTrue();
+        assertThat(PostTemplateExtensions.showUpdated(new PublishedPostView(post, live))).isTrue();
     }
 
     @Test
     void tagGridLoadMorePathFormatsSlug() {
-        assertThat(TemplateExtensions.tagGridLoadMorePath("java")).isEqualTo("/tags/java/components/grid");
+        assertThat(TagTemplateExtensions.tagGridLoadMorePath("java")).isEqualTo("/tags/java/components/grid");
     }
 }

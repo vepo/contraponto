@@ -6,9 +6,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.security.CsrfTokenService;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 
 @QuarkusIntegrationTest
 class CsrfBootstrapTest {
@@ -25,7 +29,7 @@ class CsrfBootstrapTest {
 
         var response = given().redirects()
                               .follow(true)
-                              .cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+                              .cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                               .when()
                               .get("/");
 

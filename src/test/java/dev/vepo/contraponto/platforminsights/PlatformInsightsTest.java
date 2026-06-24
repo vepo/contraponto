@@ -10,14 +10,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.App;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.TestTimes;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.WebTest;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.Role;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import io.quarkus.test.common.http.TestHTTPResource;
 import jakarta.persistence.EntityManager;
 
@@ -56,7 +65,7 @@ class PlatformInsightsTest {
         io.restassured.RestAssured.port = baseUrl.getPort();
         io.restassured.RestAssured.basePath = "";
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/administration/insights/components/analytics?year=%d&month=%d".formatted(TestTimes.REFERENCE_MONTH.getYear(),
                                                                                                TestTimes.REFERENCE_MONTH.getMonthValue()))
                .then()
@@ -81,7 +90,7 @@ class PlatformInsightsTest {
         io.restassured.RestAssured.port = baseUrl.getPort();
         io.restassured.RestAssured.basePath = "";
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/administration/insights/components/analytics")
                .then()
                .statusCode(403);

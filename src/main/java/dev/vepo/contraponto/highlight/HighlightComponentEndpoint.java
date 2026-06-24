@@ -5,7 +5,7 @@ import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.postresponse.PostResponse;
 import dev.vepo.contraponto.postresponse.PostResponseService;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;

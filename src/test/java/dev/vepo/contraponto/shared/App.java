@@ -36,8 +36,10 @@ import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.shared.security.CsrfTokenService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.i18n.LocalePreference;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
+import dev.vepo.contraponto.user.LoggedUserProvider;
+import dev.vepo.contraponto.blog.BlogTemplateExtensions;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
 import jakarta.ws.rs.core.Response.Status;
@@ -2463,7 +2465,7 @@ public class App {
     }
 
     private void _logout() {
-        driver.manage().deleteCookieNamed(dev.vepo.contraponto.components.forms.LoginEndpoint.SESSION_COOKIE_NAME);
+        driver.manage().deleteCookieNamed(SessionConstants.SESSION_COOKIE_NAME);
         driver.navigate().refresh();
         waitForReady();
     }
@@ -2975,12 +2977,12 @@ public class App {
     }
 
     public BlogPage goTo(Blog blog) {
-        _goTo(TemplateExtensions.url(blog));
+        _goTo(BlogTemplateExtensions.url(blog));
         return new BlogPage();
     }
 
     public PostPage goTo(Post post) {
-        _goTo(TemplateExtensions.url(post));
+        _goTo(PostTemplateExtensions.url(post));
         waitForReady();
         return new PostPage();
     }
@@ -3077,9 +3079,9 @@ public class App {
         driver.manage().deleteAllCookies();
         access();
         driver.manage()
-              .addCookie(new Cookie.Builder(LoginEndpoint.SESSION_COOKIE_NAME, loggedUser.getSessionId())
-                                                                                                         .path("/")
-                                                                                                         .build());
+              .addCookie(new Cookie.Builder(SessionConstants.SESSION_COOKIE_NAME, loggedUser.getSessionId())
+                                                                                                            .path("/")
+                                                                                                            .build());
         _goTo("/");
         return this;
     }

@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.User;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;

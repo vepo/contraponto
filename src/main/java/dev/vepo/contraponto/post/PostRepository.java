@@ -38,12 +38,16 @@ public class PostRepository {
 
     private EntityManager entityManager;
 
-    private PostPublicationRepository publicationRepository;
+    private final PostPublicationRepository publicationRepository;
+    private final PostFeaturedRepository postFeaturedRepository;
 
     @Inject
-    public PostRepository(EntityManager entityManager, PostPublicationRepository publicationRepository) {
+    public PostRepository(EntityManager entityManager,
+                          PostPublicationRepository publicationRepository,
+                          PostFeaturedRepository postFeaturedRepository) {
         this.entityManager = entityManager;
         this.publicationRepository = publicationRepository;
+        this.postFeaturedRepository = postFeaturedRepository;
     }
 
     private void attachLatestPublication(Post post) {
@@ -71,16 +75,6 @@ public class PostRepository {
                                          """, Long.class)
                             .setParameter("authorId", authorId)
                             .setParameter("published", published)
-                            .getSingleResult();
-    }
-
-    private long countFeatured() {
-        return entityManager.createQuery("""
-                                         SELECT COUNT(p)
-                                         FROM Post p
-                                         WHERE p.published = true AND
-                                               p.featured = true
-                                         """, Long.class)
                             .getSingleResult();
     }
 
@@ -311,21 +305,7 @@ public class PostRepository {
     }
 
     public Page<Post> findFeatured(PageQuery query) {
-        return new Page<>(attachLatestPublications(entityManager.createQuery("""
-                                                                             SELECT DISTINCT p FROM Post p
-                                                                             JOIN FETCH p.blog b
-                                                                             JOIN FETCH b.owner o
-                                                                             LEFT JOIN FETCH p.tags
-                                                                             WHERE p.published = true AND
-                                                                                   p.featured = true
-                                                                             ORDER BY p.publishedAt DESC
-                                                                             """, Post.class)
-                                                                .setMaxResults(query.maxResults())
-                                                                .setFirstResult(query.skip())
-                                                                .getResultList()),
-                          query.page(),
-                          query.limit(),
-                          countFeatured());
+        return postFeaturedRepository.findFeatured(query);
     }
 
     public Optional<Post> findMainBlogPost(String username, String slug) {

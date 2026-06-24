@@ -6,7 +6,7 @@ import java.time.ZoneId;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostEngagementService;
 import dev.vepo.contraponto.post.PostRepository;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.view.SessionIdProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

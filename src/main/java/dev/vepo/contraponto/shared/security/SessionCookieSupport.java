@@ -2,7 +2,6 @@ package dev.vepo.contraponto.shared.security;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -18,13 +17,12 @@ public class SessionCookieSupport {
     }
 
     public String buildSessionCookie(String sessionId) {
-        var builder = new StringBuilder();
-        builder.append("%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax".formatted(LoginEndpoint.SESSION_COOKIE_NAME,
-                                                                                     sessionId,
-                                                                                     ttlSeconds));
+        var cookie = "%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax".formatted(SessionConstants.SESSION_COOKIE_NAME,
+                                                                                   sessionId,
+                                                                                   ttlSeconds);
         if (secureCookies) {
-            builder.append("; Secure");
+            return "%s; Secure".formatted(cookie);
         }
-        return builder.toString();
+        return cookie;
     }
 }

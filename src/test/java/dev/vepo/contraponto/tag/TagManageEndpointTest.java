@@ -9,12 +9,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.Role;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 import io.quarkus.test.common.http.TestHTTPResource;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.security.SessionConstants;
 
 @QuarkusIntegrationTest
 class TagManageEndpointTest {
@@ -29,14 +35,14 @@ class TagManageEndpointTest {
     void editor_can_open_manage_and_edit_pages() {
         var sessionId = Given.inject(LoggedUserProvider.class).login(editor).getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/editor/tags")
                .then()
                .statusCode(200)
                .body(containsString("Tags"))
                .body(containsString("news"));
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/tags/news/edit")
                .then()
                .statusCode(200)
@@ -47,7 +53,7 @@ class TagManageEndpointTest {
     void reader_cannot_open_manage_page() {
         var sessionId = Given.inject(LoggedUserProvider.class).login(reader).getSessionId();
 
-        given().cookie(LoginEndpoint.SESSION_COOKIE_NAME, sessionId)
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
                .get("/editor/tags")
                .then()
                .statusCode(403);

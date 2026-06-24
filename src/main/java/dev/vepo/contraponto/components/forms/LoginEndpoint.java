@@ -7,7 +7,8 @@ import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
 import dev.vepo.contraponto.shared.security.SessionCookieSupport;
 import dev.vepo.contraponto.user.UserRepository;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
@@ -32,9 +33,8 @@ public class LoginEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginEndpoint.class);
 
-    // Constants for better maintainability
-    public static final String SESSION_COOKIE_NAME = "__session";
-    private static final String SESSION_COOKIE_PATH = "/";
+    // Deprecated alias — prefer SessionConstants.SESSION_COOKIE_NAME
+    public static final String SESSION_COOKIE_NAME = SessionConstants.SESSION_COOKIE_NAME;
     private static final String ERROR_MESSAGE_HTML = "<div class='error-message' data-i18n='%s'>%s</div>";
     private static final String MODAL_CLEAR_OOB =
             "<div id=\"modal-container\" hx-swap-oob=\"innerHTML\"></div>";

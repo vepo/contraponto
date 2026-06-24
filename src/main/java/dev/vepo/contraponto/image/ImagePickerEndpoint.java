@@ -3,7 +3,7 @@ package dev.vepo.contraponto.image;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import dev.vepo.contraponto.user.User;

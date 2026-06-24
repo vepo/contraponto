@@ -2,8 +2,8 @@ package dev.vepo.contraponto.auth;
 
 import java.util.Optional;
 
-import dev.vepo.contraponto.shared.infra.LoggedUser;
-import dev.vepo.contraponto.shared.infra.LoggedUserProvider;
+import dev.vepo.contraponto.user.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUserProvider;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;

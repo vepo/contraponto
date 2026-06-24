@@ -18,7 +18,7 @@ class CommentManageTest {
 
     @Test
     void authorApprovesPendingCommentFromManagePage(App app) {
-        Given.inject(dev.vepo.contraponto.shared.infra.LoggedUserProvider.class).login(reader);
+        Given.inject(dev.vepo.contraponto.user.LoggedUserProvider.class).login(reader);
         Given.transaction(() -> {
             var comment = new PostComment();
             comment.setPost(post);

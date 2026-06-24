@@ -3,10 +3,7 @@ package dev.vepo.contraponto.shared.infra;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import dev.vepo.contraponto.notification.NotificationHtmxConfig;
-import dev.vepo.contraponto.rss.RssFeedPaths;
 import dev.vepo.contraponto.shared.htmx.HtmxRequest;
-import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.i18n.CurrentLocale;
 import dev.vepo.contraponto.shared.i18n.LocalePreference;
 import dev.vepo.contraponto.shared.security.CurrentCsrfToken;
@@ -15,11 +12,6 @@ import jakarta.enterprise.inject.spi.CDI;
 
 @TemplateGlobal
 public class Globals {
-
-    @TemplateGlobal(name = "authRefreshTrigger")
-    public static String authRefreshTrigger() {
-        return HtmxTriggers.AUTH_REFRESH_TRIGGER;
-    }
 
     @TemplateGlobal(name = "csrfToken")
     public static String csrfToken() {
@@ -63,11 +55,6 @@ public class Globals {
         return CDI.current().select(LocalePreference.class).get().toBcp47(locale);
     }
 
-    @TemplateGlobal(name = "notificationBadgeTrigger")
-    public static String notificationBadgeTrigger() {
-        return CDI.current().select(NotificationHtmxConfig.class).get().badgeTrigger();
-    }
-
     @TemplateGlobal(name = "pageAssets")
     public static PageAssets pageAssets() {
         var current = CDI.current().select(CurrentPageAssets.class);
@@ -75,15 +62,6 @@ public class Globals {
             return PageAssets.PUBLIC_READ;
         }
         return current.get().get();
-    }
-
-    @TemplateGlobal(name = "session")
-    public static LoggedUser session() {
-        var loggedUser = CDI.current().select(LoggedUser.class);
-        if (!loggedUser.isResolvable()) {
-            return new LoggedUser();
-        }
-        return loggedUser.get();
     }
 
     @TemplateGlobal(name = "siteIntegrationEnabled")
@@ -106,17 +84,12 @@ public class Globals {
         return CDI.current().select(SiteBranding.class).get().displayName();
     }
 
-    @TemplateGlobal(name = "siteRssFeedUrl")
-    public static String siteRssFeedUrl() {
-        return RssFeedPaths.siteFeed();
-    }
-
     @TemplateGlobal(name = "siteSeoName")
     public static String siteSeoName() {
         return CDI.current().select(SiteBranding.class).get().seoName();
     }
 
     private Globals() {
-        /* This utility class should not be instantiated */
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 }

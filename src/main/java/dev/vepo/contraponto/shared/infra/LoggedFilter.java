@@ -6,7 +6,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.components.forms.LoginEndpoint;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.user.LoggedUserProvider;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -29,7 +30,7 @@ public class LoggedFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        Optional.ofNullable(requestContext.getCookies().get(LoginEndpoint.SESSION_COOKIE_NAME))
+        Optional.ofNullable(requestContext.getCookies().get(SessionConstants.SESSION_COOKIE_NAME))
                 .flatMap(sessionId -> loggedUserProvider.find(sessionId.getValue()))
                 .ifPresentOrElse(user -> logger.info("User found! user={}", user),
                                  () -> requestContext.abortWith(Response.seeOther(UriBuilder.fromPath("/")

@@ -3,7 +3,7 @@ package dev.vepo.contraponto.highlight;
 import dev.vepo.contraponto.postresponse.PostResponseManageRow;
 import dev.vepo.contraponto.postresponse.PostResponseRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.shared.infra.LoggedUser;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
 import io.quarkus.qute.CheckedTemplate;

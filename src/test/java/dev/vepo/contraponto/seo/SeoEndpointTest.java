@@ -7,8 +7,8 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.infra.TemplateExtensions;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
@@ -43,7 +43,7 @@ class SeoEndpointTest {
                         .withContent("Body content for the canonical post.")
                         .withAuthor(author)
                         .persist();
-        String postPath = TemplateExtensions.url(post);
+        String postPath = PostTemplateExtensions.url(post);
 
         String html = given().when()
                              .get(postPath)
