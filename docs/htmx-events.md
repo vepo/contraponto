@@ -29,6 +29,10 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 - **Ctrl/Cmd/Shift/middle-click** on those anchors: `main.js` (`setupModifierKeyNavigation`) cancels the HTMX request and opens `href` (or `hx-push-url`) in a new tab. Without `href`, the browser cannot open a new tab; without the handler, HTMX would still swap `#main` in place.
 - **`loggedOut`** on a **protected path**: `main.js` redirects to `/` (documented exception).
 
+### Author subdomain → platform hub (blog subdomain enabled)
+
+On `{username}.{base-domain}`, reserved platform paths (`/manage`, `/administration`, `/reading`, …) are not rewritten to `/{username}/…`. A normal GET returns **302** to the platform host (`blogs.{base-domain}`). HTMX cannot follow that cross-origin redirect, so `BlogSubdomainFilter` responds to **`HX-Request: true`** with **`HX-Redirect`** (full-page navigation to the same platform URL). Auth modals stay on the author host (`/auth/modal` is not redirected). Blog pagination fragments (`/components/grid`) rewrite to `/{username}/components/grid` on the author host.
+
 ### SEO head sync (HTMX navigation)
 
 Public page templates include `{#include components/seo-oob seo=seo /}`; `seo-oob` renders only when `HX-Request: true` so a normal GET has a single canonical in `<head>` (no duplicate tags in `<body>` for crawlers). HTMX navigations OOB-swap `#seo-head` (title, description, canonical, Open Graph, JSON-LD) when `main` is replaced.

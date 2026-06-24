@@ -34,6 +34,7 @@ public final class CustomPagePaths {
                                                                 "dashboard",
                                                                 "profile",
                                                                 "review",
+                                                                "reading",
                                                                 "pages",
                                                                 "blogs",
                                                                 "users",

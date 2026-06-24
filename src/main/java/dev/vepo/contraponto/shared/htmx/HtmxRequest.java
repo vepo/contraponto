@@ -9,6 +9,10 @@ import jakarta.enterprise.context.RequestScoped;
 @RequestScoped
 public class HtmxRequest {
 
+    public static final String REDIRECT_HEADER = "HX-Redirect";
+
+    public static final String REQUEST_HEADER = "HX-Request";
+
     private boolean active;
 
     public boolean isActive() {

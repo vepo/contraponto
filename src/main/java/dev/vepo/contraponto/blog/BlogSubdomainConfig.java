@@ -15,9 +15,9 @@ public class BlogSubdomainConfig {
 
     private static final Set<String> PLATFORM_ONLY_ROOT_SEGMENTS = Set.of("authors", "explore", "robots.txt", "sitemap.xml", "openapi.yaml", "openapi");
 
-    private static final Set<String> SUBDOMAIN_AUTHOR_ROOT_SEGMENTS = Set.of("feed", "main-blog", "page", "post", "serie");
+    private static final Set<String> SUBDOMAIN_AUTHOR_ROOT_SEGMENTS = Set.of("components", "feed", "main-blog", "page", "post", "serie");
 
-    private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("js", "style", "images", "i18n", "q", "api");
+    private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("auth", "js", "style", "images", "i18n", "q", "api");
 
     private static final Set<String> SKIP_REWRITE_EXACT = Set.of("favicon.ico", "favicon.svg", "robots.txt");
 

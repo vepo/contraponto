@@ -15,7 +15,9 @@ class BlogSubdomainConfigTest {
 
         assertThat(config.isPlatformOnlyRootSegment("post")).isFalse();
         assertThat(config.isPlatformOnlyRootSegment("feed")).isFalse();
+        assertThat(config.isPlatformOnlyRootSegment("components")).isFalse();
         assertThat(config.isPlatformOnlyRootSegment("manage")).isTrue();
+        assertThat(config.isPlatformOnlyRootSegment("reading")).isTrue();
     }
 
     @Test
@@ -32,6 +34,13 @@ class BlogSubdomainConfigTest {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 
         assertThat(config.platformUrl("/manage")).isEqualTo("https://blogs.commit-mestre.dev/manage");
+    }
+
+    @Test
+    void shouldSkipSubdomainRewrite_forAuthModal() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+
+        assertThat(config.shouldSkipSubdomainRewrite("/auth/modal")).isTrue();
     }
 
     @Test

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import java.net.URI;
 
+import dev.vepo.contraponto.shared.htmx.HtmxRequest;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -15,7 +16,6 @@ import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.ext.Provider;
-import java.net.URI;
 
 @PreMatching
 @Provider
@@ -33,6 +33,10 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
             return Optional.empty();
         }
         return Optional.of(segments.get(0));
+    }
+
+    private static boolean isHtmxRequest(ContainerRequestContext requestContext) {
+        return "true".equalsIgnoreCase(requestContext.getHeaderString(HtmxRequest.REQUEST_HEADER));
     }
 
     private static String prependUsername(String username, String path) {
@@ -86,9 +90,16 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
 
         var firstSegment = firstPathSegment(path);
         if (firstSegment.isPresent() && config.isPlatformOnlyRootSegment(firstSegment.get())) {
-            requestContext.abortWith(Response.status(Response.Status.FOUND)
-                                             .location(URI.create(config.platformUrl(path)))
-                                             .build());
+            var platformUrl = config.platformUrl(path);
+            if (isHtmxRequest(requestContext)) {
+                requestContext.abortWith(Response.ok()
+                                                 .header(HtmxRequest.REDIRECT_HEADER, platformUrl)
+                                                 .build());
+            } else {
+                requestContext.abortWith(Response.status(Response.Status.FOUND)
+                                                 .location(URI.create(platformUrl))
+                                                 .build());
+            }
             return;
         }
 

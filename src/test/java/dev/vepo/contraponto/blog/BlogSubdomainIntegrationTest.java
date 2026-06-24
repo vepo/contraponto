@@ -69,6 +69,53 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
+    void subdomainHost_platformRouteReturnsHxRedirectForHtmx() {
+        given().header("Host", "subdom-author.localhost")
+               .header("HX-Request", "true")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/administration")
+               .then()
+               .statusCode(200)
+               .header("HX-Redirect", "https://blogs.localhost/administration");
+    }
+
+    @Test
+    void subdomainHost_readingRedirectsToPlatformHost() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/reading")
+               .then()
+               .statusCode(302)
+               .header("Location", "https://blogs.localhost/reading");
+    }
+
+    @Test
+    void subdomainHost_servesAuthModalWithoutPlatformRedirect() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/auth/modal?mode=login")
+               .then()
+               .statusCode(200);
+    }
+
+    @Test
+    void subdomainHost_servesBlogGridWithoutPlatformRedirect() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/components/grid?page=2")
+               .then()
+               .statusCode(200);
+    }
+
+    @Test
     void subdomainHost_servesMainBlogPost() {
         given().header("Host", "subdom-author.localhost")
                .redirects()
