@@ -33,7 +33,8 @@ Default admin (from migration): `admin` — rotate password after first deploy (
 | [docs/application-guidelines.md](docs/application-guidelines.md) | Route and flow descriptions |
 | [docs/ui-guidelines.md](docs/ui-guidelines.md) | Typography, colors, components |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git repository layout for sync |
-| [docs/deployment.md](docs/deployment.md) | Production deployment checklist |
+| [docs/greenfield-deployment-tutorial.md](docs/greenfield-deployment-tutorial.md) | First production deploy (server, DNS, TLS, Docker) |
+| [docs/deployment.md](docs/deployment.md) | Production env-var checklist |
 | [.cursor/rules/](.cursor/rules/) | Cursor project rules |
 
 ## Project structure

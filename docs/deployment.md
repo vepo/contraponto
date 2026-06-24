@@ -2,6 +2,8 @@
 
 Greenfield production setup for Contraponto. The application is feature-complete for the [feature catalog](feature-catalog.md); this document covers **configuration and operations** required before real users.
 
+**New environment?** Follow the step-by-step walkthrough first: [greenfield-deployment-tutorial.md](greenfield-deployment-tutorial.md) (server, DNS, TLS, compose, verification). Use **this file** as the env-var and optional-features reference while you deploy.
+
 ## Prerequisites
 
 - Java 25 runtime (or use [Dockerfile.jvm](../src/main/docker/Dockerfile.jvm) after `mvn package`; native image uses [Dockerfile](../src/main/docker/Dockerfile) with `mvn package -Pnative`)
@@ -127,3 +129,4 @@ By default, `%dev` uses `quarkus.mailer.mock=true` (no outbound mail). For real 
 
 - [ARCHITECTURE.md](../ARCHITECTURE.md) — patterns and configuration overview
 - [README.md](../README.md) — quick start and test commands
+- [greenfield-deployment-tutorial.md](greenfield-deployment-tutorial.md) — step-by-step first deploy on a new server/domain

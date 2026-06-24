@@ -1,0 +1,52 @@
+---
+description: Keep docs/greenfield-deployment-tutorial.md aligned with production deployment steps
+globs: docs/greenfield-deployment-tutorial.md,docs/deployment.md,../contraponto-prod/**
+alwaysApply: false
+---
+
+# Greenfield deployment tutorial maintenance
+
+The step-by-step first-deploy guide lives in [docs/greenfield-deployment-tutorial.md](../../docs/greenfield-deployment-tutorial.md). The env-var checklist stays in [docs/deployment.md](../../docs/deployment.md); the tutorial links there — do not duplicate every variable in both files.
+
+## When to update (same change / PR)
+
+Update the tutorial (and cross-links) when any of these change:
+
+- New or renamed **production env vars** in `application.properties` (`%prod`) or [`contraponto-prod/docker-compose.yml`](../../contraponto-prod/docker-compose.yml)
+- **Blog subdomain** behaviour, DNS, TLS, or session cookie requirements
+- **contraponto-prod** scripts: `init-letsencrypt.sh`, `renew-wildcard-cert.sh`, `update.sh`, `scripts/dns-01-*`
+- **nginx** layout in [`contraponto-prod/data/nginx/app.conf`](../../contraponto-prod/data/nginx/app.conf) (server names, cert paths, proxy headers)
+- New **required services** in compose (e.g. extra datastore) or health-check paths
+- **First-login / bootstrap** flow (migration admin user, default roles)
+- **Post-deploy verification** steps that operators rely on (URLs, curl checks, session cookie domain)
+
+Also update [contraponto-prod/docs/MOP-DEPLOYMENT.md](../../contraponto-prod/docs/MOP-DEPLOYMENT.md) when the change is instance-specific but affects operator procedure.
+
+## What to update in the tutorial
+
+1. **Affected phase** (0–8) — adjust commands, tables, or prerequisites; keep placeholders (`YOUR_DOMAIN`, `PLATFORM_HOST`, `SERVER_IP`) generic.
+2. **Verification checklist** — add/remove rows when behaviour changes.
+3. **Troubleshooting table** — new common production symptoms.
+4. **Related docs** links — if files move or split.
+5. **Last updated** date at the top of `greenfield-deployment-tutorial.md`.
+
+## What to update elsewhere
+
+| File | When |
+|------|------|
+| [docs/deployment.md](../../docs/deployment.md) | Env var semantics, optional features, build commands |
+| [AGENTS.md](../../AGENTS.md) | Index entry if tutorial path or purpose changes |
+| [README.md](../../README.md) | Quick link to tutorial for new operators |
+| [docs/htmx-events.md](../../docs/htmx-events.md) | Subdomain + HTMX navigation rules (tutorial §5.3 links here) |
+
+## Do not
+
+- Paste secrets or production-specific passwords into the tutorial.
+- Replace [deployment.md](../../docs/deployment.md) with the tutorial — keep checklist vs walkthrough separate.
+- Document `%dev`-only flows (`dev-import.sql`, `quarkus:dev`) except where they contrast with prod.
+
+## How to verify
+
+1. Walk the tutorial mentally against current `contraponto-prod/docker-compose.yml` and scripts.
+2. Confirm every script path and env var name matches the repo.
+3. If you changed subdomain or TLS behaviour, re-run the §5 verification commands on staging or production.
