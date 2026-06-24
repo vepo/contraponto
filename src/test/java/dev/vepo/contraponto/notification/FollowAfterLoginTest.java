@@ -76,7 +76,8 @@ class FollowAfterLoginRestTest {
                .post("/forms/blogs/" + blogId + "/follow")
                .then()
                .statusCode(200)
-               .body(containsString("Following"));
+               .body(containsString("data-i18n=\"audience.following\""))
+               .body(containsString("post-action-btn--active"));
     }
 
     @Test
