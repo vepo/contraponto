@@ -20,9 +20,9 @@
             {#if row.excerpt}
             <p class="blog-directory-card__excerpt">{row.excerpt}</p>
             {/if}
-            {#include components/profile-tag-list topTags=row.topTags /}
         </div>
     </a>
+    {#include components/profile-tag-list topTags=row.topTags /}
     <div class="blog-directory-card__footer">
         <p class="blog-directory-card__meta">
             <span>{row.postCount}</span>
