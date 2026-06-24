@@ -17,6 +17,10 @@
         <quarkus.platform.version>3.36.2</quarkus.platform.version>
         <sonar.organization>vepo-github</sonar.organization>
         <graaljs.version>25.0.3</graaljs.version>
+        <closure-compiler-maven-plugin.version>2.25.0</closure-compiler-maven-plugin.version>
+        <static.assets.baseDir>${project.basedir}/src/main/resources/META-INF/resources</static.assets.baseDir>
+        <static.assets.targetDir>${project.build.outputDirectory}/META-INF/resources</static.assets.targetDir>
+        <skipStaticMinify>false</skipStaticMinify>
 
         <!-- JaCoCo Properties -->
         <jacoco.version>0.8.15</jacoco.version>
@@ -316,6 +320,97 @@
                         </eclipse>
                     </java>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.blutorange</groupId>
+                <artifactId>closure-compiler-maven-plugin</artifactId>
+                <version>${closure-compiler-maven-plugin.version}</version>
+                <configuration>
+                    <skip>${skipStaticMinify}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>minify-application-javascript</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                        <configuration>
+                            <force>true</force>
+                            <baseSourceDir>${static.assets.baseDir}</baseSourceDir>
+                            <baseTargetDir>${static.assets.targetDir}</baseTargetDir>
+                            <sourceDir>js</sourceDir>
+                            <targetDir>js</targetDir>
+                            <includes>
+                                <include>**/*.js</include>
+                            </includes>
+                            <excludes>
+                                <exclude>third-party/**</exclude>
+                            </excludes>
+                            <skipMerge>true</skipMerge>
+                            <outputFilename>#{path}/#{basename}.#{extension}</outputFilename>
+                            <closureCompilationLevel>WHITESPACE_ONLY</closureCompilationLevel>
+                            <closureLanguageIn>UNSTABLE</closureLanguageIn>
+                            <closureLanguageOut>UNSTABLE</closureLanguageOut>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.5.1</version>
+                <executions>
+                    <execution>
+                        <id>minify-application-stylesheets</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>compress</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipStaticMinify}</skip>
+                            <force>true</force>
+                            <nosuffix>true</nosuffix>
+                            <sourceDirectory>${static.assets.baseDir}/style</sourceDirectory>
+                            <outputDirectory>${static.assets.targetDir}/style</outputDirectory>
+                            <includes>
+                                <include>main.css</include>
+                                <include>manage.css</include>
+                                <include>write.css</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>verify-static-minify</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipStaticMinify}</skip>
+                            <target>
+                                <length file="${static.assets.baseDir}/js/main.js" property="main.js.source.length"/>
+                                <length file="${static.assets.targetDir}/js/main.js" property="main.js.target.length"/>
+                                <length file="${static.assets.baseDir}/style/main.css" property="main.css.source.length"/>
+                                <length file="${static.assets.targetDir}/style/main.css" property="main.css.target.length"/>
+                                <condition property="static.minify.ok">
+                                    <and>
+                                        <length string="${main.js.target.length}" when="lt" length="${main.js.source.length}"/>
+                                        <length string="${main.css.target.length}" when="lt" length="${main.css.source.length}"/>
+                                    </and>
+                                </condition>
+                                <fail unless="static.minify.ok"
+                                      message="Static asset minify did not shrink main.js or main.css in ${static.assets.targetDir}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
