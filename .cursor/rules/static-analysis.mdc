@@ -14,7 +14,7 @@ Before marking a coding task **done**, run **local** checks only (no SonarCloud,
 
 ## Required commands (match CI)
 
-Primary gate — same as [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Prefix with `GITHUB_ACTIONS=true` so `@WebTest` Chrome runs headless (see [test-headless-github-actions.mdc](test-headless-github-actions.mdc)):
+Primary gate — same as [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml): **Code Style · Spotless**, **Tests ·** matrix (`unit` / `quarkus` / `web`), **Build · JVM Package** (minify gate). JUnit results are published to GitHub Checks. Prefix with `GITHUB_ACTIONS=true` locally so `@WebTest` Chrome runs headless (see [test-headless-github-actions.mdc](test-headless-github-actions.mdc)):
 
 ```bash
 GITHUB_ACTIONS=true ./mvnw -B verify

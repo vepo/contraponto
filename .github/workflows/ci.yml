@@ -1,79 +1,290 @@
-name: CI
+name: Continuous Integration
 
 on:
   push:
   pull_request:
 
+run-name: >-
+  CI · ${{ github.ref_name }} · ${{ github.sha }}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "25"
+  JAVA_DISTRIBUTION: zulu
+  MAVEN_CLI_OPTS: -B --no-transfer-progress
+
+permissions:
+  contents: read
+
 jobs:
-  test:
-    name: Test (${{ matrix.tag }})
+  code-style:
+    name: Code Style · Spotless
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Verify Java formatting (Spotless)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} spotless:check
+
+  tests:
+    name: Tests · ${{ matrix.display }}
+    runs-on: ubuntu-latest
+    needs: code-style
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        tag: [unit, quarkus, web]
+        include:
+          - suite: unit
+            profile: test-unit
+            display: Unit
+            browser: false
+          - suite: quarkus
+            profile: test-quarkus
+            display: Quarkus Integration
+            browser: false
+          - suite: web
+            profile: test-web
+            display: Web · Headless Chrome
+            browser: true
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd
-        if: matrix.tag == 'web'
-      - name: Set up JDK 25
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
+
+      - name: Set up Chrome
+        if: matrix.browser
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
         with:
-          java-version: 25
-          distribution: zulu
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
-      - name: Run tests
-        run: mvn -B test -Ptest-${{ matrix.tag }}
+      - name: Run Maven tests (${{ matrix.profile }})
+        env:
+          GITHUB_ACTIONS: true
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} test -P${{ matrix.profile }}
 
-  docker:
-    name: Build container image (JVM)
+      - name: Upload JUnit test results
+        if: always()
+        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        with:
+          name: test-results-${{ matrix.suite }}
+          path: |
+            target/surefire-reports/**/*.xml
+            target/surefire-reports/**/*.txt
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
+
+      - name: Upload JaCoCo execution data
+        if: success()
+        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        with:
+          name: jacoco-${{ matrix.suite }}
+          path: target/jacoco-quarkus.exec
+          retention-days: 1
+          if-no-files-found: error
+
+  test-report:
+    name: Quality · Test Results Summary
+    runs-on: ubuntu-latest
+    needs: tests
+    if: always() && !cancelled()
+    timeout-minutes: 10
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Download JUnit artifacts
+        uses: actions/download-artifact@11dfaae0e9bac29c4210a8710671217a0a81447 # v4.1.8
+        with:
+          pattern: test-results-*
+          path: test-results
+          merge-multiple: true
+
+      - name: Publish results to GitHub Checks
+        uses: EnricoMi/publish-unit-test-result-action@2a628e932462e0787e91d61537873a4b08705f43 # v2.24.0
+        if: always()
+        with:
+          check_name: Maven · All Test Suites
+          files: test-results/**/*.xml
+          comment_mode: failures
+          report_suite_logs: failed
+
+  build:
+    name: Build · JVM Package & Static Assets
+    runs-on: ubuntu-latest
+    needs: tests
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Package application (minify gate)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} package -DskipTests
+
+      - name: Upload Quarkus application bundle
+        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        with:
+          name: build-quarkus-app
+          path: target/quarkus-app/
+          retention-days: 7
+          compression-level: 6
+
+      - name: Record build metadata
+        run: |
+          {
+            echo "## Build metadata"
+            echo "- **Ref:** \`${{ github.ref_name }}\`"
+            echo "- **Commit:** \`${{ github.sha }}\`"
+            echo "- **Maven version:** \`$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)\`"
+            echo "- **Artifact:** \`target/quarkus-app/\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  quality-sonar:
+    name: Quality · SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: tests
+    if: >-
+      github.event_name != 'pull_request'
+      || github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Cache SonarCloud scanner
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v4.2.0
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Download JaCoCo execution data
+        uses: actions/download-artifact@11dfaae0e9bac29c4210a8710671217a0a81447 # v4.1.8
+        with:
+          pattern: jacoco-*
+          path: target/jacoco-parts
+          merge-multiple: true
+
+      - name: Merge coverage and run SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn ${{ env.MAVEN_CLI_OPTS }} compile -DskipTests
+          mvn ${{ env.MAVEN_CLI_OPTS }} org.jacoco:jacoco-maven-plugin:0.8.15:merge \
+            -Djacoco.destFile=target/jacoco-quarkus.exec \
+            "-Djacoco.fileSets[0].directory=target/jacoco-parts" \
+            "-Djacoco.fileSets[0].includes=*.exec"
+          mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -DskipTests \
+            -Dsonar.projectKey=vepo_contraponto
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@74fad66b98a6d799dc004d3353ccd0e6f6b2530e # v4.6.2
+        with:
+          name: coverage-report
+          path: |
+            target/jacoco-report/jacoco.xml
+            target/jacoco-report/index.html
+            target/jacoco-report/
+          retention-days: 30
+          if-no-files-found: warn
+
+  release-docker:
+    name: Release · Docker Hub (JVM)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
-    needs: test
+    needs: build
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Set up JDK 25
-        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
+
+      - name: Download Quarkus application bundle
+        uses: actions/download-artifact@11dfaae0e9bac29c4210a8710671217a0a81447 # v4.1.8
         with:
-          java-version: 25
-          distribution: zulu
-          cache: maven
+          name: build-quarkus-app
+          path: target/quarkus-app/
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
-      - name: Compile application (JVM)
-        run: mvn clean package -DskipTests --file pom.xml
-      - name: Build container image (JVM)
-        run: docker build -f src/main/docker/Dockerfile.jvm -t contraponto:jvm .
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v3.8.0
+
       - name: Log in to Docker Hub
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v3.3.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Extract metadata for Docker
+
+      - name: Resolve Docker image tags
         id: meta
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v5.6.0
         with:
           images: vepo/contraponto
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
-      
-      - name: Build and push Docker image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+
+      - name: Build and push container image
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v6.1.0
         with:
           context: .
           file: ./src/main/docker/Dockerfile.jvm
           platforms: linux/amd64
-          push: ${{ github.event_name == 'push' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Record release metadata
+        env:
+          DOCKER_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "## Container release"
+            echo "- **Image:** \`vepo/contraponto\`"
+            echo "- **Tags:**"
+            echo "${DOCKER_TAGS}" | while read -r tag; do
+              [ -n "${tag}" ] && echo "  - \`${tag}\`"
+            done
+          } >> "${GITHUB_STEP_SUMMARY}"
