@@ -1,0 +1,59 @@
+{#if rows.isEmpty()}
+<p class="reading-list-page__empty">
+    {#if tab == 'unread'}
+    <span data-i18n="reading.saved.empty.unread">Nenhum post para ler. Salve posts para ler depois.</span>
+    {#else}
+    <span data-i18n="reading.saved.empty.all">Sua lista está vazia.</span>
+    {/if}
+</p>
+{#else}
+<ul class="reading-list-page__list">
+    {#for row in rows.data}
+    <li class="reading-list-page__row {#if !row.unread}reading-list-page__row--read{/if} {#if !row.available}reading-list-page__row--unavailable{/if}">
+        <div class="reading-list-page__main">
+            <h3 class="reading-list-page__title {#if !row.available}reading-list-page__title--unavailable{/if}">
+                {#if row.available}
+                <a data-hx-get="{row.postUrl}"
+                   hx-select="main"
+                   hx-target="main"
+                   hx-swap="outerHTML"
+                   hx-push-url="{row.postUrl}">{row.postTitle}</a>
+                {#else}
+                {row.postTitle}
+                {/if}
+            </h3>
+            <p class="reading-list-page__byline">
+                {row.authorName} · {row.blogName}
+                {#if !row.available}
+                · <span data-i18n="reading.saved.postUnavailable">Post indisponível</span>
+                {/if}
+            </p>
+            <time class="reading-list-page__date">{row.savedAt.format('dd/MM/yyyy')}</time>
+        </div>
+        <div class="reading-list-page__actions">
+            {#if row.available}
+                {#if row.unread}
+                <form hx-post="/forms/reading-list/{row.itemId}/read?tab={tab}&page={rows.page}"
+                      hx-target="#savedListContent"
+                      hx-swap="innerHTML">
+                    <button type="submit" class="btn btn--outline btn--small" data-i18n="reading.saved.markRead">Marcar como lido</button>
+                </form>
+                {#else}
+                <form hx-post="/forms/reading-list/{row.itemId}/unread?tab={tab}&page={rows.page}"
+                      hx-target="#savedListContent"
+                      hx-swap="innerHTML">
+                    <button type="submit" class="btn btn--outline btn--small" data-i18n="reading.saved.markUnread">Marcar como não lido</button>
+                </form>
+                {/if}
+            {/if}
+            <form hx-delete="/forms/reading-list/{row.itemId}?tab={tab}&page={rows.page}"
+                  hx-target="#savedListContent"
+                  hx-swap="innerHTML">
+                <button type="submit" class="btn btn--outline btn--small" data-i18n="reading.saved.remove">Remover da lista</button>
+            </form>
+        </div>
+    </li>
+    {/for}
+</ul>
+{#include components/manage-pagination page=rows basePath='/reading/saved/components/tab/{tab}' extraQuery='' fragmentTarget='#savedListContent' /}
+{/if}

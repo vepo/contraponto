@@ -1,0 +1,82 @@
+{#if view.showControls}
+<div class="reading-list-action">
+    {#if !view.authenticated}
+    <button type="button"
+            class="post-action-btn post-action-btn--save post-action-btn--sign-in"
+            hx-get="/auth/modal?mode=login"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">
+        <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span data-i18n="reading.saved.signInToSave">Entre para salvar</span>
+    </button>
+    {#else if view.notSaved}
+    <form class="post-action-bar__form" hx-post="/forms/posts/{view.postId}/reading-list"
+          hx-target="#post-reading-list"
+          hx-swap="innerHTML">
+        <button type="submit" class="post-action-btn post-action-btn--save">
+            <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span data-i18n="reading.saved.save">Salvar</span>
+        </button>
+    </form>
+    {#else}
+    <div class="reading-list-action__group">
+        <span class="post-action-bar__badge {#if view.unread}post-action-bar__badge--unread{#else}post-action-bar__badge--read{/if}" aria-live="polite">
+            {#if view.unread}
+            <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span data-i18n="reading.saved.statusUnread">Não lido</span>
+            {#else}
+            <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <path d="m22 4-10 10-4-4"/>
+            </svg>
+            <span data-i18n="reading.saved.statusRead">Lido</span>
+            {/if}
+        </span>
+        {#if view.unread}
+        <form class="post-action-bar__form" hx-post="/forms/reading-list/{view.itemId}/read"
+              hx-target="#post-reading-list"
+              hx-swap="innerHTML">
+            <button type="submit" class="post-action-btn post-action-btn--mark-read">
+                <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5"/>
+                </svg>
+                <span data-i18n="reading.saved.markReadShort">Lido</span>
+            </button>
+        </form>
+        {#else}
+        <form class="post-action-bar__form" hx-post="/forms/reading-list/{view.itemId}/unread"
+              hx-target="#post-reading-list"
+              hx-swap="innerHTML">
+            <button type="submit" class="post-action-btn post-action-btn--mark-unread">
+                <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span data-i18n="reading.saved.markUnreadShort">Não lido</span>
+            </button>
+        </form>
+        {/if}
+        <form class="post-action-bar__form" hx-delete="/forms/reading-list/{view.itemId}"
+              hx-target="#post-reading-list"
+              hx-swap="innerHTML">
+            <button type="submit"
+                    class="post-action-btn post-action-btn--remove post-action-btn--icon-only"
+                    data-i18n="reading.saved.remove"
+                    data-i18n-attr="aria-label,title">
+                <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+    {/if}
+</div>
+{/if}

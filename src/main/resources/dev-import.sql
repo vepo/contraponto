@@ -15,6 +15,7 @@ TRUNCATE TABLE tb_post_text_highlights CASCADE;
 TRUNCATE TABLE tb_official_highlights CASCADE;
 TRUNCATE TABLE tb_common_highlight_proposals CASCADE;
 TRUNCATE TABLE tb_post_responses CASCADE;
+TRUNCATE TABLE tb_reading_list_items CASCADE;
 TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
 TRUNCATE TABLE tb_account_email_outbox CASCADE;
@@ -874,6 +875,43 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
       AND b.owner_id = owner.id AND b.slug = 'architecture-notes'
       AND p.blog_id = b.id AND p.slug = 'event-sourcing-intro'
       AND pub.post_id = p.id AND pub.version = 1;
+
+    -- ============================================
+    -- 11b. Reading list (saved posts)
+    -- ============================================
+    INSERT INTO tb_reading_list_items (user_id, post_id, saved_at, read_at)
+    SELECT d.id, p.id, '2024-05-02 09:00:00', NULL
+    FROM tb_users d, tb_users owner, tb_blogs b, tb_posts p
+    WHERE d.username = 'dave' AND owner.username = 'alice' AND b.owner_id = owner.id AND b.main
+      AND p.blog_id = b.id AND p.slug = 'introduction-to-distributed-systems-java';
+
+    INSERT INTO tb_reading_list_items (user_id, post_id, saved_at, read_at)
+    SELECT d.id, p.id, '2024-05-03 10:00:00', NULL
+    FROM tb_users d, tb_users owner, tb_blogs b, tb_posts p
+    WHERE d.username = 'dave' AND owner.username = 'alice' AND b.owner_id = owner.id AND b.main
+      AND p.blog_id = b.id AND p.slug = 'graphql-java-spring-boot';
+
+    INSERT INTO tb_reading_list_items (user_id, post_id, saved_at, read_at)
+    SELECT d.id, p.id, '2024-05-04 11:00:00', NULL
+    FROM tb_users d, tb_users owner, tb_blogs b, tb_posts p
+    WHERE d.username = 'dave' AND owner.username = 'bob' AND b.owner_id = owner.id AND b.slug = 'architecture-notes'
+      AND p.blog_id = b.id AND p.slug = 'consensus-raft-paxos-overview';
+
+    INSERT INTO tb_reading_list_items (user_id, post_id, saved_at, read_at)
+    SELECT d.id, p.id, '2024-04-18 09:00:00', '2024-04-19 14:00:00'
+    FROM tb_users d, tb_users owner, tb_blogs b, tb_posts p
+    WHERE d.username = 'dave' AND owner.username = 'bob' AND b.owner_id = owner.id AND b.slug = 'architecture-notes'
+      AND p.blog_id = b.id AND p.slug = 'event-sourcing-intro';
+
+    INSERT INTO tb_reading_list_items (user_id, post_id, saved_at, read_at)
+    SELECT d.id, p.id, '2024-05-05 12:00:00', NULL
+    FROM tb_users d, tb_users owner, tb_blogs b, tb_posts p
+    WHERE d.username = 'dave' AND owner.username = 'alice' AND b.owner_id = owner.id AND b.main
+      AND p.blog_id = b.id AND p.slug = 'kubernetes-health-probes-java';
+
+    UPDATE tb_posts SET published = FALSE
+    WHERE slug = 'kubernetes-health-probes-java'
+      AND blog_id = (SELECT b.id FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main);
 
     -- ============================================
     -- 12. View counts

@@ -16,6 +16,7 @@ import dev.vepo.contraponto.dashboard.DashboardEndpoint;
 import dev.vepo.contraponto.dashboard.DashboardPage;
 import dev.vepo.contraponto.image.ImageControlEndpoint;
 import dev.vepo.contraponto.library.LibraryEndpoint;
+import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
 import dev.vepo.contraponto.notification.NotificationEndpoint;
 import dev.vepo.contraponto.notification.SubscriptionEndpoint;
 import dev.vepo.contraponto.post.Post;
@@ -44,6 +45,7 @@ public class NavigationHubPanelService {
     private final CommentManageEndpoint commentManageEndpoint;
     private final HighlightManageEndpoint highlightManageEndpoint;
     private final HighlightsLibraryEndpoint highlightsLibraryEndpoint;
+    private final ReadingListHubEndpoint readingListHubEndpoint;
     private final LibraryEndpoint libraryEndpoint;
     private final ImageControlEndpoint imageControlEndpoint;
     private final NotificationEndpoint notificationEndpoint;
@@ -66,6 +68,7 @@ public class NavigationHubPanelService {
                                      CommentManageEndpoint commentManageEndpoint,
                                      HighlightManageEndpoint highlightManageEndpoint,
                                      HighlightsLibraryEndpoint highlightsLibraryEndpoint,
+                                     ReadingListHubEndpoint readingListHubEndpoint,
                                      LibraryEndpoint libraryEndpoint,
                                      ImageControlEndpoint imageControlEndpoint,
                                      NotificationEndpoint notificationEndpoint,
@@ -86,6 +89,7 @@ public class NavigationHubPanelService {
         this.commentManageEndpoint = commentManageEndpoint;
         this.highlightManageEndpoint = highlightManageEndpoint;
         this.highlightsLibraryEndpoint = highlightsLibraryEndpoint;
+        this.readingListHubEndpoint = readingListHubEndpoint;
         this.libraryEndpoint = libraryEndpoint;
         this.imageControlEndpoint = imageControlEndpoint;
         this.notificationEndpoint = notificationEndpoint;
@@ -191,6 +195,7 @@ public class NavigationHubPanelService {
     private TemplateInstance renderReading(String sectionSlug, int page) {
         String basePath = registry.sectionPath(NavigationHub.READING, sectionSlug);
         return switch (sectionSlug) {
+            case "saved" -> readingListHubEndpoint.renderHubPanel();
             case "highlights" -> highlightsLibraryEndpoint.renderHighlightsHubPanel(page, basePath);
             case "notes" -> highlightsLibraryEndpoint.renderNotesHubPanel(page, basePath);
             default -> throw new NotFoundException("Unknown reading section: %s".formatted(sectionSlug));

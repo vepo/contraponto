@@ -464,7 +464,8 @@ class MainManager {
     }
 
     updateUIElements(evt) {
-        if (evt && evt.detail && evt.detail.target && evt.detail.target.id === 'libraryContent') {
+        if (evt && evt.detail && evt.detail.target
+                && (evt.detail.target.id === 'libraryContent' || evt.detail.target.id === 'savedListContent')) {
             const requestPath = evt.detail.pathInfo?.requestPath || '';
             let newActiveValue = null;
             if (requestPath) {
@@ -475,8 +476,16 @@ class MainManager {
                     /* ignore malformed path */
                 }
                 if (!newActiveValue) {
-                    const m = requestPath.match(/\/writing\/library\/components\/tab\/(drafts|published)(?:\?|$)/);
-                    if (m) newActiveValue = m[1];
+                    const libraryTab = requestPath.match(/\/writing\/library\/components\/tab\/(drafts|published)(?:\?|$)/);
+                    if (libraryTab) {
+                        newActiveValue = libraryTab[1];
+                    }
+                }
+                if (!newActiveValue) {
+                    const savedTab = requestPath.match(/\/reading\/saved\/components\/tab\/(unread|all)(?:\?|$)/);
+                    if (savedTab) {
+                        newActiveValue = savedTab[1];
+                    }
                 }
             }
             if (newActiveValue) {
