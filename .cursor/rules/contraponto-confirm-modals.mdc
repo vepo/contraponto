@@ -1,0 +1,46 @@
+---
+description: Use in-app confirm modals — never hx-confirm, alert(), or window.confirm
+globs: src/main/resources/templates/**/*.html,src/main/resources/META-INF/resources/js/*.js
+alwaysApply: false
+---
+
+# Confirm modals (no native dialogs)
+
+Destructive or irreversible actions must ask for confirmation through an **in-app modal** — never the browser’s native `confirm()` / `alert()` and never HTMX `hx-confirm`.
+
+## Forbidden
+
+- `hx-confirm="…"` on any element
+- `window.confirm()`, `window.alert()`, `window.prompt()`
+- Selenium `driver.switchTo().alert()` in new tests (use the confirm modal DSL instead)
+
+Legacy templates may still use `hx-confirm` or `onclick` modal close; do not extend that pattern — migrate when touching the file.
+
+## Required pattern
+
+1. **Trigger** opens a server-rendered modal into `#modal-container`:
+
+```html
+<button type="button"
+        hx-get="/components/confirm-modal/post-unpublish/{post.id}"
+        hx-target="#modal-container"
+        hx-swap="innerHTML">
+```
+
+2. **Modal** lives in [`ConfirmModalEndpoint`](../../src/main/java/dev/vepo/contraponto/components/ConfirmModalEndpoint.java) + [`confirmModal.html`](../../src/main/resources/templates/ConfirmModalEndpoint/confirmModal.html). It shows title, message, **Cancel**, and a confirm control with `data-confirm-submit` that carries the real `hx-post` / `hx-delete`.
+
+3. **Target element** for the mutation must be addressable globally (e.g. `data-post-id` on the row + `hx-target="[data-post-id='{id}']"`), because the modal is outside `#main`.
+
+4. **Chrome** — close via `[data-confirm-modal-close]`, Escape, or auto-close after successful confirm (`confirm-modal.js`). Use existing `.modal`, `.modal--open`, `.modal__container` blocks ([ui-elements.md](../../docs/ui-elements.md)).
+
+## Adding a new confirm variant
+
+1. Add a case to `ConfirmModalAction` with i18n keys (title, message, confirm label) aligned with [domain-specification.md](../../docs/domain-specification.md).
+2. Add `@GET @Path("…")` on `ConfirmModalEndpoint` that authorizes the action and renders `ConfirmModalView`.
+3. Wire the trigger button with `hx-get` — no inline confirmation copy on the trigger.
+
+## Tests
+
+Extend `App` to click the trigger, then `#confirmModal [data-confirm-submit]` — never `alert().accept()`.
+
+See also [contraponto-javascript.mdc](contraponto-javascript.mdc) and [docs/htmx-events.md](../../docs/htmx-events.md).

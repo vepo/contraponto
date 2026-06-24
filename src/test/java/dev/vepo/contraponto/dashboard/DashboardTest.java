@@ -182,6 +182,25 @@ class DashboardTest {
     }
 
     @Test
+    void unpublishPublishedPostTest(App app) {
+        Given.post()
+             .withTitle("Published To Unpublish")
+             .withContent("Content")
+             .withAuthor(testUser)
+             .withPublished(true)
+             .persist();
+        app.login(testUser)
+           .dashboard()
+           .clickViewAllDrafts()
+           .switchTab("published")
+           .assertPublishedPresent("Published To Unpublish")
+           .unpublishFirstPublished()
+           .assertPublishedNotPresent("Published To Unpublish")
+           .switchTab("drafts")
+           .assertDraftPresent("Published To Unpublish");
+    }
+
+    @Test
     void viewAllDraftsLinkNavigatesToLibraryWithDraftsTab(App app) {
         // Create a draft to ensure the link is visible
         Given.post()

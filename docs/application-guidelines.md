@@ -136,8 +136,10 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
 ### 6.1 Library (`GET /writing/library`)
 - Tabs: **Drafts** and **Published**.  
 - Tabs load their content dynamically via HTMX (`GET /writing/library/components/tab/drafts` or `published`).  
-- Each entry shows title, metadata, and action buttons (Edit, Delete for drafts).  
-- A user can only see their own posts (filtered by blog ownership).
+- Each entry shows title, metadata, and action buttons: **Edit** on both tabs; **Unpublish** on published rows; **Delete** on draft rows (including posts **unpublished** from the Published tab).  
+- **Unpublish** (`POST /forms/posts/{postId}/unpublish`): blog owner only; sets `published = false`, clears featured; publication history is kept.  
+- **Delete** (`DELETE /forms/posts/{postId}`): blog owner only; allowed only when `published = false` (unpublish first if currently published).  
+- A user can only see and manage their own posts (filtered by blog ownership; server rejects foreign post ids with 404).
 
 ### 6.2 Dashboard (`GET /manage/dashboard`)
 - Ownership: only authenticated users.  

@@ -112,6 +112,11 @@ public final class I18nKeys {
 
     public static final String TOAST_ADMIN_FORBIDDEN = "toast.admin.forbidden";
     public static final String TOAST_POST_NOT_FOUND = "toast.post.notFound";
+    public static final String TOAST_POST_UNPUBLISHED = "toast.post.unpublished";
+    public static final String TOAST_POST_DELETED = "toast.post.deleted";
+    public static final String TOAST_POST_DELETE_PUBLISHED = "toast.post.deletePublished";
+    public static final String TOAST_POST_ALREADY_DRAFT = "toast.post.alreadyDraft";
+    public static final String TOAST_POST_FORBIDDEN = "toast.post.forbidden";
     public static final String TOAST_CANNOT_FEATURE_DRAFT = "toast.review.cannotFeatureDraft";
     // Toasts — comment
     public static final String TOAST_COMMENT_NOT_FOUND = "toast.comment.notFound";
@@ -156,6 +161,11 @@ public final class I18nKeys {
     public static final String TOAST_GENERIC_ERROR = "toast.generic.error";
 
     public static final String ERROR_GENERIC_ADMIN = "error.generic.contactAdmin";
+
+    public static final String COMMON_DELETE = "common.delete";
+    public static final String LIBRARY_UNPUBLISH = "library.unpublish";
+    public static final String LIBRARY_UNPUBLISH_CONFIRM = "library.unpublishConfirm";
+    public static final String LIBRARY_DELETE_DRAFT_CONFIRM = "library.deleteDraftConfirm";
 
     private I18nKeys() {}
 }

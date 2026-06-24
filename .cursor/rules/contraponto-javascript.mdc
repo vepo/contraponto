@@ -52,6 +52,7 @@ Before adding JS, try (in order): inline/OOB HTML in the mutation response → `
 
 - User-visible strings: `data-i18n` / `data-i18n-attr` in HTML; in JS use `window.i18n?.t(key)` with a `pt-BR` fallback string.
 - Toasts: server `Toast` helper + `toast.js`; not `alert()` or hand-built `X-Toast-*` headers in endpoints.
+- **Confirmations:** in-app modal via [`ConfirmModalEndpoint`](../../src/main/java/dev/vepo/contraponto/components/ConfirmModalEndpoint.java) — never `hx-confirm`, `window.confirm()`, or `window.alert()`. See [contraponto-confirm-modals.mdc](contraponto-confirm-modals.mdc).
 
 ## Style
 

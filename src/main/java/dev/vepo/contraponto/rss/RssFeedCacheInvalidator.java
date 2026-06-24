@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.rss;
 
 import dev.vepo.contraponto.notification.PostPublishedEvent;
+import dev.vepo.contraponto.notification.PostUnpublishedEvent;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheManager;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -20,6 +21,10 @@ public class RssFeedCacheInvalidator {
     }
 
     void afterPostPublished(@Observes PostPublishedEvent event) {
+        rssFeedCache.invalidateAll().await().indefinitely();
+    }
+
+    void afterPostUnpublished(@Observes PostUnpublishedEvent event) {
         rssFeedCache.invalidateAll().await().indefinitely();
     }
 }

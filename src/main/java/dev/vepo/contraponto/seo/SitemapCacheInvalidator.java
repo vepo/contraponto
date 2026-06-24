@@ -2,6 +2,7 @@ package dev.vepo.contraponto.seo;
 
 import dev.vepo.contraponto.custompage.CustomPageChangedEvent;
 import dev.vepo.contraponto.notification.PostPublishedEvent;
+import dev.vepo.contraponto.notification.PostUnpublishedEvent;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheManager;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -25,6 +26,10 @@ public class SitemapCacheInvalidator {
     }
 
     void afterPostPublished(@Observes PostPublishedEvent event) {
+        invalidate();
+    }
+
+    void afterPostUnpublished(@Observes PostUnpublishedEvent event) {
         invalidate();
     }
 

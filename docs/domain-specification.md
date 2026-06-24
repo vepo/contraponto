@@ -103,6 +103,9 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Content render plugin** | Pluggable handler registered via `ServiceLoader` that turns a **render tag** in post body into HTML (e.g. YouTube embed). | `ContentRenderPlugin` |
 | **Render tag** | Author syntax in post body: `{% renderIdentifier param1 param2 %}`. Built-in identifiers: `youtube`, `gist`, `github`, `twitter`. Unknown identifiers remain literal in output. | `ContentRenderTagProcessor` |
 | **Publish** | Action that marks the post published, creates a **publication snapshot**, sets **live publication**, fires `PostPublishedEvent`, and may trigger Git export and notifications. | `PostPublicationService.publish` |
+| **Unpublish** | Blog owner action: set `Post.published = false`, clear **featured**, keep **publication snapshots** and **live publication** for version history and republish. Public post URL returns 404 for readers; may trigger Git export. | `PostManagementService.unpublish` |
+| **Delete post** | Blog owner permanently removes a post with `published = false`. **Published** posts must be **unpublished** first. | `PostManagementService.delete` |
+| **Confirm modal** | In-app dialog in `#modal-container` for destructive confirmations; confirm control uses `data-confirm-submit` + HTMX. Never `hx-confirm` or native `confirm()`. | `ConfirmModalEndpoint`, `confirm-modal.js` |
 | **Republish** | Publish again when content differs from live snapshot; increments version, re-notifies audience. | Same service |
 | **Publication snapshot** | Immutable `PostPublication` row: version, content/tags/cover at publish time. | `PostPublication` |
 | **Live publication** | The snapshot readers see; pointer on `Post.livePublication`. | `Post.livePublication` |
@@ -340,6 +343,8 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Pagination — public lists | Load more | Home, blog grid, search |
 | Library tab | Drafts | Library |
 | Library tab | Published | Library |
+| Library — unpublish button | Despublicar | Library Published tab row — opens **confirm modal** |
+| Library — delete post button | Excluir | Library Drafts tab row — opens **confirm modal** |
 | Notifications empty | No notifications yet. Follow blogs to see new posts here. | Notifications page |
 | Notifications overlay empty | No notification | Notification overlay |
 | RSS feed link | RSS | Blog, tag, serie, home, footer |

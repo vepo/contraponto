@@ -167,6 +167,8 @@ public class PostRepository {
         if (post == null) {
             return false;
         }
+        post.setLivePublication(null);
+        entityManager.flush();
         entityManager.remove(post);
         logger.info("Deleted post: {}", post);
         return true;
@@ -245,6 +247,18 @@ public class PostRepository {
                                 attachLatestPublication(post);
                                 return post;
                             });
+    }
+
+    public Optional<Post> findByIdWithBlog(long id) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         JOIN FETCH p.blog b
+                                         JOIN FETCH b.owner
+                                         WHERE p.id = :id
+                                         """, Post.class)
+                            .setParameter("id", id)
+                            .getResultStream()
+                            .findFirst();
     }
 
     public Optional<Post> findByIdWithTags(Long id) {

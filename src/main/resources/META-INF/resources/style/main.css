@@ -3355,6 +3355,19 @@ hr:after {
   padding: var(--spacing-lg);
 }
 
+.confirm-modal__message {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.confirm-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
 /* Auth forms */
 .auth-form {
   display: flex;

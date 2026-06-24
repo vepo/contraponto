@@ -33,6 +33,11 @@ public final class I18nDefaults {
     public static final String EDITOR_FORBIDDEN = "Você não tem permissões de editor.";
     public static final String ADMIN_FORBIDDEN = "Você não tem permissões de administrador.";
     public static final String POST_NOT_FOUND = "Publicação não encontrada.";
+    public static final String POST_UNPUBLISHED = "Publicação despublicada.";
+    public static final String POST_DELETED = "Publicação excluída.";
+    public static final String POST_DELETE_PUBLISHED = "Publicações publicadas não podem ser excluídas. Despublique primeiro.";
+    public static final String POST_ALREADY_DRAFT = "Esta publicação já é um rascunho.";
+    public static final String POST_FORBIDDEN = "Você não tem permissão para gerenciar esta publicação.";
     public static final String CANNOT_FEATURE_DRAFT = "Não é possível destacar um rascunho";
     public static final String COMMENT_NOT_FOUND = "Comentário não encontrado.";
     public static final String HIGHLIGHT_CREATED = "Trecho destacado.";
@@ -56,6 +61,11 @@ public final class I18nDefaults {
     public static final String READING_LIST_MARKED_UNREAD = "Marcado como não lido.";
     public static final String READING_LIST_REMOVED = "Removido da lista.";
     public static final String READING_LIST_LIMIT_REACHED = "Lista cheia (máximo 500 itens).";
+
+    public static final String COMMON_DELETE = "Excluir";
+    public static final String LIBRARY_UNPUBLISH = "Despublicar";
+    public static final String LIBRARY_UNPUBLISH_CONFIRM = "Tem certeza de que deseja despublicar esta publicação?";
+    public static final String LIBRARY_DELETE_DRAFT_CONFIRM = "Tem certeza de que deseja excluir este rascunho?";
 
     private I18nDefaults() {}
 }

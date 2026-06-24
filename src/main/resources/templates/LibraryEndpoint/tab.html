@@ -12,7 +12,7 @@
 {#else}
 <div class="drafts-list">
     {#for post in posts.data}
-    <article class="draft-card">
+    <article class="draft-card" data-post-id="{post.id}">
         <div class="draft-card__content">
             <h2 class="draft-card__title">
                 <a data-hx-get="/write/draft/{post.id}"
@@ -41,15 +41,20 @@
                hx-target="main"
                hx-push-url="/write/draft/{post.id}"
                class="btn btn--small" data-i18n="common.edit">Editar</a>
-            {#if !post.published}
+            {#if post.published}
+            <button type="button"
+                    class="btn btn--small btn--outline"
+                    hx-get="/components/confirm-modal/post-unpublish/{post.id}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML">
+                <span data-i18n="library.unpublish">Despublicar</span>
+            </button>
+            {#else}
             <button type="button"
                     class="btn btn--small btn--danger"
-                    hx-delete="/writing/library/components/posts/{post.id}/delete"
-                    hx-confirm="Tem certeza de que deseja excluir este rascunho?"
-                    hx-target="closest .draft-card"
-                    hx-swap="outerHTML"
-                    hx-target-error="#toast"
-                    hx-swap-error="innerHTML">
+                    hx-get="/components/confirm-modal/post-delete/{post.id}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML">
                 <span data-i18n="common.delete">Excluir</span>
             </button>
             {/if}

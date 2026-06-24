@@ -10,18 +10,14 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 @Logged
 @Path("/writing/library/components")
@@ -47,34 +43,6 @@ public class LibraryEndpoint {
     public LibraryEndpoint(PostRepository postRepository, LoggedUser loggedUser) {
         this.postRepository = postRepository;
         this.loggedUser = loggedUser;
-    }
-
-    @DELETE
-    @Path("posts/{postId}/delete")
-    @Transactional
-    public Response deletePost(@PathParam("postId") Long id) {
-        Post post = postRepository.findById(id)
-                                  .orElseThrow(() -> new NotFoundException("Post not found"));
-
-        // Check if the current user is the author
-        if (!post.getAuthor().getId().equals(loggedUser.getId())) {
-            return Response.status(Response.Status.FORBIDDEN)
-                           .entity("You are not allowed to delete this post")
-                           .build();
-        }
-
-        // Optionally, prevent deletion of published posts (only drafts)
-        if (post.isPublished()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("Published posts cannot be deleted. Unpublish first.")
-                           .build();
-        }
-
-        // Delete the post
-        postRepository.delete(id);
-
-        // Return no content – HTMX will remove the target element
-        return Response.ok().build();
     }
 
     public TemplateInstance renderHubPanel() {

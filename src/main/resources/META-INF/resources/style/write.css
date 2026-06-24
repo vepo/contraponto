@@ -836,7 +836,7 @@
 }
 
 .write-leave-modal__container {
-    max-width: 28rem;
+    max-width: 36rem;
 }
 
 .write-leave-modal__body {
@@ -845,8 +845,9 @@
 
 .write-leave-modal__actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--spacing-sm);
+    justify-content: flex-end;
 }
 
 /* Custom mode selector – vintage writer style */

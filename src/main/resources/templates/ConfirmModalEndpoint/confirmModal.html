@@ -1,0 +1,42 @@
+<div id="confirmModal" class="modal modal--open" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal__container confirm-modal__container">
+        <div class="modal__header">
+            <h2 id="confirmModalTitle" class="modal__title" data-i18n="{view.titleKey}">{view.titleDefault}</h2>
+            <button type="button"
+                    class="modal__close"
+                    data-confirm-modal-close
+                    aria-label="Fechar"
+                    data-i18n="common.close"
+                    data-i18n-attr="aria-label">✕</button>
+        </div>
+        <div class="modal__body">
+            <p class="confirm-modal__message" data-i18n="{view.messageKey}">{view.messageDefault}</p>
+            <div class="confirm-modal__actions" role="group" aria-label="Ações de confirmação">
+                <button type="button" class="btn btn--outline" data-confirm-modal-close data-i18n="common.cancel">Cancelar</button>
+                {#if view.httpMethod == 'DELETE'}
+                <button type="button"
+                        class="btn btn--danger"
+                        data-confirm-submit
+                        hx-delete="{view.actionUrl}"
+                        hx-target="{view.targetSelector}"
+                        hx-swap="{view.swap}"
+                        hx-target-error="#toast"
+                        hx-swap-error="innerHTML">
+                    <span data-i18n="{view.confirmKey}">{view.confirmDefault}</span>
+                </button>
+                {#else}
+                <button type="button"
+                        class="btn btn--primary"
+                        data-confirm-submit
+                        hx-post="{view.actionUrl}"
+                        hx-target="{view.targetSelector}"
+                        hx-swap="{view.swap}"
+                        hx-target-error="#toast"
+                        hx-swap-error="innerHTML">
+                    <span data-i18n="{view.confirmKey}">{view.confirmDefault}</span>
+                </button>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>

@@ -828,11 +828,31 @@ public class App {
             return this;
         }
 
+        public LibraryPage assertPublishedNotPresent(String title) {
+            var cards = driver.findElements(By.cssSelector(".drafts-list .draft-card__title"));
+            assertThat(cards).extracting(WebElement::getText)
+                             .noneMatch(text -> text.contains(title));
+            return this;
+        }
+
+        public LibraryPage assertPublishedPresent(String title) {
+            assertThat(driver.getPageSource()).contains(title);
+            return this;
+        }
+
         public LibraryPage deleteFirstDraft() {
             var deleteBtn = wait.until(visibilityOfElementLocated(cssSelector(".draft-card .btn--danger")));
             reliableClick(deleteBtn);
-            driver.switchTo().alert().accept();
-            wait.until(d -> driver.findElements(cssSelector(".draft-card")).isEmpty());
+            submitConfirmModal();
+            wait.until(d -> driver.findElements(cssSelector(".draft-card .btn--danger")).isEmpty());
+            waitForReady();
+            return this;
+        }
+
+        private LibraryPage submitConfirmModal() {
+            wait.until(visibilityOfElementLocated(cssSelector("#confirmModal.modal--open")));
+            var confirmBtn = wait.until(elementToBeClickable(cssSelector("#confirmModal [data-confirm-submit]")));
+            reliableClick(confirmBtn);
             return this;
         }
 
@@ -840,6 +860,15 @@ public class App {
             var tabButton = wait.until(elementToBeClickable(cssSelector(".library-tab[data-tab='" + tab + "']")));
             reliableClick(tabButton);
             wait.until(visibilityOfElementLocated(cssSelector(".library-tab.library-tab--active[data-tab='" + tab + "']")));
+            waitForReady();
+            return this;
+        }
+
+        public LibraryPage unpublishFirstPublished() {
+            var unpublishBtn = wait.until(visibilityOfElementLocated(cssSelector(".draft-card .btn--outline")));
+            reliableClick(unpublishBtn);
+            submitConfirmModal();
+            wait.until(d -> driver.findElements(cssSelector(".draft-card .btn--outline")).isEmpty());
             waitForReady();
             return this;
         }

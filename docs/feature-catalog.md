@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-23 · Personal reading list (saved posts)
+**Last verified:** 2026-06-24 · Post unpublish and delete
 
 ---
 
@@ -99,7 +99,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Edit draft/post | `USER` | `GET /write/draft/{id}` | 3 | Open user menu → **Writing** → **Edit** on library row. |
 | Edit own published post | `USER` | `GET /write/draft/{id}` | 4 | Home → blog → post → **Edit** (author only). |
 | Library (published tab) | `USER` | `GET /writing/library` + tab | 2 | **Writing** hub → **Published** tab (+0). |
-| Delete draft | `USER` | HTMX delete on library | 2 | **Writing** hub → **Delete** on draft row. |
+| Unpublish post | `USER` | `POST /forms/posts/{postId}/unpublish` | 3 | **Writing** hub → **Published** tab → **Despublicar** on row. |
+| Delete draft | `USER` | `DELETE /forms/posts/{postId}` | 3 | **Writing** hub → **Drafts** tab → **Excluir** on row. |
 | Save draft | `USER` | `POST /forms/write/draft` | — | On `/write` → header **Salvar Rascunho** (no extra navigation). |
 | Publish post | `USER` | `POST /forms/write/publish` | — | On `/write` → header **Publicar**. |
 | Image library (Writing hub) | `USER` | `GET /writing/images` (+ optional `?q=` search) | 2 | Open user menu → **Writing** → **Images** in left nav; search filters by alt text or path. |
