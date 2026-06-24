@@ -1569,6 +1569,69 @@
   color: var(--color-text-muted);
 }
 
+/* ========== READING LIST (SAVED POSTS) ========== */
+
+.reading-list-page__summary {
+  margin: 0 0 var(--spacing-md);
+  color: var(--color-text-muted);
+}
+
+.reading-list-page__empty {
+  margin: var(--spacing-lg) 0 0;
+  color: var(--color-text-muted);
+}
+
+.reading-list-page__list {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-lg) 0 0;
+}
+
+.reading-list-page__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reading-list-page__row--read {
+  opacity: 0.75;
+}
+
+.reading-list-page__row--unavailable .reading-list-page__title--unavailable {
+  text-decoration: line-through;
+}
+
+.reading-list-page__title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: 1.05rem;
+}
+
+.reading-list-page__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reading-list-page__title a:hover {
+  color: var(--color-primary);
+}
+
+.reading-list-page__byline,
+.reading-list-page__date {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.reading-list-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
 .subscription-list {
   list-style: none;
   padding: 0;

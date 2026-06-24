@@ -127,6 +127,14 @@ public final class I18nKeys {
     public static final String TOAST_HIGHLIGHT_PROPOSAL_REJECTED = "toast.highlight.proposalRejected";
     public static final String TOAST_POST_RESPONSE_PENDING = "toast.postResponse.pending";
 
+    // Toasts — reading list
+    public static final String TOAST_READING_LIST_SAVED = "toast.readingList.saved";
+    public static final String TOAST_READING_LIST_ALREADY_SAVED = "toast.readingList.alreadySaved";
+    public static final String TOAST_READING_LIST_MARKED_READ = "toast.readingList.markedRead";
+    public static final String TOAST_READING_LIST_MARKED_UNREAD = "toast.readingList.markedUnread";
+    public static final String TOAST_READING_LIST_REMOVED = "toast.readingList.removed";
+    public static final String TOAST_READING_LIST_LIMIT_REACHED = "toast.readingList.limitReached";
+
     // Toasts — tag
     public static final String TOAST_TAG_UPDATED = "toast.tag.updated";
 

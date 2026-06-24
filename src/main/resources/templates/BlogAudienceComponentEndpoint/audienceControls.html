@@ -1,35 +1,59 @@
 {#if audience.showControls}
-<div id="blog-audience-{audience.blogId}" class="blog-audience"
+<div id="blog-audience-{audience.blogId}" class="blog-audience post-action-bar__segment"
      hx-get="/components/blogs/{audience.blogId}/audience"
      hx-trigger="{authRefreshTrigger}"
      hx-swap="outerHTML"
      {#if oob.or(false)} hx-swap-oob="outerHTML"{/if}>
     {#if audience.authenticated}
     <button type="button"
-            class="btn btn--outline btn--small {#if audience.following}btn--active{/if}"
+            class="post-action-btn post-action-btn--follow {#if audience.following}post-action-btn--active{/if}"
             hx-post="/forms/blogs/{audience.blogId}/follow"
             hx-target="#blog-audience-{audience.blogId}"
             hx-swap="outerHTML">
-        {#if audience.following}Following{#else}Follow{/if}
+        <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        {#if audience.following}<span data-i18n="audience.following">Seguindo</span>{#else}<span data-i18n="audience.follow">Seguir</span>{/if}
     </button>
     <button type="button"
-            class="btn btn--outline btn--small {#if audience.emailSubscribed}btn--active{/if}"
+            class="post-action-btn post-action-btn--subscribe {#if audience.emailSubscribed}post-action-btn--active{/if}"
             hx-post="/forms/blogs/{audience.blogId}/subscribe"
             hx-target="#blog-audience-{audience.blogId}"
             hx-swap="outerHTML">
-        {#if audience.emailSubscribed}Subscribed{#else}Subscribe by email{/if}
+        <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+        </svg>
+        {#if audience.emailSubscribed}<span data-i18n="audience.subscribed">Inscrito</span>{#else}<span data-i18n="audience.subscribe">Assinar por e-mail</span>{/if}
     </button>
     {#else}
     <button type="button"
-            class="btn btn--outline btn--small"
+            class="post-action-btn post-action-btn--follow"
             hx-get="/auth/modal?mode=login"
             hx-target="#modal-container"
-            hx-swap="innerHTML" data-i18n="audience.follow">Seguir</button>
+            hx-swap="innerHTML">
+        <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span data-i18n="audience.follow">Seguir</span>
+    </button>
     <button type="button"
-            class="btn btn--outline btn--small"
+            class="post-action-btn post-action-btn--subscribe"
             hx-get="/auth/modal?mode=login"
             hx-target="#modal-container"
-            hx-swap="innerHTML" data-i18n="audience.subscribe">Assinar por e-mail</button>
+            hx-swap="innerHTML">
+        <svg class="post-action-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+        </svg>
+        <span data-i18n="audience.subscribe">Assinar por e-mail</span>
+    </button>
     {/if}
 </div>
 {/if}

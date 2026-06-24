@@ -1,0 +1,35 @@
+<h2 class="hub-panel__title" data-i18n="reading.saved.title">Para ler</h2>
+<p class="hub-panel__subtitle" data-i18n="reading.saved.subtitle">Posts que você salvou para ler depois.</p>
+
+{#if unreadCount > 0}
+<p class="reading-list-page__summary">{unreadCount} não lidos</p>
+{/if}
+
+<div class="library-tabs__row">
+    <div class="library-tabs">
+        <button type="button" class="library-tab library-tab--active"
+                data-tab="unread"
+                hx-get="/reading/saved/components/tab/unread"
+                hx-target="#savedListContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                hx-indicator="#saved-htmx-indicator"
+                data-i18n="reading.saved.tab.unread">Não lidos</button>
+        <button type="button" class="library-tab"
+                data-tab="all"
+                hx-get="/reading/saved/components/tab/all"
+                hx-target="#savedListContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                hx-indicator="#saved-htmx-indicator"
+                data-i18n="reading.saved.tab.all">Todos</button>
+    </div>
+    {#include components/htmx-spinner id='saved-htmx-indicator' /}
+</div>
+
+<div id="savedListContent"
+     hx-trigger="load"
+     hx-get="/reading/saved/components/tab/unread"
+     hx-swap="innerHTML">
+    <div class="loading-spinner" data-i18n="common.loading">Carregando...</div>
+</div>

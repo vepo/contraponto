@@ -42,7 +42,7 @@ class BlogAudienceEndpointTest {
         session(follower).get("/components/blogs/" + authorBlog.getId() + "/audience")
                          .then()
                          .statusCode(200)
-                         .body(containsString("Follow"));
+                         .body(containsString("data-i18n=\"audience.follow\""));
     }
 
     @Test

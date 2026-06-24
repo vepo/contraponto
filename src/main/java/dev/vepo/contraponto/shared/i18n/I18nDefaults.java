@@ -50,6 +50,12 @@ public final class I18nDefaults {
     public static final String TAG_MISSING = "Tag ausente.";
     public static final String IMAGE_UPDATED = "Imagem atualizada.";
     public static final String BLOG_NOT_FOUND_AUDIENCE = "Blog não encontrado.";
+    public static final String READING_LIST_SAVED = "Post salvo para ler.";
+    public static final String READING_LIST_ALREADY_SAVED = "Já está na lista.";
+    public static final String READING_LIST_MARKED_READ = "Marcado como lido.";
+    public static final String READING_LIST_MARKED_UNREAD = "Marcado como não lido.";
+    public static final String READING_LIST_REMOVED = "Removido da lista.";
+    public static final String READING_LIST_LIMIT_REACHED = "Lista cheia (máximo 500 itens).";
 
     private I18nDefaults() {}
 }

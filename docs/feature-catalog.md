@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-06 · Home guest introduction masthead for unauthenticated visitors
+**Last verified:** 2026-06-23 · Personal reading list (saved posts)
 
 ---
 
@@ -92,6 +92,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 |---------|----------|-----|------:|---------------------|
 | Writing hub (library) | `USER` | `GET /writing` | 2 | Open user menu → **Writing** (library panel default). |
 | Reading hub (highlights) | `USER` | `GET /reading` | 2 | Open user menu → **Reading** (highlights panel default). |
+| Reading hub — saved for later | `USER` | `GET /reading/saved` | 2 | Open user menu → **Reading** → **Saved for later** in left nav. |
 | Reading hub — notes | `USER` | `GET /reading/notes` | 2 | Open user menu → **Reading** → **Notes** in left nav. |
 | New post (from hub) | `USER` | `GET /write` | 3 | Open user menu → **Writing** → **Write** in left nav. |
 | New post | `USER` | `GET /write` | 1 | Header **Escrever** (Write) button. |
@@ -144,6 +145,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Email subscribe (guest) | guest | via login modal | 3 | Blog/post → **Subscribe by email** → **Sign in**. |
 | Post comment | signed in | `POST /forms/posts/{postId}/comments` | 3 | Home → blog → post → submit comment form. |
 | Post comment (guest) | guest | via login modal | 4 | Post → **Sign in** → submit comment. |
+| Save post for later | signed in | `POST /forms/posts/{postId}/reading-list` | 3 | Home → blog → post → **Save for later** in page-top actions. |
+| Mark post as read (reading list) | signed in | `POST /forms/reading-list/{itemId}/read` | 3 | Post **Mark as read** **or** Reading hub → Saved → row action. |
 | Highlight passage | signed in | `POST /forms/posts/{postId}/highlights` | 3 | Home → blog → post → select text in body → **Highlight**. |
 | Highlight passage (guest) | guest | via login modal | 4 | Post → select text → **Sign in to highlight**. |
 | Add note to highlight | signed in | `GET /forms/highlights/{id}/notes/modal`, `POST …/notes` | 4 | Post → select text → **Add note** → dialog → **OK**. |

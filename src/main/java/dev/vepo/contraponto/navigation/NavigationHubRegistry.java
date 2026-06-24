@@ -83,7 +83,8 @@ public class NavigationHubRegistry {
 
     private List<HubNavGroup> readingGroups() {
         return List.of(new HubNavGroup("Reading",
-                                       List.of(new HubSectionNav("highlights", "Highlights"),
+                                       List.of(new HubSectionNav("saved", "Para ler", "reading.nav.saved"),
+                                               new HubSectionNav("highlights", "Highlights"),
                                                new HubSectionNav("notes", "Notes"))));
     }
 
