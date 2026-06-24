@@ -1,6 +1,10 @@
 package dev.vepo.contraponto.comment;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import dev.vepo.contraponto.shared.pagination.Page;
@@ -32,6 +36,28 @@ public class PostCommentRepository {
                             .setParameter("rootId", rootId)
                             .setParameter(PARAM_STATUS, CommentStatus.APPROVED)
                             .getSingleResult();
+    }
+
+    public Map<LocalDate, Long> countDailyPlatform(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT CAST(created_at AS date), COUNT(*)
+                                                              FROM tb_post_comments
+                                                              WHERE created_at >= :start
+                                                                AND created_at < :end
+                                                              GROUP BY CAST(created_at AS date)
+                                                              ORDER BY 1
+                                                              """)
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .getResultList();
+
+        Map<LocalDate, Long> counts = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            LocalDate day = row[0] instanceof java.sql.Date sqlDate ? sqlDate.toLocalDate() : LocalDate.parse(row[0].toString());
+            counts.put(day, ((Number) row[1]).longValue());
+        }
+        return counts;
     }
 
     public Optional<PostComment> findById(long commentId) {

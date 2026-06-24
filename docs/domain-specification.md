@@ -267,6 +267,9 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Author blogs** | List, create, and edit own blogs (name, slug, banner) in the Writing hub. Extended settings (description, active, Git) on the blog settings form. | `BlogManageEndpoint`, Writing hub `blogs` section |
 | **Platform blog management** | Editors list all blogs and deactivate others’ secondary blogs. | `BlogManageEndpoint`, Manage hub `blogs` section (`EDITOR`+) |
 | **User management** | Administrators create and edit users, roles, and passwords. | `UserManageEndpoint`, `UserSaveEndpoint` |
+| **Platform insights** | Administration panel showing platform-wide daily engagement metrics: post views, unique visitors (registered vs guest), highlights added, and comments created. | `PlatformInsightsEndpoint`, `/administration/insights` |
+| **Daily unique registered visitor** | Distinct logged-in user ids with at least one post **View count** row that calendar day. | `ViewRepository.countDailyUniqueVisitorsPlatform` |
+| **Daily unique guest visitor** | Distinct anonymous view sessions (`session_id` where `user_id` is null) with at least one post view that day. | `ViewRepository.countDailyUniqueVisitorsPlatform` |
 | **Review** | Editor queue of published posts to toggle featured. | `ReviewEndpoint` — title: "Review Featured Posts" |
 | **Navigation hub** | Logged-in shell with sticky left sidebar sections and distinct URLs per feature (Writing → Library, Images, Blogs, Appearance; Manage; Account; Review; Administration). Writing hub does not duplicate the header Write action. Manage **Blogs** nav is visible only to `EDITOR`+. Menu opens the hub default section. | `navigation` package — `/writing`, `/manage`, `/account`, `/editor`, `/administration` and `/{hub}/{section}` |
 | **Breadcrumb trail** | Ordered navigation labels from Home or a hub to the current page; last item is not linked. | `BreadcrumbService`, `components/breadcrumb.html` |
@@ -297,6 +300,12 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Menu — account hub | `menu.account` | Conta | Account | User menu → `/account` |
 | Menu — review hub | `menu.review` | Revisão | Review | User menu (editor) → `/editor` |
 | Menu — administration hub | `menu.administration` | Administração | Administration | User menu (admin) → `/administration` |
+| Administration — platform insights nav | `administration.nav.insights` | Insights da plataforma | Platform insights | Administration hub → `/administration/insights` |
+| Platform insights — title | `platformInsights.title` | Insights da plataforma | Platform insights | Administration insights panel |
+| Platform insights — daily post views | `platformInsights.dailyPostViews` | Visualizações diárias de posts | Daily post views | Platform insights chart |
+| Platform insights — daily unique visitors | `platformInsights.dailyUniqueVisitors` | Visitantes únicos diários | Daily unique visitors | Platform insights chart (registered vs guest) |
+| Platform insights — daily highlights | `platformInsights.dailyHighlights` | Destaques adicionados por dia | Daily highlights added | Platform insights chart |
+| Platform insights — daily comments | `platformInsights.dailyComments` | Comentários por dia | Daily comments | Platform insights chart |
 | Breadcrumb — home | `breadcrumb.home` | Início | Home | Public pages root segment |
 | Write — header | `write.title` | Escrever | Write | Header button → `/write` (icon + label) |
 | Write — dirty editor | — | — | — | Post form on `/write` or `/write/draft/{id}` differs from the snapshot taken when the editor mounted |

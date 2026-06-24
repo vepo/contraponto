@@ -1,0 +1,107 @@
+<div id="platformInsightsAnalytics" class="dashboard-analytics">
+    <div id="platformInsightsAnalytics-controls" class="dashboard-analytics__toolbar">
+        <div class="dashboard-analytics__month-nav">
+            <a class="dashboard-analytics__month-link"
+               data-hx-get="/administration/insights/components/analytics?year={insights.previousYear}&month={insights.previousMonth}"
+               hx-target="#platformInsightsAnalytics"
+               hx-swap="outerHTML"
+               hx-push-url="false" data-i18n="dashboard.previousMonth">Mês anterior</a>
+            <span class="dashboard-analytics__month-label">{insights.monthLabel}</span>
+            {#if insights.canGoNextMonth}
+            <a class="dashboard-analytics__month-link"
+               data-hx-get="/administration/insights/components/analytics?year={insights.nextYear}&month={insights.nextMonth}"
+               hx-target="#platformInsightsAnalytics"
+               hx-swap="outerHTML"
+               hx-push-url="false" data-i18n="dashboard.nextMonth">Próximo mês</a>
+            {/if}
+        </div>
+
+        <input type="hidden" name="year" value="{insights.year}">
+        <input type="hidden" name="month" value="{insights.month}">
+    </div>
+
+    <section class="dashboard-chart" aria-labelledby="platformInsightsPostViewsTitle">
+        <h3 id="platformInsightsPostViewsTitle" class="dashboard-chart__title" data-i18n="platformInsights.dailyPostViews">Visualizações diárias de posts</h3>
+        <p class="dashboard-chart__summary">
+            <span data-i18n="platformInsights.postViewsThisMonth" data-i18n-params='{"n": "{insights.postViews.total}"}'>{insights.postViews.total} visualizações este mês</span>
+        </p>
+        <div class="dashboard-chart__plot" role="img" aria-label="Daily post views for {insights.monthLabel}">
+            {#for day in insights.postViews.days}
+            <div class="dashboard-chart__day" title="Day {day.day.dayOfMonth}: {day.count} views">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(insights.postViewsChartMax)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+
+    <section class="dashboard-chart" aria-labelledby="platformInsightsUniqueVisitorsTitle">
+        <h3 id="platformInsightsUniqueVisitorsTitle" class="dashboard-chart__title" data-i18n="platformInsights.dailyUniqueVisitors">Visitantes únicos diários</h3>
+        <p class="dashboard-chart__summary">
+            <span data-i18n="platformInsights.registeredVisitorsThisMonth" data-i18n-params='{"n": "{insights.monthlyUniqueVisitors.registeredVisitors}"}'>{insights.monthlyUniqueVisitors.registeredVisitors} visitantes com conta este mês</span>
+            <span data-i18n="platformInsights.guestVisitorsThisMonth" data-i18n-params='{"n": "{insights.monthlyUniqueVisitors.guestVisitors}"}'> · {insights.monthlyUniqueVisitors.guestVisitors} visitantes convidados este mês</span>
+        </p>
+        <div class="dashboard-chart__legend">
+            <span class="dashboard-chart__legend-item dashboard-chart__legend-item--current" data-i18n="platformInsights.registeredVisitorsLegend">Com conta Contraponto</span>
+            <span class="dashboard-chart__legend-item dashboard-chart__legend-item--comparison" data-i18n="platformInsights.guestVisitorsLegend">Sem conta (convidado)</span>
+        </div>
+        <div class="dashboard-chart__plot" role="img" aria-label="Daily unique visitors for {insights.monthLabel}">
+            {#for day in insights.uniqueVisitors.days}
+            <div class="dashboard-chart__day"
+                 title="Day {day.day.dayOfMonth}: {day.registeredVisitors} registered, {day.guestVisitors} guest">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.registeredBarHeightPercent(insights.uniqueVisitorsChartMax)}%"
+                         {#if day.registeredVisitors > 0}data-has-value="true"{/if}></div>
+                    <div class="dashboard-chart__bar dashboard-chart__bar--comparison"
+                         style="height: {day.guestBarHeightPercent(insights.uniqueVisitorsChartMax)}%"
+                         {#if day.guestVisitors > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+
+    <section class="dashboard-chart" aria-labelledby="platformInsightsHighlightsTitle">
+        <h3 id="platformInsightsHighlightsTitle" class="dashboard-chart__title" data-i18n="platformInsights.dailyHighlights">Destaques adicionados por dia</h3>
+        <p class="dashboard-chart__summary">
+            <span data-i18n="platformInsights.highlightsThisMonth" data-i18n-params='{"n": "{insights.highlightsAdded.total}"}'>{insights.highlightsAdded.total} destaques este mês</span>
+        </p>
+        <div class="dashboard-chart__plot" role="img" aria-label="Daily highlights for {insights.monthLabel}">
+            {#for day in insights.highlightsAdded.days}
+            <div class="dashboard-chart__day" title="Day {day.day.dayOfMonth}: {day.count} highlights">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(insights.highlightsChartMax)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+
+    <section class="dashboard-chart" aria-labelledby="platformInsightsCommentsTitle">
+        <h3 id="platformInsightsCommentsTitle" class="dashboard-chart__title" data-i18n="platformInsights.dailyComments">Comentários por dia</h3>
+        <p class="dashboard-chart__summary">
+            <span data-i18n="platformInsights.commentsThisMonth" data-i18n-params='{"n": "{insights.commentsCreated.total}"}'>{insights.commentsCreated.total} comentários este mês</span>
+        </p>
+        <div class="dashboard-chart__plot" role="img" aria-label="Daily comments for {insights.monthLabel}">
+            {#for day in insights.commentsCreated.days}
+            <div class="dashboard-chart__day" title="Day {day.day.dayOfMonth}: {day.count} comments">
+                <div class="dashboard-chart__bars">
+                    <div class="dashboard-chart__bar dashboard-chart__bar--current"
+                         style="height: {day.barHeightPercent(insights.commentsChartMax)}%"
+                         {#if day.count > 0}data-has-value="true"{/if}></div>
+                </div>
+                <span class="dashboard-chart__day-label">{day.day.dayOfMonth}</span>
+            </div>
+            {/for}
+        </div>
+    </section>
+</div>

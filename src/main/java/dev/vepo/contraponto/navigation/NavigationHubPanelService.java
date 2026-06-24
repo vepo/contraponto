@@ -19,6 +19,7 @@ import dev.vepo.contraponto.library.LibraryEndpoint;
 import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
 import dev.vepo.contraponto.notification.NotificationEndpoint;
 import dev.vepo.contraponto.notification.SubscriptionEndpoint;
+import dev.vepo.contraponto.platforminsights.PlatformInsightsEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.shared.infra.LoggedUser;
@@ -53,6 +54,7 @@ public class NavigationHubPanelService {
     private final AccountSecurityEndpoint accountSecurityEndpoint;
     private final AuthorAppearanceEndpoint authorAppearanceEndpoint;
     private final UserManageEndpoint userManageEndpoint;
+    private final PlatformInsightsEndpoint platformInsightsEndpoint;
     private final NavigationHubRegistry registry;
 
     @Inject
@@ -76,6 +78,7 @@ public class NavigationHubPanelService {
                                      AccountSecurityEndpoint accountSecurityEndpoint,
                                      AuthorAppearanceEndpoint authorAppearanceEndpoint,
                                      UserManageEndpoint userManageEndpoint,
+                                     PlatformInsightsEndpoint platformInsightsEndpoint,
                                      NavigationHubRegistry registry) {
         this.postRepository = postRepository;
         this.viewRepository = viewRepository;
@@ -97,6 +100,7 @@ public class NavigationHubPanelService {
         this.accountSecurityEndpoint = accountSecurityEndpoint;
         this.authorAppearanceEndpoint = authorAppearanceEndpoint;
         this.userManageEndpoint = userManageEndpoint;
+        this.platformInsightsEndpoint = platformInsightsEndpoint;
         this.registry = registry;
     }
 
@@ -153,10 +157,13 @@ public class NavigationHubPanelService {
     }
 
     private TemplateInstance renderAdministration(String sectionSlug, int page) {
-        if ("users".equals(sectionSlug)) {
-            return userManageEndpoint.renderHubPanel(page, registry.sectionPath(NavigationHub.ADMINISTRATION, sectionSlug));
-        }
-        throw new NotFoundException("Unknown administration section: %s".formatted(sectionSlug));
+        return switch (sectionSlug) {
+            case "users" -> userManageEndpoint.renderHubPanel(page,
+                                                              registry.sectionPath(NavigationHub.ADMINISTRATION,
+                                                                                   sectionSlug));
+            case "insights" -> platformInsightsEndpoint.renderHubPanel();
+            default -> throw new NotFoundException("Unknown administration section: %s".formatted(sectionSlug));
+        };
     }
 
     private TemplateInstance renderDashboardPanel() {

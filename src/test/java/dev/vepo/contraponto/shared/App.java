@@ -1059,6 +1059,37 @@ public class App {
         }
     }
 
+    public class PlatformInsightsPage extends Page<PlatformInsightsPage> {
+        private PlatformInsightsPage() {}
+
+        public PlatformInsightsPage assertAnalyticsLoaded() {
+            wait.until(visibilityOfElementLocated(cssSelector("#platformInsightsAnalytics .dashboard-chart")));
+            return this;
+        }
+
+        public PlatformInsightsPage assertManagePageNotLoaded() {
+            assertThat(driver.findElements(cssSelector(".hub-panel__title"))).isEmpty();
+            return this;
+        }
+
+        public PlatformInsightsPage assertPostViewsSummary(long expectedViews) {
+            var summary = wait.until(visibilityOfElementLocated(cssSelector("#platformInsightsPostViewsTitle + .dashboard-chart__summary")));
+            assertThat(summary.getText()).contains(Long.toString(expectedViews));
+            return this;
+        }
+
+        public PlatformInsightsPage assertTitle(String expected) {
+            var title = wait.until(visibilityOfElementLocated(cssSelector(".hub-panel__title")));
+            assertThat(title.getText()).isEqualTo(expected);
+            return this;
+        }
+
+        public PlatformInsightsPage assertUniqueVisitorsLegendVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector("#platformInsightsUniqueVisitorsTitle ~ .dashboard-chart__legend")));
+            return this;
+        }
+    }
+
     public class PostPage extends Page<PostPage> {
         private static final String FOLLOW_BUTTON_SELECTOR = ".blog-audience button[hx-post*='/follow']";
 
@@ -2989,6 +3020,17 @@ public class App {
         return this;
     }
 
+    public PlatformInsightsPage goToPlatformInsights(int year, int month) {
+        platformInsights();
+        var path = "/administration/insights/components/analytics?year=%d&month=%d".formatted(year, month);
+        ((JavascriptExecutor) driver).executeScript("""
+                                                    htmx.ajax('GET', arguments[0], {target: '#platformInsightsAnalytics', swap: 'outerHTML'});
+                                                    """, path);
+        waitForReady();
+        wait.until(visibilityOfElementLocated(cssSelector("#platformInsightsAnalytics .dashboard-chart")));
+        return new PlatformInsightsPage();
+    }
+
     public PostPage goToPost(User user, String slug) {
         driver.navigate().to(this.rootUri + "/" + user.getUsername() + "/post/" + slug);
         waitForReady();
@@ -3103,6 +3145,11 @@ public class App {
     public PasswordRecoveryPage passwordRecovery() {
         _goTo("/password-recovery");
         return new PasswordRecoveryPage();
+    }
+
+    public PlatformInsightsPage platformInsights() {
+        _goTo("/administration/insights");
+        return new PlatformInsightsPage();
     }
 
     public ProfilePage profile() {

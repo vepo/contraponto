@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-24 · Post unpublish and delete
+**Last verified:** 2026-06-24 · Platform insights BI page
 
 ---
 
@@ -180,6 +180,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 |---------|----------|-----|------:|-------------------------------|
 | Administration hub (users) | admin | `GET /administration` | 2 | Open user menu → **Administration** (users panel default). |
 | User list | admin | `GET /administration/users` | 2 | Same as Administration hub (bookmarkable section URL). |
+| Platform insights | admin | `GET /administration/insights` | 3 | Open user menu → **Administration** → **Platform insights**. |
 | New user | admin | `GET /users/new` | 4 | **Users** → **New User**. |
 | Edit user | admin | `GET /users/{id}/edit` | 4 | **Users** → **Edit** on row. |
 

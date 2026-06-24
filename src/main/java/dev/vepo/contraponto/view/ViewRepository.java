@@ -53,12 +53,66 @@ public class ViewRepository {
                                            .setParameter("end", endExclusive)
                                            .getResultList();
 
-        Map<LocalDate, Long> counts = new LinkedHashMap<>();
+        return toDailyCounts(rows);
+    }
+
+    public Map<LocalDate, Long> countDailyPlatform(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT CAST(viewed_at AS date), COUNT(*)
+                                                              FROM tb_views
+                                                              WHERE viewed_at >= :start
+                                                                AND viewed_at < :end
+                                                              GROUP BY CAST(viewed_at AS date)
+                                                              ORDER BY 1
+                                                              """)
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .getResultList();
+
+        return toDailyCounts(rows);
+    }
+
+    public Map<LocalDate, DailyUniqueVisitors> countDailyUniqueVisitorsPlatform(LocalDateTime startInclusive,
+                                                                                LocalDateTime endExclusive) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT CAST(viewed_at AS date),
+                                                                     COUNT(DISTINCT user_id) FILTER (WHERE user_id IS NOT NULL),
+                                                                     COUNT(DISTINCT session_id) FILTER (WHERE user_id IS NULL)
+                                                              FROM tb_views
+                                                              WHERE viewed_at >= :start
+                                                                AND viewed_at < :end
+                                                              GROUP BY CAST(viewed_at AS date)
+                                                              ORDER BY 1
+                                                              """)
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .getResultList();
+
+        Map<LocalDate, DailyUniqueVisitors> counts = new LinkedHashMap<>();
         for (Object[] row : rows) {
-            LocalDate day = row[0] instanceof java.sql.Date sqlDate ? sqlDate.toLocalDate() : LocalDate.parse(row[0].toString());
-            counts.put(day, ((Number) row[1]).longValue());
+            LocalDate day = toLocalDate(row[0]);
+            long registered = ((Number) row[1]).longValue();
+            long guest = ((Number) row[2]).longValue();
+            counts.put(day, new DailyUniqueVisitors(registered, guest));
         }
         return counts;
+    }
+
+    public DailyUniqueVisitors countMonthlyUniqueVisitorsPlatform(LocalDateTime startInclusive,
+                                                                  LocalDateTime endExclusive) {
+        Object[] row = (Object[]) entityManager.createNativeQuery("""
+                                                                  SELECT COUNT(DISTINCT user_id) FILTER (WHERE user_id IS NOT NULL),
+                                                                         COUNT(DISTINCT session_id) FILTER (WHERE user_id IS NULL)
+                                                                  FROM tb_views
+                                                                  WHERE viewed_at >= :start
+                                                                    AND viewed_at < :end
+                                                                  """)
+                                               .setParameter("start", startInclusive)
+                                               .setParameter("end", endExclusive)
+                                               .getSingleResult();
+        return new DailyUniqueVisitors(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
     }
 
     public Map<Long, Long> getViewCountsForPosts(List<Long> postIds) {
@@ -118,5 +172,18 @@ public class ViewRepository {
                      .setParameter("sessionId", sessionId)
                      .setParameter("viewedAt", viewedAt)
                      .executeUpdate();
+    }
+
+    private Map<LocalDate, Long> toDailyCounts(List<Object[]> rows) {
+        Map<LocalDate, Long> counts = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            LocalDate day = toLocalDate(row[0]);
+            counts.put(day, ((Number) row[1]).longValue());
+        }
+        return counts;
+    }
+
+    private LocalDate toLocalDate(Object value) {
+        return value instanceof java.sql.Date sqlDate ? sqlDate.toLocalDate() : LocalDate.parse(value.toString());
     }
 }

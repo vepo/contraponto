@@ -19,7 +19,9 @@ public class NavigationHubRegistry {
     }
 
     private List<HubNavGroup> administrationGroups() {
-        return List.of(new HubNavGroup("Platform", List.of(new HubSectionNav("users", "Users"))));
+        return List.of(new HubNavGroup("Platform",
+                                       List.of(new HubSectionNav("users", "Users"),
+                                               new HubSectionNav("insights", "Platform insights", "administration.nav.insights"))));
     }
 
     public String defaultSectionPath(NavigationHub hub) {
