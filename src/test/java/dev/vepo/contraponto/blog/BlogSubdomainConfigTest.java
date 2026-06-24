@@ -35,6 +35,14 @@ class BlogSubdomainConfigTest {
     }
 
     @Test
+    void shouldSkipSubdomainRewrite_forFavicon() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+
+        assertThat(config.shouldSkipSubdomainRewrite("/favicon.svg")).isTrue();
+        assertThat(config.shouldSkipSubdomainRewrite("/favicon.ico")).isTrue();
+    }
+
+    @Test
     void shouldSkipSubdomainRewrite_forStaticAssets() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 

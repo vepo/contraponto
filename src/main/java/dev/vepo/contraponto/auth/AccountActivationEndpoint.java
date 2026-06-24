@@ -62,7 +62,7 @@ public class AccountActivationEndpoint {
 
         var loggedUser = maybeLoggedUser.get();
         return Response.seeOther(UriBuilder.fromPath("/").build())
-                       .header("Set-Cookie", sessionCookieSupport.buildSessionCookie(loggedUser.getSessionId()))
+                       .cookie(sessionCookieSupport.buildSessionNewCookie(loggedUser.getSessionId()))
                        .build();
     }
 

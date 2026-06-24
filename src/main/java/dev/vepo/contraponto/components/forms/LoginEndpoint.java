@@ -8,8 +8,8 @@ import dev.vepo.contraponto.components.MenuEndpoint;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.security.SessionConstants;
-import dev.vepo.contraponto.user.LoggedUserProvider;
 import dev.vepo.contraponto.shared.security.SessionCookieSupport;
+import dev.vepo.contraponto.user.LoggedUserProvider;
 import dev.vepo.contraponto.user.UserRepository;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
 import dev.vepo.contraponto.view.SessionIdProvider;
@@ -61,26 +61,12 @@ public class LoginEndpoint {
         this.sessionCookieSupport = sessionCookieSupport;
     }
 
-    /**
-     * Returns a consistent error response for authentication failures.
-     */
     private Response buildErrorResponse(String i18nKey, String ptBrMessage) {
         return Response.status(Status.BAD_REQUEST)
                        .entity(ERROR_MESSAGE_HTML.formatted(i18nKey, ptBrMessage))
                        .build();
     }
 
-    /**
-     * Builds the Set-Cookie header value for the session cookie.
-     */
-    private String buildSessionCookieHeader(String sessionId) {
-        return sessionCookieSupport.buildSessionCookie(sessionId);
-    }
-
-    /**
-     * Builds the HTML response for a successful login. Uses OOB swap to replace the
-     * menu and clear the auth modal.
-     */
     private String buildSuccessResponseBody(String menuHtml) {
         return String.format("""
                              <div hx-swap-oob="true" id="%s">%s</div>
@@ -88,9 +74,6 @@ public class LoginEndpoint {
                              """, HtmxTriggers.MENU_CONTAINER_ID, menuHtml, MODAL_CLEAR_OOB);
     }
 
-    /**
-     * Utility method to check for blank strings (null, empty, or only whitespace).
-     */
     private boolean isBlank(String str) {
         return str == null || str.isBlank();
     }
@@ -102,7 +85,6 @@ public class LoginEndpoint {
                           @FormParam("password") String password,
                           @Context HttpHeaders headers) {
 
-        // Input validation
         if (isBlank(login) || isBlank(password)) {
             logger.warn("Login attempt with empty email or password");
             return buildErrorResponse(I18nKeys.AUTH_ERROR_LOGIN_REQUIRED,
@@ -121,15 +103,12 @@ public class LoginEndpoint {
                                                                "Usuário/e-mail ou senha inválidos.");
                                  }
 
-                                 // get anonymous session ID from cookie before login
                                  var viewCookie = headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE);
                                  var anonymousSessionId = viewCookie != null ? viewCookie.getValue() : null;
 
-                                 // Successful login
                                  var loggedUser = loggedUserProvider.login(user);
                                  logger.info("User logged in successfully: {}", login);
 
-                                 // migrate anonymous views and reading sessions
                                  if (anonymousSessionId != null && !anonymousSessionId.isBlank()) {
                                      viewRepository.migrateAnonymousViewsToUser(loggedUser.getId(), anonymousSessionId);
                                      readingTimeRepository.migrateAnonymousSessionsToUser(loggedUser.getId(),
@@ -140,7 +119,7 @@ public class LoginEndpoint {
                                  var responseBody = buildSuccessResponseBody(menuHtml);
 
                                  return Response.ok(responseBody)
-                                                .header("Set-Cookie", buildSessionCookieHeader(loggedUser.getSessionId()))
+                                                .cookie(sessionCookieSupport.buildSessionNewCookie(loggedUser.getSessionId()))
                                                 .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_IN_ON_BODY)
                                                 .build();
                              })

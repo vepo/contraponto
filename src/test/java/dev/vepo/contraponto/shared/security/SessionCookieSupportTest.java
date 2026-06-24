@@ -10,13 +10,25 @@ import dev.vepo.contraponto.shared.UnitTest;
 class SessionCookieSupportTest {
 
     @Test
+    void buildClearSessionCookieClearsDomainScopedCookie() {
+        var support = new SessionCookieSupport(true, 86400, ".example.test");
+
+        var cookie = support.buildClearSessionCookie();
+
+        assertThat(cookie).contains("__session=");
+        assertThat(cookie).contains("Max-Age=0");
+        assertThat(cookie).contains("Domain=.example.test");
+        assertThat(cookie).contains("Secure");
+    }
+
+    @Test
     void buildSessionCookieAddsDomainWhenConfigured() {
         var support = new SessionCookieSupport(true, 86400, ".example.test");
 
         var cookie = support.buildSessionCookie("abc-123");
 
         assertThat(cookie).contains("Domain=.example.test");
-        assertThat(cookie).endsWith("; Secure");
+        assertThat(cookie).contains("Secure");
     }
 
     @Test
@@ -28,7 +40,7 @@ class SessionCookieSupportTest {
         assertThat(cookie).startsWith(SessionConstants.SESSION_COOKIE_NAME + "=abc-123");
         assertThat(cookie).contains("Max-Age=2592000");
         assertThat(cookie).contains("SameSite=Lax");
-        assertThat(cookie).endsWith("; Secure");
+        assertThat(cookie).contains("Secure");
     }
 
     @Test
@@ -37,6 +49,11 @@ class SessionCookieSupportTest {
 
         var cookie = support.buildSessionCookie("abc-123");
 
-        assertThat(cookie).isEqualTo("__session=abc-123; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax");
+        assertThat(cookie).startsWith("__session=abc-123");
+        assertThat(cookie).contains("Path=/");
+        assertThat(cookie).contains("Max-Age=86400");
+        assertThat(cookie).contains("HttpOnly");
+        assertThat(cookie).contains("SameSite=Lax");
+        assertThat(cookie).doesNotContain("Secure");
     }
 }

@@ -4,6 +4,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.NewCookie;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -26,16 +27,38 @@ public class SessionCookieSupport {
         this.cookieDomain = cookieDomain;
     }
 
-    public String buildSessionCookie(String sessionId) {
-        var cookie = "%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax".formatted(SessionConstants.SESSION_COOKIE_NAME,
-                                                                                   sessionId,
-                                                                                   ttlSeconds);
+    public String buildClearSessionCookie() {
+        return buildClearSessionNewCookie().toString();
+    }
+
+    public NewCookie buildClearSessionNewCookie() {
+        var builder = new NewCookie.Builder(SessionConstants.SESSION_COOKIE_NAME)
+                                                                                 .value("")
+                                                                                 .path("/")
+                                                                                 .maxAge(0)
+                                                                                 .httpOnly(true)
+                                                                                 .secure(secureCookies)
+                                                                                 .sameSite(NewCookie.SameSite.LAX);
         if (cookieDomain != null) {
-            cookie = "%s; Domain=%s".formatted(cookie, cookieDomain);
+            builder.domain(cookieDomain);
         }
-        if (secureCookies) {
-            return "%s; Secure".formatted(cookie);
+        return builder.build();
+    }
+
+    public String buildSessionCookie(String sessionId) {
+        return buildSessionNewCookie(sessionId).toString();
+    }
+
+    public NewCookie buildSessionNewCookie(String sessionId) {
+        var builder = new NewCookie.Builder(SessionConstants.SESSION_COOKIE_NAME).value(sessionId)
+                                                                                 .path("/")
+                                                                                 .maxAge(Math.toIntExact(ttlSeconds))
+                                                                                 .httpOnly(true)
+                                                                                 .secure(secureCookies)
+                                                                                 .sameSite(NewCookie.SameSite.LAX);
+        if (cookieDomain != null) {
+            builder.domain(cookieDomain);
         }
-        return cookie;
+        return builder.build();
     }
 }

@@ -19,6 +19,8 @@ public class BlogSubdomainConfig {
 
     private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("js", "style", "images", "i18n", "q", "api");
 
+    private static final Set<String> SKIP_REWRITE_EXACT = Set.of("favicon.ico", "favicon.svg", "robots.txt");
+
     private static String hostFromUrl(String url) {
         if (url == null || url.isBlank()) {
             return "localhost";
@@ -149,6 +151,9 @@ public class BlogSubdomainConfig {
             return false;
         }
         var normalized = path.startsWith("/") ? path.substring(1) : path;
+        if (SKIP_REWRITE_EXACT.contains(normalized)) {
+            return true;
+        }
         for (var prefix : SKIP_REWRITE_PREFIXES) {
             if (normalized.equals(prefix) || normalized.startsWith("%s/".formatted(prefix))) {
                 return true;
