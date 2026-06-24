@@ -551,6 +551,18 @@
     margin-bottom: 1rem;
 }
 
+.write-preview a:where(:not(:has(> img))) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+    text-underline-offset: 0.12em;
+}
+
+.write-preview a:where(:not(:has(> img))):hover {
+    color: var(--color-primary-dark);
+    text-decoration-color: var(--color-primary-dark);
+}
+
 .write-preview blockquote {
     border-left: 4px solid #1a8917;
     padding-left: 1rem;

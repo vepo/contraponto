@@ -138,7 +138,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `home-guest-masthead`, `home-guest-masthead__*` | `HomeEndpoint/guest-masthead.html` | Guest-only editorial intro on home page |
 | `featured__grid--no-cover` | `HomeEndpoint/featured.html` | Single-column hero when post has no cover |
 | `posts-grid`, `load-more` | Grid partials | |
-| `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading |
+| `article-page`, `article-page__*` | `PostEndpoint/post.html` | Post reading; body links in `__content` use `--color-primary` with underline (image links excluded) |
 | `browse-page`, `browse-page--article`, `browse-page-shell`, `browse-page-shell__*` | `PostEndpoint/post.html`, home/blog listings | Post pages: main column only + right related-posts rail; home/blog: left SIDEBAR + explore aside |
 | `post-related-aside`, `post-related-aside__*` | `PostEndpoint/related-posts-aside.html` | Related posts rail (fixed right margin; inline below article ≤1280px) |
 | `.imageblock` (in `.article-page__content`, `.write-preview`) | Asciidoctor block images | Centered figure, caption in `.title`; styles in main.css / write.css |

@@ -1945,6 +1945,20 @@ a {
   font-size: 1.1rem;
 }
 
+.article-page__content a:where(:not(:has(> img))) {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+  text-underline-offset: 0.12em;
+  transition: color var(--duration-normal) var(--ease-out),
+    text-decoration-color var(--duration-normal) var(--ease-out);
+}
+
+.article-page__content a:where(:not(:has(> img))):hover {
+  color: var(--color-primary-dark);
+  text-decoration-color: var(--color-primary-dark);
+}
+
 .article-page__content code {
   font-family: var(--font-mono);
   font-size: 0.9em;
