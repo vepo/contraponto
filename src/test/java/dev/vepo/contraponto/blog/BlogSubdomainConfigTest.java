@@ -24,6 +24,15 @@ class BlogSubdomainConfigTest {
     }
 
     @Test
+    void isWorkspaceRootPath_recognizesAdministrationHub() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+
+        assertThat(config.isWorkspaceRootPath("/administration")).isTrue();
+        assertThat(config.isWorkspaceRootPath("/administration/users")).isTrue();
+        assertThat(config.isWorkspaceRootPath("/post/slug")).isFalse();
+    }
+
+    @Test
     void normalizeAuthorSubdomainRequestPath_stripsRedundantUsernamePrefix() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 
@@ -87,8 +96,8 @@ class BlogSubdomainConfigTest {
     void shouldSkipSubdomainRewrite_forWorkspaceHubs() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 
-        assertThat(config.shouldSkipSubdomainRewrite("/administration")).isTrue();
-        assertThat(config.shouldSkipSubdomainRewrite("/manage/dashboard")).isTrue();
-        assertThat(config.shouldSkipSubdomainRewrite("/reading/saved")).isTrue();
+        assertThat(config.shouldSkipSubdomainRewrite("/administration")).isFalse();
+        assertThat(config.shouldSkipSubdomainRewrite("/manage/dashboard")).isFalse();
+        assertThat(config.shouldSkipSubdomainRewrite("/reading/saved")).isFalse();
     }
 }

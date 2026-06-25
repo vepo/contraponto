@@ -29,11 +29,22 @@ How Contraponto uses [HTMX](https://htmx.org/) lifecycle events, custom DOM even
 - **Ctrl/Cmd/Shift/middle-click** on those anchors: `main.js` (`setupModifierKeyNavigation`) cancels the HTMX request and opens `href` (or `hx-push-url`) in a new tab. Without `href`, the browser cannot open a new tab; without the handler, HTMX would still swap `#main` in place.
 - **`loggedOut`** on a **protected path**: `main.js` redirects to `/` (documented exception).
 
+### Protected routes without a session
+
+`@Logged` endpoints reject unauthenticated requests via `LoggedFilter`:
+
+| Request | Response | Client behavior |
+|---------|----------|-----------------|
+| Full page (`GET /administration`) | `303` → `/?signIn=1&returnTo=/administration` | Home loads; login modal opens; after login, HTMX navigates to `returnTo` |
+| HTMX (`HX-Request: true`) | `401` + `HX-Trigger-After-Settle: loginRequired` | Login modal opens; `#main` is **not** replaced with the home page |
+
+Bookmarking or opening a hub URL while logged out therefore prompts sign-in instead of silently showing the home feed.
+
 ### Author subdomain · workspace vs discovery routes
 
-On `{username}.{base-domain}`, **author content** (`/`, `/post/…`, `/feed`, …) is rewritten to `/{username}/…`. **Workspace hubs** (`/writing`, `/manage`, `/administration`, `/account`, …) are served on the **same author host** without redirecting to the platform host — menu HTMX links stay same-origin.
+On `{username}.{base-domain}`, **author content** (`/`, `/post/…`, `/feed`, …) is rewritten to `/{username}/…`. **Workspace hubs** (`/writing`, `/manage`, `/administration`, `/account`, …) **redirect to the platform host** (`blogs.{base-domain}`) via `302` or **`HX-Redirect`** — menu links and bookmarks on an author subdomain therefore open the hub on the platform with the shared session cookie.
 
-**Discovery / global routes** (`/authors`, `/explore`, `/sitemap.xml`, …) still redirect to the platform host. For those, `BlogSubdomainFilter` responds to **`HX-Request: true`** with **`HX-Redirect`** (full-page navigation).
+**Discovery / global routes** (`/authors`, `/explore`, `/sitemap.xml`, …) use the same platform redirect.
 
 ### SEO head sync (HTMX navigation)
 

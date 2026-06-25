@@ -142,6 +142,15 @@ public class BlogSubdomainConfig {
         return PLATFORM_ONLY_ROOT_SEGMENTS.contains(segment);
     }
 
+    public boolean isWorkspaceRootPath(String path) {
+        if (path == null || path.isBlank() || "/".equals(path)) {
+            return false;
+        }
+        var normalized = path.startsWith("/") ? path.substring(1) : path;
+        var firstSegment = normalized.indexOf('/') >= 0 ? normalized.substring(0, normalized.indexOf('/')) : normalized;
+        return SUBDOMAIN_WORKSPACE_ROOT_SEGMENTS.contains(firstSegment);
+    }
+
     public String normalizeAuthorSubdomainRequestPath(String authorUsername, String path) {
         if (path == null || path.isBlank() || "/".equals(path)) {
             return path;
@@ -205,10 +214,6 @@ public class BlogSubdomainConfig {
             return true;
         }
         if (isGlobalComponentPath(normalized)) {
-            return true;
-        }
-        var firstSegment = normalized.indexOf('/') >= 0 ? normalized.substring(0, normalized.indexOf('/')) : normalized;
-        if (SUBDOMAIN_WORKSPACE_ROOT_SEGMENTS.contains(firstSegment)) {
             return true;
         }
         for (var prefix : SKIP_REWRITE_PREFIXES) {

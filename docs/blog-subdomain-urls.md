@@ -55,20 +55,22 @@ The filter treats the host label as the author **username** and maps **short pub
 
 Platform-style links that include the username (`/{username}`, `/{username}/post/…`) are **normalized** on the matching subdomain so they do not double-prefix (e.g. `https://vepo.commit-mestre.dev/vepo` → main blog home).
 
-### Workspace (same host, no redirect)
+### Workspace (platform host; redirect from author subdomain)
 
-Logged-in hubs stay on the author host so HTMX navigation remains same-origin:
+Logged-in hubs are served on the **platform host**. On an author subdomain (`{username}.{base-domain}`), the same paths redirect to `https://blogs.{base-domain}{path}` so session cookies and hub navigation stay consistent:
 
-| Hub | Entry | Example sections |
-|-----|-------|------------------|
-| Writing | `/writing` | `/writing/library`, `/writing/blogs`, `/writing/images`, … |
-| Reading | `/reading` | `/reading/saved`, `/reading/highlights`, `/reading/notes` |
-| Manage | `/manage` | `/manage/dashboard`, `/manage/pages`, `/manage/comments`, … |
-| Account | `/account` | `/account/notifications`, `/account/security`, … |
-| Review (editors) | `/editor` | `/editor/review`, `/editor/tags` |
-| Administration | `/administration` | `/administration/users`, `/administration/insights` |
+| Hub | Platform URL | Author subdomain |
+|-----|--------------|------------------|
+| Administration | `/administration` | `302` / `HX-Redirect` → platform |
+| Writing | `/writing` | redirect → platform |
+| Manage | `/manage` | redirect → platform |
+| Account | `/account` | redirect → platform |
+| Review | `/editor` | redirect → platform |
+| Reading | `/reading` | redirect → platform |
 
-Also served without redirect: `/write`, `/library`, `/search`, `/profile`, static assets (`/js`, `/style`, `/images`), auth modals (`/auth/modal`), and form posts (`/forms/…`).
+Example: `https://vepo.commit-mestre.dev/administration` → `https://blogs.commit-mestre.dev/administration` (when logged in, shared `.commit-mestre.dev` session).
+
+Also served without redirect on author hosts: `/write`, static assets, auth modals, form posts, and global `/components/*` partials.
 
 ### Global shell partials (no username prefix)
 

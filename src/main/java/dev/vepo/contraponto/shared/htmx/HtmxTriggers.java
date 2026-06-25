@@ -27,6 +27,10 @@ public final class HtmxTriggers {
 
     public static final String NOTIFICATIONS_CHANGED_ON_BODY = "{\"notificationsChanged\":{\"target\":\"body\"}}";
 
+    public static String loginRequired(String returnTo) {
+        return "{\"loginRequired\":{\"returnTo\":\"%s\"}}".formatted(returnTo.replace("\\", "\\\\").replace("\"", "\\\""));
+    }
+
     public static String notificationBadgeTrigger(String pollInterval) {
         return "%s, notificationsChanged from:body, every %s".formatted(AUTH_REFRESH_TRIGGER, pollInterval);
     }

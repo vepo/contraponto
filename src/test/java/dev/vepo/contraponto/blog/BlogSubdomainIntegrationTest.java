@@ -3,8 +3,6 @@ package dev.vepo.contraponto.blog;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 
 import java.net.URL;
 
@@ -14,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.shared.TestHttp;
+import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.TestProfile;
@@ -30,11 +30,25 @@ class BlogSubdomainIntegrationTest {
     BlogPublicUrlService blogPublicUrlService;
 
     private User author;
+    private User admin;
     private Post post;
 
     @Test
     void canonicalUrl_usesSubdomainWhenEnabled() {
         assertThat(blogPublicUrlService.canonicalOrPlatformAbsolute(post)).isEqualTo("https://subdom-author.localhost/post/subdomain-post");
+    }
+
+    @Test
+    void platformHost_administrationServesHubWhenLoggedIn() {
+        TestHttp.session(admin)
+                .header("Host", "blogs.localhost")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/administration")
+                .then()
+                .statusCode(200)
+                .body(containsString("hub-shell"));
     }
 
     @BeforeEach
@@ -46,6 +60,13 @@ class BlogSubdomainIntegrationTest {
                       .withName("Subdomain Author")
                       .withPassword("password123")
                       .persist();
+        admin = Given.user()
+                     .withUsername("vepo")
+                     .withEmail("vepo-admin@test.com")
+                     .withName("Vepo Admin")
+                     .withPassword("password123")
+                     .withRoles(Role.USER_ADMINISTRATOR, Role.ADMIN, Role.USER)
+                     .persist();
         post = Given.post()
                     .withAuthor(author)
                     .withTitle("Subdomain Post")
@@ -56,6 +77,42 @@ class BlogSubdomainIntegrationTest {
         io.restassured.RestAssured.baseURI = "http://127.0.0.1";
         io.restassured.RestAssured.port = baseUrl.getPort();
         io.restassured.RestAssured.basePath = "";
+    }
+
+    @Test
+    void subdomainHost_administrationReachesHubAfterPlatformRedirectWhenLoggedIn() {
+        TestHttp.session(admin)
+                .header("Host", "vepo.localhost")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/administration")
+                .then()
+                .statusCode(302)
+                .header("Location", "https://blogs.localhost/administration");
+
+        TestHttp.session(admin)
+                .header("Host", "blogs.localhost")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/administration")
+                .then()
+                .statusCode(200)
+                .body(containsString("hub-shell"));
+    }
+
+    @Test
+    void subdomainHost_administrationRedirectsToPlatformWhenLoggedIn() {
+        TestHttp.session(admin)
+                .header("Host", "vepo.localhost")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/administration")
+                .then()
+                .statusCode(302)
+                .header("Location", "https://blogs.localhost/administration");
     }
 
     @Test
@@ -128,7 +185,19 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
-    void subdomainHost_workspaceHubHasNoHxRedirectToPlatform() {
+    void subdomainHost_workspaceHubBrowserRedirectsToPlatform() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/administration")
+               .then()
+               .statusCode(302)
+               .header("Location", "https://blogs.localhost/administration");
+    }
+
+    @Test
+    void subdomainHost_workspaceHubHtmxRedirectsToPlatform() {
         given().header("Host", "subdom-author.localhost")
                .header("HX-Request", "true")
                .redirects()
@@ -136,19 +205,7 @@ class BlogSubdomainIntegrationTest {
                .when()
                .get("/administration")
                .then()
-               .statusCode(303)
-               .header("HX-Redirect", nullValue());
-    }
-
-    @Test
-    void subdomainHost_workspaceHubStaysOnAuthorHost() {
-        given().header("Host", "subdom-author.localhost")
-               .redirects()
-               .follow(false)
-               .when()
-               .get("/administration")
-               .then()
-               .statusCode(303)
-               .header("Location", not(containsString("blogs.localhost")));
+               .statusCode(200)
+               .header("HX-Redirect", "https://blogs.localhost/administration");
     }
 }

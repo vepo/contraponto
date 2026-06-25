@@ -210,6 +210,12 @@ class MainManager {
     constructor() {
         this.protectedPaths = [
             '/write',
+            '/writing',
+            '/reading',
+            '/manage',
+            '/account',
+            '/editor',
+            '/administration',
             '/account/security',
             '/manage/dashboard',
             '/writing/library',
@@ -230,6 +236,9 @@ class MainManager {
         this.updateUIElements = this.updateUIElements.bind(this);
         this.bindErrorMessage = this.bindErrorMessage.bind(this);
         this.handleSearchModalSubmit = this.handleSearchModalSubmit.bind(this);
+        this.openSignInModal = this.openSignInModal.bind(this);
+        this.navigateAfterLogin = this.navigateAfterLogin.bind(this);
+        this.handleUnauthorizedHtmxResponse = this.handleUnauthorizedHtmxResponse.bind(this);
         this.setupRouteBasedElementsEnabler();
         this.setupErrorHandler();
         this.setupCsrfHeader();
@@ -238,6 +247,7 @@ class MainManager {
         this.setupModifierKeyNavigation();
         this.setupSeoSync();
         this.setupSearchModalSubmit();
+        this.setupPostLoginRedirect();
         this.updateUIElements();
     }
 
@@ -461,6 +471,81 @@ class MainManager {
     setupRouteBasedElementsEnabler() {
         htmx.on('loggedOut', this.redirectIfPathProtected);
         document.body.addEventListener('htmx:afterSettle', this.updateUIElements);
+    }
+
+    setupPostLoginRedirect() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('signIn') === '1') {
+            const returnTo = params.get('returnTo');
+            if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+                sessionStorage.setItem('postLoginReturnTo', returnTo);
+            }
+            this.openSignInModal();
+            const clean = new URL(window.location.href);
+            clean.searchParams.delete('signIn');
+            clean.searchParams.delete('returnTo');
+            window.history.replaceState({}, '', clean.pathname + clean.search + clean.hash);
+        }
+        htmx.on('loginRequired', (evt) => {
+            const returnTo = evt.detail?.returnTo;
+            if (typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+                sessionStorage.setItem('postLoginReturnTo', returnTo);
+            }
+            this.openSignInModal();
+        });
+        htmx.on('loggedIn', () => this.navigateAfterLogin());
+        document.body.addEventListener('htmx:responseError', this.handleUnauthorizedHtmxResponse);
+    }
+
+    openSignInModal() {
+        const headerLogin = document.querySelector('button.btn--auth-login');
+        if (headerLogin) {
+            headerLogin.click();
+            return;
+        }
+        if (typeof htmx !== 'undefined') {
+            htmx.ajax('GET', '/auth/modal?mode=login', {
+                target: '#modal-container',
+                swap: 'innerHTML'
+            });
+        }
+    }
+
+    navigateAfterLogin() {
+        const returnTo = sessionStorage.getItem('postLoginReturnTo');
+        if (!returnTo) {
+            return;
+        }
+        sessionStorage.removeItem('postLoginReturnTo');
+        if (returnTo === window.location.pathname + window.location.search) {
+            return;
+        }
+        if (typeof htmx !== 'undefined') {
+            htmx.ajax('GET', returnTo, {
+                target: 'main',
+                select: 'main',
+                swap: 'outerHTML',
+                pushUrl: returnTo
+            });
+        }
+    }
+
+    handleUnauthorizedHtmxResponse(evt) {
+        if (evt.detail?.xhr?.status !== 401) {
+            return;
+        }
+        const requestPath = evt.detail.pathInfo?.requestPath;
+        if (requestPath) {
+            try {
+                const url = new URL(requestPath, window.location.origin);
+                if (url.pathname.startsWith('/') && !url.pathname.startsWith('//')) {
+                    sessionStorage.setItem('postLoginReturnTo', url.pathname + url.search);
+                }
+            } catch (_) {
+                /* ignore malformed path */
+            }
+        }
+        this.openSignInModal();
     }
 
     updateUIElements(evt) {

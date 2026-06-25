@@ -86,6 +86,11 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
 
         var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
 
+        if (config.isWorkspaceRootPath(subdomainPath)) {
+            redirectToPlatform(requestContext, subdomainPath, uriInfo);
+            return;
+        }
+
         if (config.shouldSkipSubdomainRewrite(subdomainPath)) {
             return;
         }
@@ -111,5 +116,23 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
                                   .replaceQuery(uriInfo.getRequestUri().getQuery())
                                   .build();
         requestContext.setRequestUri(uriInfo.getBaseUri(), targetUri);
+    }
+
+    private void redirectToPlatform(ContainerRequestContext requestContext, String path, jakarta.ws.rs.core.UriInfo uriInfo) {
+        var query = uriInfo.getRequestUri().getQuery();
+        var platformPath = path;
+        if (query != null && !query.isBlank()) {
+            platformPath = "%s?%s".formatted(path, query);
+        }
+        var platformUrl = config.platformUrl(platformPath);
+        if (isHtmxRequest(requestContext)) {
+            requestContext.abortWith(Response.ok()
+                                             .header(HtmxRequest.REDIRECT_HEADER, platformUrl)
+                                             .build());
+        } else {
+            requestContext.abortWith(Response.status(Response.Status.FOUND)
+                                             .location(URI.create(platformUrl))
+                                             .build());
+        }
     }
 }
