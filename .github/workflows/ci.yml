@@ -16,13 +16,12 @@ env:
   JAVA_DISTRIBUTION: zulu
   MAVEN_CLI_OPTS: -B --no-transfer-progress
 
-permissions:
-  contents: read
-
 jobs:
   code-style:
     name: Code Style · Spotless
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 10
     steps:
       - name: Checkout repository
@@ -41,6 +40,8 @@ jobs:
   tests:
     name: Tests · ${{ matrix.display }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: code-style
     timeout-minutes: 30
     strategy:
@@ -151,7 +152,7 @@ jobs:
           merge-multiple: true
 
       - name: Publish results to GitHub Checks
-        uses: EnricoMi/publish-unit-test-result-action@v2 # v2.24.0
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         if: always()
         with:
           check_name: Maven · All Test Suites
@@ -162,6 +163,8 @@ jobs:
   build:
     name: Build · JVM Package & Static Assets
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: tests
     timeout-minutes: 20
     steps:
@@ -199,6 +202,8 @@ jobs:
   docker-smoke:
     name: Tests · Docker Smoke (Testcontainers)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: build
     timeout-minutes: 45
     steps:
@@ -248,6 +253,8 @@ jobs:
   quality-sonar:
     name: Quality · SonarCloud Analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: tests
     if: >-
       github.event_name != 'pull_request'
