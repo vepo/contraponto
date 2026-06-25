@@ -107,7 +107,7 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 
 **URL:** `/{username}` (default blog) and `/{username}/{blogSlug}` (additional blogs).
 
-- **Blog header:** The user’s name is displayed as a large title; optional biography or blog description below.
+- **Blog header:** The blog name (`Blog.name`) is displayed as a large title. When the blog name differs from the author's display name, a **por {display name}** byline links to the author profile. Optional biography or blog description below.
 - **Featured post:** If the blog has a featured post, it uses the same hero layout as the home page.
 - **Post grid:** All published posts from that blog in a card grid.
 - **Empty state:** “No posts published yet” with a link for the blog owner to start writing.

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{localeLang}">
-    {#include components/head seo=view.seo rssAlternateUrl=view.mainBlog.rssFeedUrl rssAlternateTitle=(view.mainBlog.main ? view.author.name : view.mainBlog.name) /}
+    {#include components/head seo=view.seo rssAlternateUrl=view.mainBlog.rssFeedUrl rssAlternateTitle=view.mainBlog.name /}
     <body>
         {#include components/header links=view.links /}
         <main hx-history-elt id="main-content" class="browse-page">
@@ -12,8 +12,8 @@
                         {#if view.mainBlog.bannerUrl}
                         <img src="{view.mainBlog.bannerUrl}" alt="" class="user-blog-header__banner" width="1260" height="540" decoding="async"/>
                         {/if}
-                        <h1 class="user-blog__name">{#if view.mainBlog.main}{view.author.name}{#else}{view.mainBlog.name}{/if}</h1>
-                        {#if !view.mainBlog.main}
+                        <h1 class="user-blog__name">{view.mainBlog.name}</h1>
+                        {#if view.mainBlog.showsAuthorByline(view.author)}
                         <p class="user-blog__byline">
                             <span data-i18n="directory.byAuthor">por </span>
                             <a href="/authors/{view.author.username}" data-hx-get="/authors/{view.author.username}"

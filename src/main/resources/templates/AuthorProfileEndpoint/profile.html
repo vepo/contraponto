@@ -43,7 +43,12 @@
                                hx-push-url="{blog.url}"
                                class="blog-directory-card__link">
                                 <div class="blog-directory-card__body">
-                                    <h3 class="blog-directory-card__title">{#if blog.main}{author.name}{#else}{blog.name}{/if}</h3>
+                                    <h3 class="blog-directory-card__title">{blog.name}</h3>
+                                    {#if blog.showsAuthorByline(author)}
+                                    <p class="blog-directory-card__author">
+                                        <span data-i18n="directory.byAuthor">por </span>{author.name}
+                                    </p>
+                                    {/if}
                                     {#if blog.description}
                                     <p class="blog-directory-card__excerpt">{blog.description}</p>
                                     {/if}

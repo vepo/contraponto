@@ -68,6 +68,13 @@ class SeoServiceTest {
     }
 
     @Test
+    void forBlogHome_mainBlogUsesBlogName() {
+        SeoMetadata meta = seoService.forBlogHome(author, author.getDefaultBlog());
+        assertThat(meta.title()).contains("SEO Service Author");
+        assertThat(meta.canonicalUrl()).contains("/seo-svc");
+    }
+
+    @Test
     void forBlogHome_secondaryBlogUsesBlogName() {
         SeoMetadata meta = seoService.forBlogHome(author, secondaryBlog);
         assertThat(meta.title()).contains("Notes Blog");

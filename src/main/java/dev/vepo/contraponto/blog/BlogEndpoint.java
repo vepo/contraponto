@@ -119,7 +119,7 @@ public class BlogEndpoint {
                                             Blog blog,
                                             Page<Post> posts,
                                             BreadcrumbTrail breadcrumb) {
-        var shareTitle = blog.isMain() ? user.getName() : blog.getName();
+        var shareTitle = blog.getName();
         ShareView share = ShareLinks.from(shareTitle, blogPublicUrlService.canonicalOrPlatformAbsolute(blog));
         return Templates.home(new BlogHomeView(user,
                                                blog,

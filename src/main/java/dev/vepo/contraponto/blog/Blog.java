@@ -213,6 +213,10 @@ public class Blog {
         this.slug = slug;
     }
 
+    public boolean showsAuthorByline(User author) {
+        return author != null && !name.trim().equals(author.getName().trim());
+    }
+
     @Override
     public String toString() {
         return "Blog [id=%d, name=%s, slug=%s, description=%s, owner=%s, main=%b, active=%b, gitEnabled=%b, createdAt=%s]".formatted(id, name, slug,

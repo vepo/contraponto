@@ -11,6 +11,7 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.WebAuthorTest;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
+import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.core.Response;
 
 @WebAuthorTest
@@ -42,6 +43,28 @@ class BlogTest {
            .assertUrlContains("/post/")
            .assertPostTitle("Author Post 14") // 15 is the featured
            .assertSingleMainElement();
+    }
+
+    @Test
+    void customMainBlogNameShowsAuthorByline(App app) {
+        Given.transaction(() -> {
+            var mainBlog = testAuthor.getDefaultBlog();
+            mainBlog.setName("Tech Desk");
+            Given.inject(EntityManager.class).merge(mainBlog);
+        });
+
+        app.access()
+           .goTo(testAuthor.getDefaultBlog())
+           .assertBlogName("Tech Desk")
+           .assertAuthorByline(testAuthor.getName());
+    }
+
+    @Test
+    void defaultMainBlogNameHasNoAuthorByline(App app) {
+        app.access()
+           .goTo(testAuthor.getDefaultBlog())
+           .assertBlogName(testAuthor.getName())
+           .assertAuthorBylineAbsent();
     }
 
     @Test

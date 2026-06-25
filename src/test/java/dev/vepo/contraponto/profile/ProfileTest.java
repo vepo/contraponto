@@ -104,6 +104,11 @@ class ProfileTest {
            .assertSuccessMessage("Appearance updated.")
            .refresh()
            .assertNameIs(newName);
+
+        app.access()
+           .goTo(testUser.getDefaultBlog())
+           .assertBlogName(newName)
+           .assertAuthorBylineAbsent();
     }
 
     @Test

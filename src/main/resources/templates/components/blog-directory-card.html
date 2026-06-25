@@ -13,11 +13,13 @@
         {/if}
         <div class="blog-directory-card__body">
             <h2 class="blog-directory-card__title">
-                {#if row.blog.main}{row.blog.owner.name}{#else}{row.blog.name}{/if}
+                {row.blog.name}
             </h2>
+            {#if row.blog.showsAuthorByline(row.blog.owner)}
             <p class="blog-directory-card__author">
                 <span data-i18n="directory.byAuthor">por </span>{row.blog.owner.name}
             </p>
+            {/if}
             {#if row.excerpt}
             <p class="blog-directory-card__excerpt">{row.excerpt}</p>
             {/if}

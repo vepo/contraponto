@@ -97,8 +97,10 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 |------|---------|--------------|
 | **Blog** | A publication channel owned by exactly one user. Has name, slug (unique per owner), description, optional **blog banner**, active flag. | `Blog` |
 | **Blog description** | Optional short bio on **blog home**; authors may use **Markdown** (bold, links, lists). Rendered to safe HTML on the public blog home only; does not support **content render plugins**. | `Blog.description`, `BlogDescriptionRenderer` |
-| **Main blog** | The blog auto-created for a user (`main = true`); slug typically matches username. | `Blog.main` |
+| **Main blog** | The blog auto-created for a user (`main = true`); slug typically matches username. **Public title** is `Blog.name` (default = author **display name** at registration). | `Blog.main` |
 | **Secondary blog** | Additional blog owned by the same user (`main = false`). | `Blog` |
+| **Blog public title** | Title shown on blog home, directory cards, and SEO for any blog; always `Blog.name`. | `Blog.name` |
+| **Author byline** | On blog home and directory cards: `por {display name}` (i18n `directory.byAuthor`) linking to the author profile when `Blog.showsAuthorByline` — blog name differs from author display name. | `Blog.showsAuthorByline`, `BlogEndpoint`, `blog-directory-card` |
 | **Blog owner** | User who owns the blog; sole writer for that blog's posts and the only role that may edit blog settings. | `Blog.owner` |
 | **Profile picture** | Optional image on the user; shown in the menu and wherever the author is displayed. When absent, a **generated avatar** shows the user's initials on a brand-colored SVG (`GET /components/avatar`). | `User.profilePicture`, `AvatarEndpoint` |
 | **Author profile** | Public page at `/authors/{username}` with bio, social links, top tags, and blog list. | `AuthorProfileEndpoint` |
@@ -496,18 +498,20 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 16. **Featured** posts appear on the **home page**; toggling is immediate (no confirmation).
 17. Only the **blog owner** may change blog settings (name, slug, description, Git, **blog banner**, active flag on the edit form). **Editors** and **administrators** may **deactivate** another user's **secondary** blog but cannot edit blog fields.
 18. **Effective blog banner** is resolved at display time; new secondary blogs copy the owner's **default blog banner** FK at creation when set (same `Image` row, not a duplicate file).
-19. **Custom pages** served publicly must be **published** and present in cache after changes.
-20. Public URLs for posts and custom pages must use `PostPaths.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building or endpoint pass-through wrappers.
-21. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
-22. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
-23. **Inactive users** cannot complete password recovery or sign in with password until activated.
-24. **Self-service signup** creates an **inactive** user, sends an **account activation token** by email, and does not start a session; the user becomes **active** only via a valid **activation link**, which also logs them in.
-25. **Admin-created users** are **active** immediately (no activation email).
-26. **Account activation tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
-26a. An **unauthorized signup report** consumes the activation token (the account cannot be activated via that link afterward), notifies configured administrator email address(es) or active **user administrators** / **administrators**, and leaves the inactive user row for review in user management.
-27. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
-28. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
-29. After a successful password reset, all **sessions** for that user are invalidated.
+19. **Blog public title** is always `Blog.name` for main and secondary blogs. The main blog defaults to the author's **display name** at registration; when the author renames their display name and the main blog name still matches the previous display name, the main blog name is updated to stay in sync until the author sets a custom blog name.
+20. **Author byline** (`por {display name}`) appears on blog home and blog directory cards when the blog name differs from the author's display name.
+21. **Custom pages** served publicly must be **published** and present in cache after changes.
+22. Public URLs for posts and custom pages must use `PostPaths.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building or endpoint pass-through wrappers.
+23. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
+24. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
+25. **Inactive users** cannot complete password recovery or sign in with password until activated.
+26. **Self-service signup** creates an **inactive** user, sends an **account activation token** by email, and does not start a session; the user becomes **active** only via a valid **activation link**, which also logs them in.
+27. **Admin-created users** are **active** immediately (no activation email).
+28. **Account activation tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
+28a. An **unauthorized signup report** consumes the activation token (the account cannot be activated via that link afterward), notifies configured administrator email address(es) or active **user administrators** / **administrators**, and leaves the inactive user row for review in user management.
+29. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
+30. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
+31. After a successful password reset, all **sessions** for that user are invalidated.
 
 ---
 

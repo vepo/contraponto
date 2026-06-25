@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.blog.BlogBannerService;
+import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.LoggedUserProvider;
@@ -36,18 +37,21 @@ public class AuthorAppearanceUpdateEndpoint {
     private final LoggedUserProvider loggedUserProvider;
     private final PasswordService passwordService;
     private final BlogBannerService blogBannerService;
+    private final BlogRepository blogRepository;
 
     @Inject
     public AuthorAppearanceUpdateEndpoint(LoggedUser loggedUser,
                                           LoggedUserProvider loggedUserProvider,
                                           UserRepository userRepository,
                                           PasswordService passwordService,
-                                          BlogBannerService blogBannerService) {
+                                          BlogBannerService blogBannerService,
+                                          BlogRepository blogRepository) {
         this.loggedUser = loggedUser;
         this.loggedUserProvider = loggedUserProvider;
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.blogBannerService = blogBannerService;
+        this.blogRepository = blogRepository;
     }
 
     private String applySocialUrl(String raw, Consumer<String> setter) {
@@ -108,7 +112,14 @@ public class AuthorAppearanceUpdateEndpoint {
                 return Response.ok(buildErrorResponseBody("Current password is required to change your display name."))
                                .build();
             }
-            user.setName(request.name().trim());
+            var previousName = user.getName();
+            var newName = request.name().trim();
+            user.setName(newName);
+            blogRepository.findMainByOwnerId(user.getId()).ifPresent(mainBlog -> {
+                if (mainBlog.getName().trim().equals(previousName.trim())) {
+                    mainBlog.setName(newName);
+                }
+            });
             updated = true;
         }
 

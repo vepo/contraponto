@@ -303,6 +303,17 @@ public class App {
     public class BlogPage extends Page<BlogPage> {
         private BlogPage() {}
 
+        public BlogPage assertAuthorByline(String authorName) {
+            var byline = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__byline")));
+            assertThat(byline.getText()).containsIgnoringCase(authorName);
+            return this;
+        }
+
+        public BlogPage assertAuthorBylineAbsent() {
+            assertThat(driver.findElements(cssSelector(".user-blog__byline"))).isEmpty();
+            return this;
+        }
+
         public BlogPage assertBlogName(String userName) {
             var blogHeader = wait.until(visibilityOfElementLocated(cssSelector(".user-blog__name")));
             assertThat(blogHeader.getText()).isEqualToIgnoringCase(userName);

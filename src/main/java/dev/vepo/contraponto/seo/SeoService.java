@@ -154,7 +154,7 @@ public class SeoService {
     }
 
     public SeoMetadata forBlogHome(User author, Blog blog, BreadcrumbTrail breadcrumb) {
-        String blogLabel = blog.isMain() ? author.getName() : blog.getName();
+        String blogLabel = blog.getName();
         String title = "%s · %s".formatted(blogLabel, siteBranding.seoName());
         String description = SeoDescription.toPlainText(blog.getDescription());
         if (description.isBlank()) {

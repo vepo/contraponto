@@ -88,7 +88,7 @@ public class StructuredDataBuilder {
         }
         node.put("publisher", Map.of(
                                      "@type", "Organization",
-                                     "name", blog.isMain() ? author.getName() : blog.getName(),
+                                     "name", blog.getName(),
                                      "url", blogPublicUrlService.canonicalOrPlatformAbsolute(blog)));
         return node;
     }
