@@ -46,6 +46,25 @@ public class BlogSubdomainConfig {
 
     private static final String DEFAULT_PUBLIC_ORIGIN_SCHEME = "https";
 
+    private static String authorityFromUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return "localhost";
+        }
+        try {
+            var uri = URI.create(url.trim());
+            var host = uri.getHost();
+            if (host == null || host.isBlank()) {
+                return stripPort(uri.getAuthority());
+            }
+            if (uri.getPort() > 0) {
+                return "%s:%d".formatted(host, uri.getPort());
+            }
+            return host;
+        } catch (IllegalArgumentException _) {
+            return "localhost";
+        }
+    }
+
     private static String hostFromUrl(String url) {
         if (url == null || url.isBlank()) {
             return "localhost";
@@ -63,6 +82,18 @@ public class BlogSubdomainConfig {
             return platformHost;
         }
         return platformHost.substring(0, dot);
+    }
+
+    private static String portSuffixFromUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return "";
+        }
+        try {
+            var port = URI.create(url.trim()).getPort();
+            return port > 0 ? ":%d".formatted(port) : "";
+        } catch (IllegalArgumentException _) {
+            return "";
+        }
     }
 
     private static String stripPort(String host) {
@@ -83,7 +114,11 @@ public class BlogSubdomainConfig {
 
     private final String platformPrefix;
 
+    private final String platformAuthority;
+
     private final String publicOriginScheme;
+
+    private final String publicSiteUrl;
 
     @Inject
     public BlogSubdomainConfig(@ConfigProperty(name = "app.blog-subdomain.enabled", defaultValue = "false") boolean enabled,
@@ -105,6 +140,10 @@ public class BlogSubdomainConfig {
                                                                                                                               : stripPort(configuredPlatformHost);
         this.platformHost = resolvedPlatformHost;
         this.platformPrefix = platformPrefixFromHost(resolvedPlatformHost);
+        this.publicSiteUrl = publicSiteUrl == null ? "" : publicSiteUrl.trim();
+        this.platformAuthority = !resolvePlatformHost || configuredPlatformHost == null || configuredPlatformHost.isBlank()
+                                                                                                                            ? authorityFromUrl(publicSiteUrl)
+                                                                                                                            : configuredPlatformHost.trim();
         String scheme;
         try {
             scheme = URI.create(publicSiteUrl.trim()).getScheme();
@@ -198,7 +237,7 @@ public class BlogSubdomainConfig {
         if (!normalized.startsWith("/")) {
             normalized = "/%s".formatted(normalized);
         }
-        return "%s://%s%s".formatted(publicOriginScheme(), platformHost, normalized);
+        return "%s://%s%s".formatted(publicOriginScheme(), platformAuthority, normalized);
     }
 
     public String publicOriginScheme() {
@@ -225,6 +264,6 @@ public class BlogSubdomainConfig {
     }
 
     public String subdomainOrigin(String username) {
-        return "%s://%s.%s".formatted(publicOriginScheme(), username, baseDomain);
+        return "%s://%s.%s%s".formatted(publicOriginScheme(), username, baseDomain, portSuffixFromUrl(publicSiteUrl));
     }
 }

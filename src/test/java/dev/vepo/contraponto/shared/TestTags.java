@@ -14,6 +14,11 @@ public final class TestTags {
      * {@link dev.vepo.contraponto.custompage.CustomPagePaths#reservedSegments()}.
      */
     public static final String RESERVED_SLUGS = "reserved-slugs";
+    /**
+     * Packaged JVM image + Testcontainers prod-like stack
+     * ([`-Ptest-docker-smoke`]).
+     */
+    public static final String DOCKER_SMOKE = "docker-smoke";
 
     private TestTags() {}
 }

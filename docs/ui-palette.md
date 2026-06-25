@@ -101,6 +101,8 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 | `--container-max` | `1080px` | `.container` |
 | `--container-narrow` | `760px` | `.container-narrow` |
 | `--layout-header-height` | `56px` | Site header |
+| `--browse-rail-top` | `5rem` | Fixed top for browse margin rails (header + spacing below) |
+| `--browse-rail-scroll-inset` | `6rem` | Vertical inset for rail `max-height` (`100dvh` minus header + bottom gap) |
 | `--layout-container-padding` | `1.125rem` | Horizontal container padding |
 | `--layout-page-padding` | `var(--spacing-lg)` | Section vertical rhythm |
 | `--bp-sm` | `480px` | Phone landscape / small phones (use in `@media (min-width: 480px)`) |

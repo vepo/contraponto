@@ -1,0 +1,84 @@
+# CI/local smoke stack — mirrors contraponto-prod/docker-compose.yml (see README.md).
+# Canonical prod: ../contraponto-prod/docker-compose.yml
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: contraponto_db
+      POSTGRES_USER: contraponto_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-SmokeTestDbSecret1}
+    networks:
+      - contraponto-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U contraponto_user -d contraponto_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432"
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    networks:
+      - contraponto-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  contraponto:
+    image: ${CONTRAPONTO_IMAGE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      QUARKUS_PROFILE: prod
+      APP_SESSION_STORE: redis
+      APP_ADMIN_NOTIFY_EMAIL: smoke@contraponto.test
+      QUARKUS_REDIS_HOSTS: redis://redis:6379
+      QUARKUS_DATASOURCE_USERNAME: contraponto_user
+      QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-SmokeTestDbSecret1}
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/contraponto_db
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: validate
+      MP_JWT_VERIFY_PUBLICKEY_LOCATION: file:/opt/keys/public_key.pem
+      IMAGE_BASE_URL: http://blogs.commit-mestre.test:8080/
+      APP_PUBLIC_URL: http://blogs.commit-mestre.test:8080
+      APP_BLOG_SUBDOMAIN_BASE_DOMAIN: commit-mestre.test
+      APP_SESSION_COOKIE_DOMAIN: .commit-mestre.test
+      APP_SITE_NAME: commit-mestre
+      PASSWORD_SALT: ${PASSWORD_SALT:-SmokeTestSalt1}
+      QUARKUS_MAILER_FROM: noreply@contraponto.test
+      QUARKUS_MAILER_MOCK: "true"
+      APP_SECURE_COOKIES: "false"
+      QUARKUS_HTTP_PROXY_PROXY-ADDRESS-FORWARDING: "true"
+      QUARKUS_HTTP_PROXY_ALLOW-X-FORWARDED: "true"
+    volumes:
+      - ./keys/public_key.pem:/opt/keys/public_key.pem:ro
+    networks:
+      - contraponto-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/q/health" ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      contraponto:
+        condition: service_healthy
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    networks:
+      - contraponto-network
+
+networks:
+  contraponto-network:
+    driver: bridge

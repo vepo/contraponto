@@ -2,7 +2,7 @@
 
 Step-by-step guide to deploy Contraponto on a **brand-new** server and domain. Use this for first-time production setup; keep [deployment.md](deployment.md) open as the environment-variable reference.
 
-**Last updated:** 2026-06-24
+**Last updated:** 2026-06-25
 
 ---
 
@@ -234,6 +234,30 @@ Trigger signup or password recovery in a test account; confirm SMTP delivery.
 
 Submit `https://PLATFORM_HOST/sitemap.xml` in [Google Search Console](deployment.md#4-search-indexing-production).
 
+### 5.6 Automated CI smoke (docker-smoke)
+
+GitHub Actions job **Tests · Docker Smoke** runs after the JVM package build. It builds the same [`Dockerfile.jvm`](../src/main/docker/Dockerfile.jvm) image locally, starts a **prod-faithful** stack (PostgreSQL, Redis, app, nginx — no certbot/TLS), and browses platform + author-subdomain routes with headless Chrome.
+
+| Production | CI smoke |
+|------------|----------|
+| `blogs.commit-mestre.dev` | `blogs.commit-mestre.test` |
+| `admin.commit-mestre.dev` | `admin.commit-mestre.test` |
+| `commit-mestre.dev` | `commit-mestre.test` |
+
+Stack definition: [`src/test/resources/docker-smoke/`](../src/test/resources/docker-smoke/) (mirrors [`contraponto-prod/docker-compose.yml`](../../contraponto-prod/docker-compose.yml) — see [`README.md`](../src/test/resources/docker-smoke/README.md)).
+
+This automates parts of §5.1–5.3 (home, authors, platform workspace, author subdomain, shared session). It does **not** replace TLS checks or SMTP verification (§5.4).
+
+Local run (after `mvn package -DskipTests` and `docker build`):
+
+```bash
+echo "127.0.0.1 blogs.commit-mestre.test admin.commit-mestre.test" | sudo tee -a /etc/hosts
+docker build -f src/main/docker/Dockerfile.jvm -t contraponto:ci-smoke .
+GITHUB_ACTIONS=true mvn -B verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+```
+
+See [`.github/workflows/README.md`](../.github/workflows/README.md).
+
 ---
 
 ## Phase 6 — First admin tasks
@@ -313,6 +337,7 @@ Run with `QUARKUS_PROFILE=prod` and the same env vars as compose. Terminate TLS 
 | Document | Purpose |
 |----------|---------|
 | [deployment.md](deployment.md) | Env vars, SMTP, Redis, optional Git sync |
+| [src/test/resources/docker-smoke/README.md](../src/test/resources/docker-smoke/README.md) | CI smoke stack (prod mirror) |
 | [contraponto-prod/docs/MOP-DEPLOYMENT.md](../../contraponto-prod/docs/MOP-DEPLOYMENT.md) | Operator runbook (commit-mestre.dev instance) |
 | [ARCHITECTURE.md](../ARCHITECTURE.md) | Application architecture |
 | [htmx-events.md](htmx-events.md) | Subdomain + HTMX platform navigation |

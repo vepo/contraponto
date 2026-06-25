@@ -10,8 +10,9 @@ Workflow: [`ci.yml`](ci.yml) — **Continuous Integration**
 | **Tests · Unit / Quarkus Integration / Web** | Parallel Maven Surefire shards (`-Ptest-unit`, `-Ptest-quarkus`, `-Ptest-web`) |
 | **Quality · Test Results Summary** | Publishes JUnit XML to GitHub Checks and PR comments on failures |
 | **Build · JVM Package & Static Assets** | `mvn package -DskipTests` — minify gate for JS/CSS |
+| **Tests · Docker Smoke (Testcontainers)** | Prod-faithful stack + headless Chrome against packaged JVM image (`-Ptest-docker-smoke`) |
 | **Quality · SonarCloud Analysis** | Merges JaCoCo from test shards; SonarCloud scan (skipped on fork PRs) |
-| **Release · Docker Hub (JVM)** | Pushes `vepo/contraponto` on `main` and tags only |
+| **Release · Docker Hub (JVM)** | Pushes `vepo/contraponto` on `main` and tags only (after docker-smoke) |
 
 Run title format: `CI · <branch> · <sha>`
 
@@ -24,6 +25,7 @@ Artifacts are downloadable from the **Actions → workflow run → Artifacts** p
 | `test-results-unit` | Tests · Unit | 30 days | Surefire `*.xml` + `*.txt` | Investigate unit test failures |
 | `test-results-quarkus` | Tests · Quarkus Integration | 30 days | Surefire reports | Integration / `@QuarkusTest` failures |
 | `test-results-web` | Tests · Web | 30 days | Surefire reports | `@WebTest` / Selenium failures |
+| `test-results-docker-smoke` | Tests · Docker Smoke | 30 days | Failsafe reports | Packaged image / subdomain smoke failures |
 | `jacoco-unit` / `jacoco-quarkus` / `jacoco-web` | Test shards | 1 day | `jacoco-quarkus.exec` | Internal — consumed by Sonar job |
 | `coverage-report` | SonarCloud job | 30 days | JaCoCo HTML + `jacoco.xml` | Local coverage review without Sonar UI |
 | `build-quarkus-app` | Build job | 7 days | `target/quarkus-app/` | Reproduce Docker layer or deploy without rebuild |
@@ -55,7 +57,16 @@ Open the check on a PR for per-suite and per-test failure details without downlo
 ```bash
 GITHUB_ACTIONS=true mvn -B spotless:check
 GITHUB_ACTIONS=true mvn -B test -Ptest-unit    # or test-quarkus / test-web
-GITHUB_ACTIONS=true mvn -B verify              # full gate before merge
+GITHUB_ACTIONS=true mvn -B verify              # full gate before merge (ITs skipped by default)
 ```
 
-See [`.cursor/rules/static-analysis.mdc`](../.cursor/rules/static-analysis.mdc) and [`.cursor/rules/test-headless-github-actions.mdc`](../.cursor/rules/test-headless-github-actions.mdc).
+Docker smoke (requires Docker, `/etc/hosts`, built image):
+
+```bash
+echo "127.0.0.1 blogs.commit-mestre.test admin.commit-mestre.test" | sudo tee -a /etc/hosts
+mvn package -DskipTests
+docker build -f src/main/docker/Dockerfile.jvm -t contraponto:ci-smoke .
+GITHUB_ACTIONS=true mvn -B verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+```
+
+See [`.cursor/rules/static-analysis.mdc`](../.cursor/rules/static-analysis.mdc), [`.cursor/rules/test-headless-github-actions.mdc`](../.cursor/rules/test-headless-github-actions.mdc), and [`src/test/resources/docker-smoke/README.md`](../src/test/resources/docker-smoke/README.md).

@@ -2387,6 +2387,21 @@ public class App {
         }
     }
 
+    public static App at(WebDriver driver, WebDriverWait wait, String origin) {
+        return new App(driver, wait, origin);
+    }
+
+    private static String normalizeOrigin(String origin) {
+        if (origin == null || origin.isBlank()) {
+            throw new IllegalArgumentException("origin cannot be blank");
+        }
+        var trimmed = origin.trim();
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
+    }
+
     private final String rootUri;
 
     private final WebDriver driver;
@@ -2394,9 +2409,13 @@ public class App {
     private final WebDriverWait wait;
 
     public App(WebDriver driver, WebDriverWait wait) {
+        this(driver, wait, TestHTTPResourceManager.getUri());
+    }
+
+    public App(WebDriver driver, WebDriverWait wait, String rootUri) {
         this.driver = driver;
         this.wait = wait;
-        this.rootUri = TestHTTPResourceManager.getUri();
+        this.rootUri = normalizeOrigin(rootUri);
     }
 
     private void _assertLinks(PagePlacement placement, String... links) {
@@ -2491,6 +2510,18 @@ public class App {
         waitForReady();
         var loginBtn = wait.until(visibilityOfElementLocated(cssSelector("button.btn--auth-login")));
         assertThat(loginBtn.isDisplayed()).isTrue();
+        return this;
+    }
+
+    public App assertAccessible() {
+        waitForReady();
+        var errorCodes = driver.findElements(cssSelector(".error-page .error-code"));
+        for (var errorCode : errorCodes) {
+            if (errorCode.isDisplayed()) {
+                var text = errorCode.getText();
+                assertThat(text).doesNotContain("500").doesNotContain("503");
+            }
+        }
         return this;
     }
 
@@ -2980,6 +3011,15 @@ public class App {
         return new Featured(wait.until(visibilityOfElementLocated(cssSelector(".featured"))));
     }
 
+    public App followUserMenuLink(String pathOrUrlFragment) {
+        openUserMenu();
+        var selector = "#userDropdown a[href*='%1$s'], #userDropdown a[data-hx-get*='%1$s']".formatted(pathOrUrlFragment);
+        var link = wait.until(elementToBeClickable(cssSelector(selector)));
+        reliableClick(link);
+        waitForReady();
+        return this;
+    }
+
     public BlogPage goTo(Blog blog) {
         _goTo(BlogTemplateExtensions.url(blog));
         return new BlogPage();
@@ -3274,6 +3314,11 @@ public class App {
     public App visitBlog(String username) {
         _goTo("/" + username);
         waitForReady();
+        return this;
+    }
+
+    public App visitPath(String path) {
+        _goTo(path);
         return this;
     }
 

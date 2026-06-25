@@ -60,6 +60,17 @@ class BlogSubdomainConfigTest {
     }
 
     @Test
+    void platformUrl_includesNonDefaultPortFromPublicSiteUrl() {
+        var config = new BlogSubdomainConfig(true,
+                                             "commit-mestre.test",
+                                             "",
+                                             "http://blogs.commit-mestre.test:8080",
+                                             true);
+
+        assertThat(config.platformUrl("/authors")).isEqualTo("http://blogs.commit-mestre.test:8080/authors");
+    }
+
+    @Test
     void shouldSkipSubdomainRewrite_forAuthModal() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 

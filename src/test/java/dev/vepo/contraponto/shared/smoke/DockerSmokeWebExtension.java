@@ -1,4 +1,4 @@
-package dev.vepo.contraponto.shared;
+package dev.vepo.contraponto.shared.smoke;
 
 import java.util.Objects;
 
@@ -15,14 +15,19 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.quarkus.test.common.http.TestHTTPResourceManager;
+import dev.vepo.contraponto.shared.App;
+import dev.vepo.contraponto.shared.ChromeTestDriverFactory;
+import dev.vepo.contraponto.shared.TestTags;
 
-public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCallback, AfterAllCallback, ParameterResolver {
+public final class DockerSmokeWebExtension implements BeforeAllCallback, AfterTestExecutionCallback, AfterAllCallback, ParameterResolver {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebTestExtension.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerSmokeWebExtension.class);
+
     private WebDriver driver;
+
     private WebDriverWait wait;
-    private App app;
+
+    private App platformApp;
 
     @Override
     public void afterAll(ExtensionContext context) {
@@ -39,10 +44,13 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     }
 
     @Override
-    public void afterTestExecution(ExtensionContext context) throws Exception {
-        logger.info("Navigate to an empty page...");
+    public void afterTestExecution(ExtensionContext context) {
+        if (driver == null) {
+            return;
+        }
+        logger.info("Navigate to platform home for cookie cleanup...");
         try {
-            driver.get(TestHTTPResourceManager.getUri());
+            driver.get(DockerSmokeUrls.platform());
             driver.manage().deleteAllCookies();
             ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
                                                                             "try { window.localStorage.clear(); window.sessionStorage.clear(); } catch (e) {}");
@@ -50,37 +58,39 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
             logger.warn("Test cleanup failed", e);
         }
         driver.manage().logs().get(LogType.BROWSER).getAll()
-              // only log the message, not the entire log entry
               .forEach(logEntry -> logger.info("Browser console: {}", logEntry.getMessage()));
         driver.get("about:blank");
+        platformApp = null;
     }
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        driver = ChromeTestDriverFactory.createDriver();
+        if (!context.getTags().contains(TestTags.DOCKER_SMOKE)) {
+            return;
+        }
+        if (driver != null) {
+            return;
+        }
+        driver = ChromeTestDriverFactory.createDriver("--host-resolver-rules=MAP blogs.commit-mestre.test 127.0.0.1, MAP admin.commit-mestre.test 127.0.0.1");
+        wait = ChromeTestDriverFactory.createSmokeWait(driver);
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
         if (parameterContext.getParameter().getType().isAssignableFrom(WebDriver.class)) {
-            return this.driver;
-        } else if (parameterContext.getParameter().getType().isAssignableFrom(WebDriverWait.class)) {
-            if (Objects.isNull(this.wait)) {
-                this.wait = ChromeTestDriverFactory.createWait(driver);
-            }
-            return this.wait;
-        } else if (parameterContext.getParameter().getType().isAssignableFrom(App.class)) {
-            if (Objects.isNull(app)) {
-                if (Objects.isNull(this.wait)) {
-                    this.wait = ChromeTestDriverFactory.createWait(driver);
-                }
-                this.app = new App(driver, wait);
-            }
-            return this.app;
-        } else {
-            throw new ParameterResolutionException("Parameter not implemented!!! class=%s".formatted(parameterContext.getParameter().getType()));
+            return driver;
         }
+        if (parameterContext.getParameter().getType().isAssignableFrom(WebDriverWait.class)) {
+            return wait;
+        }
+        if (parameterContext.getParameter().getType().isAssignableFrom(App.class)) {
+            if (Objects.isNull(platformApp)) {
+                platformApp = App.at(driver, wait, DockerSmokeUrls.platform());
+            }
+            return platformApp;
+        }
+        throw new ParameterResolutionException("Parameter not implemented!!! class=%s".formatted(parameterContext.getParameter().getType()));
     }
 
     @Override

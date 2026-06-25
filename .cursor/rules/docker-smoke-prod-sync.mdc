@@ -1,0 +1,37 @@
+---
+description: Keep docker-smoke fixtures aligned with contraponto-prod and greenfield-deployment-tutorial.md
+alwaysApply: true
+---
+
+# Docker smoke ↔ production sync
+
+CI smoke tests run a **prod-faithful** stack from [`src/test/resources/docker-smoke/`](../../src/test/resources/docker-smoke/) (see [`README.md`](../../src/test/resources/docker-smoke/README.md)). Canonical production layout: [`contraponto-prod/docker-compose.yml`](../../contraponto-prod/docker-compose.yml), [`contraponto-prod/data/nginx/app.conf`](../../contraponto-prod/data/nginx/app.conf).
+
+Also keep [`docs/greenfield-deployment-tutorial.md`](../../docs/greenfield-deployment-tutorial.md) in sync (Phases 1.3, 3, 5, and **Automated CI smoke**).
+
+## When to update (same change / PR)
+
+| Trigger | Also update |
+|---------|-------------|
+| [`contraponto-prod/docker-compose.yml`](../../contraponto-prod/docker-compose.yml) — services, env, healthchecks, volumes | `src/test/resources/docker-smoke/docker-compose.yml`, `docker-smoke/README.md` mapping table, `greenfield-deployment-tutorial.md` |
+| [`contraponto-prod/data/nginx/app.conf`](../../contraponto-prod/data/nginx/app.conf) — proxy headers, `server_name`, upstream | `src/test/resources/docker-smoke/nginx.conf`, tutorial if verification URLs change |
+| `src/test/resources/docker-smoke/*` — new env, service, host mapping | `contraponto-prod` **or** document intentional delta in `docker-smoke/README.md` + tutorial |
+| New `%prod` env in [`application.properties`](../../src/main/resources/application.properties) | `contraponto-prod/docker-compose.yml`, smoke compose, [`docs/deployment.md`](../../docs/deployment.md), tutorial Phase 1.3 |
+| Smoke scenarios in [`ProductionImageSmokeIT.java`](../../src/test/java/dev/vepo/contraponto/shared/smoke/ProductionImageSmokeIT.java) | Tutorial §5 / **Automated CI smoke** if operator-facing verification changes |
+
+## Allowed smoke-only deltas (document in README)
+
+- Domain: `commit-mestre.test` vs `commit-mestre.dev` ( `/etc/hosts` in CI/local)
+- HTTP only (no TLS, certbot omitted)
+- `QUARKUS_MAILER_MOCK=true`, `APP_SECURE_COOKIES=false`
+- Image: `${CONTRAPONTO_IMAGE}` / `contraponto:ci-smoke` instead of `vepo/contraponto:main`
+- Ephemeral postgres volume
+
+## Do not
+
+- Paste production secrets into smoke fixtures or the tutorial.
+- Drift smoke env var **names** from prod compose without updating the README mapping table.
+
+## Verify
+
+Walk the env table in `docker-smoke/README.md` against current `contraponto-prod/docker-compose.yml` before merging infra changes.

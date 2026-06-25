@@ -1,6 +1,6 @@
 ---
 description: Keep docs/greenfield-deployment-tutorial.md aligned with production deployment steps
-globs: docs/greenfield-deployment-tutorial.md,docs/deployment.md,../contraponto-prod/**
+globs: docs/greenfield-deployment-tutorial.md,docs/deployment.md,../contraponto-prod/**,src/test/resources/docker-smoke/**
 alwaysApply: false
 ---
 
@@ -21,6 +21,8 @@ Update the tutorial (and cross-links) when any of these change:
 - **Post-deploy verification** steps that operators rely on (URLs, curl checks, session cookie domain)
 
 Also update [contraponto-prod/docs/MOP-DEPLOYMENT.md](../../contraponto-prod/docs/MOP-DEPLOYMENT.md) when the change is instance-specific but affects operator procedure.
+
+**Docker smoke CI:** when prod compose/nginx/env changes, also update [`src/test/resources/docker-smoke/`](../../src/test/resources/docker-smoke/) and follow [docker-smoke-prod-sync.mdc](docker-smoke-prod-sync.mdc).
 
 ## What to update in the tutorial
 

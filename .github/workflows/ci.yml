@@ -109,7 +109,9 @@ jobs:
   test-report:
     name: Quality · Test Results Summary
     runs-on: ubuntu-latest
-    needs: tests
+    needs:
+      - tests
+      - docker-smoke
     if: always() && !cancelled()
     timeout-minutes: 10
     permissions:
@@ -168,6 +170,55 @@ jobs:
             echo "- **Maven version:** \`$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)\`"
             echo "- **Artifact:** \`target/quarkus-app/\`"
           } >> "${GITHUB_STEP_SUMMARY}"
+
+  docker-smoke:
+    name: Tests · Docker Smoke (Testcontainers)
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
+
+      - name: Map smoke hostnames
+        run: |
+          echo "127.0.0.1 blogs.commit-mestre.test admin.commit-mestre.test" | sudo tee -a /etc/hosts
+
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Download Quarkus application bundle
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: build-quarkus-app
+          path: target/quarkus-app/
+
+      - name: Build JVM container image for smoke tests
+        run: docker build -f src/main/docker/Dockerfile.jvm -t contraponto:ci-smoke .
+
+      - name: Run docker-smoke integration tests
+        env:
+          GITHUB_ACTIONS: true
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+
+      - name: Upload Failsafe test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-docker-smoke
+          path: |
+            target/failsafe-reports/**/*.xml
+            target/failsafe-reports/**/*.txt
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
 
   quality-sonar:
     name: Quality · SonarCloud Analysis
@@ -230,7 +281,9 @@ jobs:
     name: Release · Docker Hub (JVM)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
-    needs: build
+    needs:
+      - build
+      - docker-smoke
     timeout-minutes: 30
     permissions:
       contents: read

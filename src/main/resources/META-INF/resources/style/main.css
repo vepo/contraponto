@@ -76,6 +76,9 @@
   --container-narrow: 760px;
   --layout-header-height: 56px;
   --layout-container-padding: 1.125rem;
+  /* Browse margin rails (≥1280px): header + spacing-lg; scroll inset = header + 2.5rem bottom gap */
+  --browse-rail-top: 5rem;
+  --browse-rail-scroll-inset: 6rem;
   --layout-page-padding: var(--spacing-lg);
   --border-radius: 6px;
 
@@ -2752,8 +2755,8 @@ hr:after {
     display: block;
     position: fixed;
     z-index: 40;
-    top: calc(var(--layout-header-height) + 1.5rem);
-    max-height: calc(100dvh - var(--layout-header-height) - 2.5rem);
+    top: var(--browse-rail-top);
+    max-height: calc(100dvh - var(--browse-rail-scroll-inset));
     overflow-y: auto;
     overscroll-behavior: contain;
     font-family: var(--font-sans);
@@ -2780,8 +2783,8 @@ hr:after {
     margin: 0;
     padding: 0;
     order: unset;
-    top: calc(var(--layout-header-height) + 1.5rem);
-    max-height: calc(100dvh - var(--layout-header-height) - 2.5rem);
+    top: var(--browse-rail-top);
+    max-height: calc(100dvh - var(--browse-rail-scroll-inset));
     overflow-y: auto;
     overscroll-behavior: contain;
     z-index: 40;

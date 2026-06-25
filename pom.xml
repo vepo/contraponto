@@ -28,6 +28,8 @@
         <sonar.coverage.jacoco.xmlReportPaths>target/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.language>java</sonar.language>
+        <skipITs>true</skipITs>
+        <contraponto.smoke.image>contraponto:ci-smoke</contraponto.smoke.image>
     </properties>
 
     <dependencyManagement>
@@ -411,6 +413,24 @@
                 <version>3.2.0</version>
                 <executions>
                     <execution>
+                        <id>fix-minified-calc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipStaticMinify}</skip>
+                            <target>
+                                <chmod file="${project.basedir}/scripts/fix-minified-calc.sh" perm="ugo+rx"/>
+                                <exec executable="${project.basedir}/scripts/fix-minified-calc.sh" failonerror="true">
+                                    <arg value="${static.assets.targetDir}/style/main.css"/>
+                                    <arg value="${static.assets.targetDir}/style/manage.css"/>
+                                    <arg value="${static.assets.targetDir}/style/write.css"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>verify-static-minify</id>
                         <phase>prepare-package</phase>
                         <goals>
@@ -431,6 +451,16 @@
                                 </condition>
                                 <fail unless="static.minify.ok"
                                       message="Static asset minify did not shrink main.js or main.css in ${static.assets.targetDir}"/>
+                                <exec executable="grep" failonerror="true">
+                                    <arg value="-q"/>
+                                    <arg value="browse-rail-top"/>
+                                    <arg value="${static.assets.targetDir}/style/main.css"/>
+                                </exec>
+                                <exec executable="grep" failonerror="true">
+                                    <arg value="-q"/>
+                                    <arg value="var(--browse-rail-top)"/>
+                                    <arg value="${static.assets.targetDir}/style/main.css"/>
+                                </exec>
                             </target>
                         </configuration>
                     </execution>
@@ -506,6 +536,33 @@
                 <skipITs>true</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
             </properties>
+        </profile>
+        <profile>
+            <id>test-docker-smoke</id>
+            <properties>
+                <skipITs>false</skipITs>
+                <contraponto.smoke.enabled>true</contraponto.smoke.enabled>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>docker-smoke</groups>
+                            <systemPropertyVariables>
+                                <contraponto.smoke.enabled>true</contraponto.smoke.enabled>
+                                <contraponto.smoke.image>${contraponto.smoke.image}</contraponto.smoke.image>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
