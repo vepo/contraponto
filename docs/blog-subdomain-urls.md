@@ -76,7 +76,7 @@ The user menu and write button on author subdomains link workspace hubs with **a
 
 The `__csrf` cookie uses the same `APP_SESSION_COOKIE_DOMAIN` as `__session` so CSRF tokens work after cross-host navigation.
 
-Also served without redirect on author hosts: `/write`, static assets, auth modals, form posts, and global `/components/*` partials.
+Also served without redirect on author hosts: static assets, auth modals, form posts, and global `/components/*` partials. `/write` redirects to the platform host like other workspace routes.
 
 ### Global shell partials (no username prefix)
 

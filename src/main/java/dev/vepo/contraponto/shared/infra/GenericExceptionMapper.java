@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.shared.infra;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +18,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.seo.SeoService;
 import dev.vepo.contraponto.user.LoggedUser;
 
@@ -23,22 +26,21 @@ import dev.vepo.contraponto.user.LoggedUser;
 @ApplicationScoped
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
+    private static final Links EMPTY_LINKS = new Links(Map.of());
+
     private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
 
     private final Template error;
-    private final FooterLinksProvider footerLinksProvider;
     private final LoggedUser loggedUser;
     private final SeoService seoService;
     private final boolean showErrorDetails;
 
     @Inject
     public GenericExceptionMapper(Template error,
-                                  FooterLinksProvider footerLinksProvider,
                                   LoggedUser loggedUser,
                                   SeoService seoService,
                                   @ConfigProperty(name = "app.show-error-details", defaultValue = "false") boolean showErrorDetails) {
         this.error = error;
-        this.footerLinksProvider = footerLinksProvider;
         this.loggedUser = loggedUser;
         this.seoService = seoService;
         this.showErrorDetails = showErrorDetails;
@@ -89,7 +91,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                            .data("status", status)
                            .data("message", technicalMessage)
                            .data("description", userMessage)
-                           .data("links", footerLinksProvider.loadGlobalLinks())
+                           .data("links", EMPTY_LINKS)
                            .data("dev", showErrorDetails)
                            .data("seo", seoService.forError(status))
                            .render();

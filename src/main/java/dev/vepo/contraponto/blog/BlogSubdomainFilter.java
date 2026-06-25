@@ -10,7 +10,6 @@ import java.net.URI;
 import dev.vepo.contraponto.shared.htmx.HtmxRequest;
 import dev.vepo.contraponto.shared.infra.LoggedFilter;
 import dev.vepo.contraponto.shared.security.SessionConstants;
-import dev.vepo.contraponto.shared.security.SessionStore;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -38,6 +37,11 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
         return Optional.of(segments.get(0));
     }
 
+    private static boolean hasSessionCookie(ContainerRequestContext requestContext) {
+        var sessionCookie = requestContext.getCookies().get(SessionConstants.SESSION_COOKIE_NAME);
+        return sessionCookie != null && sessionCookie.getValue() != null && !sessionCookie.getValue().isBlank();
+    }
+
     private static boolean isHtmxRequest(ContainerRequestContext requestContext) {
         return "true".equalsIgnoreCase(requestContext.getHeaderString(HtmxRequest.REQUEST_HEADER));
     }
@@ -56,15 +60,10 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
 
     private final BlogSubdomainContext context;
 
-    private final SessionStore sessionStore;
-
     @Inject
-    public BlogSubdomainFilter(BlogSubdomainConfig config,
-                               BlogSubdomainContext context,
-                               SessionStore sessionStore) {
+    public BlogSubdomainFilter(BlogSubdomainConfig config, BlogSubdomainContext context) {
         this.config = config;
         this.context = context;
-        this.sessionStore = sessionStore;
     }
 
     @Override
@@ -95,7 +94,7 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
         var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
 
         if (config.isWorkspaceRootPath(subdomainPath)) {
-            if (isAuthenticated(requestContext)) {
+            if (hasSessionCookie(requestContext)) {
                 redirectToPlatform(requestContext, subdomainPath, uriInfo);
             } else {
                 redirectToPlatformSignIn(requestContext, subdomainPath, uriInfo);
@@ -128,14 +127,6 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
                                   .replaceQuery(uriInfo.getRequestUri().getQuery())
                                   .build();
         requestContext.setRequestUri(uriInfo.getBaseUri(), targetUri);
-    }
-
-    private boolean isAuthenticated(ContainerRequestContext requestContext) {
-        var sessionCookie = requestContext.getCookies().get(SessionConstants.SESSION_COOKIE_NAME);
-        if (sessionCookie == null || sessionCookie.getValue() == null || sessionCookie.getValue().isBlank()) {
-            return false;
-        }
-        return sessionStore.findUserId(sessionCookie.getValue()).isPresent();
     }
 
     private void redirectToPlatform(ContainerRequestContext requestContext, String path, jakarta.ws.rs.core.UriInfo uriInfo) {

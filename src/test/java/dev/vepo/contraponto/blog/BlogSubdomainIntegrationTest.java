@@ -51,6 +51,17 @@ class BlogSubdomainIntegrationTest {
                 .body(containsString("hub-shell"));
     }
 
+    @Test
+    void platformHost_writeServesEditorWhenLoggedIn() {
+        TestHttp.session(admin)
+                .header("Host", "blogs.localhost")
+                .when()
+                .get("/write")
+                .then()
+                .statusCode(200)
+                .body(containsString("write-page"));
+    }
+
     @BeforeEach
     void setUp() {
         Given.cleanup();
@@ -143,6 +154,19 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
+    void subdomainHost_anonymousWriteRedirectsToPlatformSignIn() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/write")
+               .then()
+               .statusCode(303)
+               .header("Location", containsString("https://blogs.localhost/?signIn=1"))
+               .header("Location", containsString("returnTo=%2Fwrite"));
+    }
+
+    @Test
     void subdomainHost_discoveryRouteRedirectsToPlatformHost() {
         given().header("Host", "subdom-author.localhost")
                .redirects()
@@ -179,6 +203,19 @@ class BlogSubdomainIntegrationTest {
                 .then()
                 .statusCode(302)
                 .header("Location", "https://blogs.localhost/administration");
+    }
+
+    @Test
+    void subdomainHost_loggedInWriteRedirectsToPlatform() {
+        TestHttp.session(admin)
+                .header("Host", "vepo.localhost")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/write")
+                .then()
+                .statusCode(302)
+                .header("Location", "https://blogs.localhost/write");
     }
 
     @Test

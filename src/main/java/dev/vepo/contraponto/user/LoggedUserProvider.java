@@ -3,31 +3,18 @@ package dev.vepo.contraponto.user;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.security.SessionStore;
-import io.vertx.core.http.HttpServerRequest;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Context;
 
 @ApplicationScoped
 public class LoggedUserProvider {
-    private static final Logger logger = LoggerFactory.getLogger(LoggedUserProvider.class);
 
-    private final HttpServerRequest request;
     private final SessionStore sessionStore;
     private final UserRepository userRepository;
 
     @Inject
-    public LoggedUserProvider(@Context HttpServerRequest request,
-                              SessionStore sessionStore,
-                              UserRepository userRepository) {
-        this.request = request;
+    public LoggedUserProvider(SessionStore sessionStore, UserRepository userRepository) {
         this.sessionStore = sessionStore;
         this.userRepository = userRepository;
     }
@@ -46,20 +33,6 @@ public class LoggedUserProvider {
 
     public void invalidateAllSessionsForUser(long userId) {
         sessionStore.removeAllForUser(userId);
-    }
-
-    @Produces
-    @RequestScoped
-    public LoggedUser loadLoggedUser() {
-        var cookie = request.getCookie(SessionConstants.SESSION_COOKIE_NAME);
-        if (cookie == null) {
-            return new LoggedUser();
-        }
-        var sessionId = cookie.getValue();
-        return find(sessionId).map(user -> {
-            logger.info("Logged cookie={} user={}", sessionId, user);
-            return user;
-        }).orElseGet(LoggedUser::new);
     }
 
     public LoggedUser login(User user) {
