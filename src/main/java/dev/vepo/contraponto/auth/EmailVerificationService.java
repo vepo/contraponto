@@ -34,7 +34,7 @@ public class EmailVerificationService {
         user.setPendingEmail(newEmail);
         userRepository.update(user);
         var issued = tokenService.issueEmailChange(user, newEmail);
-        accountEmailService.sendEmailChangeVerification(user, newEmail, issued.rawToken());
+        accountEmailService.sendEmailChangeVerification(newEmail, issued.rawToken());
     }
 
     @Transactional

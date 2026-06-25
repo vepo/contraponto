@@ -34,7 +34,7 @@ Single Maven module; logical boundaries in `dev.vepo.contraponto.*`. Full table:
 
 ## Enforcement
 
-ArchUnit tests in `src/test/java/dev/vepo/contraponto/shared/architecture/BoundedContextRulesTest.java` — keep green on every change.
+ArchUnit tests in `src/test/java/dev/vepo/contraponto/shared/architecture/BoundedContextRulesTest.java` — keep green on every change (bounded-context deps, PascalCase type names / Sonar `java:S101`, …).
 
 ## When adding a feature
 

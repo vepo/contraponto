@@ -19,6 +19,7 @@ alwaysApply: false
 - **Imports:** add an `import` for every Java type; do not use fully qualified names (`java.util.List`, `dev.vepo.contraponto.shared.App`, …). Use FQN only when two imported types share the same simple name. Remove unused imports; do not leave dead imports after refactors.
 - **Dead code:** remove unused local variables, parameters, fields, and private methods in every change you touch. Do not suppress with `@SuppressWarnings("unused")` unless the compiler requires it (e.g. framework callbacks).
 - String building: [contraponto-strings.mdc](contraponto-strings.mdc) — `.formatted()` first, `StringBuilder` for loops; no `+` concatenation.
+- **Type names:** classes, records, interfaces, and enums use **PascalCase** — `^[A-Z][a-zA-Z0-9]*$` (Sonar `java:S101`). MailTemplate records must match their Qute template file name under `templates/{OwnerClass}/`.
 
 ## `var` and local variables
 

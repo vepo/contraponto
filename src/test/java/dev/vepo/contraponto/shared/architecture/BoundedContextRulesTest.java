@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.shared.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.ANONYMOUS_CLASSES;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -13,12 +14,17 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
 
+import dev.vepo.contraponto.shared.UnitTest;
 import io.quarkus.qute.TemplateExtension;
 import jakarta.persistence.Entity;
 
 @Tag("architecture")
+@UnitTest
 class BoundedContextRulesTest {
 
     private static final String ROOT = "dev.vepo.contraponto";
@@ -32,6 +38,23 @@ class BoundedContextRulesTest {
         @Override
         public boolean test(JavaClass input) {
             return !SHARED_KERNEL_DOMAIN_ALLOWLIST.contains(input.getFullName());
+        }
+    };
+
+    private static final DescribedPredicate<JavaClass> NAMED_TYPE = new DescribedPredicate<>("named type (not anonymous or synthetic)") {
+        @Override
+        public boolean test(JavaClass input) {
+            return !input.getSimpleName().isEmpty();
+        }
+    };
+
+    private static final ArchCondition<JavaClass> HAVE_PASCAL_CASE_SIMPLE_NAME = new ArchCondition<>("have PascalCase simple name (Sonar java:S101)") {
+        @Override
+        public void check(JavaClass item, ConditionEvents events) {
+            if (!item.getSimpleName().matches("^[A-Z][a-zA-Z0-9]*$")) {
+                events.add(SimpleConditionEvent.violated(item,
+                                                         "Simple name '%s' must match ^[A-Z][a-zA-Z0-9]*$".formatted(item.getSimpleName())));
+            }
         }
     };
 
@@ -89,6 +112,18 @@ class BoundedContextRulesTest {
                                  .areAnnotatedWith(TemplateExtension.class)
                                  .should()
                                  .resideOutsideOfPackage("..shared.infra..");
+
+        rule.check(CLASSES);
+    }
+
+    @Test
+    void typeNamesMustUsePascalCase() {
+        ArchRule rule = classes()
+                                 .that()
+                                 .resideInAnyPackage(ROOT + "..")
+                                 .and(NAMED_TYPE)
+                                 .and(DescribedPredicate.not(ANONYMOUS_CLASSES))
+                                 .should(HAVE_PASCAL_CASE_SIMPLE_NAME);
 
         rule.check(CLASSES);
     }

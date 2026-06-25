@@ -59,6 +59,7 @@ For each finding (or tight cluster):
 | Too many returns / nested if | Early returns and extracted validators (see `BlogSaveEndpoint.validateSlug`) | Duplicating validation paths |
 | Regex DoS (`java:S5852` etc.) | Possessive quantifiers + comment explaining malformed input (see `ContentRenderTagProcessor`) | Weaker regex that accepts invalid input |
 | Missing template parameters (Qute) | Pass explicit view-model fields (`Links`, `LoggedUser`, …) into `@CheckedTemplate` methods | `@Inject` static fields into templates |
+| Type name not PascalCase (`java:S101`) | Rename class/record/interface/enum to `^[A-Z][a-zA-Z0-9]*$`; MailTemplate records must match `templates/{OwnerClass}/{RecordName}.html` | Lowercase record names to match legacy Qute paths |
 | Unused imports / dead code | Remove only after confirming zero references (endpoints, CDI, tests, templates) | Deleting beans looked up via `Arc` or framework callbacks |
 | Exception handling | Log with SLF4J + rethrow or map to domain `Response`; never empty catch | `catch (Exception ignored)` |
 | Test smells | Fix assertion or test data; keep production behavior | `@Disabled`, `@Ignore`, weakened assertions |

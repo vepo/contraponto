@@ -15,22 +15,22 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class AccountEmailService {
 
-    record accountActivation(String baseUrl, String localeLang, AccountActivationEvent event, AccountEmailCopy copy)
+    record AccountActivation(String baseUrl, String localeLang, AccountActivationEvent event, AccountEmailCopy copy)
             implements MailTemplate.MailTemplateInstance {}
 
-    record emailChangedNotice(String baseUrl, String localeLang, EmailChangedNoticeEvent event, AccountEmailCopy copy)
+    record EmailChangedNotice(String baseUrl, String localeLang, EmailChangedNoticeEvent event, AccountEmailCopy copy)
             implements MailTemplate.MailTemplateInstance {}
 
-    record emailChangeVerification(String baseUrl, String localeLang, EmailChangeVerificationEvent event, AccountEmailCopy copy)
+    record EmailChangeVerification(String baseUrl, String localeLang, EmailChangeVerificationEvent event, AccountEmailCopy copy)
             implements MailTemplate.MailTemplateInstance {}
 
-    record passwordChanged(String baseUrl, String localeLang, PasswordChangedEvent event, AccountEmailCopy copy)
+    record PasswordChanged(String baseUrl, String localeLang, PasswordChangedEvent event, AccountEmailCopy copy)
             implements MailTemplate.MailTemplateInstance {}
 
-    record passwordReset(String baseUrl, String localeLang, PasswordResetEvent event, AccountEmailCopy copy)
+    record PasswordReset(String baseUrl, String localeLang, PasswordResetEvent event, AccountEmailCopy copy)
             implements MailTemplate.MailTemplateInstance {}
 
-    record unauthorizedSignupReport(String baseUrl, UnauthorizedSignupReportEvent event)
+    record UnauthorizedSignupReport(String baseUrl, UnauthorizedSignupReportEvent event)
             implements MailTemplate.MailTemplateInstance {}
 
     private static final Logger logger = LoggerFactory.getLogger(AccountEmailService.class);
@@ -73,27 +73,27 @@ public class AccountEmailService {
         return switch (entry.getKind()) {
             case ACCOUNT_ACTIVATION -> {
                 var payload = objectMapper.readValue(entry.getPayload(), AccountActivationOutboxPayload.class);
-                yield new accountActivation(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
+                yield new AccountActivation(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
             }
             case EMAIL_CHANGED_NOTICE -> {
                 var payload = objectMapper.readValue(entry.getPayload(), EmailChangedNoticeOutboxPayload.class);
-                yield new emailChangedNotice(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
+                yield new EmailChangedNotice(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
             }
             case EMAIL_CHANGE_VERIFICATION -> {
                 var payload = objectMapper.readValue(entry.getPayload(), EmailChangeVerificationOutboxPayload.class);
-                yield new emailChangeVerification(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
+                yield new EmailChangeVerification(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
             }
             case PASSWORD_CHANGED -> {
                 var payload = objectMapper.readValue(entry.getPayload(), PasswordChangedOutboxPayload.class);
-                yield new passwordChanged(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
+                yield new PasswordChanged(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
             }
             case PASSWORD_RESET -> {
                 var payload = objectMapper.readValue(entry.getPayload(), PasswordResetOutboxPayload.class);
-                yield new passwordReset(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
+                yield new PasswordReset(payload.baseUrl(), payload.localeLang(), payload.event(), payload.copy());
             }
             case UNAUTHORIZED_SIGNUP_REPORT -> {
                 var payload = objectMapper.readValue(entry.getPayload(), UnauthorizedSignupReportOutboxPayload.class);
-                yield new unauthorizedSignupReport(payload.baseUrl(), payload.event());
+                yield new UnauthorizedSignupReport(payload.baseUrl(), payload.event());
             }
         };
     }
@@ -149,7 +149,7 @@ public class AccountEmailService {
         var outboxPayload = new AccountActivationOutboxPayload(baseUrl, emailMessages.localeLang(), event, copy);
         send(AccountEmailKind.ACCOUNT_ACTIVATION,
              outboxPayload,
-             new accountActivation(baseUrl, emailMessages.localeLang(), event, copy),
+             new AccountActivation(baseUrl, emailMessages.localeLang(), event, copy),
              user.getEmail(),
              copy.subject());
     }
@@ -164,12 +164,12 @@ public class AccountEmailService {
         var outboxPayload = new EmailChangedNoticeOutboxPayload(baseUrl, emailMessages.localeLang(), event, copy);
         send(AccountEmailKind.EMAIL_CHANGED_NOTICE,
              outboxPayload,
-             new emailChangedNotice(baseUrl, emailMessages.localeLang(), event, copy),
+             new EmailChangedNotice(baseUrl, emailMessages.localeLang(), event, copy),
              previousEmail,
              copy.subject());
     }
 
-    public void sendEmailChangeVerification(User user, String pendingEmail, String rawToken) {
+    public void sendEmailChangeVerification(String pendingEmail, String rawToken) {
         String verifyUrl = "%s/account/verify-email?token=%s".formatted(baseUrl, rawToken);
         var event = new EmailChangeVerificationEvent(verifyUrl,
                                                      pendingEmail,
@@ -180,7 +180,7 @@ public class AccountEmailService {
         var outboxPayload = new EmailChangeVerificationOutboxPayload(baseUrl, emailMessages.localeLang(), event, copy);
         send(AccountEmailKind.EMAIL_CHANGE_VERIFICATION,
              outboxPayload,
-             new emailChangeVerification(baseUrl, emailMessages.localeLang(), event, copy),
+             new EmailChangeVerification(baseUrl, emailMessages.localeLang(), event, copy),
              pendingEmail,
              copy.subject());
     }
@@ -191,7 +191,7 @@ public class AccountEmailService {
         var outboxPayload = new PasswordChangedOutboxPayload(baseUrl, emailMessages.localeLang(), event, copy);
         send(AccountEmailKind.PASSWORD_CHANGED,
              outboxPayload,
-             new passwordChanged(baseUrl, emailMessages.localeLang(), event, copy),
+             new PasswordChanged(baseUrl, emailMessages.localeLang(), event, copy),
              user.getEmail(),
              copy.subject());
     }
@@ -206,7 +206,7 @@ public class AccountEmailService {
         var outboxPayload = new PasswordResetOutboxPayload(baseUrl, emailMessages.localeLang(), event, copy);
         send(AccountEmailKind.PASSWORD_RESET,
              outboxPayload,
-             new passwordReset(baseUrl, emailMessages.localeLang(), event, copy),
+             new PasswordReset(baseUrl, emailMessages.localeLang(), event, copy),
              user.getEmail(),
              copy.subject());
     }
@@ -226,7 +226,7 @@ public class AccountEmailService {
         for (String recipient : recipients) {
             send(AccountEmailKind.UNAUTHORIZED_SIGNUP_REPORT,
                  outboxPayload,
-                 new unauthorizedSignupReport(baseUrl, event),
+                 new UnauthorizedSignupReport(baseUrl, event),
                  recipient,
                  subject);
         }
