@@ -24,6 +24,7 @@
 
         <!-- JaCoCo Properties -->
         <jacoco.version>0.8.15</jacoco.version>
+        <jacoco.merge.dir>${project.build.directory}/jacoco-parts</jacoco.merge.dir>
         <sonar.coverage.jacoco.xmlReportPaths>target/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.language>java</sonar.language>
@@ -286,6 +287,23 @@
                                 <!-- HTML is optional, but useful for local inspection -->
                                 <format>HTML</format>
                             </formats>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-merge</id>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-quarkus.exec</destFile>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${jacoco.merge.dir}</directory>
+                                    <includes>
+                                        <include>**/*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
                         </configuration>
                     </execution>
                 </executions>

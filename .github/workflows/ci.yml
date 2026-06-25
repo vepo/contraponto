@@ -91,12 +91,18 @@ jobs:
           if-no-files-found: warn
           compression-level: 6
 
+      - name: Stage JaCoCo execution data
+        if: success()
+        run: |
+          mkdir -p target/jacoco-upload
+          cp target/jacoco-quarkus.exec "target/jacoco-upload/jacoco-${{ matrix.suite }}.exec"
+
       - name: Upload JaCoCo execution data
         if: success()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: jacoco-${{ matrix.suite }}
-          path: target/jacoco-quarkus.exec
+          path: target/jacoco-upload/jacoco-${{ matrix.suite }}.exec
           retention-days: 1
           if-no-files-found: error
 
@@ -203,10 +209,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn ${{ env.MAVEN_CLI_OPTS }} compile -DskipTests
-          mvn ${{ env.MAVEN_CLI_OPTS }} org.jacoco:jacoco-maven-plugin:0.8.15:merge \
-            -Djacoco.destFile=target/jacoco-quarkus.exec \
-            "-Djacoco.fileSets[0].directory=target/jacoco-parts" \
-            "-Djacoco.fileSets[0].includes=*.exec"
+          mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:merge@default-merge
           mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -DskipTests \
             -Dsonar.projectKey=vepo_contraponto
