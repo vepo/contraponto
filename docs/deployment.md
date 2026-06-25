@@ -58,6 +58,8 @@ certbot certonly --dns-<provider> -d "*.commit-mestre.dev" -d "commit-mestre.dev
 
 Configure nginx (or your ingress) with `server_name blogs.example *.example`, forward `Host` and `X-Forwarded-Proto` to the app, and set `APP_SESSION_COOKIE_DOMAIN=.example` so sessions work on both platform and author subdomains.
 
+Full URL mapping (platform vs author host, menu, components): [blog-subdomain-urls.md](blog-subdomain-urls.md).
+
 ## 3. SMTP (mailer)
 
 Configure outbound mail (signup verification, password reset, post notifications to subscribers):

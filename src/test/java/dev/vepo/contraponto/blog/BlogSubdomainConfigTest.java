@@ -24,6 +24,17 @@ class BlogSubdomainConfigTest {
     }
 
     @Test
+    void normalizeAuthorSubdomainRequestPath_stripsRedundantUsernamePrefix() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+
+        assertThat(config.normalizeAuthorSubdomainRequestPath("vepo", "/")).isEqualTo("/");
+        assertThat(config.normalizeAuthorSubdomainRequestPath("vepo", "/vepo")).isEqualTo("/");
+        assertThat(config.normalizeAuthorSubdomainRequestPath("vepo", "/vepo/")).isEqualTo("/");
+        assertThat(config.normalizeAuthorSubdomainRequestPath("vepo", "/vepo/notas")).isEqualTo("/notas");
+        assertThat(config.normalizeAuthorSubdomainRequestPath("vepo", "/post/hello")).isEqualTo("/post/hello");
+    }
+
+    @Test
     void parseUserSubdomain_recognizesAuthorHost() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 
@@ -52,6 +63,16 @@ class BlogSubdomainConfigTest {
 
         assertThat(config.shouldSkipSubdomainRewrite("/favicon.svg")).isTrue();
         assertThat(config.shouldSkipSubdomainRewrite("/favicon.ico")).isTrue();
+    }
+
+    @Test
+    void shouldSkipSubdomainRewrite_forGlobalComponents() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+
+        assertThat(config.shouldSkipSubdomainRewrite("/components/menu")).isTrue();
+        assertThat(config.shouldSkipSubdomainRewrite("/components/notifications/badge")).isTrue();
+        assertThat(config.shouldSkipSubdomainRewrite("/components/seo")).isTrue();
+        assertThat(config.shouldSkipSubdomainRewrite("/components/grid")).isFalse();
     }
 
     @Test

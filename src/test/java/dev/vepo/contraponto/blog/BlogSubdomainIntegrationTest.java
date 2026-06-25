@@ -71,6 +71,18 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
+    void subdomainHost_myBlogPathDoesNotDoublePrefixUsername() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/subdom-author")
+               .then()
+               .statusCode(200)
+               .body(containsString("Subdomain Post"));
+    }
+
+    @Test
     void subdomainHost_servesAuthModalWithoutPlatformRedirect() {
         given().header("Host", "subdom-author.localhost")
                .redirects()
@@ -88,6 +100,17 @@ class BlogSubdomainIntegrationTest {
                .follow(false)
                .when()
                .get("/components/grid?page=2")
+               .then()
+               .statusCode(200);
+    }
+
+    @Test
+    void subdomainHost_servesGlobalMenuComponentWithoutPlatformRedirect() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/components/menu")
                .then()
                .statusCode(200);
     }

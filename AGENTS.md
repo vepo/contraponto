@@ -15,6 +15,7 @@ Read these before changing code or tests:
 | [docs/ui-elements.md](docs/ui-elements.md) | CSS class catalog and main/manage/write bundles |
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git ↔ Jekyll sync layout |
 | [docs/deployment.md](docs/deployment.md) | Production checklist (DB, SMTP, URL, secrets) |
+| [docs/blog-subdomain-urls.md](docs/blog-subdomain-urls.md) | Platform vs author subdomain URL patterns, menu, and components |
 | [docs/greenfield-deployment-tutorial.md](docs/greenfield-deployment-tutorial.md) | Step-by-step first deploy on a new server/domain (keep in sync with `contraponto-prod`) |
 | [.github/workflows/README.md](.github/workflows/README.md) | CI pipeline, stored artifacts, and GitHub test result publishing |
 | [docs/prd/post-text-highlight.md](docs/prd/post-text-highlight.md) | PRD: reader highlights, author curation, post responses |

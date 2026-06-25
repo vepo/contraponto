@@ -84,11 +84,13 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
             path = "/";
         }
 
-        if (config.shouldSkipSubdomainRewrite(path)) {
+        var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
+
+        if (config.shouldSkipSubdomainRewrite(subdomainPath)) {
             return;
         }
 
-        var firstSegment = firstPathSegment(path);
+        var firstSegment = firstPathSegment(subdomainPath);
         if (firstSegment.isPresent() && config.isPlatformOnlyRootSegment(firstSegment.get())) {
             var platformUrl = config.platformUrl(path);
             if (isHtmxRequest(requestContext)) {
@@ -103,7 +105,7 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
             return;
         }
 
-        var internalPath = prependUsername(authorUsername, path);
+        var internalPath = prependUsername(authorUsername, subdomainPath);
         var targetUri = UriBuilder.fromUri(uriInfo.getBaseUri())
                                   .path(internalPath.startsWith("/") ? internalPath.substring(1) : internalPath)
                                   .replaceQuery(uriInfo.getRequestUri().getQuery())

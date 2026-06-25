@@ -122,6 +122,13 @@ public class BlogSubdomainConfig {
         return enabled && !baseDomain.isBlank();
     }
 
+    private boolean isGlobalComponentPath(String normalizedPath) {
+        if (!normalizedPath.startsWith("components/")) {
+            return false;
+        }
+        return !normalizedPath.equals("components/grid") && !normalizedPath.startsWith("components/grid/");
+    }
+
     public boolean isPlatformOnlyRootSegment(String segment) {
         if (segment == null || segment.isBlank()) {
             return false;
@@ -133,6 +140,21 @@ public class BlogSubdomainConfig {
             return false;
         }
         return PLATFORM_ONLY_ROOT_SEGMENTS.contains(segment);
+    }
+
+    public String normalizeAuthorSubdomainRequestPath(String authorUsername, String path) {
+        if (path == null || path.isBlank() || "/".equals(path)) {
+            return path;
+        }
+        var usernamePrefix = "/%s".formatted(authorUsername);
+        if (path.equals(usernamePrefix) || path.equals("%s/".formatted(usernamePrefix))) {
+            return "/";
+        }
+        var nestedPrefix = "%s/".formatted(usernamePrefix);
+        if (path.startsWith(nestedPrefix)) {
+            return path.substring(usernamePrefix.length());
+        }
+        return path;
     }
 
     public Optional<String> parseUserSubdomain(String hostHeader) {
@@ -180,6 +202,9 @@ public class BlogSubdomainConfig {
         }
         var normalized = path.startsWith("/") ? path.substring(1) : path;
         if (SKIP_REWRITE_EXACT.contains(normalized)) {
+            return true;
+        }
+        if (isGlobalComponentPath(normalized)) {
             return true;
         }
         var firstSegment = normalized.indexOf('/') >= 0 ? normalized.substring(0, normalized.indexOf('/')) : normalized;
