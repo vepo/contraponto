@@ -231,6 +231,7 @@
                 <configuration>
                     <!-- Must include JaCoCo ${argLine}; a bare argLine replaced the agent and hid plain unit-test coverage -->
                     <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <excludedGroups>docker-smoke</excludedGroups>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
@@ -250,6 +251,7 @@
                 </executions>
                 <configuration>
                     <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <excludedGroups>docker-smoke</excludedGroups>
                     <systemPropertyVariables>
                         <native.image.path>
                             ${project.build.directory}/${project.build.finalName}-runner</native.image.path>
@@ -538,10 +540,10 @@
             </properties>
         </profile>
         <profile>
-            <id>test-docker-smoke</id>
+            <id>test-it</id>
             <properties>
                 <skipITs>false</skipITs>
-                <contraponto.smoke.enabled>true</contraponto.smoke.enabled>
+                <it.groups>docker-smoke</it.groups>
             </properties>
             <build>
                 <plugins>
@@ -554,9 +556,9 @@
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <groups>docker-smoke</groups>
+                            <excludedGroups combine.self="override"/>
+                            <groups>${it.groups}</groups>
                             <systemPropertyVariables>
-                                <contraponto.smoke.enabled>true</contraponto.smoke.enabled>
                                 <contraponto.smoke.image>${contraponto.smoke.image}</contraponto.smoke.image>
                             </systemPropertyVariables>
                         </configuration>

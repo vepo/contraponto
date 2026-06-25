@@ -10,7 +10,7 @@ Workflow: [`ci.yml`](ci.yml) — **Continuous Integration**
 | **Tests · Unit / Quarkus Integration / Web** | Parallel Maven Surefire shards (`-Ptest-unit`, `-Ptest-quarkus`, `-Ptest-web`) |
 | **Quality · Test Results Summary** | Publishes JUnit XML to GitHub Checks and PR comments on failures |
 | **Build · JVM Package & Static Assets** | `mvn package -DskipTests` — minify gate for JS/CSS |
-| **Tests · Docker Smoke (Testcontainers)** | Prod-faithful stack + headless Chrome against packaged JVM image (`-Ptest-docker-smoke`) |
+| **Tests · Docker Smoke** | Prod-faithful stack + headless Chrome against packaged JVM image (`-Ptest-it`) |
 | **Quality · SonarCloud Analysis** | Merges JaCoCo from test shards; SonarCloud scan (skipped on fork PRs) |
 | **Release · Docker Hub (JVM)** | Pushes `vepo/contraponto` on `main` and tags only (after docker-smoke) |
 
@@ -66,7 +66,7 @@ Docker smoke (requires Docker, `/etc/hosts`, built image):
 echo "127.0.0.1 blogs.commit-mestre.test admin.commit-mestre.test" | sudo tee -a /etc/hosts
 mvn package -DskipTests
 docker build -f src/main/docker/Dockerfile.jvm -t contraponto:ci-smoke .
-GITHUB_ACTIONS=true mvn -B verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+GITHUB_ACTIONS=true mvn -B verify -Ptest-it -Dcontraponto.smoke.image=contraponto:ci-smoke
 ```
 
 See [`.cursor/rules/static-analysis.mdc`](../.cursor/rules/static-analysis.mdc), [`.cursor/rules/test-headless-github-actions.mdc`](../.cursor/rules/test-headless-github-actions.mdc), and [`src/test/resources/docker-smoke/README.md`](../src/test/resources/docker-smoke/README.md).

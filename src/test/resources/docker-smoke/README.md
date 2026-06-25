@@ -1,6 +1,6 @@
 # Docker smoke stack (prod-faithful compose)
 
-Prod-faithful compose for CI **`docker-smoke`** job and local `-Ptest-docker-smoke` runs. The test harness starts the stack with **`docker compose`** (CLI), not the Testcontainers Java Compose module — same service graph as production.
+Prod-faithful compose for CI **`docker-smoke`** job and local `-Ptest-it` runs. The test harness starts the stack with **`docker compose`** (CLI), not the Testcontainers Java Compose module — same service graph as production.
 
 **Canonical production:** [`contraponto-prod/docker-compose.yml`](../../../../contraponto-prod/docker-compose.yml) and [`contraponto-prod/data/nginx/app.conf`](../../../../contraponto-prod/data/nginx/app.conf).
 
@@ -54,10 +54,12 @@ echo "127.0.0.1 blogs.commit-mestre.test admin.commit-mestre.test" | sudo tee -a
 
 ## Local run
 
+Default `mvn verify` runs Surefire only (`skipITs=true`) and excludes the `docker-smoke` tag. Integration tests use Failsafe with `-Ptest-it` (tag filter defaults to `docker-smoke`; override with `-Dit.groups=…`).
+
 ```bash
 mvn package -DskipTests
 docker build -f src/main/docker/Dockerfile.jvm -t contraponto:ci-smoke .
-GITHUB_ACTIONS=true mvn -B verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+GITHUB_ACTIONS=true mvn -B verify -Ptest-it -Dcontraponto.smoke.image=contraponto:ci-smoke
 ```
 
 JWT public key: `keys/public_key.pem` (generate with [`contraponto-prod/keys/generate-keys.sh`](../../../../contraponto-prod/keys/generate-keys.sh); do not commit `private_key.pem`).

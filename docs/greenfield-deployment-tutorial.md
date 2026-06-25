@@ -253,7 +253,7 @@ Local run (after `mvn package -DskipTests` and `docker build`):
 ```bash
 echo "127.0.0.1 blogs.commit-mestre.test admin.commit-mestre.test" | sudo tee -a /etc/hosts
 docker build -f src/main/docker/Dockerfile.jvm -t contraponto:ci-smoke .
-GITHUB_ACTIONS=true mvn -B verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+GITHUB_ACTIONS=true mvn -B verify -Ptest-it -Dcontraponto.smoke.image=contraponto:ci-smoke
 ```
 
 See [`.github/workflows/README.md`](../.github/workflows/README.md).

@@ -3,14 +3,12 @@ package dev.vepo.contraponto.shared.smoke;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.contraponto.shared.App;
 
 @DockerSmokeWebTest
-@EnabledIfSystemProperty(named = "contraponto.smoke.enabled", matches = "true")
 class ProductionImageSmokeIT {
 
     @Test

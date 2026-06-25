@@ -206,7 +206,7 @@ jobs:
       - name: Run docker-smoke integration tests
         env:
           GITHUB_ACTIONS: true
-        run: mvn ${{ env.MAVEN_CLI_OPTS }} verify -Ptest-docker-smoke -Dcontraponto.smoke.image=contraponto:ci-smoke
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} verify -Ptest-it -Dcontraponto.smoke.image=contraponto:ci-smoke
 
       - name: Upload Failsafe test results
         if: always()
