@@ -34,7 +34,9 @@ class I18nMessagesEndpointTest {
                                                                "appearance.social.github",
                                                                "appearance.social.linkedin",
                                                                "appearance.social.mastodon",
-                                                               "appearance.social.twitter");
+                                                               "appearance.social.twitter",
+                                                               "share.bluesky",
+                                                               "share.linkedin");
 
     @Test
     void shouldNotServeDefaultLocaleBundle() {

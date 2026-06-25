@@ -9,7 +9,10 @@ import java.util.Optional;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.shared.share.ShareLinks;
+import dev.vepo.contraponto.shared.share.ShareView;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
@@ -61,6 +64,7 @@ public class PostEndpoint {
                                                    long viewCount,
                                                    long averageReadingSeconds,
                                                    BlogAudienceView audience,
+                                                   ShareView share,
                                                    ReadingListActionView readingListView,
                                                    BreadcrumbTrail breadcrumb,
                                                    SeoMetadata seo);
@@ -90,6 +94,7 @@ public class PostEndpoint {
     private final BlogRepository blogRepository;
     private final PostSlugAliasRepository postSlugAliasRepository;
     private final ReadingListService readingListService;
+    private final BlogPublicUrlService blogPublicUrlService;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -106,7 +111,8 @@ public class PostEndpoint {
                         SeoService seoService,
                         BlogRepository blogRepository,
                         PostSlugAliasRepository postSlugAliasRepository,
-                        ReadingListService readingListService) {
+                        ReadingListService readingListService,
+                        BlogPublicUrlService blogPublicUrlService) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -122,6 +128,7 @@ public class PostEndpoint {
         this.blogRepository = blogRepository;
         this.postSlugAliasRepository = postSlugAliasRepository;
         this.readingListService = readingListService;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     @GET
@@ -232,6 +239,8 @@ public class PostEndpoint {
         BlogAudienceView audience = audienceComponentEndpoint.buildView(post.getBlog());
         ReadingListActionView readingListView = readingListService.buildActionView(post, viewerUserId);
         BreadcrumbTrail breadcrumb = breadcrumbService.forPost(view);
+        ShareView share = ShareLinks.from(PostTemplateExtensions.liveTitle(view),
+                                          blogPublicUrlService.canonicalOrPlatformAbsolute(post));
         TemplateInstance template = Templates.post(view,
                                                    seriePostsFor(post),
                                                    relatedPostsFor(post),
@@ -240,6 +249,7 @@ public class PostEndpoint {
                                                    viewCount,
                                                    averageReadingSeconds,
                                                    audience,
+                                                   share,
                                                    readingListView,
                                                    breadcrumb,
                                                    seoService.forPost(view, breadcrumb));

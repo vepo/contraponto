@@ -26,7 +26,11 @@
                         <div class="user-blog__bio">{view.mainBlog.renderedDescription.raw}</div>
                         {/if}
                         <div class="user-blog-header__actions">
-                            {#include BlogAudienceComponentEndpoint/audienceControls audience=view.audience /}
+                            <div class="post-action-bar">
+                                {#include BlogAudienceComponentEndpoint/audienceControls audience=view.audience /}
+                                <div class="post-action-bar__divider" aria-hidden="true"></div>
+                                {#include components/share-actions share=view.share /}
+                            </div>
                         </div>
                     </header>
                     {#if !view.posts.isEmpty}

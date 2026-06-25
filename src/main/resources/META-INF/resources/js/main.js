@@ -101,6 +101,75 @@ class ImageLightboxManager {
     }
 }
 
+class ClipboardWriter {
+    static write(text) {
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(text).catch(() => ClipboardWriter.fallback(text));
+            return;
+        }
+        ClipboardWriter.fallback(text);
+    }
+
+    static fallback(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
+}
+
+class ShareActionsManager {
+    static COPY_KEY = 'share.copy';
+    static COPIED_KEY = 'share.copied';
+
+    static copyLabel() {
+        const translated = window.i18n?.t(ShareActionsManager.COPY_KEY);
+        return translated && translated !== ShareActionsManager.COPY_KEY ? translated : 'Copiar';
+    }
+
+    static copiedLabel() {
+        const translated = window.i18n?.t(ShareActionsManager.COPIED_KEY);
+        return translated && translated !== ShareActionsManager.COPIED_KEY ? translated : 'Copiado';
+    }
+
+    constructor() {
+        this.onDocumentClick = this.onDocumentClick.bind(this);
+        document.addEventListener('click', this.onDocumentClick);
+    }
+
+    onDocumentClick(event) {
+        const button = event.target.closest('.post-action-btn--share-copy');
+        if (!button) {
+            return;
+        }
+        event.preventDefault();
+        const text = button.dataset.shareText;
+        if (!text) {
+            return;
+        }
+        ClipboardWriter.write(text);
+        const label = button.querySelector('span');
+        if (label) {
+            label.textContent = ShareActionsManager.copiedLabel();
+        }
+        button.classList.add('post-action-btn--copied');
+        button.setAttribute('aria-label', ShareActionsManager.copiedLabel());
+        window.clearTimeout(button._shareCopyResetTimer);
+        button._shareCopyResetTimer = window.setTimeout(() => {
+            if (label) {
+                label.textContent = ShareActionsManager.copyLabel();
+            }
+            button.classList.remove('post-action-btn--copied');
+            button.setAttribute('aria-label', ShareActionsManager.copyLabel());
+        }, 2000);
+    }
+}
+
 class CodeCopyManager {
     static COPY_KEY = 'post.codeBlock.copy';
     static COPIED_KEY = 'post.codeBlock.copied';
@@ -173,7 +242,7 @@ class CodeCopyManager {
         if (!text) {
             return;
         }
-        this.writeClipboard(text);
+        ClipboardWriter.write(text);
         button.textContent = CodeCopyManager.copiedLabel();
         button.classList.add('code-block__copy--copied');
         button.setAttribute('aria-label', CodeCopyManager.copiedLabel());
@@ -183,26 +252,6 @@ class CodeCopyManager {
             button.classList.remove('code-block__copy--copied');
             button.setAttribute('aria-label', CodeCopyManager.copyLabel());
         }, 2000);
-    }
-
-    writeClipboard(text) {
-        if (navigator.clipboard?.writeText) {
-            navigator.clipboard.writeText(text).catch(() => this.fallbackCopy(text));
-            return;
-        }
-        this.fallbackCopy(text);
-    }
-
-    fallbackCopy(text) {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'fixed';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
     }
 }
 
@@ -783,5 +832,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.imageLightbox = new ImageLightboxManager();
     window.codeCopy = new CodeCopyManager();
     window.codeCopy.enhanceAll();
+    window.shareActions = new ShareActionsManager();
     window.homeGuestMasthead = new HomeGuestMastheadManager();
 });

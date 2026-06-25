@@ -75,7 +75,8 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 
 ### 3.6 Breadcrumbs
 - Shown at the top of every full-page surface (inside `main`, above the page title).
-- **Post pages** show the breadcrumb on its own row (same spacing as manage forms), then a **page-top** row for Edit / Feature / Follow aligned right (stacks on narrow screens).
+- **Post pages** show the breadcrumb on its own row (same spacing as manage forms), then a **page-top** row for Edit / Feature / Follow / Share aligned right (stacks on narrow screens).
+- **Blog home** header includes the same **share actions** pill (LinkedIn, Bluesky, Copy) beside follow/subscribe.
 - Public reading: root segment **Home** (`/`), then author/blog/post segments as applicable.
 - Logged-in hubs: **hub name** links to the hub default section; current **section name** is the last segment (e.g. Review › Tags).
 - Deep manage/editor forms (blog edit, tag edit) keep full-page breadcrumbs from the hub section to the form.

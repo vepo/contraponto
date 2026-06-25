@@ -266,6 +266,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Page metadata** | Per-route SEO bundle: document title, description, canonical URL, `noindex`, Open Graph / Twitter Card fields, optional JSON-LD (`BlogPosting`, `BreadcrumbList`, `WebSite` + `SearchAction`, …), `article:modified_time` on republished posts. | `SeoMetadata`, `SeoService`, `components/seo-meta-tags.html` |
 | **Post slug alias** | Former URL slug for a published post; registered when the live slug changes on republish; old URLs respond with **301** to the current post URL. | `PostSlugAlias`, `PostSlugAliasRepository`, `PostEndpoint` |
 | **Related posts** | Post-page rail listing other published articles that share tags with the current post (ranked by tag overlap, then recency). Shown in the **right margin aside** on wide viewports; stacks below the article on narrow viewports. | `PostRepository.findRelatedPublishedBySharedTags`, `PostEndpoint/related-posts-aside.html` |
+| **Share actions** | LinkedIn, Bluesky, and Copy controls on published post pages and blog home pages. LinkedIn opens the share dialog with the canonical URL; Bluesky opens compose with pre-filled **share text**; Copy copies the same text to the clipboard. | `components/share-actions.html`, `ShareLinks`, `ShareView` |
+| **Share text** | Single-line snippet copied or pre-filled for Bluesky: post or blog title followed by the canonical absolute URL. | `ShareLinks.from` |
 | **Author directory** | Public card index of authors; links to **author profile**. | `GET /authors`, `AuthorDirectoryEndpoint` |
 | **Blog directory** | Public card index of active blogs with description, author, and top tags. | `GET /explore/blogs`, `BlogDirectoryEndpoint` |
 | **Browse page shell** | Home and blog listing layout: main column at **reading width** (`container-narrow`); **SIDEBAR** custom pages in the left margin; explore + RSS in the right margin. Sidebars do not shrink the main column. Post pages reuse the shell with **related posts only** in the right margin (no left SIDEBAR, no explore/RSS). | `browse-page-shell`, `browse-page--article`, `components/browse-sidebar-nav.html`, `components/home-explore-aside.html`, `PostEndpoint/related-posts-aside.html` |
@@ -374,6 +376,10 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Review — open post | Abrir publicação | `review.openPost` | Review row link (new tab) |
 | Post — code block copy | Copy | Code block toolbar |
 | Post — code block copied | Copied | After successful copy |
+| Share — LinkedIn | LinkedIn | Post and blog share actions |
+| Share — Bluesky | Bluesky | Post and blog share actions |
+| Share — copy | Copy | Post and blog share actions |
+| Share — copied | Copied | After successful share copy |
 | Home / blog hero | Featured | Category label on featured card |
 | Pagination — public lists | Load more | Home, blog grid, search |
 | Library tab | Drafts | Library |

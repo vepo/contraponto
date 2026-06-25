@@ -71,7 +71,11 @@ The platform now supports **multiple blogs per user**. Every user has exactly on
   - Rendered content (Markdown/AsciiDoc).  
   - **Image lightbox:** clicking an inline image in the post body opens a larger view in an overlay (same URL); dismiss with ESC, the close control, or a click on the dark backdrop.  
   - **Code block copy:** fenced and listing code blocks show a **Copy** control that copies plain source to the clipboard (label becomes **Copied** briefly).  
-- **Action bar** (only for authenticated users):  
+- **Action bar** (all readers):  
+  - **Share:** LinkedIn and Bluesky open the platform share/compose UI in a new tab with the canonical URL or share text; **Copy** puts title + URL on the clipboard (label becomes **Copied** briefly).  
+  - **Follow / Subscribe** (when the blog has audience controls).  
+  - **Save for later / read state** (signed-in readers).  
+- **Action bar** (authenticated only):  
   - **Author:** Edit button (pencil) → `/write/draft/{id}`  
   - **Editor:** Star toggle to mark/clear the **featured** flag. Clicking toggles via PUT, and the button updates without full page reload.
 

@@ -8,6 +8,7 @@ import dev.vepo.contraponto.notification.BlogAudienceView;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.seo.SeoMetadata;
 import dev.vepo.contraponto.shared.pagination.Page;
+import dev.vepo.contraponto.shared.share.ShareView;
 import dev.vepo.contraponto.tag.AuthorTagUsage;
 import dev.vepo.contraponto.tag.TagUsage;
 import dev.vepo.contraponto.user.LoggedUser;
@@ -22,5 +23,6 @@ public record BlogHomeView(User author,
                            Links links,
                            LoggedUser user,
                            BlogAudienceView audience,
+                           ShareView share,
                            BreadcrumbTrail breadcrumb,
                            SeoMetadata seo) {}

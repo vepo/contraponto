@@ -4061,8 +4061,40 @@ hr:after {
   background: var(--color-border);
 }
 
-.post-action-bar:not(:has(.blog-audience)) .post-action-bar__divider {
+.post-action-bar:not(:has(.blog-audience)) .post-action-bar__divider:first-of-type {
   display: none;
+}
+
+.share-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.post-action-btn--share:hover {
+  color: var(--color-text);
+  background: var(--color-bg-offset);
+}
+
+.post-action-btn--share-linkedin:hover {
+  color: var(--color-info);
+}
+
+.post-action-btn--share-bluesky:hover {
+  color: var(--color-primary);
+}
+
+.post-action-btn--share-copy:hover {
+  color: var(--color-primary);
+}
+
+.post-action-btn--share-copy.post-action-btn--copied {
+  color: var(--color-primary);
+  background: var(--color-success-muted);
+}
+
+.user-blog-header__actions .post-action-bar {
+  justify-content: center;
 }
 
 .post-action-bar__form {

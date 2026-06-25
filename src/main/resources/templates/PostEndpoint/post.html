@@ -31,6 +31,8 @@
                             <div class="post-action-bar">
                                 {#include BlogAudienceComponentEndpoint/audienceControls audience=audience /}
                                 <div class="post-action-bar__divider" aria-hidden="true"></div>
+                                {#include components/share-actions share=share /}
+                                <div class="post-action-bar__divider" aria-hidden="true"></div>
                                 <div id="post-reading-list"
                                      class="post-action-bar__segment post-action-bar__segment--reading"
                                      hx-get="{view.post.url}/components/reading-list"

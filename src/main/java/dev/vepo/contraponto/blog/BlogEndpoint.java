@@ -14,6 +14,8 @@ import java.util.Collections;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.pagination.Page;
 import dev.vepo.contraponto.shared.pagination.PageQuery;
+import dev.vepo.contraponto.shared.share.ShareLinks;
+import dev.vepo.contraponto.shared.share.ShareView;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 import io.quarkus.qute.CheckedTemplate;
@@ -61,6 +63,7 @@ public class BlogEndpoint {
     private final SeoService seoService;
 
     private final TagProfileService tagProfileService;
+    private final BlogPublicUrlService blogPublicUrlService;
 
     @Inject
     public BlogEndpoint(UserRepository userRepository,
@@ -71,7 +74,8 @@ public class BlogEndpoint {
                         BreadcrumbService breadcrumbService,
                         LoggedUser loggedUser,
                         SeoService seoService,
-                        TagProfileService tagProfileService) {
+                        TagProfileService tagProfileService,
+                        BlogPublicUrlService blogPublicUrlService) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.customPageRepository = customPageRepository;
@@ -81,6 +85,7 @@ public class BlogEndpoint {
         this.loggedUser = loggedUser;
         this.seoService = seoService;
         this.tagProfileService = tagProfileService;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     @GET
@@ -114,6 +119,8 @@ public class BlogEndpoint {
                                             Blog blog,
                                             Page<Post> posts,
                                             BreadcrumbTrail breadcrumb) {
+        var shareTitle = blog.isMain() ? user.getName() : blog.getName();
+        ShareView share = ShareLinks.from(shareTitle, blogPublicUrlService.canonicalOrPlatformAbsolute(blog));
         return Templates.home(new BlogHomeView(user,
                                                blog,
                                                posts,
@@ -123,6 +130,7 @@ public class BlogEndpoint {
                                                customPageRepository.loadLinks(blog.getId()),
                                                loggedUser,
                                                audienceComponentEndpoint.buildView(blog),
+                                               share,
                                                breadcrumb,
                                                seoService.forBlogHome(user, blog, breadcrumb)));
     }

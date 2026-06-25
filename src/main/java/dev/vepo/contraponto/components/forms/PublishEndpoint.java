@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.post.PostWriteService;
 import dev.vepo.contraponto.postresponse.PostResponseService;
 import dev.vepo.contraponto.custompage.CustomPageRepository;
@@ -20,7 +21,9 @@ import dev.vepo.contraponto.post.PostEndpoint;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
 import dev.vepo.contraponto.post.PublishedPostView;
+import dev.vepo.contraponto.shared.share.ShareLinks;
 import dev.vepo.contraponto.readinglist.ReadingListService;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.SerieService;
@@ -77,6 +80,7 @@ public class PublishEndpoint {
     private final PostResponseService postResponseService;
     private final SeoService seoService;
     private final ReadingListService readingListService;
+    private final BlogPublicUrlService blogPublicUrlService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -93,7 +97,8 @@ public class PublishEndpoint {
                            BreadcrumbService breadcrumbService,
                            PostResponseService postResponseService,
                            SeoService seoService,
-                           ReadingListService readingListService) {
+                           ReadingListService readingListService,
+                           BlogPublicUrlService blogPublicUrlService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -109,6 +114,7 @@ public class PublishEndpoint {
         this.postResponseService = postResponseService;
         this.seoService = seoService;
         this.readingListService = readingListService;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -145,6 +151,8 @@ public class PublishEndpoint {
         Links links = blog.isMain() ? customPageRepository.loadLinks() : customPageRepository.loadLinks(blog.getId());
 
         var breadcrumb = breadcrumbService.forPost(view);
+        var share = ShareLinks.from(PostTemplateExtensions.liveTitle(view),
+                                    blogPublicUrlService.canonicalOrPlatformAbsolute(post));
         return Toast.ok()
                     .i18nKey(I18nKeys.TOAST_POST_PUBLISHED, I18nDefaults.POST_PUBLISHED)
                     .type(Toast.Type.SUCCESS)
@@ -158,6 +166,7 @@ public class PublishEndpoint {
                                                       0L,
                                                       0L,
                                                       audienceComponentEndpoint.buildView(blog),
+                                                      share,
                                                       readingListService.buildActionView(post, loggedUser.getId()),
                                                       breadcrumb,
                                                       seoService.forPost(view, breadcrumb)))

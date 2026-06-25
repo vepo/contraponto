@@ -342,8 +342,26 @@ public class App {
             return this;
         }
 
+        public BlogPage assertShareCopyShowsCopied() {
+            var button = wait.until(visibilityOfElementLocated(cssSelector(".post-action-btn--share-copy")));
+            assertThat(button.findElement(cssSelector("span")).getText()).isEqualTo("Copied");
+            return this;
+        }
+
+        public BlogPage assertShareLinkedInHrefContains(String fragment) {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".post-action-btn--share-linkedin")));
+            assertThat(link.getAttribute("href")).contains(fragment);
+            return this;
+        }
+
         public BlogPage clickFirstPostTitle() {
             _clickFirstPostTitle();
+            return this;
+        }
+
+        public BlogPage clickShareCopy() {
+            var button = wait.until(elementToBeClickable(cssSelector(".post-action-btn--share-copy")));
+            reliableClick(button);
             return this;
         }
 
@@ -1378,6 +1396,18 @@ public class App {
             return this;
         }
 
+        public PostPage assertShareCopyShowsCopied() {
+            var button = wait.until(visibilityOfElementLocated(cssSelector(".post-action-btn--share-copy")));
+            assertThat(button.findElement(cssSelector("span")).getText()).isEqualTo("Copied");
+            return this;
+        }
+
+        public PostPage assertShareLinkedInHrefContains(String fragment) {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".post-action-btn--share-linkedin")));
+            assertThat(link.getAttribute("href")).contains(fragment);
+            return this;
+        }
+
         public PostPage assertVersionInMetadata(int version) {
             var trigger = wait.until(visibilityOfElementLocated(cssSelector(".article-page__version")));
             assertThat(trigger.getText()).containsIgnoringCase("version " + version);
@@ -1493,6 +1523,12 @@ public class App {
                                                          cssSelector("#post-reading-list form[hx-post*='/reading-list'] button[type='submit']")));
             reliableClick(button);
             waitForReady();
+            return this;
+        }
+
+        public PostPage clickShareCopy() {
+            var button = wait.until(elementToBeClickable(cssSelector(".post-action-btn--share-copy")));
+            reliableClick(button);
             return this;
         }
 

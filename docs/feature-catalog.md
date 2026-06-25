@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-24 · Platform insights BI page
+**Last verified:** 2026-06-25 · Post and blog share actions
 
 ---
 
@@ -147,6 +147,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Post comment | signed in | `POST /forms/posts/{postId}/comments` | 3 | Home → blog → post → submit comment form. |
 | Post comment (guest) | guest | via login modal | 4 | Post → **Sign in** → submit comment. |
 | Save post for later | signed in | `POST /forms/posts/{postId}/reading-list` | 3 | Home → blog → post → **Save for later** in page-top actions. |
+| Share post | guest, signed in | — (client + external) | 3 | Home → blog → post → **LinkedIn**, **Bluesky**, or **Copy** in action bar. |
+| Share blog | guest, signed in | — (client + external) | 2 | Blog home → **LinkedIn**, **Bluesky**, or **Copy** in header actions. |
 | Mark post as read (reading list) | signed in | `POST /forms/reading-list/{itemId}/read` | 3 | Post **Mark as read** **or** Reading hub → Saved → row action. |
 | Highlight passage | signed in | `POST /forms/posts/{postId}/highlights` | 3 | Home → blog → post → select text in body → **Highlight**. |
 | Highlight passage (guest) | guest | via login modal | 4 | Post → select text → **Sign in to highlight**. |
