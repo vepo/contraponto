@@ -124,7 +124,7 @@ jobs:
           check_name: Maven · All Test Suites
           files: test-results/**/*.xml
           comment_mode: failures
-          report_suite_logs: failed
+          report_suite_logs: error
 
   build:
     name: Build · JVM Package & Static Assets
