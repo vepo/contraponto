@@ -12,12 +12,10 @@ import jakarta.inject.Inject;
 public class BlogBannerService {
 
     private final ImageRepository imageRepository;
-    private final BlogRepository blogRepository;
 
     @Inject
-    public BlogBannerService(ImageRepository imageRepository, BlogRepository blogRepository) {
+    public BlogBannerService(ImageRepository imageRepository) {
         this.imageRepository = imageRepository;
-        this.blogRepository = blogRepository;
     }
 
     public void applyBannerFromForm(Blog blog, String bannerId) {

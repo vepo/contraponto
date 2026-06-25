@@ -47,7 +47,9 @@ public class UserAccountToken {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now(ZoneId.systemDefault());
 
-    public UserAccountToken() {}
+    public UserAccountToken() {
+        // JPA requires a no-args constructor
+    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

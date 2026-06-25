@@ -19,7 +19,7 @@ class BlogBannerServiceTest {
         return image;
     }
 
-    private final BlogBannerService blogBannerService = new BlogBannerService(null, null);
+    private final BlogBannerService blogBannerService = new BlogBannerService(null);
 
     @Test
     void applyBannerFromFormClearsWhenBlank() {

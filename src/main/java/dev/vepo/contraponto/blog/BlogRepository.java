@@ -160,7 +160,7 @@ public class BlogRepository {
                                                b.main AND
                                                o.username = :username
                                          """, Blog.class)
-                            .setParameter("username", username)
+                            .setParameter(PARAM_USERNAME, username)
                             .getResultStream()
                             .findFirst();
     }

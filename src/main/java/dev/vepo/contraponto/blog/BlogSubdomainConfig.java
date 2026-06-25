@@ -44,6 +44,8 @@ public class BlogSubdomainConfig {
 
     private static final Set<String> SKIP_REWRITE_EXACT = Set.of("favicon.ico", "favicon.svg", "robots.txt");
 
+    private static final String DEFAULT_PUBLIC_ORIGIN_SCHEME = "https";
+
     private static String hostFromUrl(String url) {
         if (url == null || url.isBlank()) {
             return "localhost";
@@ -107,9 +109,9 @@ public class BlogSubdomainConfig {
         try {
             scheme = URI.create(publicSiteUrl.trim()).getScheme();
         } catch (IllegalArgumentException _) {
-            scheme = "https";
+            scheme = DEFAULT_PUBLIC_ORIGIN_SCHEME;
         }
-        this.publicOriginScheme = scheme == null || scheme.isBlank() ? "https" : scheme;
+        this.publicOriginScheme = scheme == null || scheme.isBlank() ? DEFAULT_PUBLIC_ORIGIN_SCHEME : scheme;
     }
 
     public String baseDomain() {
@@ -169,7 +171,7 @@ public class BlogSubdomainConfig {
     }
 
     public String publicOriginScheme() {
-        return publicOriginScheme == null || publicOriginScheme.isBlank() ? "https" : publicOriginScheme;
+        return publicOriginScheme == null || publicOriginScheme.isBlank() ? DEFAULT_PUBLIC_ORIGIN_SCHEME : publicOriginScheme;
     }
 
     public boolean shouldSkipSubdomainRewrite(String path) {

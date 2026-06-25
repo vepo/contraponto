@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.git.BlogGitIntegrationService;
 import dev.vepo.contraponto.navigation.NavigationHub;
@@ -37,6 +36,8 @@ import jakarta.ws.rs.core.Response;
 public class BlogSaveEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(BlogSaveEndpoint.class);
+    private static final String SLUG_ALREADY_EXISTS_MESSAGE = "A blog with this slug already exists.";
+    private static final String SLUG_MATCHES_USERNAME_MESSAGE = "Secondary blog slug cannot match your username.";
 
     private static String normalizeSlug(String slug) {
         return slug.trim().toLowerCase();
@@ -65,7 +66,6 @@ public class BlogSaveEndpoint {
 
     private final UserRepository userRepository;
 
-    private final CustomPageRepository customPageRepository;
     private final BlogGitIntegrationService blogGitIntegrationService;
     private final GitRemoteUrlValidator gitRemoteUrlValidator;
     private final BlogBannerService blogBannerService;
@@ -76,7 +76,6 @@ public class BlogSaveEndpoint {
     public BlogSaveEndpoint(BlogRepository blogRepository,
                             BlogAccess blogAccess,
                             UserRepository userRepository,
-                            CustomPageRepository customPageRepository,
                             BlogGitIntegrationService blogGitIntegrationService,
                             GitRemoteUrlValidator gitRemoteUrlValidator,
                             BlogBannerService blogBannerService,
@@ -85,7 +84,6 @@ public class BlogSaveEndpoint {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
-        this.customPageRepository = customPageRepository;
         this.blogGitIntegrationService = blogGitIntegrationService;
         this.gitRemoteUrlValidator = gitRemoteUrlValidator;
         this.blogBannerService = blogBannerService;
@@ -124,10 +122,10 @@ public class BlogSaveEndpoint {
         }
         var slug = normalizeSlug(form.getSlug());
         if (blogRepository.existsSlug(owner.getId(), slug, null)) {
-            return badRequest("A blog with this slug already exists.");
+            return badRequest(SLUG_ALREADY_EXISTS_MESSAGE);
         }
         if (slug.equals(owner.getUsername())) {
-            return badRequest("Secondary blog slug cannot match your username.");
+            return badRequest(SLUG_MATCHES_USERNAME_MESSAGE);
         }
         var blog = new Blog(owner, slug, form.getName().trim(), nullToEmpty(form.getDescription()));
         blog.setActive(form.isActive());
@@ -298,10 +296,10 @@ public class BlogSaveEndpoint {
 
         var slug = normalizeSlug(form.getSlug());
         if (slug.equals(blog.getOwner().getUsername())) {
-            return "Secondary blog slug cannot match your username.";
+            return SLUG_MATCHES_USERNAME_MESSAGE;
         }
         if (blogRepository.existsSlug(blog.getOwner().getId(), slug, blog.getId())) {
-            return "A blog with this slug already exists.";
+            return SLUG_ALREADY_EXISTS_MESSAGE;
         }
         blog.setSlug(slug);
 
@@ -318,10 +316,10 @@ public class BlogSaveEndpoint {
     private String updateSecondarySlug(Blog blog, BlogForm form) {
         var slug = normalizeSlug(form.getSlug());
         if (slug.equals(blog.getOwner().getUsername())) {
-            return "Secondary blog slug cannot match your username.";
+            return SLUG_MATCHES_USERNAME_MESSAGE;
         }
         if (blogRepository.existsSlug(blog.getOwner().getId(), slug, blog.getId())) {
-            return "A blog with this slug already exists.";
+            return SLUG_ALREADY_EXISTS_MESSAGE;
         }
         blog.setSlug(slug);
         return null;

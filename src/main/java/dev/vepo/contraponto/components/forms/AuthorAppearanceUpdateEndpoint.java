@@ -3,6 +3,8 @@ package dev.vepo.contraponto.components.forms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.Consumer;
+
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.shared.infra.Logged;
@@ -48,7 +50,7 @@ public class AuthorAppearanceUpdateEndpoint {
         this.blogBannerService = blogBannerService;
     }
 
-    private String applySocialUrl(dev.vepo.contraponto.user.User user, String raw, java.util.function.Consumer<String> setter) {
+    private String applySocialUrl(String raw, Consumer<String> setter) {
         if (raw == null) {
             return null;
         }
@@ -125,27 +127,27 @@ public class AuthorAppearanceUpdateEndpoint {
             updated = true;
         }
 
-        var socialError = applySocialUrl(user, request.websiteUrl(), user::setWebsiteUrl);
+        var socialError = applySocialUrl(request.websiteUrl(), user::setWebsiteUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
-        socialError = applySocialUrl(user, request.twitterUrl(), user::setTwitterUrl);
+        socialError = applySocialUrl(request.twitterUrl(), user::setTwitterUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
-        socialError = applySocialUrl(user, request.mastodonUrl(), user::setMastodonUrl);
+        socialError = applySocialUrl(request.mastodonUrl(), user::setMastodonUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
-        socialError = applySocialUrl(user, request.blueskyUrl(), user::setBlueskyUrl);
+        socialError = applySocialUrl(request.blueskyUrl(), user::setBlueskyUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
-        socialError = applySocialUrl(user, request.githubUrl(), user::setGithubUrl);
+        socialError = applySocialUrl(request.githubUrl(), user::setGithubUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }
-        socialError = applySocialUrl(user, request.linkedinUrl(), user::setLinkedinUrl);
+        socialError = applySocialUrl(request.linkedinUrl(), user::setLinkedinUrl);
         if (socialError != null) {
             return Response.ok(buildErrorResponseBody(socialError)).build();
         }

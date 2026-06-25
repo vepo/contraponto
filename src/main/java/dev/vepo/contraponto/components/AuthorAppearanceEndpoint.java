@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.components;
 
+import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
@@ -38,7 +39,7 @@ public class AuthorAppearanceEndpoint {
 
     public TemplateInstance renderHubPanel() {
         var user = userRepository.findById(loggedUser.getId()).orElseThrow();
-        var mainBlogId = blogRepository.findMainByOwnerId(user.getId()).map(b -> b.getId()).orElse(0L);
+        var mainBlogId = blogRepository.findMainByOwnerId(user.getId()).map(Blog::getId).orElse(0L);
         return Templates.panel(user, mainBlogId);
     }
 }

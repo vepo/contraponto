@@ -56,8 +56,9 @@ public class PostComment {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
-    // Required by JPA
-    public PostComment() {}
+    public PostComment() {
+        // JPA requires a no-args constructor
+    }
 
     @Override
     public boolean equals(Object obj) {
