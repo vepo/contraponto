@@ -168,6 +168,27 @@ public class BlogPublicUrlService {
         return "/%s/%s".formatted(username, path);
     }
 
+    public String mainBlogMenuUrl(User user) {
+        if (user == null) {
+            return "/";
+        }
+        if (context.onUserSubdomain()) {
+            var subdomainAuthor = context.subdomainUsername().orElse("");
+            if (user.getUsername().equals(subdomainAuthor)) {
+                return "/";
+            }
+            return platformAbsolute("/%s".formatted(user.getUsername()));
+        }
+        return "/%s".formatted(user.getUsername());
+    }
+
+    public boolean mainBlogMenuUsesHtmx(User user) {
+        if (user == null || !context.onUserSubdomain()) {
+            return true;
+        }
+        return user.getUsername().equals(context.subdomainUsername().orElse(null));
+    }
+
     public String platformAbsolute(String path) {
         return config.platformUrl(path);
     }
@@ -236,5 +257,19 @@ public class BlogPublicUrlService {
             return "/feed/main-blog";
         }
         return "/%s/feed".formatted(blog.getSlug());
+    }
+
+    public boolean usesPlatformForWorkspaceLinks() {
+        return context.onUserSubdomain();
+    }
+
+    public String workspaceMenuUrl(String path) {
+        var normalized = path == null || path.isBlank() ? "/"
+                              : path.startsWith("/") ? path
+                              : "/%s".formatted(path);
+        if (!usesPlatformForWorkspaceLinks()) {
+            return normalized;
+        }
+        return platformAbsolute(normalized);
     }
 }

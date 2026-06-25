@@ -2,6 +2,7 @@ package dev.vepo.contraponto.blog;
 
 import dev.vepo.contraponto.image.ImageDisplayWidth;
 import dev.vepo.contraponto.rss.RssFeedPaths;
+import dev.vepo.contraponto.user.User;
 import io.quarkus.qute.TemplateExtension;
 import jakarta.enterprise.inject.spi.CDI;
 
@@ -40,6 +41,18 @@ public class BlogTemplateExtensions {
     @TemplateExtension
     public static String cardBannerUrl(Blog blog) {
         return sizedImageUrl(bannerUrl(blog), ImageDisplayWidth.BANNER);
+    }
+
+    @TemplateExtension
+    public static String mainBlogMenuUrl(User user) {
+        var service = selectPublicUrlService();
+        return service != null ? service.mainBlogMenuUrl(user) : "/%s".formatted(user.getUsername());
+    }
+
+    @TemplateExtension
+    public static boolean mainBlogMenuUsesHtmx(User user) {
+        var service = selectPublicUrlService();
+        return service == null || service.mainBlogMenuUsesHtmx(user);
     }
 
     @TemplateExtension
@@ -89,6 +102,12 @@ public class BlogTemplateExtensions {
     @TemplateExtension
     public static String url(Blog blog) {
         return CDI.current().select(BlogPublicUrlService.class).get().relativePath(blog);
+    }
+
+    @TemplateExtension
+    public static String workspaceMenuUrl(String path) {
+        var service = selectPublicUrlService();
+        return service != null ? service.workspaceMenuUrl(path) : path;
     }
 
     private BlogTemplateExtensions() {

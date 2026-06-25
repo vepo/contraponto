@@ -34,7 +34,7 @@
                 <img src="/images/search.svg" alt="" />
             </button>
             <div hx-get="/components/write-btn" hx-trigger="{authRefreshTrigger}">
-                {#include WriteButtonEndpoint/writeBtn user=session /}
+                {#include WriteButtonEndpoint/writeBtn user=session writeUrl=menuNav.writeUrl writeUsesHtmx=menuNav.writeUsesHtmx /}
             </div>
             <div id="notification-badge-container"
                  hx-get="/components/notifications/badge"
@@ -43,7 +43,7 @@
             </div>
             {#include components/locale-switcher /}
             <div id="menu-container">
-                {#include MenuEndpoint/menu user=session /}
+                {#include MenuEndpoint/menu user=session nav=menuNav /}
             </div>
         </div>
     </div>

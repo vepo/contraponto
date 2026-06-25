@@ -1,6 +1,9 @@
 <head>
     <meta name="csrf-token" content="{csrfToken}">
     <meta name="app-locale" content="{locale}">
+    {#if platformOrigin?? && !platformOrigin.isBlank()}
+    <meta name="platform-origin" content="{platformOrigin}">
+    {/if}
     <meta name="htmx-config" content='{"historyCacheSize": 0, "indicator": "#global-indicator"}'>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">

@@ -19,7 +19,7 @@ import jakarta.ws.rs.core.MediaType;
 public class MenuEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance menu(LoggedUser user);
+        public static native TemplateInstance menu(LoggedUser user, MenuNavigation nav);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -30,9 +30,12 @@ public class MenuEndpoint {
 
     private final LoggedUser loggedUser;
 
+    private final MenuNavigationService menuNavigationService;
+
     @Inject
-    public MenuEndpoint(LoggedUser loggedUser) {
+    public MenuEndpoint(LoggedUser loggedUser, MenuNavigationService menuNavigationService) {
         this.loggedUser = loggedUser;
+        this.menuNavigationService = menuNavigationService;
     }
 
     @GET
@@ -40,6 +43,6 @@ public class MenuEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance menu() {
         logger.info("Reloading meny...");
-        return Templates.menu(loggedUser);
+        return Templates.menu(loggedUser, menuNavigationService.build(loggedUser));
     }
 }

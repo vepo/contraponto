@@ -70,6 +70,12 @@ Logged-in hubs are served on the **platform host**. On an author subdomain (`{us
 
 Example: `https://vepo.commit-mestre.dev/administration` → `https://blogs.commit-mestre.dev/administration` (when logged in, shared `.commit-mestre.dev` session).
 
+When **not** logged in, author-subdomain workspace URLs redirect in **one hop** to platform sign-in: `https://blogs.{base-domain}/?signIn=1&returnTo=/administration` (not via an intermediate workspace redirect).
+
+The user menu and write button on author subdomains link workspace hubs with **absolute platform URLs** (full page navigation, no cross-host HTMX).
+
+The `__csrf` cookie uses the same `APP_SESSION_COOKIE_DOMAIN` as `__session` so CSRF tokens work after cross-host navigation.
+
 Also served without redirect on author hosts: `/write`, static assets, auth modals, form posts, and global `/components/*` partials.
 
 ### Global shell partials (no username prefix)

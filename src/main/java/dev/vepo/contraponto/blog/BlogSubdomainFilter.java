@@ -8,6 +8,9 @@ import java.util.Optional;
 import java.net.URI;
 
 import dev.vepo.contraponto.shared.htmx.HtmxRequest;
+import dev.vepo.contraponto.shared.infra.LoggedFilter;
+import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.shared.security.SessionStore;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -53,10 +56,15 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
 
     private final BlogSubdomainContext context;
 
+    private final SessionStore sessionStore;
+
     @Inject
-    public BlogSubdomainFilter(BlogSubdomainConfig config, BlogSubdomainContext context) {
+    public BlogSubdomainFilter(BlogSubdomainConfig config,
+                               BlogSubdomainContext context,
+                               SessionStore sessionStore) {
         this.config = config;
         this.context = context;
+        this.sessionStore = sessionStore;
     }
 
     @Override
@@ -87,7 +95,11 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
         var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
 
         if (config.isWorkspaceRootPath(subdomainPath)) {
-            redirectToPlatform(requestContext, subdomainPath, uriInfo);
+            if (isAuthenticated(requestContext)) {
+                redirectToPlatform(requestContext, subdomainPath, uriInfo);
+            } else {
+                redirectToPlatformSignIn(requestContext, subdomainPath, uriInfo);
+            }
             return;
         }
 
@@ -118,6 +130,14 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
         requestContext.setRequestUri(uriInfo.getBaseUri(), targetUri);
     }
 
+    private boolean isAuthenticated(ContainerRequestContext requestContext) {
+        var sessionCookie = requestContext.getCookies().get(SessionConstants.SESSION_COOKIE_NAME);
+        if (sessionCookie == null || sessionCookie.getValue() == null || sessionCookie.getValue().isBlank()) {
+            return false;
+        }
+        return sessionStore.findUserId(sessionCookie.getValue()).isPresent();
+    }
+
     private void redirectToPlatform(ContainerRequestContext requestContext, String path, jakarta.ws.rs.core.UriInfo uriInfo) {
         var query = uriInfo.getRequestUri().getQuery();
         var platformPath = path;
@@ -132,6 +152,31 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
         } else {
             requestContext.abortWith(Response.status(Response.Status.FOUND)
                                              .location(URI.create(platformUrl))
+                                             .build());
+        }
+    }
+
+    private void redirectToPlatformSignIn(ContainerRequestContext requestContext,
+                                          String path,
+                                          jakarta.ws.rs.core.UriInfo uriInfo) {
+        var query = uriInfo.getRequestUri().getQuery();
+        var returnPath = path;
+        if (query != null && !query.isBlank()) {
+            returnPath = "%s?%s".formatted(path, query);
+        }
+        var returnTo = LoggedFilter.safeReturnTo(returnPath);
+        var signInUri = UriBuilder.fromUri(URI.create(config.platformUrl("/")))
+                                  .queryParam("signIn", "1")
+                                  .queryParam("returnTo", returnTo)
+                                  .build();
+        var signInUrl = signInUri.toString();
+        if (isHtmxRequest(requestContext)) {
+            requestContext.abortWith(Response.ok()
+                                             .header(HtmxRequest.REDIRECT_HEADER, signInUrl)
+                                             .build());
+        } else {
+            requestContext.abortWith(Response.status(Response.Status.SEE_OTHER)
+                                             .location(signInUri)
                                              .build());
         }
     }

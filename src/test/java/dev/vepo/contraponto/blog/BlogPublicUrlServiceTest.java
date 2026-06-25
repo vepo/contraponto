@@ -29,6 +29,26 @@ class BlogPublicUrlServiceTest {
     }
 
     @Test
+    void mainBlogMenuUrl_onAuthorSubdomainForOtherUser_usesPlatformAbsolute() {
+        User owner = new User();
+        owner.setUsername("alice");
+        context.activate("vepo");
+
+        assertThat(service.mainBlogMenuUrl(owner)).isEqualTo("https://blogs.commit-mestre.dev/alice");
+        assertThat(service.mainBlogMenuUsesHtmx(owner)).isFalse();
+    }
+
+    @Test
+    void mainBlogMenuUrl_onAuthorSubdomainForSameAuthor_usesShortHome() {
+        User owner = new User();
+        owner.setUsername("vepo");
+        context.activate("vepo");
+
+        assertThat(service.mainBlogMenuUrl(owner)).isEqualTo("/");
+        assertThat(service.mainBlogMenuUsesHtmx(owner)).isTrue();
+    }
+
+    @Test
     void relativePath_onMatchingSubdomain_usesShortPath() {
         User owner = new User();
         owner.setUsername("vepo");
@@ -73,5 +93,20 @@ class BlogPublicUrlServiceTest {
         config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
         context = new BlogSubdomainContext();
         service = new BlogPublicUrlService(config, context);
+    }
+
+    @Test
+    void workspaceMenuUrl_onAuthorSubdomain_usesPlatformAbsolute() {
+        context.activate("vepo");
+
+        assertThat(service.usesPlatformForWorkspaceLinks()).isTrue();
+        assertThat(service.workspaceMenuUrl("/administration")).isEqualTo("https://blogs.commit-mestre.dev/administration");
+        assertThat(service.workspaceMenuUrl("/writing")).isEqualTo("https://blogs.commit-mestre.dev/writing");
+    }
+
+    @Test
+    void workspaceMenuUrl_onPlatformHost_usesRelativePath() {
+        assertThat(service.usesPlatformForWorkspaceLinks()).isFalse();
+        assertThat(service.workspaceMenuUrl("/administration")).isEqualTo("/administration");
     }
 }

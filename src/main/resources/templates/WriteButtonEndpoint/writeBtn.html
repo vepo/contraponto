@@ -1,12 +1,21 @@
 {#if user.isAuthenticated}
-    <button type="button" 
-            class="btn btn--header" 
-            data-hx-get="/write"
+    {#if writeUsesHtmx}
+    <button type="button"
+            class="btn btn--header"
+            data-hx-get="{writeUrl}"
             hx-select="main"
             hx-target="main"
-            hx-push-url="/write"
+            hx-push-url="{writeUrl}"
             data-disable-pattern="^/write">
-        <img src="/images/write.svg" />
+        <img src="/images/write.svg" alt="" />
         <span data-i18n="write.title">Escrever</span>
     </button>
+    {#else}
+    <a href="{writeUrl}"
+       class="btn btn--header"
+       data-disable-pattern="^/write">
+        <img src="/images/write.svg" alt="" />
+        <span data-i18n="write.title">Escrever</span>
+    </a>
+    {/if}
 {/if}

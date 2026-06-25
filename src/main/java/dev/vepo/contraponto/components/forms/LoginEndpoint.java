@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.components.MenuEndpoint;
+import dev.vepo.contraponto.components.MenuNavigationService;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.security.SessionConstants;
@@ -46,19 +47,23 @@ public class LoginEndpoint {
     private final PasswordService passwordService;
     private final SessionCookieSupport sessionCookieSupport;
 
+    private final MenuNavigationService menuNavigationService;
+
     @Inject
     public LoginEndpoint(UserRepository userRepository,
                          ViewRepository viewRepository,
                          ReadingTimeRepository readingTimeRepository,
                          LoggedUserProvider loggedUserProvider,
                          PasswordService passwordService,
-                         SessionCookieSupport sessionCookieSupport) {
+                         SessionCookieSupport sessionCookieSupport,
+                         MenuNavigationService menuNavigationService) {
         this.userRepository = userRepository;
         this.viewRepository = viewRepository;
         this.readingTimeRepository = readingTimeRepository;
         this.loggedUserProvider = loggedUserProvider;
         this.passwordService = passwordService;
         this.sessionCookieSupport = sessionCookieSupport;
+        this.menuNavigationService = menuNavigationService;
     }
 
     private Response buildErrorResponse(String i18nKey, String ptBrMessage) {
@@ -115,7 +120,7 @@ public class LoginEndpoint {
                                                                                           anonymousSessionId);
                                  }
 
-                                 var menuHtml = MenuEndpoint.Templates.menu(loggedUser).render();
+                                 var menuHtml = MenuEndpoint.Templates.menu(loggedUser, menuNavigationService.build(loggedUser)).render();
                                  var responseBody = buildSuccessResponseBody(menuHtml);
 
                                  return Response.ok(responseBody)

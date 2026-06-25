@@ -2,6 +2,7 @@ package dev.vepo.contraponto.components;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.user.LoggedUser;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -17,7 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 public class WriteButtonEndpoint {
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance writeBtn(LoggedUser user);
+        public static native TemplateInstance writeBtn(LoggedUser user, String writeUrl, boolean writeUsesHtmx);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -26,15 +27,20 @@ public class WriteButtonEndpoint {
 
     private final LoggedUser loggedUser;
 
+    private final BlogPublicUrlService blogPublicUrlService;
+
     @Inject
-    public WriteButtonEndpoint(LoggedUser loggedUser) {
+    public WriteButtonEndpoint(LoggedUser loggedUser, BlogPublicUrlService blogPublicUrlService) {
         this.loggedUser = loggedUser;
+        this.blogPublicUrlService = blogPublicUrlService;
     }
 
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance menu() {
-        return Templates.writeBtn(loggedUser);
+        var writeUrl = blogPublicUrlService.workspaceMenuUrl("/write");
+        var writeUsesHtmx = !blogPublicUrlService.usesPlatformForWorkspaceLinks();
+        return Templates.writeBtn(loggedUser, writeUrl, writeUsesHtmx);
     }
 }

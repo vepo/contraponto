@@ -45,6 +45,18 @@ public class SessionCookieSupport {
         return builder.build();
     }
 
+    public NewCookie buildCsrfNewCookie(String token) {
+        var builder = new NewCookie.Builder(CsrfTokenService.COOKIE_NAME).value(token)
+                                                                         .path("/")
+                                                                         .httpOnly(false)
+                                                                         .secure(secureCookies)
+                                                                         .sameSite(NewCookie.SameSite.LAX);
+        if (cookieDomain != null) {
+            builder.domain(cookieDomain);
+        }
+        return builder.build();
+    }
+
     public String buildSessionCookie(String sessionId) {
         return buildSessionNewCookie(sessionId).toString();
     }

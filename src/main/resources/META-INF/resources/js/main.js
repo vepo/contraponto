@@ -517,17 +517,44 @@ class MainManager {
             return;
         }
         sessionStorage.removeItem('postLoginReturnTo');
-        if (returnTo === window.location.pathname + window.location.search) {
+        const targetUrl = MainManager.resolveWorkspaceTarget(returnTo);
+        if (targetUrl === window.location.pathname + window.location.search) {
+            return;
+        }
+        if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
+            window.location.href = targetUrl;
             return;
         }
         if (typeof htmx !== 'undefined') {
-            htmx.ajax('GET', returnTo, {
+            htmx.ajax('GET', targetUrl, {
                 target: 'main',
                 select: 'main',
                 swap: 'outerHTML',
-                pushUrl: returnTo
+                pushUrl: targetUrl
             });
         }
+    }
+
+    static resolveWorkspaceTarget(path) {
+        if (!path || !path.startsWith('/')) {
+            return path;
+        }
+        const platformOrigin = document.querySelector('meta[name="platform-origin"]')?.content?.replace(/\/$/, '');
+        if (!platformOrigin) {
+            return path;
+        }
+        const workspacePath = /^\/(writing|reading|manage|account|editor|administration|write)(\/|$)/.test(path);
+        if (!workspacePath) {
+            return path;
+        }
+        try {
+            if (new URL(platformOrigin).host === window.location.host) {
+                return path;
+            }
+        } catch (_) {
+            return path;
+        }
+        return platformOrigin + path;
     }
 
     handleUnauthorizedHtmxResponse(evt) {

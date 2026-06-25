@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.components.MenuEndpoint;
+import dev.vepo.contraponto.components.MenuNavigationService;
 import dev.vepo.contraponto.shared.htmx.HtmxTriggers;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.security.SessionCookieSupport;
@@ -28,13 +29,17 @@ public class LogoutEndpoint {
     private final LoggedUserProvider loggedUserProvider;
     private final SessionCookieSupport sessionCookieSupport;
 
+    private final MenuNavigationService menuNavigationService;
+
     @Inject
     public LogoutEndpoint(LoggedUserProvider loggedUserProvider,
                           LoggedUser loggedUser,
-                          SessionCookieSupport sessionCookieSupport) {
+                          SessionCookieSupport sessionCookieSupport,
+                          MenuNavigationService menuNavigationService) {
         this.loggedUserProvider = loggedUserProvider;
         this.loggedUser = loggedUser;
         this.sessionCookieSupport = sessionCookieSupport;
+        this.menuNavigationService = menuNavigationService;
     }
 
     @POST
@@ -43,13 +48,14 @@ public class LogoutEndpoint {
     public Response login() {
         logger.info("Logout... {}", loggedUser);
         loggedUserProvider.logout(loggedUser);
+        var loggedOutUser = new LoggedUser();
         return Response.ok("""
                            <div hx-swap-oob="true" id="%s">%s</div>
                            <script>
                              document.getElementById('authModal').classList.remove('modal--open');
                            </script>
                            """.formatted(HtmxTriggers.MENU_CONTAINER_ID,
-                                         MenuEndpoint.Templates.menu(new LoggedUser()).render()))
+                                         MenuEndpoint.Templates.menu(loggedOutUser, menuNavigationService.build(loggedOutUser)).render()))
                        .cookie(sessionCookieSupport.buildClearSessionNewCookie())
                        .header(HtmxTriggers.HEADER_AFTER_SETTLE, HtmxTriggers.LOGGED_OUT_ON_BODY)
                        .build();

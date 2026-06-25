@@ -116,6 +116,33 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
+    void subdomainHost_anonymousWorkspaceHtmxRedirectsToPlatformSignIn() {
+        given().header("Host", "subdom-author.localhost")
+               .header("HX-Request", "true")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/administration")
+               .then()
+               .statusCode(200)
+               .header("HX-Redirect", containsString("https://blogs.localhost/?signIn=1"))
+               .header("HX-Redirect", containsString("returnTo=%2Fadministration"));
+    }
+
+    @Test
+    void subdomainHost_anonymousWorkspaceRedirectsToPlatformSignIn() {
+        given().header("Host", "subdom-author.localhost")
+               .redirects()
+               .follow(false)
+               .when()
+               .get("/administration")
+               .then()
+               .statusCode(303)
+               .header("Location", containsString("https://blogs.localhost/?signIn=1"))
+               .header("Location", containsString("returnTo=%2Fadministration"));
+    }
+
+    @Test
     void subdomainHost_discoveryRouteRedirectsToPlatformHost() {
         given().header("Host", "subdom-author.localhost")
                .redirects()
@@ -125,6 +152,45 @@ class BlogSubdomainIntegrationTest {
                .then()
                .statusCode(302)
                .header("Location", "https://blogs.localhost/authors");
+    }
+
+    @Test
+    void subdomainHost_loggedInWorkspaceHtmxRedirectsToPlatform() {
+        TestHttp.session(admin)
+                .header("Host", "subdom-author.localhost")
+                .header("HX-Request", "true")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/administration")
+                .then()
+                .statusCode(200)
+                .header("HX-Redirect", "https://blogs.localhost/administration");
+    }
+
+    @Test
+    void subdomainHost_loggedInWorkspaceRedirectsToPlatform() {
+        TestHttp.session(admin)
+                .header("Host", "subdom-author.localhost")
+                .redirects()
+                .follow(false)
+                .when()
+                .get("/administration")
+                .then()
+                .statusCode(302)
+                .header("Location", "https://blogs.localhost/administration");
+    }
+
+    @Test
+    void subdomainHost_menuUsesPlatformUrlsForWorkspaceLinks() {
+        TestHttp.session(admin)
+                .header("Host", "vepo.localhost")
+                .when()
+                .get("/components/menu")
+                .then()
+                .statusCode(200)
+                .body(containsString("https://blogs.localhost/administration"))
+                .body(org.hamcrest.Matchers.not(containsString("data-hx-get=\"https://blogs.localhost/administration\"")));
     }
 
     @Test
@@ -182,30 +248,5 @@ class BlogSubdomainIntegrationTest {
                .then()
                .statusCode(200)
                .body(containsString("Subdomain Post"));
-    }
-
-    @Test
-    void subdomainHost_workspaceHubBrowserRedirectsToPlatform() {
-        given().header("Host", "subdom-author.localhost")
-               .redirects()
-               .follow(false)
-               .when()
-               .get("/administration")
-               .then()
-               .statusCode(302)
-               .header("Location", "https://blogs.localhost/administration");
-    }
-
-    @Test
-    void subdomainHost_workspaceHubHtmxRedirectsToPlatform() {
-        given().header("Host", "subdom-author.localhost")
-               .header("HX-Request", "true")
-               .redirects()
-               .follow(false)
-               .when()
-               .get("/administration")
-               .then()
-               .statusCode(200)
-               .header("HX-Redirect", "https://blogs.localhost/administration");
     }
 }

@@ -22,6 +22,19 @@ class SessionCookieSupportTest {
     }
 
     @Test
+    void buildCsrfCookieAddsDomainWhenConfigured() {
+        var support = new SessionCookieSupport(true, 86400, ".example.test");
+
+        var cookie = support.buildCsrfNewCookie("csrf-token-value").toString();
+
+        assertThat(cookie).contains("__csrf=csrf-token-value");
+        assertThat(cookie).contains("Domain=.example.test");
+        assertThat(cookie).contains("SameSite=Lax");
+        assertThat(cookie).contains("Secure");
+        assertThat(cookie).doesNotContain("HttpOnly");
+    }
+
+    @Test
     void buildSessionCookieAddsDomainWhenConfigured() {
         var support = new SessionCookieSupport(true, 86400, ".example.test");
 
