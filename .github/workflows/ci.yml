@@ -110,7 +110,7 @@ jobs:
         with:
           name: test-results-${{ matrix.suite }}
           path: |
-            target/surefire-reports/**/*.xml
+            target/surefire-reports/TEST-*.xml
             target/surefire-reports/**/*.txt
           retention-days: 30
           if-no-files-found: warn
@@ -155,7 +155,7 @@ jobs:
         if: always()
         with:
           check_name: Maven · All Test Suites
-          files: test-results/**/*.xml
+          files: test-results/**/TEST-*.xml
           comment_mode: failures
           report_suite_logs: error
 
@@ -239,7 +239,7 @@ jobs:
         with:
           name: test-results-docker-smoke
           path: |
-            target/failsafe-reports/**/*.xml
+            target/failsafe-reports/TEST-*.xml
             target/failsafe-reports/**/*.txt
           retention-days: 30
           if-no-files-found: warn

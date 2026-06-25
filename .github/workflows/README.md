@@ -39,7 +39,7 @@ Artifacts are downloadable from the **Actions → workflow run → Artifacts** p
 
 Yes — **JUnit XML from Maven Surefire is stored and published.**
 
-1. Each test shard uploads `target/surefire-reports/**/*.xml` (and `.txt` logs).
+1. Each test shard uploads `target/surefire-reports/TEST-*.xml` (and `.txt` logs). Docker-smoke uploads `target/failsafe-reports/TEST-*.xml` (not `failsafe-summary.xml`).
 2. **Quality · Test Results Summary** merges all shards and publishes a **GitHub Check** named `Maven · All Test Suites`.
 3. On failed PRs, a comment summarizes failing tests (`comment_mode: failures`).
 
