@@ -29,6 +29,20 @@ class BlogPublicUrlServiceTest {
     }
 
     @Test
+    void applicationHomeUrl_onAuthorSubdomain_usesPlatformAbsolute() {
+        context.activate("vepo");
+
+        assertThat(service.applicationHomeUrl()).isEqualTo("https://blogs.commit-mestre.dev/");
+        assertThat(service.applicationHomeUsesHtmx()).isFalse();
+    }
+
+    @Test
+    void applicationHomeUrl_onPlatformHost_usesRelativePath() {
+        assertThat(service.applicationHomeUrl()).isEqualTo("/");
+        assertThat(service.applicationHomeUsesHtmx()).isTrue();
+    }
+
+    @Test
     void mainBlogMenuUrl_onAuthorSubdomainForOtherUser_usesPlatformAbsolute() {
         User owner = new User();
         owner.setUsername("alice");

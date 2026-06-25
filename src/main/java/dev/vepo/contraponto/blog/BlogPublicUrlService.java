@@ -90,6 +90,17 @@ public class BlogPublicUrlService {
         return "%s%s".formatted(config.subdomainOrigin(ownerUsername), shortPath(serie));
     }
 
+    public String applicationHomeUrl() {
+        if (usesPlatformForWorkspaceLinks()) {
+            return platformAbsolute("/");
+        }
+        return "/";
+    }
+
+    public boolean applicationHomeUsesHtmx() {
+        return !usesPlatformForWorkspaceLinks();
+    }
+
     public String authorBlogCanonical(User author) {
         if (author == null) {
             return null;

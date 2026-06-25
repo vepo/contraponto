@@ -52,6 +52,17 @@ class BlogSubdomainIntegrationTest {
     }
 
     @Test
+    void platformHost_headerLogoLinksToRelativeApplicationHome() {
+        given().header("Host", "blogs.localhost")
+               .when()
+               .get("/")
+               .then()
+               .statusCode(200)
+               .body(containsString("class=\"logo\""))
+               .body(containsString("data-hx-get=\"/\""));
+    }
+
+    @Test
     void platformHost_writeServesEditorWhenLoggedIn() {
         TestHttp.session(admin)
                 .header("Host", "blogs.localhost")
@@ -176,6 +187,17 @@ class BlogSubdomainIntegrationTest {
                .then()
                .statusCode(302)
                .header("Location", "https://blogs.localhost/authors");
+    }
+
+    @Test
+    void subdomainHost_headerLogoLinksToPlatformApplicationHome() {
+        given().header("Host", "subdom-author.localhost")
+               .when()
+               .get("/post/subdomain-post")
+               .then()
+               .statusCode(200)
+               .body(containsString("href=\"https://blogs.localhost/\""))
+               .body(org.hamcrest.Matchers.not(containsString("data-hx-get=\"https://blogs.localhost/\"")));
     }
 
     @Test

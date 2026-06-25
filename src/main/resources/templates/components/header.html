@@ -12,12 +12,18 @@
             {/if}
 
             <div class="logo">
-                <a href="/" data-hx-get="/"
+                {#if applicationHomeUsesHtmx}
+                <a href="{applicationHomeUrl}" data-hx-get="{applicationHomeUrl}"
                    hx-select="main"
                    hx-target="main"
-                   hx-push-url="/">
+                   hx-push-url="{applicationHomeUrl}">
                     {siteName}
                 </a>
+                {#else}
+                <a href="{applicationHomeUrl}">
+                    {siteName}
+                </a>
+                {/if}
             </div>
         </div>
 

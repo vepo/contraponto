@@ -6,6 +6,16 @@ import jakarta.enterprise.inject.spi.CDI;
 @TemplateGlobal
 public class BlogTemplateGlobals {
 
+    @TemplateGlobal(name = "applicationHomeUrl")
+    public static String applicationHomeUrl() {
+        return selectPublicUrlService().applicationHomeUrl();
+    }
+
+    @TemplateGlobal(name = "applicationHomeUsesHtmx")
+    public static boolean applicationHomeUsesHtmx() {
+        return selectPublicUrlService().applicationHomeUsesHtmx();
+    }
+
     @TemplateGlobal(name = "platformOrigin")
     public static String platformOrigin() {
         var config = CDI.current().select(BlogSubdomainConfig.class);
@@ -17,6 +27,10 @@ public class BlogTemplateGlobals {
             return platformUrl.substring(0, platformUrl.length() - 1);
         }
         return platformUrl;
+    }
+
+    private static BlogPublicUrlService selectPublicUrlService() {
+        return CDI.current().select(BlogPublicUrlService.class).get();
     }
 
     private BlogTemplateGlobals() {
