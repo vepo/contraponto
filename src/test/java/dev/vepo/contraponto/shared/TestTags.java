@@ -11,6 +11,25 @@ public final class TestTags {
     public static final String QUARKUS = "quarkus";
     public static final String WEB = "web";
     /**
+     * Sign-in, sign-up, profile, account management
+     * ({@code -Ptest-web-shard -Dweb.shard=web-auth}).
+     */
+    public static final String WEB_AUTH = "web-auth";
+    /**
+     * Writing, blogs, posts, tags, images, series, git import ({@code web-author}).
+     */
+    public static final String WEB_AUTHOR = "web-author";
+    /**
+     * Home, search, reading, highlights, navigation, public pages
+     * ({@code web-reader}).
+     */
+    public static final String WEB_READER = "web-reader";
+    /**
+     * Dashboard, admin, notifications, custom pages, shell/i18n
+     * ({@code web-platform}).
+     */
+    public static final String WEB_PLATFORM = "web-platform";
+    /**
      * Post/custom-page slugs may use
      * {@link dev.vepo.contraponto.custompage.CustomPagePaths#reservedSegments()}.
      */

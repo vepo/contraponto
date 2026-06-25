@@ -19,7 +19,7 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.TestTimes;
 import dev.vepo.contraponto.shared.security.SessionConstants;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebPlatformTest;
 import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.user.LoggedUserProvider;
 import dev.vepo.contraponto.shared.security.SessionConstants;
@@ -30,7 +30,7 @@ import dev.vepo.contraponto.shared.security.SessionConstants;
 import io.quarkus.test.common.http.TestHTTPResource;
 import jakarta.persistence.EntityManager;
 
-@WebTest
+@WebPlatformTest
 class PlatformInsightsTest {
 
     private static final String ADMIN_EMAIL = "insightsadmin@example.com";

@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebReaderTest;
 import dev.vepo.contraponto.user.User;
 
-@WebTest
+@WebReaderTest
 class PostHighlightSelectionWebTest {
 
     private static final String PASSAGE = "distributed systems";

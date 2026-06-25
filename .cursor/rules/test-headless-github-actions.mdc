@@ -17,7 +17,7 @@ GITHUB_ACTIONS=true ./mvnw -B verify -Ptest-it -Dcontraponto.smoke.image=contrap
 GITHUB_ACTIONS=true ./mvnw test -Dtest=SomeWebTest#methodName
 ```
 
-Use the same prefix for parallel profile runs (`-Ptest-unit`, `-Ptest-quarkus`, `-Ptest-web`, `-Ptest-it`).
+Use the same prefix for parallel profile runs (`-Ptest-unit`, `-Ptest-quarkus`, `-Ptest-web`, `-Ptest-web-shard -Dweb.shard=web-auth|web-author|web-reader|web-platform`, `-Ptest-it`).
 
 Docker-smoke also requires `/etc/hosts` entries — see [`src/test/resources/docker-smoke/README.md`](../../src/test/resources/docker-smoke/README.md).
 

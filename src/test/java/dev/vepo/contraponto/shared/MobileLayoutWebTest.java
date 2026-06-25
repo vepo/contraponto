@@ -9,7 +9,7 @@ import dev.vepo.contraponto.custompage.PagePlacement;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.user.User;
 
-@WebTest
+@WebPlatformTest
 class MobileLayoutWebTest {
 
     private User author;

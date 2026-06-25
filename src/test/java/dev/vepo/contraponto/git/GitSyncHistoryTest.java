@@ -7,11 +7,11 @@ import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebAuthorTest;
 import dev.vepo.contraponto.user.User;
 import jakarta.inject.Inject;
 
-@WebTest
+@WebAuthorTest
 class GitSyncHistoryTest {
 
     @Inject

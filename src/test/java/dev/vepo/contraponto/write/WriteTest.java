@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebAuthorTest;
 import dev.vepo.contraponto.user.User;
 import jakarta.ws.rs.core.Response.Status;
 
-@WebTest
+@WebAuthorTest
 class WriteTest {
 
     private static final String TEST_USER_EMAIL = "writer@example.com";

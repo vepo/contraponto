@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.user.User;
 
-@WebTest
+@WebPlatformTest
 class PageSpeedAssetsWebTest {
 
     @Test

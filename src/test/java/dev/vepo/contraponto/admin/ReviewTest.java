@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebPlatformTest;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
 
-@WebTest
+@WebPlatformTest
 class ReviewTest {
 
     private User admin;

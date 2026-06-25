@@ -13,9 +13,10 @@ Always run Maven with `GITHUB_ACTIONS=true` so `WebTestExtension` matches CI hea
 ## Annotations
 
 - `@WebTest` on browser tests (Quarkus + Selenium via `WebTestExtension`); tagged `web`.
+- Scenario shards (CI parallel): `@WebAuthTest`, `@WebAuthorTest`, `@WebReaderTest`, `@WebPlatformTest` — each adds a `web-*` tag on top of `web`.
 - `@QuarkusIntegrationTest` for HTTP/DB integration tests without a browser; tagged `quarkus`.
 - `@UnitTest` on plain JUnit tests with no Quarkus boot; tagged `unit`.
-- `mvn clean test` runs all tags; `mvn test -Ptest-unit|test-quarkus|test-web` runs one tag (CI runs these in parallel).
+- `mvn clean test` runs all Surefire tags except `docker-smoke`; `mvn test -Ptest-unit|test-quarkus|test-web` runs one tier; CI shards web via `-Ptest-web-shard -Dweb.shard=web-auth|web-author|web-reader|web-platform`.
 
 ## App DSL
 

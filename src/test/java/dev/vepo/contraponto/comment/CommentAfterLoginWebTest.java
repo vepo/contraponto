@@ -7,10 +7,10 @@ import dev.vepo.contraponto.components.forms.SignUpEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebAuthTest;
 import dev.vepo.contraponto.user.User;
 
-@WebTest
+@WebAuthTest
 class CommentAfterLoginWebTest {
 
     private User author;

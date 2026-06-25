@@ -4,12 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebAuthorTest;
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.user.User;
 import jakarta.inject.Inject;
 
-@WebTest
+@WebAuthorTest
 class PostChangeHistoryTest {
 
     @Inject

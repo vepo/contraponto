@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebAuthorTest;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import jakarta.ws.rs.core.Response;
 
-@WebTest
+@WebAuthorTest
 class BlogTest {
 
     @TestHTTPResource("/")

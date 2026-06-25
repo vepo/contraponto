@@ -518,6 +518,22 @@
             </build>
         </profile>
         <profile>
+            <id>test-web-shard</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <groups>${web.shard}</groups>
+                            <systemPropertyVariables>
+                                <quarkus.http.test-port>${quarkus.http.test-port}</quarkus.http.test-port>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>test-reserved-slugs</id>
             <build>
                 <plugins>

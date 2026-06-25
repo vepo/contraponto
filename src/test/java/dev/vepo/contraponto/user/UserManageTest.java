@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.Given;
-import dev.vepo.contraponto.shared.WebTest;
+import dev.vepo.contraponto.shared.WebAuthTest;
 
-@WebTest
+@WebAuthTest
 class UserManageTest {
 
     private static final String ADMIN_EMAIL = "useradmin@example.com";

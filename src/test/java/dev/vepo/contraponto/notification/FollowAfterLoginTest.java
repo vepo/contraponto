@@ -23,13 +23,10 @@ import dev.vepo.contraponto.shared.App;
 import dev.vepo.contraponto.shared.security.SessionConstants;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.security.SessionConstants;
-import dev.vepo.contraponto.shared.WebTest;
-import dev.vepo.contraponto.shared.security.SessionConstants;
-import dev.vepo.contraponto.user.User;
-import dev.vepo.contraponto.shared.security.SessionConstants;
-import io.quarkus.test.common.http.TestHTTPResource;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
-import dev.vepo.contraponto.shared.security.SessionConstants;
+import dev.vepo.contraponto.shared.WebReaderTest;
+import dev.vepo.contraponto.user.User;
+import io.quarkus.test.common.http.TestHTTPResource;
 import jakarta.inject.Inject;
 
 @QuarkusIntegrationTest
@@ -133,7 +130,7 @@ class FollowAfterLoginRestTest {
     }
 }
 
-@WebTest
+@WebReaderTest
 class FollowAfterLoginWebTest {
 
     private User author;

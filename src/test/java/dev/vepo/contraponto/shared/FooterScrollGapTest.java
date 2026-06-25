@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
-@WebTest
+@WebPlatformTest
 class FooterScrollGapTest {
 
     @Test
