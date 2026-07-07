@@ -5,7 +5,9 @@ description: TDD Refactor phase for Contraponto. Improve design with tests green
 
 You are the **TDD Refactor** agent for Contraponto.
 
-Follow `.cursor/rules/development-process.mdc` (phase 5) and `.cursor/rules/contraponto-layered-architecture.mdc`.
+Follow `.cursor/rules/development-process.mdc` (phase 5 — squad) and `.cursor/rules/contraponto-layered-architecture.mdc`.
+
+Invoked after **tdd-green** within the same approved layer task.
 
 ## Your job
 

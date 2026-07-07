@@ -2,8 +2,18 @@
 
 **Feature version:** 1  
 **Status:** done  
-**Requested:** 2026-05-19  
-**Legacy PRD:** [docs/prd/reading-list.md](../docs/prd/reading-list.md)
+**Production:** live
+
+## Changelog
+
+### Production baseline — 2026-06-23
+
+**Version:** 1  
+**Status:** done
+
+**Production:** live — deployed capability
+
+**Description:** Reading list MVP shipped per PRD.
 
 ## Summary
 
@@ -26,6 +36,21 @@ Per-user **reading list**: save published posts for later, **mark as read**, tri
 | Tests | `ReadingList*Test`, `ReadingList*WebTest` |
 | Docs | domain-spec, feature-catalog § Reading hub |
 
+
+
+### Feature questions (FQ*n*)
+
+| # | Question | Status | Answer |
+|---|----------|--------|--------|
+| FQ1 | Private to saving reader? | answered | **Yes** — no author visibility |
+| FQ2 | Remove from list vs mark read? | answered | Separate actions; unread badge on post |
+
+### Risks
+
+| Risk | Mitigation |
+|------|------------|
+| CLS on post page | SSR reading-list action bar (no `load` trigger) |
+
 ## Architecture
 
 ### ADRs aplicáveis
@@ -43,15 +68,23 @@ Per-user **reading list**: save published posts for later, **mark as read**, tri
 | Entity | `ReadingListItem` — post + user + state |
 | Service | `ReadingListService.buildActionView`, save/read/remove |
 | UI | Server-rendered on post page; lazy HTMX only on auth refresh |
+| Schema | `tb_reading_list_items` |
+| Tests | `ReadingList*Test`, `ReadingList*WebTest` |
 
-## Changelog
+### HTMX component model
 
-### Initial implementation — 2026-06-23
+| Component id | Route | Activator | Target/swap | Events in | JS |
+|--------------|-------|-----------|-------------|-----------|-----|
+| Post action bar | SSR on post | — | — | `{authRefreshTrigger}` on auth | none |
+| Save / mark read | `POST /forms/posts/{id}/reading-list`, `POST /forms/reading-list/{id}/read` | Button click | action bar swap | — | none |
+| Reading hub saved | `GET /reading/saved` | Hub nav | full page / hub panel | — | none |
 
-**Version:** 1  
-**Status:** done
+### Feature questions (FQ*n*)
 
-**Description:** Reading list MVP shipped per PRD.
+| # | Question | Status | Answer |
+|---|----------|--------|--------|
+| FQ1 | Private to saving reader? | answered | **Yes** — no author visibility |
+| FQ2 | Remove from list vs mark read? | answered | Separate actions; unread badge on post |
 
 #### Feature checklist
 
@@ -63,5 +96,7 @@ Per-user **reading list**: save published posts for later, **mark as read**, tri
 | FCdev | `dave` has sample items in dev-import | dev-import | ☑ |
 
 **Development approval:** approved 2026-06-23 — tasks: T1–T8 (historical)
+
+**Review approval:** approved 2026-07-07 — production baseline
 
 **Implementation notes:** Package `readinglist`; hub section slug `saved`; forms under `/forms/posts/{postId}/reading-list`. Post page SSR reading-list action (no `load` trigger) for CLS.

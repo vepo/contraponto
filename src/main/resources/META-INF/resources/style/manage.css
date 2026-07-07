@@ -1426,10 +1426,29 @@
     background: var(--color-bg);
 }
 
+.fediverse__follow-request-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.fediverse__follow-request-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
 .fediverse__follow-request-handle {
     font-family: var(--font-mono, monospace);
     font-size: 0.875rem;
-    color: var(--color-text);
+    color: var(--color-text-muted);
+    word-break: break-all;
+}
+
+.fediverse__follow-request-actor-link {
+    font-size: 0.8125rem;
+    color: var(--color-link);
     word-break: break-all;
 }
 

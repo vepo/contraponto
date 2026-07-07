@@ -29,7 +29,7 @@ Before implementing any change, you MUST:
 
 **Do NOT write any code or test until these questions are answered.** If the answer changes the domain, update the specification first.
 
-For **new features**, phases 1–4 in [development-process.mdc](development-process.mdc) (feature doc, ADRs, task approval) run **before** this gate applies to implementation. During phase 5, this rule governs every code change.
+For **new features**, phases 1–4 in [development-process.mdc](development-process.mdc) (PO, domain, architect, task modeller, task approval) run **before** this gate applies to implementation. During phase 5 (squad), this rule governs every code change. Phase 6–7: review then `done`.
 
 ## TDD (phase 5)
 

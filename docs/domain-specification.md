@@ -291,7 +291,10 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Fediverse actor** | ActivityStreams **Person** — **one per `User`** (not per blog); has `inbox`, `outbox`, `followers`, and `publicKey`. Served as JSON-LD at the actor URL on the user's **blog subdomain**. MVP outbox: **main blog** posts only; future: same actor may carry highlight/comment activities (deferred). When the author has a **profile picture**, the actor exposes it as ActivityStreams **`icon`** (`type: Image`) with an absolute image URL. | `ActivityPubActor` |
 | **Fediverse handle** | Human-readable `@username@domain` resolved via **WebFinger** to the actor URL (e.g. `@alice@blog.example.com`). | `/.well-known/webfinger` |
 | **Fediverse opt-in** | Author enables federation on **Author appearance**; when off, actor endpoints return **404**. | Author appearance — Fediverse section |
-| **Fediverse follow** | Remote user on another ActivityPub server sends a **Follow** activity to the author's **inbox**; author **Accept** or **Reject** (manual approval model). | `ActivityPubInboxService` |
+| **Fediverse follow** | Remote user on another ActivityPub server sends a **Follow** activity to the author's **inbox**; author **Accept** or **Reject** (manual approval model). Pending requests show **remote display name**, **Fediverse remote handle**, and actor URL after **remote actor profile fetch**. | `ActivityPubInboxService` |
+| **Fediverse remote actor** | Cached **Person** on another instance: `actor_id`, `inbox_url`, signing keys, optional display name and preferred username, `profile_fetched_at`. | `ActivityPubRemoteActor` |
+| **Remote actor profile fetch** | On-demand HTTPS GET of a remote actor JSON document to resolve `publicKey` and `inbox` when verifying an inbound signed inbox POST (ADR-0007). | `ActivityPubRemoteActorService` |
+| **Fediverse remote handle** | `@user@domain` derived from remote actor `preferredUsername` and actor host — shown in follow-request review. | Follow-request UI |
 | **ActivityPub delivery** | Outbound signed POST of an activity to a remote instance's **inbox** after publish/unpublish (async queue with retry). | `ActivityPubDeliveryService` |
 | **Fediverse follow backfill** | When the author **Accept**s a pending **Fediverse follow**, Contraponto enqueues **Create** deliveries for every published **main blog** post (oldest first) to that follower's remote inbox so their timeline is populated without waiting for a new publish. | `ActivityPubDeliveryService.enqueueHistoricalPostsForAcceptedFollow` |
 | **Fediverse outbox** | Paged **OrderedCollection** of **Create** activities for published **main blog** posts; exposes `first` / `last` / `next` / `prev` links when the archive spans multiple pages. | `GET /{username}/outbox` |
@@ -495,6 +498,8 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Author appearance — regenerate keys | Regenerate keys | Fediverse section — destructive confirm |
 | Fediverse follow requests — Accept | Accept | Follow-request review |
 | Fediverse follow requests — Reject | Reject | Follow-request review |
+| Fediverse follow request row — display name | Remote follower display name (from fetched actor) | Follow-request review |
+| Fediverse follow request row — remote handle | `@user@domain` derived from remote actor | Follow-request review |
 | Platform insights — ActivityPub global switch | Enable ActivityPub federation globally | Administration → Fediverse |
 | Author appearance — social GitHub field | GitHub | Author appearance |
 | Author appearance — social LinkedIn field | LinkedIn | Author appearance |

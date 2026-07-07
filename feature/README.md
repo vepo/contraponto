@@ -2,7 +2,7 @@
 
 One markdown file per **high-level capability**: `feature/<feature-slug>.md` (kebab-case).
 
-**Mandatory process:** [development-process.mdc](../.cursor/rules/development-process.mdc) — analysis → architecture (+ ADRs) → tasks → **explicit task approval (manual)** → TDD. **ADR `Accepted` and feature development require explicit human approval** — the agent must not infer acceptance.
+**Mandatory process:** [development-process.mdc](../.cursor/rules/development-process.mdc) — PO → domain → architect (+ ADRs, HTMX model) → task modeller → **explicit task approval** → development squad (Java → HTMX → JS) → **review trio** → **review approval** → `done`. Agents: [.cursor/agents/](../.cursor/agents/). **ADR `Accepted`, task approval, and review approval require explicit human messages** — agents must not infer acceptance.
 
 **ADRs:** transversal decisions in [docs/adr/](../docs/adr/). Baseline Accepted: [0001](../docs/adr/0001-record-architecture-decisions.md)–[0005](../docs/adr/0005-postgresql-database.md). Template: [docs/adr/template.md](../docs/adr/template.md).
 
@@ -14,55 +14,70 @@ See [change-request-analysis.mdc](../.cursor/rules/change-request-analysis.mdc) 
 
 | Request type | Example slug |
 |--------------|--------------|
+| Authentication | `authentication` |
+| Multi-blog | `multi-blog` |
+| Post publishing | `post-publishing` |
+| Comments | `post-comments` |
+| Blog follow / subscribe | `blog-audience` |
 | Personal reading list | `reading-list` (see [docs/prd/reading-list.md](../docs/prd/reading-list.md)) |
 | Reader highlights | `post-text-highlight` (see [docs/prd/post-text-highlight.md](../docs/prd/post-text-highlight.md)) |
-| Blog follow / subscribe | `blog-audience` |
 | Git ↔ Jekyll sync | `git-sync` |
+| Custom pages | `custom-pages` |
+| Home & discovery | `home-discovery` |
+| Search | `search` |
+| Tags & series | `tags-and-series` |
+| RSS | `rss-syndication` |
+| SEO | `seo` |
+| Editor review | `editor-review` |
+| User admin | `user-administration` |
+| Image library | `image-library` |
+| Author profile | `author-profile` |
+| Dashboard analytics | `dashboard-analytics` |
 | ActivityPub / Fediverse | `activitypub-integration` |
 | User-to-user messaging | `user-messaging` |
 | In-app notification retention | `notification-retention` |
 
 ## Template
 
-Copy into `feature/<feature-slug>.md`. Phases 2–5 add Architecture (+ ADR links), Tasks, approval, implementation.
+Copy into `feature/<feature-slug>.md`. Phases 2–7 add Architecture (+ HTMX model), Tasks, approval, squad implementation, review, done.
 
 ```markdown
 # <Human-readable feature name>
 
 **Feature version:** 1  
-**Status:** planned | in-progress | done  
-**Requested:** YYYY-MM-DD
+**Status:** done  
+**Production:** live
+
+## Changelog
+
+### Production baseline — YYYY-MM-DD
+
+**Version:** 1  
+**Status:** done
+
+**Production:** live — deployed capability
+
+**Description:** …
+
+**Domain model:** N/A | updated YYYY-MM-DD (see domain-spec)
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| — | None identified |
 
 ## Summary
 
-One paragraph: what is being asked and why.
+…
 
 ## Wireframe
 
-**Guide:** layout reference for UI — update when Scope or **FQ*n*** change.
-
-| Field | Value |
-|-------|-------|
-| **Source** | ASCII below · N/A |
-| **Last updated** | YYYY-MM-DD |
-
-### Screen: `/example-route`
-
-| Region | Elements | Notes |
-|--------|----------|-------|
-| Main | … | [ui-elements.md](../docs/ui-elements.md) |
+…
 
 ## Impact
 
-| Area | Effect |
-|------|--------|
-| Bounded contexts | e.g. `post`, `readinglist` |
-| Packages / files | Main touch points |
-| Routes / templates | `@Path`, Qute, HTMX |
-| UI | Templates, CSS bundle |
-| Schema / seed | `db/migration/V*.sql`, **`dev-import.sql`** |
-| Tests | `@WebTest`, unit, ArchUnit |
-| Docs | domain-spec, feature-catalog, ADRs, ARCHITECTURE |
+…
 
 ### Risks
 
@@ -76,87 +91,87 @@ One paragraph: what is being asked and why.
 
 ## Architecture
 
-See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
-
 ### ADRs aplicáveis
 
-| ADR | Relevância |
-|-----|------------|
-| [0002](../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Backend |
-| [0003](../docs/adr/0003-frontend-qute-htmx.md) | Qute + HTMX |
+…
 
 ### Design específico da feature
 
-| Area | Design |
-|------|--------|
-| Bounded contexts | … |
-| Packages / layers | Endpoint → Service → Repository |
-| Routes / templates | `*Paths`, Qute, HTMX targets |
-| Schema / seed | Flyway file, `dev-import.sql` rows |
-| CDI events | Producers / observers |
-| Tests | `*WebTest` scenarios |
+…
+
+### HTMX component model
+
+…
 
 ### Architecture questions (AQ*n*)
 
-| # | Question | Status | Answer |
-|---|----------|--------|--------|
-| AQ1 | … | open | |
-
-## Changelog
-
-### <Change name> — YYYY-MM-DD
-
-**Version:** 1  
-**Status:** planned | architecture-ready | tasks-ready | approved | in-progress | done
-
-**Description:** …
-
-**Impact on other features:**
-
-| Feature / area | Impact |
-|----------------|--------|
-| — | None identified |
+…
 
 #### Feature checklist
 
 | ID | Criterion | Source | Done |
 |----|-----------|--------|------|
-| FC1 | … | FQ1 | ☐ |
-| FCdev | `dev-import.sql` covers this feature's happy path | dev-import-sql-safety | ☐ |
+| FC1 | … | FQ1 | ☑ |
+| FCdev | `dev-import.sql` covers this feature's happy path | dev-import-sql-safety | ☑ |
 
-#### Tasks (phase 3)
+#### Tasks (phase 3) — layer tags
 
-| ID | Task | Done |
-|----|------|------|
-| T1 | … | ☐ |
-| Tdev | Update `dev-import.sql` + feature-catalog § Dev personas | dev-import-sql-safety | ☐ |
+| ID | Layer | Task | Depends | Expected outcome | Tests | Done |
+|----|-------|------|---------|------------------|-------|------|
+| T1-java | java | … | — | … | TC1 | ☑ |
 
 #### Test coverage (phase 3)
 
-| ID | Test | Covers | Done |
-|----|------|--------|------|
-| TC1 | … | T1 | ☐ |
+| ID | Kind | Test | Covers | Done |
+|----|------|------|--------|------|
+| TC1 | unit \| rest \| web | … | T1-java | ☑ |
 
-**Development approval:** pending | approved YYYY-MM-DD — tasks: T1
+**Development approval:** approved — production baseline (shipped)
 
-**Implementation notes:** (after done)
+**Review approval:** approved YYYY-MM-DD — production baseline
+
+**Implementation notes:** …
 ```
+
+Shipped capabilities use a **single Production baseline** changelog entry containing Summary, Wireframe, Impact, Architecture, checklist, and approvals. **Future changes** add new `### <Change name> — date` entries below the baseline (increment **Feature version** in the file header).
 
 ## Feature index
 
 | Capability | File | Status |
 |------------|------|--------|
+| Authentication & account access | [authentication.md](authentication.md) | done |
+| Multi-blog per author | [multi-blog.md](multi-blog.md) | done |
+| Post publishing & version history | [post-publishing.md](post-publishing.md) | done |
+| Post comments & moderation | [post-comments.md](post-comments.md) | done |
+| Blog audience (follow, subscribe, delivery) | [blog-audience.md](blog-audience.md) | done |
 | Personal reading list | [reading-list.md](reading-list.md) | done |
 | Post text highlights & responses | [post-text-highlight.md](post-text-highlight.md) | done |
+| Git ↔ Jekyll sync | [git-sync.md](git-sync.md) | done |
+| Custom pages | [custom-pages.md](custom-pages.md) | done |
+| Home & discovery | [home-discovery.md](home-discovery.md) | done |
+| Search | [search.md](search.md) | done |
+| Tags & series | [tags-and-series.md](tags-and-series.md) | done |
+| RSS syndication | [rss-syndication.md](rss-syndication.md) | done |
+| SEO & crawlability | [seo.md](seo.md) | done |
+| Editor review & featured curation | [editor-review.md](editor-review.md) | done |
+| User administration | [user-administration.md](user-administration.md) | done |
+| Image library | [image-library.md](image-library.md) | done |
+| Author profile & appearance | [author-profile.md](author-profile.md) | done |
+| Dashboard & platform analytics | [dashboard-analytics.md](dashboard-analytics.md) | done |
 | ActivityPub Fediverse integration | [activitypub-integration.md](activitypub-integration.md) | done |
 | Notification retention | [notification-retention.md](notification-retention.md) | done |
 | User messaging | [user-messaging.md](user-messaging.md) | done |
 
 Add a row here when creating `feature/<slug>.md`.
 
+### Production baseline (2026-07-07)
+
+All **22** shipped capabilities are documented as **`### Production baseline`** changelog entries with **`Production: live`**. The application is in production; new work adds subsequent changelog entries under the same file. Open **FQ*n*** / **AQ*n*** rows in each file mark known follow-ups, not missing baseline scope.
+
 ## Versioning
 
 - **Feature version** — highest changelog Version in the file.
 - **FQ*n*** / **AQ*n*** — product vs technical questions.
 - **ADRs** — transversal decisions; cite by number in Architecture.
-- **FC*n***, **T*n***, **TC*n*** — per changelog entry; recheck FC before `done`.
+- **FC*n***, **T*n*** (`*-java`, `*-htmx`, `*-js`), **TC*n*** — per changelog entry; recheck FC before `done`.
+- **Review findings** — phase 6; no `done` without **Review approval**.

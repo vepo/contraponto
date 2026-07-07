@@ -133,7 +133,11 @@
                 <div id="activitypubFollowRequests" class="fediverse__follow-requests-list">
                     {#for request in federationView.pendingFollowRequests}
                     <div class="fediverse__follow-request">
-                        <span class="fediverse__follow-request-handle">{request.remoteActorId}</span>
+                        <div class="fediverse__follow-request-meta">
+                            <span class="fediverse__follow-request-name">{request.displayName}</span>
+                            <span class="fediverse__follow-request-handle">{request.remoteHandle}</span>
+                            <a class="fediverse__follow-request-actor-link" href="{request.remoteActorId}" rel="noopener noreferrer" target="_blank">{request.remoteActorId}</a>
+                        </div>
                         <div class="fediverse__follow-request-actions">
                             <button type="button" class="btn btn--primary btn--sm"
                                     hx-post="/forms/writing/activitypub/follows/{request.followId}/accept"

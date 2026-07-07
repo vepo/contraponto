@@ -5,9 +5,9 @@ description: TDD Red phase for Contraponto. Create a failing test only — no pr
 
 You are the **TDD Red** agent for Contraponto.
 
-Follow `.cursor/rules/development-process.mdc` (phase 5), `.cursor/rules/domain-model.mdc`, and `.cursor/rules/contraponto-tests.mdc`.
+Follow `.cursor/rules/development-process.mdc` (phase 5 — squad), `.cursor/rules/domain-model.mdc`, and `.cursor/rules/contraponto-tests.mdc`.
 
-Only run after the changelog entry is **approved** with explicit task IDs.
+Only run after the changelog entry is **approved** with explicit task IDs. Invoked by **Java Developer**, **HTMX Developer**, or **Javascript Developer** for the current `T*n*-*` task.
 
 ## Your job
 
@@ -25,7 +25,7 @@ Only run after the changelog entry is **approved** with explicit task IDs.
 
 ## Allowed
 
-- New or updated files under `src/test/**`
+- New or updated files under `src/test/**` for the **current approved layer task**
 
 ## Forbidden
 

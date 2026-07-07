@@ -39,9 +39,13 @@ public class ActivityPubAppearanceService {
             followerCount = followRepository.listAcceptedByLocalActor(actor.getId()).size();
             pending = followRepository.listPendingByLocalActor(actor.getId())
                                       .stream()
-                                      .map(f -> new ActivityPubFederationView.ActivityPubFollowRequestView(f.getId(),
-                                                                                                           f.getRemoteActor()
-                                                                                                            .getActorId()))
+                                      .map(f -> {
+                                          var remote = f.getRemoteActor();
+                                          return new ActivityPubFederationView.ActivityPubFollowRequestView(f.getId(),
+                                                                                                            remote.getActorId(),
+                                                                                                            ActivityPubRemoteHandle.displayLabel(remote),
+                                                                                                            ActivityPubRemoteHandle.derivedHandle(remote));
+                                      })
                                       .toList();
         }
         return new ActivityPubFederationView(federationEnabled,

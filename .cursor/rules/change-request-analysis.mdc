@@ -61,7 +61,9 @@ The slug names a **high-level capability**, not a single task.
 - **Feature checklist** (**FC1**, …, **FCdev**)
 - **Wireframe** at feature doc level
 
-Phases 2–5 continue in the same entry — [development-process.mdc](development-process.mdc).
+Phases 2–7 continue in the same entry — [development-process.mdc](development-process.mdc).
+
+Agent: [product-owner.md](../../.cursor/agents/product-owner.md) (phase 1).
 
 ## Allowed edits by phase
 
@@ -71,20 +73,27 @@ Phases 2–5 continue in the same entry — [development-process.mdc](developmen
 | 2 | → `architecture-ready` | `feature/*.md`, `docs/adr/`, ARCHITECTURE.md |
 | 3 | `tasks-ready` | `feature/*.md` (FC, Tasks, Test coverage) |
 | 4 | `approved` | `feature/*.md` (Development approval line) |
-| 5 | `in-progress` / `done` | `src/**`, templates, CSS/JS, docs |
+| 5 | `in-progress` | `src/**`, templates, CSS/JS, docs (squad) |
+| 6 | `review-ready` | `feature/*.md` (Review findings); squad fixes blockers |
+| 7 | `done` | `feature/*.md` (Review approval, Implementation notes) |
+
+Agents: [product-owner.md](../../.cursor/agents/product-owner.md), [architect.md](../../.cursor/agents/architect.md), [task-modeller.md](../../.cursor/agents/task-modeller.md), squad and reviewer agents — see [development-process.mdc](development-process.mdc) § Agent roster.
 
 ## Order with other gates
 
 ```
-Feature analysis → architecture design → domain spec review → task break → development approved → TDD → verify
+PO (phase 1) → domain (1b) → architect (2) → task modeller (3) → task approval (4)
+→ squad java→htmx→js (5) → review trio (6) → review approval + docs-sync (7)
 ```
 
 Domain: [domain-model.mdc](domain-model.mdc). Architecture: [architecture-design.mdc](architecture-design.mdc).
 
-## During implementation (phase 5 only)
+## During implementation (phase 5) and review (phase 6)
 
-- Mark status lifecycle; check off Tasks, Test coverage, FC rows.
-- **Before `done`:** Feature checklist recheck — development-process § Phase 5.
+- Squad marks Tasks, Test coverage, FC rows; sets `review-ready` when verify green.
+- Reviewers record findings in feature doc (readonly).
+- Squad fixes `blocker` findings.
+- **Before `done`:** Review approval + Feature checklist recheck — development-process § Phase 7.
 - **Working code invariant** — fix or revert before stopping.
 
 ## Legacy open questions

@@ -1790,6 +1790,15 @@ public class App {
             return this;
         }
 
+        public ProfilePage assertFediverseFollowRequestVisible(String displayName, String remoteHandle) {
+            wait.until(visibilityOfElementLocated(cssSelector(".fediverse__follow-request-name")));
+            var name = driver.findElement(cssSelector(".fediverse__follow-request-name"));
+            var handle = driver.findElement(cssSelector(".fediverse__follow-request-handle"));
+            assertThat(name.getText()).contains(displayName);
+            assertThat(handle.getText()).contains(remoteHandle);
+            return this;
+        }
+
         public ProfilePage assertFediverseHandleVisible() {
             wait.until(visibilityOfElementLocated(cssSelector(".fediverse__handle")));
             return this;

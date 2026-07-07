@@ -33,11 +33,30 @@ public class ActivityPubRemoteActor {
     @Column(name = "profile_fetched_at")
     private LocalDateTime profileFetchedAt;
 
+    @Column(name = "display_name", length = 512)
+    private String displayName;
+
+    @Column(name = "preferred_username", length = 255)
+    private String preferredUsername;
+
     public ActivityPubRemoteActor() {}
 
     public ActivityPubRemoteActor(String actorId, String inboxUrl) {
         this.actorId = actorId;
         this.inboxUrl = inboxUrl;
+    }
+
+    public void applyFetchedProfile(String inboxUrl,
+                                    String publicKeyPem,
+                                    String publicKeyId,
+                                    String displayName,
+                                    String preferredUsername) {
+        this.inboxUrl = inboxUrl;
+        this.publicKeyPem = publicKeyPem;
+        this.publicKeyId = publicKeyId;
+        this.displayName = displayName;
+        this.preferredUsername = preferredUsername;
+        this.profileFetchedAt = LocalDateTime.now();
     }
 
     @Override
@@ -59,12 +78,20 @@ public class ActivityPubRemoteActor {
         return actorId;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
     public Long getId() {
         return id;
     }
 
     public String getInboxUrl() {
         return inboxUrl;
+    }
+
+    public String getPreferredUsername() {
+        return preferredUsername;
     }
 
     public LocalDateTime getProfileFetchedAt() {
