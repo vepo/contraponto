@@ -9,5 +9,8 @@ public record ActivityPubFederationView(boolean federationEnabled,
                                         long followerCount,
                                         List<ActivityPubFollowRequestView> pendingFollowRequests) {
 
-    public record ActivityPubFollowRequestView(long followId, String remoteActorId) {}
+    public record ActivityPubFollowRequestView(long followId,
+                                               String remoteActorId,
+                                               String displayName,
+                                               String remoteHandle) {}
 }

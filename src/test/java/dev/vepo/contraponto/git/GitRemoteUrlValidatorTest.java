@@ -30,8 +30,8 @@ class GitRemoteUrlValidatorTest {
     }
 
     @Test
-    void rejectsLocalhost() {
-        assertThat(validator.validate("https://localhost/repo.git")).isPresent();
+    void rejectsBlockedPrivateHost() {
+        assertThat(validator.validate("https://10.0.0.1/repo.git")).isPresent();
     }
 
     @Test

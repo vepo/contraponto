@@ -6,6 +6,7 @@ import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,6 +14,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,14 +36,20 @@ public class ActivityPubHttpSignatureService {
     private final ActivityPubKeyPairService keyPairService;
     private final ActivityPubActorRepository actorRepository;
     private final ActivityPubRemoteActorRepository remoteActorRepository;
+    private final ActivityPubRemoteActorService remoteActorService;
+    private final ActivityPubFetchSettings fetchSettings;
 
     @Inject
     public ActivityPubHttpSignatureService(ActivityPubKeyPairService keyPairService,
                                            ActivityPubActorRepository actorRepository,
-                                           ActivityPubRemoteActorRepository remoteActorRepository) {
+                                           ActivityPubRemoteActorRepository remoteActorRepository,
+                                           ActivityPubRemoteActorService remoteActorService,
+                                           ActivityPubFetchSettings fetchSettings) {
         this.keyPairService = keyPairService;
         this.actorRepository = actorRepository;
         this.remoteActorRepository = remoteActorRepository;
+        this.remoteActorService = remoteActorService;
+        this.fetchSettings = fetchSettings;
     }
 
     private Map<String, String> buildHeaderMapForVerification(String method,
@@ -112,6 +120,17 @@ public class ActivityPubHttpSignatureService {
         }
     }
 
+    private boolean hasFreshRemoteKey(ActivityPubRemoteActor remote) {
+        if (remote.getPublicKeyPem() == null || remote.getPublicKeyPem().isBlank()) {
+            return false;
+        }
+        var fetchedAt = remote.getProfileFetchedAt();
+        if (fetchedAt == null) {
+            return false;
+        }
+        return fetchedAt.isAfter(LocalDateTime.now().minusDays(fetchSettings.profileMaxAgeDays()));
+    }
+
     private String headerValue(Map<String, String> headers, String name) {
         for (var entry : headers.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(name)) {
@@ -119,6 +138,13 @@ public class ActivityPubHttpSignatureService {
             }
         }
         return null;
+    }
+
+    private Optional<PublicKey> parseRemotePublicKey(ActivityPubRemoteActor remote) {
+        if (remote.getPublicKeyPem() == null || remote.getPublicKeyPem().isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(keyPairService.parsePublicKeyPem(remote.getPublicKeyPem()));
     }
 
     private Map<String, String> parseSignatureHeader(String header) {
@@ -130,16 +156,36 @@ public class ActivityPubHttpSignatureService {
         return params;
     }
 
-    private PublicKey resolvePublicKey(String keyId) {
+    private Optional<PublicKey> resolvePublicKey(String keyId) {
+        var actorUrl = ActivityPubActorUrls.actorUrlFromKeyId(keyId);
+        var cached = remoteActorRepository.findByPublicKeyId(keyId)
+                                          .or(() -> remoteActorRepository.findByActorId(actorUrl));
+        if (cached.isPresent() && hasFreshRemoteKey(cached.get())) {
+            return parseRemotePublicKey(cached.get());
+        }
         var local = actorRepository.findByPublicKeyId(keyId);
         if (local.isPresent()) {
-            return keyPairService.parsePublicKeyPem(local.get().getPublicKeyPem());
+            return Optional.of(keyPairService.parsePublicKeyPem(local.get().getPublicKeyPem()));
         }
-        var remote = remoteActorRepository.findByPublicKeyId(keyId);
-        if (remote.isPresent() && remote.get().getPublicKeyPem() != null) {
-            return keyPairService.parsePublicKeyPem(remote.get().getPublicKeyPem());
+        if (cached.isPresent() && cached.get().getPublicKeyPem() != null) {
+            return parseRemotePublicKey(cached.get());
         }
-        return null;
+        remoteActorService.fetchAndCache(actorUrl);
+        return resolvePublicKeyFromCache(keyId);
+    }
+
+    private Optional<PublicKey> resolvePublicKeyFromCache(String keyId) {
+        var local = actorRepository.findByPublicKeyId(keyId);
+        if (local.isPresent()) {
+            return Optional.of(keyPairService.parsePublicKeyPem(local.get().getPublicKeyPem()));
+        }
+        var actorUrl = ActivityPubActorUrls.actorUrlFromKeyId(keyId);
+        var remote = remoteActorRepository.findByPublicKeyId(keyId)
+                                          .or(() -> remoteActorRepository.findByActorId(actorUrl));
+        if (remote.isEmpty()) {
+            return Optional.empty();
+        }
+        return parseRemotePublicKey(remote.get());
     }
 
     private String sign(String signingString, PrivateKey privateKey) {
@@ -215,11 +261,21 @@ public class ActivityPubHttpSignatureService {
             return false;
         }
         var publicKey = resolvePublicKey(keyId);
-        if (publicKey == null) {
+        if (publicKey.isEmpty()) {
             logger.warn("No public key found for keyId={}", keyId);
             return false;
         }
-        return verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, publicKey);
+        var verified = verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, publicKey.get());
+        if (verified) {
+            return true;
+        }
+        var actorUrl = ActivityPubActorUrls.actorUrlFromKeyId(keyId);
+        remoteActorService.fetchAndCache(actorUrl, true);
+        var retryKey = resolvePublicKeyFromCache(keyId);
+        if (retryKey.isEmpty()) {
+            return false;
+        }
+        return verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, retryKey.get());
     }
 
     public boolean verifyRequest(String method,

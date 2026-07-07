@@ -1,11 +1,11 @@
 package dev.vepo.contraponto.activitypub;
 
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,8 @@ public class ActivityPubInboxService {
     private static final Logger logger = LoggerFactory.getLogger(ActivityPubInboxService.class);
 
     private static final ObjectMapper JSON = new ObjectMapper();
+
+    private static final Pattern SIGNATURE_PARAM = Pattern.compile("(\\w+)=\"([^\"]*)\"");
 
     private final ActivityPubSettings settings;
     private final ActivityPubActorService actorService;
@@ -70,6 +72,29 @@ public class ActivityPubInboxService {
         deliveryService.enqueueHistoricalPostsForAcceptedFollow(follow);
     }
 
+    private void assertActivityActorMatchesKeyId(JsonNode root, Map<String, String> headers) {
+        var signatureHeader = headerValue(headers, "Signature");
+        if (signatureHeader == null || signatureHeader.isBlank()) {
+            return;
+        }
+        var matcher = SIGNATURE_PARAM.matcher(signatureHeader);
+        String keyId = null;
+        while (matcher.find()) {
+            if ("keyId".equals(matcher.group(1))) {
+                keyId = matcher.group(2);
+                break;
+            }
+        }
+        if (keyId == null || keyId.isBlank()) {
+            return;
+        }
+        var actorUrlFromKey = ActivityPubActorUrls.actorUrlFromKeyId(keyId);
+        var activityActor = textValue(root, "actor");
+        if (activityActor != null && !ActivityPubActorUrls.actorUrisMatch(activityActor, actorUrlFromKey)) {
+            throw new NotAuthorizedException("Activity actor does not match signature keyId");
+        }
+    }
+
     private Map<String, Object> buildAcceptActivity(ActivityPubFollow follow) {
         User user = follow.getLocalActor().getUser();
         var activity = new LinkedHashMap<String, Object>();
@@ -95,8 +120,12 @@ public class ActivityPubInboxService {
         if (!objectUrl.startsWith(expectedActor)) {
             return;
         }
-        var remote = remoteActorRepository.findByActorId(actorUrl)
-                                          .orElseGet(() -> remoteActorRepository.create(new ActivityPubRemoteActor(actorUrl, actorUrl)));
+        var remote = remoteActorRepository.findByActorId(ActivityPubActorUrls.normalizeActorUri(actorUrl))
+                                          .orElse(null);
+        if (remote == null) {
+            logger.warn("Remote actor row missing after verify for actor={}", actorUrl);
+            return;
+        }
         var existing = followRepository.findByLocalAndRemote(localActor.getId(), remote.getId());
         if (existing.isPresent()) {
             return;
@@ -118,6 +147,7 @@ public class ActivityPubInboxService {
             logger.warn("Invalid ActivityPub inbox payload for user {}", username);
             throw new NotAuthorizedException("Invalid activity payload");
         }
+        assertActivityActorMatchesKeyId(root, headers);
         var type = textValue(root, "type");
         if ("Follow".equals(type)) {
             handleFollow(actor, root);
@@ -140,7 +170,8 @@ public class ActivityPubInboxService {
         if (remoteActorUrl == null) {
             return;
         }
-        var remote = remoteActorRepository.findByActorId(remoteActorUrl).orElse(null);
+        var remote = remoteActorRepository.findByActorId(ActivityPubActorUrls.normalizeActorUri(remoteActorUrl))
+                                          .orElse(null);
         if (remote == null) {
             return;
         }
@@ -149,6 +180,15 @@ public class ActivityPubInboxService {
                             follow.reject();
                             followRepository.update(follow);
                         });
+    }
+
+    private String headerValue(Map<String, String> headers, String name) {
+        for (var entry : headers.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(name)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     public void rejectPendingFollow(long followId) {

@@ -75,7 +75,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 | Development squad (phase 5) | ✅ [java-developer](../.cursor/agents/java-developer.md), [htmx-developer](../.cursor/agents/htmx-developer.md), [javascript-developer](../.cursor/agents/javascript-developer.md) |
 | Review trio (phase 6) | ✅ [java-reviewer](../.cursor/agents/java-reviewer.md), [htmx-reviewer](../.cursor/agents/htmx-reviewer.md), [javascript-reviewer](../.cursor/agents/javascript-reviewer.md) |
 | Manual ADR / task / review approval gates | ✅ development-process § Manual acceptance only |
-| `feature/` changelog workflow | ✅ `feature/README.md` (HTMX model, review findings) |
+| `feature/` changelog workflow | ✅ `feature/README.md` — **22 capabilities** documented (retroactive 2026-07-07) |
 | Four pillars in `AGENTS.md` | ✅ model / testing / quality / platform |
 | `.cursor/agents/` | ✅ PO, architect, modeller, squad, reviewers, TDD, domain-model, docs-sync |
 | `.cursor/commands/review_code_structure.md` | ✅ |

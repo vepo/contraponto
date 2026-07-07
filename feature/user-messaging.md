@@ -2,7 +2,30 @@
 
 **Feature version:** 1  
 **Status:** done  
-**Requested:** 2026-07-07
+**Production:** live
+
+## Changelog
+
+### Production baseline — User messaging — 2026-07-07
+
+**Version:** 1  
+**Status:** done
+
+**Production:** live — deployed capability
+
+**Description:** Private 1:1 titled threads in Account hub; reply, close, flag (admin review), block and freeze; in-app notifications only.
+
+**Recommended implementation order:** After [notification-retention.md](notification-retention.md) (T1–T7); messaging migration `V0.0.11__user_messaging.sql` follows `V0.0.10`.
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| Notifications | New types + schema FK; observer in `notification` package; subject to [ADR-0010](../docs/adr/0010-notification-retention.md) |
+| Account hub | New nav sections Messages, Blocked users |
+| Administration | New Message reports section (`ADMIN`) |
+| Author profile | **Message** CTA when signed in |
+| ActivityPub | None — federated inbox unchanged |
 
 ## Summary
 
@@ -14,6 +37,8 @@ Distinct from **notifications** (platform event alerts), **post comments** (publ
 
 **Source:** ASCII below  
 **Last updated:** 2026-07-07
+
+
 
 ### Screen: Account hub — Messages (`GET /account/messages`)
 
@@ -153,26 +178,80 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | AQ2 | Separate header badge for mailbox unread? | answered | **MVP: no** — unread surfaced via existing notification bell + Account **Messages** section; optional mailbox badge in v2. |
 | AQ3 | Retention policy for flagged threads? | answered | [ADR-0009](../docs/adr/0009-user-messaging-retention.md) — report rows 90 days; participant threads unchanged on dismiss |
 
-## Changelog
+### Screen: Account hub — Messages (`GET /account/messages`)
 
-### User messaging MVP — 2026-07-07
+| Region | Elements | Notes |
+|--------|----------|-------|
+| Hub nav | **Messages** under Activity group | Alongside Notifications, Subscriptions |
+| Tabs | **Open** / **Closed** | Manage pagination per tab |
+| List row | Thread title, other participant, preview, unread indicator | Library-style rows |
+| Primary action | **Compose** | Opens compose panel |
 
-**Version:** 1  
-**Status:** done
+```
+┌─ Account ─ Messages ─────────────────────────────┐
+│ [ Open ] [ Closed ]                    [ Compose ] │
+├──────────────────────────────────────────────────┤
+│ ● Re: collaboration     alice → you    2h ago      │
+│   Would you be interested in…                    │
+├──────────────────────────────────────────────────┤
+│   Question about series  you → bob     yesterday   │
+└──────────────────────────────────────────────────┘
+```
 
-**Description:** Private 1:1 titled threads in Account hub; reply, close, flag (admin review), block and freeze; in-app notifications only.
+### Screen: Thread (`GET /account/messages/{threadId}`)
 
-**Recommended implementation order:** After [notification-retention.md](notification-retention.md) (T1–T7); messaging migration `V0.0.11__user_messaging.sql` follows `V0.0.10`.
+| Region | Elements | Notes |
+|--------|----------|-------|
+| Header | Thread title, participant name | Breadcrumb via Account hub |
+| Banner (frozen) | **User is blocked** | Both participants when block active |
+| Messages | Chronological **thread messages** | Author + timestamp |
+| Actions | **Reply**, **Close thread**, **Flag thread**, **Block user** | Confirm modal for destructive actions |
+| Reply form | Textarea + **Send reply** | Hidden when closed or frozen |
 
-**Impact on other features:**
+### Screen: Compose (`GET /account/messages/compose`)
 
-| Feature / area | Impact |
-|----------------|--------|
-| Notifications | New types + schema FK; observer in `notification` package; subject to [ADR-0010](../docs/adr/0010-notification-retention.md) |
-| Account hub | New nav sections Messages, Blocked users |
-| Administration | New Message reports section (`ADMIN`) |
-| Author profile | **Message** CTA when signed in |
-| ActivityPub | None — federated inbox unchanged |
+| Region | Elements | Notes |
+|--------|----------|-------|
+| Fields | **To** (username with autocomplete), **Thread title**, **Message** | `?to={username}` prefill from author profile |
+| Actions | **Send** / **Cancel** | Rate-limited |
+
+### Screen: Block user (modal from thread)
+
+| Region | Elements | Notes |
+|--------|----------|-------|
+| Actions | **Block** / **Cancel** | Confirm modal |
+
+### Screen: Blocked users (`GET /account/messages/blocked`)
+
+| Region | Elements | Notes |
+|--------|----------|-------|
+| List | Blocked username, blocked at, **Unblock** | Manage pagination |
+
+### Screen: Author profile — Message (`GET /authors/{username}`)
+
+| Region | Elements | Notes |
+|--------|----------|-------|
+| Action | **Message** button | Signed-in only; guest → sign-in modal; links to compose with `?to=` |
+
+### Screen: Administration — Message reports (`GET /administration/message-reports`)
+
+| Region | Elements | Notes |
+|--------|----------|-------|
+| Audience | `ADMIN` only | Not `USER_ADMINISTRATOR` |
+| List | Thread title, reporter, reported at, status | Manage pagination |
+| Detail | Read-only thread snapshot, **Dismiss** / **Reviewed** | No edit of message bodies |
+
+## Impact
+
+| Area | Effect |
+|------|--------|
+| Bounded contexts | New `messaging`; extends `notification` (new types + optional FK); `navigation` (Account + Administration sections); `directory` (author profile CTA) |
+| Packages | `dev.vepo.contraponto.messaging.*`, observers in `notification` |
+| Routes | `/account/messages`, `/account/messages/{id}`, `/account/messages/compose`, `/account/messages/blocked`, `/forms/messages/*`, `/administration/message-reports`, author profile compose entry |
+| Schema | `tb_message_threads`, `tb_thread_messages`, `tb_message_thread_participants`, `tb_user_blocks`, `tb_message_reports`; extend `tb_notifications` (nullable `blog_id`, `message_thread_id`) |
+| Seed | `dev-import.sql` — sample open thread between `alice` and `dave`; optional flagged sample for admin |
+| Tests | `MessageThread*Test`, `MessageThread*WebTest`, `UserBlock*Test`, `MessageReport*Test`, `BoundedContextRulesTest` |
+| Docs | domain-spec, feature-catalog, cdi-events, ARCHITECTURE §9 |
 
 #### Feature checklist
 

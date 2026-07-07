@@ -18,14 +18,17 @@ Lista de decisões que **devem ser resolvidas** (ADR `Accepted` ou FQ/AQ `answer
 | [0006](adr/0006-activitypub-federation.md) | ActivityPub S2S federation (Fediverse) |
 | [0007](adr/0007-activitypub-http-signatures.md) | ActivityPub HTTP Signatures |
 | [0008](adr/0008-activitypub-actor-identity.md) | ActivityPub actor identity — one Person per User |
-
----
+| [0009](adr/0009-user-messaging-retention.md) | User messaging flagged-thread retention |
+| [0010](adr/0010-notification-retention.md) | In-app notification retention |
 
 ## Decisões transversais pendentes (ADR)
 
 | ID | Tópico | Pergunta | Prioridade | ADR |
 |----|--------|----------|------------|-----|
-| — | — | Nenhuma pendente | — | — |
+| ADR-0011 | Blog subdomain URLs | Aceitar modelo dual host já implementado? | recomendado | [0011](adr/0011-blog-subdomain-urls.md) |
+| ADR-0012 | Post publication versioning | Aceitar snapshots imutáveis já implementados? | recomendado | [0012](adr/0012-post-publication-versioning.md) |
+| ADR-0013 | CDI events | Aceitar integração cross-context via eventos? | recomendado | [0013](adr/0013-cdi-events-cross-context.md) |
+| ADR-0014 | Session store | Aceitar SessionStore in-memory/Redis? | recomendado | [0014](adr/0014-session-store.md) |
 
 Adicione linhas quando uma **AQ*n*** de feature doc exigir ADR `Proposed`.
 
@@ -33,13 +36,18 @@ Adicione linhas quando uma **AQ*n*** de feature doc exigir ADR `Proposed`.
 
 ## Perguntas abertas por feature
 
-Rastreie FQ/AQ nos respectivos `feature/<slug>.md`. PRDs legados:
+Rastreie FQ/AQ nos respectivos `feature/<slug>.md`. Índice completo: [feature/README.md](../feature/README.md).
 
-| Feature | Doc | Status |
-|---------|-----|--------|
-| Reading list | [feature/reading-list.md](../feature/reading-list.md) | done — PRD legado em [prd/reading-list.md](prd/reading-list.md) |
-| Post text highlight | [feature/post-text-highlight.md](../feature/post-text-highlight.md) | done — PRD legado em [prd/post-text-highlight.md](prd/post-text-highlight.md) |
-| ActivityPub integration | [feature/activitypub-integration.md](../feature/activitypub-integration.md) | **Done** — T1–T13; AQ5 (NodeInfo) optional follow-up |
+| Feature | Doc | Status | Open items |
+|---------|-----|--------|------------|
+| Authentication | [authentication.md](../feature/authentication.md) | done | FQ3, FQ4 |
+| Multi-blog | [multi-blog.md](../feature/multi-blog.md) | done | FQ3 |
+| Blog audience | [blog-audience.md](../feature/blog-audience.md) | done | FQ2 (auto-follow after login) |
+| Git sync | [git-sync.md](../feature/git-sync.md) | done | FQ1 (manual sync button) |
+| User administration | [user-administration.md](../feature/user-administration.md) | done | FQ1 (`/administration` naming) |
+| ActivityPub | [activitypub-integration.md](../feature/activitypub-integration.md) | done | AQ5 (NodeInfo) optional |
+| Reading list | [reading-list.md](../feature/reading-list.md) | done | — |
+| Post text highlight | [post-text-highlight.md](../feature/post-text-highlight.md) | done | — |
 
 ---
 

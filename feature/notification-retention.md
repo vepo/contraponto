@@ -2,7 +2,28 @@
 
 **Feature version:** 1  
 **Status:** done  
-**Requested:** 2026-07-07
+**Production:** live
+
+## Changelog
+
+### Production baseline — Notification retention — 2026-07-07
+
+**Version:** 1  
+**Status:** done
+
+**Production:** live — deployed capability
+
+**Description:** Daily purge of read notifications after 7 days and unread after 30 days; `read_at` column; configurable properties.
+
+**Recommended implementation order:** Ship **before** [user-messaging.md](user-messaging.md) (messaging notifications inherit retention immediately).
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| User messaging | `NEW_MESSAGE_*` notifications follow same retention |
+| Platform insights | Daily notification counts use live table — historical counts not retained after purge |
+| All notification producers | No change to create path |
 
 ## Summary
 
@@ -24,6 +45,8 @@ N/A — background job only; no new UI. Existing **Notifications** hub and bell 
 | Code | `NotificationRepository.markRead` / `markAllRead` set `read_at`; `NotificationRetentionScheduler` + service |
 | Tests | Unit (purge predicates, read_at on dismiss); integration (scheduler or service with fixed clock) |
 | Docs | domain-spec, [ADR-0010](../docs/adr/0010-notification-retention.md), deployment.md |
+
+
 
 ### Risks
 
@@ -69,25 +92,6 @@ N/A — background job only; no new UI. Existing **Notifications** hub and bell 
 |---|----------|--------|--------|
 | AQ1 | Track `read_at` vs infer from `created_at` for read rows? | answered | **`read_at` column** — required for “days after read”. |
 | AQ2 | Single DELETE with OR vs two passes? | answered | Two parameterized bulk deletes for clarity and index use (`recipient_user_id, read, created_at` / `read_at`). |
-
-## Changelog
-
-### Notification retention — 2026-07-07
-
-**Version:** 1  
-**Status:** done
-
-**Description:** Daily purge of read notifications after 7 days and unread after 30 days; `read_at` column; configurable properties.
-
-**Recommended implementation order:** Ship **before** [user-messaging.md](user-messaging.md) (messaging notifications inherit retention immediately).
-
-**Impact on other features:**
-
-| Feature / area | Impact |
-|----------------|--------|
-| User messaging | `NEW_MESSAGE_*` notifications follow same retention |
-| Platform insights | Daily notification counts use live table — historical counts not retained after purge |
-| All notification producers | No change to create path |
 
 #### Feature checklist
 

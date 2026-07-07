@@ -16,6 +16,11 @@ Decisões arquiteturais do **Contraponto** usam o template [GiG Cymru NHS Wales]
 | [0008](0008-activitypub-actor-identity.md) | ActivityPub — identidade do actor e WebFinger | Accepted |
 | [0009](0009-user-messaging-retention.md) | User messaging — retenção de threads sinalizadas | Accepted |
 | [0010](0010-notification-retention.md) | In-app notification retention (read vs unread) | Accepted |
+| [0011](0011-blog-subdomain-urls.md) | Blog subdomain URLs (dual public URL model) | Proposed |
+| [0012](0012-post-publication-versioning.md) | Post publication versioning (immutable snapshots) | Proposed |
+| [0013](0013-cdi-events-cross-context.md) | Cross-context side effects via CDI events | Proposed |
+| [0014](0014-session-store.md) | Session store (in-memory vs Redis) | Proposed |
+| [0015](0015-federation-outbound-fetch-ssrf.md) | Federation outbound HTTPS fetch — SSRF controls | Accepted |
 
 ## Quando criar um ADR
 

@@ -860,6 +860,8 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
 
     -- ============================================
     -- 10b. ActivityPub federation (alice enabled + sample accepted follow)
+    -- Pre-seeded remote public keys are a dev/test shortcut; production inbox
+    -- fetches actor documents on first signed contact (see ADR-0015).
     -- ============================================
     INSERT INTO tb_activitypub_actors (
         user_id, federation_enabled, private_key_encrypted, public_key_pem, public_key_id, created_at, updated_at

@@ -29,9 +29,9 @@ Read these before changing code or tests:
 | [.cursor/rules/](.cursor/rules/) | Cursor rules — see pillars below |
 | [.cursor/agents/](.cursor/agents/) | Project subagents (TDD, domain, docs) |
 
-**Baseline ADRs (Accepted):** [ADR-0002](docs/adr/0002-backend-java-quarkus-jakarta-ee.md) Java + Quarkus; [ADR-0003](docs/adr/0003-frontend-qute-htmx.md) Qute + HTMX; [ADR-0004](docs/adr/0004-package-naming-dev-vepo.md) `dev.vepo.contraponto`; [ADR-0005](docs/adr/0005-postgresql-database.md) PostgreSQL + Flyway; [ADR-0006](docs/adr/0006-activitypub-federation.md)–[0008](docs/adr/0008-activitypub-actor-identity.md) ActivityPub federation.
+**Baseline ADRs (Accepted):** [ADR-0002](docs/adr/0002-backend-java-quarkus-jakarta-ee.md) Java + Quarkus; [ADR-0003](docs/adr/0003-frontend-qute-htmx.md) Qute + HTMX; [ADR-0004](docs/adr/0004-package-naming-dev-vepo.md) `dev.vepo.contraponto`; [ADR-0005](docs/adr/0005-postgresql-database.md) PostgreSQL + Flyway; [ADR-0006](docs/adr/0006-activitypub-federation.md)–[0008](docs/adr/0008-activitypub-actor-identity.md) ActivityPub federation; [0009](docs/adr/0009-user-messaging-retention.md)–[0010](docs/adr/0010-notification-retention.md) retention policies. **Proposed (retroactive, awaiting acceptance):** [0011](docs/adr/0011-blog-subdomain-urls.md)–[0014](docs/adr/0014-session-store.md).
 
-**ActivityPub feature:** [feature/activitypub-integration.md](feature/activitypub-integration.md) — **done** (T1–T13; manual Mastodon interop checklist remains).
+**Feature docs:** [feature/README.md](feature/README.md) — 22 shipped capabilities documented (retroactive 2026-07-07).
 
 **Development process:** [development-process.mdc](.cursor/rules/development-process.mdc) — seven phases with role agents (PO → domain → architect → modeller → squad → review → done). **Manual acceptance only:** ADRs → explicit user message; tasks → explicit task IDs (phase 4); review → explicit review approval (phase 7). Agents must not auto-accept ADRs, approve tasks, or mark `done`.
 

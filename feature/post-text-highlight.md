@@ -2,8 +2,16 @@
 
 **Feature version:** 1  
 **Status:** done  
-**Requested:** 2026-05-19  
-**Legacy PRD:** [docs/prd/post-text-highlight.md](../docs/prd/post-text-highlight.md)
+**Production:** live
+
+## Changelog
+
+### Production baseline — 2026-06-01
+
+**Version:** 1  
+**Status:** done
+
+**Production:** live — deployed capability
 
 ## Summary
 
@@ -26,6 +34,22 @@ Readers save **post text highlights** (private by default). **Common highlight p
 | Schema | `tb_post_text_highlights`, `tb_official_highlights`, `tb_highlight_notes`, `tb_post_responses`, … |
 | Tests | `Highlight*Test`, `Highlight*WebTest`, `PostResponse*Test` |
 
+
+
+### Feature questions (FQ*n*)
+
+| # | Question | Status | Answer |
+|---|----------|--------|--------|
+| FQ1 | Reader highlights private by default? | answered | **Yes** |
+| FQ2 | Author must approve public notes? | answered | **Yes** |
+| FQ3 | Post responses require approval? | answered | **Yes** — backlink after approval |
+
+### Risks
+
+| Risk | Mitigation |
+|------|------------|
+| Offset drift on republish | Anchors on live publication plain text; may invalidate on major edits |
+
 ## Architecture
 
 ### ADRs aplicáveis
@@ -34,6 +58,7 @@ Readers save **post text highlights** (private by default). **Common highlight p
 |-----|------------|
 | [0002](../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Backend |
 | [0003](../docs/adr/0003-frontend-qute-htmx.md) | HTMX fragments |
+| [0013](../docs/adr/0013-cdi-events-cross-context.md) | Notification on proposals |
 
 ### Design específico
 
@@ -42,13 +67,24 @@ Readers save **post text highlights** (private by default). **Common highlight p
 | Packages | `highlight`, `postresponse` |
 | Events | Notifications on proposals via `NotificationType` |
 | Anchors | Character offsets on live publication plain text |
+| JS companion | `js/highlight.js` on post pages — text selection UI |
 
-## Changelog
+### HTMX component model
 
-### Initial implementation — 2026-06-01
+| Component id | Route | Activator | Target/swap | JS |
+|--------------|-------|-----------|-------------|-----|
+| Highlight actions | `POST /forms/posts/{postId}/highlights` | Selection toolbar | highlight region | `highlight.js` |
+| Note modal | `GET /forms/highlights/{id}/notes/modal` | Add note | `#modal-container` | none |
+| Reading hub | `GET /reading/highlights`, `/reading/notes` | Hub nav | hub panel | none |
+| Official highlights block | SSR on post | load | — | `highlight.js` |
 
-**Version:** 1  
-**Status:** done
+### Feature questions (FQ*n*)
+
+| # | Question | Status | Answer |
+|---|----------|--------|--------|
+| FQ1 | Reader highlights private by default? | answered | **Yes** |
+| FQ2 | Author must approve public notes? | answered | **Yes** |
+| FQ3 | Post responses require approval? | answered | **Yes** — backlink after approval |
 
 #### Feature checklist
 
@@ -61,5 +97,7 @@ Readers save **post text highlights** (private by default). **Common highlight p
 | FCdev | Seed highlights on dev posts | ☑ |
 
 **Development approval:** approved 2026-06-01 — tasks: T1–T12 (historical)
+
+**Review approval:** approved 2026-07-07 — production baseline
 
 **Implementation notes:** See PRD for full route map; `highlight.js` on post pages; library in Reading hub.
