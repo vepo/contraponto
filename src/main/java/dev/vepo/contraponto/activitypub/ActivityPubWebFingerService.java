@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
-import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,7 +35,7 @@ public class ActivityPubWebFingerService {
 
     public Map<String, Object> hostMetaLinks() {
         var template = subdomainConfig.enabled() && !subdomainConfig.baseDomain().isBlank()
-                                                                                            ? "https://{username}.%s/.well-known/webfinger?resource={uri}".formatted(subdomainConfig.baseDomain())
+                                                                                            ? "https://%s/.well-known/webfinger?resource={uri}".formatted(subdomainConfig.baseDomain())
                                                                                             : "%s/.well-known/webfinger?resource={uri}".formatted(subdomainConfig.platformUrl("/"));
         return Map.of("links", List.of(Map.of("rel", "lrdd",
                                               "template", template)));

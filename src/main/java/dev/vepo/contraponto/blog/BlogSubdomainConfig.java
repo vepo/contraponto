@@ -41,7 +41,7 @@ public class BlogSubdomainConfig {
                                                                                 "subscriptions",
                                                                                 "tags");
 
-    private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("auth", "js", "style", "images", "i18n", "q", "api", "forms");
+    private static final Set<String> SKIP_REWRITE_PREFIXES = Set.of("auth", "js", "style", "images", "i18n", "q", "api", "forms", ".well-known");
 
     private static final Set<String> SKIP_REWRITE_EXACT = Set.of("favicon.ico", "favicon.svg", "robots.txt");
 

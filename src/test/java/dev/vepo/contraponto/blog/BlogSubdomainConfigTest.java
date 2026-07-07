@@ -104,6 +104,14 @@ class BlogSubdomainConfigTest {
     }
 
     @Test
+    void shouldSkipSubdomainRewrite_forWellKnown() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+
+        assertThat(config.shouldSkipSubdomainRewrite("/.well-known/webfinger")).isTrue();
+        assertThat(config.shouldSkipSubdomainRewrite("/.well-known/host-meta")).isTrue();
+    }
+
+    @Test
     void shouldSkipSubdomainRewrite_forWorkspaceHubs() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
 
