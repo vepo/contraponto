@@ -1,28 +1,6 @@
 <h2 class="hub-panel__title" data-i18n="platformInsights.title">Insights da plataforma</h2>
 <p class="hub-panel__subtitle" data-i18n="platformInsights.subtitle">Métricas diárias de engajamento em toda a plataforma.</p>
 
-<section class="profile-form__section">
-    <h3 class="profile-form__section-title">ActivityPub (global)</h3>
-    <div id="activitypubPlatformMessage"></div>
-    {#if activityPubConfigEnabled}
-    <form class="profile-form profile-form--inline"
-          hx-post="/forms/administration/activitypub"
-          hx-target="#activitypubPlatformMessage"
-          hx-swap="innerHTML">
-        <div class="form-group form-group--checkbox">
-            <label>
-                <input type="checkbox" name="platformFederationEnabled" value="true"
-                       {#if activityPubPlatformEnabled}checked{/if}>
-                <span>Enable ActivityPub federation globally</span>
-            </label>
-        </div>
-        <button type="submit" class="btn btn--secondary">Save ActivityPub setting</button>
-    </form>
-    {#else}
-    <p class="form-group__hint">ActivityPub disabled by `contraponto.activitypub.enabled=false`.</p>
-    {/if}
-</section>
-
 <div id="platformInsightsAnalytics"
      hx-trigger="load"
      hx-get="/administration/insights/components/analytics"

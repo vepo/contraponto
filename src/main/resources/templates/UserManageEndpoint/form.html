@@ -36,7 +36,10 @@
                     </a>
                 </div>
 
-                <form class="profile-form pages-form"
+                <form class="profile-form pages-form{#if !creating} js-user-manage-form{/if}"
+                      {#if !creating && account.isActive && account.id != user.id}
+                      data-was-active="true"
+                      {/if}
                       hx-post="/forms/users"
                       hx-select="main"
                       hx-target="main"
@@ -101,12 +104,45 @@
                     </div>
                     {/if}
 
-                    <div class="form-group form-group--checkbox">
-                        <label>
-                            <input type="checkbox" name="active" {#if account.active}checked{/if}>
-                            Active
+                    <fieldset class="user-status{#if !creating && account.id == user.id} user-status--self{/if}">
+                        <legend class="user-status__legend" data-i18n="users.statusSection">Account status</legend>
+                        {#if !creating && account.id == user.id}
+                        <input type="hidden" name="active" value="true">
+                        {/if}
+                        <label class="user-status__toggle">
+                            <input type="checkbox"
+                                   class="user-status__toggle-input"
+                                   name="active"
+                                   value="true"
+                                   role="switch"
+                                   {#if account.isActive}checked{/if}
+                                   {#if !creating && account.id == user.id}disabled{/if}>
+                            <span class="user-status__toggle-card">
+                                <span class="user-status__copy">
+                                    <span class="user-status__state user-status__state--active">
+                                        <span class="user-status__title" data-i18n="users.activeTitle">Account active</span>
+                                        <span class="user-status__desc" data-i18n="users.activeDescription">
+                                            This user can sign in, publish, and use the platform normally.
+                                        </span>
+                                    </span>
+                                    <span class="user-status__state user-status__state--inactive">
+                                        <span class="user-status__title" data-i18n="users.inactiveTitle">Account inactive</span>
+                                        <span class="user-status__desc" data-i18n="users.inactiveDescription">
+                                            Sign-in is blocked until an administrator turns this account back on.
+                                        </span>
+                                    </span>
+                                </span>
+                                <span class="user-status__switch" aria-hidden="true">
+                                    <span class="user-status__switch-knob"></span>
+                                </span>
+                            </span>
                         </label>
-                    </div>
+                        {#if !creating && account.id == user.id}
+                        <p class="user-status__self-hint form-group__hint" data-i18n="users.cannotDeactivateSelf">
+                            You cannot deactivate your own account while signed in.
+                        </p>
+                        {/if}
+                    </fieldset>
 
                     <div class="form-group">
                         <span class="form-group__label" id="userRolesLabel">Roles</span>
@@ -137,6 +173,40 @@
                         </button>
                     </div>
                 </form>
+
+                {#if !creating && account.id != user.id}
+                <div id="userDeactivateModal"
+                     class="modal"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="userDeactivateModalTitle"
+                     aria-hidden="true">
+                    <div class="modal__container">
+                        <div class="modal__header">
+                            <h2 id="userDeactivateModalTitle" class="modal__title" data-i18n="users.deactivateConfirmTitle">
+                                Deactivate this account?
+                            </h2>
+                            <button type="button"
+                                    class="modal__close"
+                                    data-user-deactivate-cancel
+                                    aria-label="Close">&times;</button>
+                        </div>
+                        <div class="modal__body">
+                            <p class="user-status__confirm-message" data-i18n="users.deactivateConfirmMessage">
+                                This user will no longer be able to sign in. You can re-enable the account later by editing it again.
+                            </p>
+                            <div class="confirm-modal__actions">
+                                <button type="button" class="btn btn--outline" data-user-deactivate-cancel data-i18n="common.cancel">
+                                    Cancel
+                                </button>
+                                <button type="button" class="btn btn--danger" data-user-deactivate-confirm data-i18n="users.deactivateConfirmAction">
+                                    Deactivate account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/if}
             </div>
         </main>
         {#include components/footer /}

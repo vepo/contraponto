@@ -267,7 +267,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Fediverse follow** | Remote user on another ActivityPub server sends a **Follow** activity to the author's **inbox**; author **Accept** or **Reject** (manual approval model). | `ActivityPubInboxService` |
 | **ActivityPub delivery** | Outbound signed POST of an activity to a remote instance's **inbox** after publish/unpublish (async queue with retry). | `ActivityPubDeliveryService` |
 | **Fediverse follower count** | Count of accepted remote followers (optional display on appearance/profile per **FQ4**). | Followers collection |
-| **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
+| **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `GET /administration/activitypub`, `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
 
 ### Discovery & feeds
 
@@ -343,6 +343,7 @@ Templates use **PT-BR** as default text with `data-i18n` keys. English and Spani
 | Menu — account hub | `menu.account` | Conta | Account | User menu → `/account` |
 | Menu — review hub | `menu.review` | Revisão | Review | User menu (editor) → `/editor` |
 | Menu — administration hub | `menu.administration` | Administração | Administration | User menu (admin) → `/administration` |
+| Administration — Fediverse nav | `administration.nav.activityPub` | Fediverso | Fediverse | Administration hub → `/administration/activitypub` |
 | Administration — platform insights nav | `administration.nav.insights` | Insights da plataforma | Platform insights | Administration hub → `/administration/insights` |
 | Platform insights — title | `platformInsights.title` | Insights da plataforma | Platform insights | Administration insights panel |
 | Platform insights — daily post views | `platformInsights.dailyPostViews` | Visualizações diárias de posts | Daily post views | Platform insights chart |
@@ -465,7 +466,7 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Author appearance — regenerate keys | Regenerate keys | Fediverse section — destructive confirm |
 | Fediverse follow requests — Accept | Accept | Follow-request review |
 | Fediverse follow requests — Reject | Reject | Follow-request review |
-| Platform insights — ActivityPub global switch | Enable ActivityPub federation globally | Administration → Platform insights |
+| Platform insights — ActivityPub global switch | Enable ActivityPub federation globally | Administration → Fediverse |
 | Author appearance — social GitHub field | GitHub | Author appearance |
 | Author appearance — social LinkedIn field | LinkedIn | Author appearance |
 | Writing hub — blogs nav | Blogs | Writing left nav |
