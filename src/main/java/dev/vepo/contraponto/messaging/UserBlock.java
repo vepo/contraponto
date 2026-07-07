@@ -32,9 +32,6 @@ public class UserBlock {
     @JoinColumn(name = "blocked_user_id", nullable = false)
     private User blocked;
 
-    @Column(length = 500)
-    private String reason;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -71,10 +68,6 @@ public class UserBlock {
         return id;
     }
 
-    public String getReason() {
-        return reason;
-    }
-
     @Override
     public int hashCode() {
         return id == null ? System.identityHashCode(this) : Objects.hash(id);
@@ -97,9 +90,5 @@ public class UserBlock {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
     }
 }

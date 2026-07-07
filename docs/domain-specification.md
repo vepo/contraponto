@@ -201,7 +201,6 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Close thread** | Participant ends the conversation; thread becomes **closed**. | Button: **Close thread** |
 | **Flag thread** | Participant reports thread as inappropriate; creates **message report** for **administrator** review. | Button: **Flag thread** |
 | **User block** | One user blocks another; prevents new threads; **freezes** existing open threads between the pair. | `UserBlock` — `tb_user_blocks` |
-| **Block reason** | Optional text (max 500 characters) supplied when **blocking user**; visible to the blocker on the blocked-users list. | `UserBlock.reason` |
 | **User is blocked** | Banner shown to **both** participants on a **frozen thread**. | i18n `messaging.userBlocked` |
 | **Blocked users** | List of users the current user has blocked; **unblock** restores ability to message (does not auto-reopen closed threads). | `GET /account/messages/blocked` |
 | **Message report** | Admin queue item for a flagged thread: reporter, status (**Pending**, **Dismissed**, **Reviewed**). | `MessageReport` — `ADMIN` only |
@@ -288,11 +287,13 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 |------|---------|--------------|
 | **Fediverse** | Decentralized social network of ActivityPub-compatible servers (Mastodon, Pleroma, Misskey, …). | [feature/activitypub-integration.md](../feature/activitypub-integration.md) |
 | **ActivityPub federation** | Server-to-server syndication: Contraponto exposes **ActivityPub actors** and delivers **Create** / **Update** / **Delete** activities when authors publish on their **main blog**. Distinct from in-app **blog audience Follow** and from the optional **Mastodon profile URL** on author appearance. | `activitypub` package; ADRs [0006](adr/0006-activitypub-federation.md)–[0008](adr/0008-activitypub-actor-identity.md) |
-| **Fediverse actor** | ActivityStreams **Person** — **one per `User`** (not per blog); has `inbox`, `outbox`, `followers`, and `publicKey`. Served as JSON-LD at the actor URL on the user's **blog subdomain**. MVP outbox: **main blog** posts only; future: same actor may carry highlight/comment activities (deferred). | `ActivityPubActor` |
+| **Fediverse actor** | ActivityStreams **Person** — **one per `User`** (not per blog); has `inbox`, `outbox`, `followers`, and `publicKey`. Served as JSON-LD at the actor URL on the user's **blog subdomain**. MVP outbox: **main blog** posts only; future: same actor may carry highlight/comment activities (deferred). When the author has a **profile picture**, the actor exposes it as ActivityStreams **`icon`** (`type: Image`) with an absolute image URL. | `ActivityPubActor` |
 | **Fediverse handle** | Human-readable `@username@domain` resolved via **WebFinger** to the actor URL (e.g. `@alice@blog.example.com`). | `/.well-known/webfinger` |
 | **Fediverse opt-in** | Author enables federation on **Author appearance**; when off, actor endpoints return **404**. | Author appearance — Fediverse section |
 | **Fediverse follow** | Remote user on another ActivityPub server sends a **Follow** activity to the author's **inbox**; author **Accept** or **Reject** (manual approval model). | `ActivityPubInboxService` |
 | **ActivityPub delivery** | Outbound signed POST of an activity to a remote instance's **inbox** after publish/unpublish (async queue with retry). | `ActivityPubDeliveryService` |
+| **Fediverse follow backfill** | When the author **Accept**s a pending **Fediverse follow**, Contraponto enqueues **Create** deliveries for every published **main blog** post (oldest first) to that follower's remote inbox so their timeline is populated without waiting for a new publish. | `ActivityPubDeliveryService.enqueueHistoricalPostsForAcceptedFollow` |
+| **Fediverse outbox** | Paged **OrderedCollection** of **Create** activities for published **main blog** posts; exposes `first` / `last` / `next` / `prev` links when the archive spans multiple pages. | `GET /{username}/outbox` |
 | **Fediverse follower count** | Count of accepted remote followers (optional display on appearance/profile per **FQ4**). | Followers collection |
 | **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `GET /administration/activitypub`, `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
 

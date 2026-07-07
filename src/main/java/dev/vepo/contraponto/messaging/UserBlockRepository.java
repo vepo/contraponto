@@ -36,7 +36,7 @@ public class UserBlockRepository {
 
         var rows = entityManager.createQuery("""
                                              SELECT new dev.vepo.contraponto.messaging.UserBlockRow(
-                                                 b.id, u.id, u.username, u.name, b.reason, b.createdAt)
+                                                 b.id, u.id, u.username, u.name, b.createdAt)
                                              FROM UserBlock b
                                              JOIN b.blocked u
                                              WHERE b.blocker.id = :blockerId

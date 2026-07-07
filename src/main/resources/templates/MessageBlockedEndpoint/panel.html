@@ -17,9 +17,6 @@
                 <span>@{row.blockedUsername}</span>
                 <time>{row.blockedAt.format('dd/MM/yyyy HH:mm')}</time>
             </div>
-            {#if row.reason}
-            <p class="pages-manage__row-description">{row.reason}</p>
-            {/if}
         </div>
         <div class="pages-manage__row-actions">
             <form hx-post="/forms/messages/blocks/{row.blockedUserId}/unblock"

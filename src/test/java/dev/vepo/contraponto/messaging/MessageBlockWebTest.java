@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.messaging;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +21,8 @@ class MessageBlockWebTest {
 
     @Test
     void blockShowsBannerForBothParticipants(App app) {
+        Given.transaction(() -> Given.inject(UserBlockService.class).block(alice.getId(), bob.getId()));
+
         app.login(alice)
            .messagesThread(thread.getId())
            .assertBlockedBannerVisible();
@@ -27,6 +31,27 @@ class MessageBlockWebTest {
            .login(bob)
            .messagesThread(thread.getId())
            .assertBlockedBannerVisible();
+    }
+
+    @Test
+    void blockUnblockAndReplyOnThread(App app) {
+        app.login(alice)
+           .messagesThread(thread.getId())
+           .assertBlockUserButtonVisible()
+           .assertReplyFormVisible()
+           .clickBlockUser()
+           .assertSingleSiteHeader()
+           .assertSingleMainElement()
+           .assertBlockedBannerVisible()
+           .assertUnblockButtonVisible()
+           .clickUnblockUser()
+           .assertSingleSiteHeader()
+           .assertSingleMainElement()
+           .assertBlockedBannerNotVisible()
+           .assertBlockUserButtonVisible()
+           .fillReplyBody("Thanks for your message — let's continue.")
+           .submitReply()
+           .assertPageSourceContains("Thanks for your message");
     }
 
     @BeforeEach
@@ -44,11 +69,7 @@ class MessageBlockWebTest {
                    .withName("Web Block Bob")
                    .withPassword(PASSWORD)
                    .persist();
-        Given.transaction(() -> {
-            var composeService = Given.inject(MessageComposeService.class);
-            var blockService = Given.inject(UserBlockService.class);
-            thread = composeService.compose(alice.getId(), bob.getUsername(), "Block test", "Hi");
-            blockService.block(alice.getId(), bob.getId(), "testing");
-        });
+        thread = Given.transaction(() -> Given.inject(MessageComposeService.class)
+                                              .compose(alice.getId(), bob.getUsername(), "Block test", "Hi Bob"));
     }
 }

@@ -49,7 +49,8 @@ public class ActivityPubActorRepository {
     public Optional<ActivityPubActor> findByUserId(long userId) {
         return entityManager.createQuery("""
                                          SELECT a FROM ActivityPubActor a
-                                         JOIN FETCH a.user
+                                         JOIN FETCH a.user u
+                                         LEFT JOIN FETCH u.profilePicture
                                          WHERE a.user.id = :userId
                                          """, ActivityPubActor.class)
                             .setParameter("userId", userId)
@@ -61,6 +62,7 @@ public class ActivityPubActorRepository {
         return entityManager.createQuery("""
                                          SELECT a FROM ActivityPubActor a
                                          JOIN FETCH a.user u
+                                         LEFT JOIN FETCH u.profilePicture
                                          WHERE u.username = :username
                                            AND a.federationEnabled = true
                                          """, ActivityPubActor.class)

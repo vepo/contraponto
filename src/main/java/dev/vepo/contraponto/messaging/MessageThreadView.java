@@ -7,7 +7,8 @@ import dev.vepo.contraponto.user.User;
 public record MessageThreadView(MessageThread thread,
                                 List<ThreadMessage> messages,
                                 User otherParticipant,
-                                boolean showBlockedBanner) {
+                                boolean showBlockedBanner,
+                                boolean blockedByCurrentUser) {
 
     public boolean canReply() {
         return thread.getStatus().acceptsReplies() && !showBlockedBanner;

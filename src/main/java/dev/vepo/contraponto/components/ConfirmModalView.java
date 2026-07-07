@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.components;
 
-import io.quarkus.qute.RawString;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 record ConfirmModalView(String httpMethod,
                         String actionUrl,
@@ -11,8 +12,7 @@ record ConfirmModalView(String httpMethod,
                         String messageKey,
                         String messageDefault,
                         String confirmKey,
-                        String confirmDefault,
-                        RawString extraFormFields) {
+                        String confirmDefault) {
 
     static ConfirmModalView forPost(ConfirmModalAction action, long postId) {
         return new ConfirmModalView(action.httpMethod(),
@@ -24,8 +24,7 @@ record ConfirmModalView(String httpMethod,
                                     action.messageKey(),
                                     action.messageDefault(),
                                     action.confirmKey(),
-                                    action.confirmDefault(),
-                                    null);
+                                    action.confirmDefault());
     }
 
     static ConfirmModalView forMessageThread(ConfirmModalAction action, long threadId) {
@@ -38,18 +37,18 @@ record ConfirmModalView(String httpMethod,
                                     action.messageKey(),
                                     action.messageDefault(),
                                     action.confirmKey(),
-                                    action.confirmDefault(),
-                                    null);
+                                    action.confirmDefault());
     }
 
     static ConfirmModalView forMessageBlock(long blockedUserId, String returnUrl) {
         var action = ConfirmModalAction.MESSAGE_BLOCK;
-        String fields = "<input type=\"hidden\" name=\"blockedUserId\" value=\"%s\"/><input type=\"hidden\" name=\"returnUrl\" value=\"%s\"/>"
-                                                                                                                                              .formatted(blockedUserId,
-                                                                                                                                                         returnUrl == null ? ""
-                                                                                                                                                                           : returnUrl);
+        String actionUrl = action.actionUrl(blockedUserId);
+        if (returnUrl != null && !returnUrl.isBlank()) {
+            actionUrl = "%s?returnUrl=%s".formatted(actionUrl,
+                                                    URLEncoder.encode(returnUrl, StandardCharsets.UTF_8));
+        }
         return new ConfirmModalView(action.httpMethod(),
-                                    action.actionUrl(blockedUserId),
+                                    actionUrl,
                                     "main",
                                     "outerHTML",
                                     action.titleKey(),
@@ -57,7 +56,6 @@ record ConfirmModalView(String httpMethod,
                                     action.messageKey(),
                                     action.messageDefault(),
                                     action.confirmKey(),
-                                    action.confirmDefault(),
-                                    new RawString(fields));
+                                    action.confirmDefault());
     }
 }

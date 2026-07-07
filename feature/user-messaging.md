@@ -6,7 +6,7 @@
 
 ## Summary
 
-Private **user-to-user messaging**: each **user** has a **mailbox** of **message threads** (titled conversations with exactly two participants). Participants can **reply**, **close thread**, **flag thread as inappropriate**, and **block user** (with optional **block reason**). Blocking **freezes** affected threads and shows **User is blocked** to both sides. New messages surface as **in-app notifications** only (no email). **Administrator** users review flagged threads in Administration.
+Private **user-to-user messaging**: each **user** has a **mailbox** of **message threads** (titled conversations with exactly two participants). Participants can **reply**, **close thread**, **flag thread as inappropriate**, and **block user**. Blocking **freezes** affected threads and shows **User is blocked** to both sides. New messages surface as **in-app notifications** only (no email). **Administrator** users review flagged threads in Administration.
 
 Distinct from **notifications** (platform event alerts), **post comments** (public), and **ActivityPub inbox** (federated S2S).
 
@@ -52,18 +52,17 @@ Distinct from **notifications** (platform event alerts), **post comments** (publ
 | Fields | **To** (username), **Thread title**, **Message** | `?to={username}` prefill from author profile |
 | Actions | **Send** / **Cancel** | Rate-limited |
 
-### Screen: Block user (modal from thread or blocked list)
+### Screen: Block user (modal from thread)
 
 | Region | Elements | Notes |
 |--------|----------|-------|
-| Fields | Optional **Block reason** (max 500 chars) | Stored on `UserBlock`; visible to blocker in blocked list |
 | Actions | **Block** / **Cancel** | Confirm modal |
 
 ### Screen: Blocked users (`GET /account/messages/blocked`)
 
 | Region | Elements | Notes |
 |--------|----------|-------|
-| List | Blocked username, reason (if any), **Unblock** | Manage pagination |
+| List | Blocked username, blocked at, **Unblock** | Manage pagination |
 
 ### Screen: Author profile — Message (`GET /authors/{username}`)
 
@@ -110,7 +109,7 @@ Distinct from **notifications** (platform event alerts), **post comments** (publ
 | FQ4 | Who reviews flags? | answered | **`ADMIN`** role only. |
 | FQ5 | Max message body length? | answered | **2000** characters (same cap as **comment body**). |
 | FQ6 | Compose entry points? | answered | Account hub **Compose** + **Message** on `/authors/{username}` (signed in). |
-| FQ7 | Block behaviour on existing threads? | answered | **Freeze** thread; both participants see **User is blocked**; blocker may add optional **block reason**; no new threads between the pair while block stands. |
+| FQ7 | Block behaviour on existing threads? | answered | **Freeze** thread; both participants see **User is blocked**; no new threads between the pair while block stands. |
 
 ## Architecture
 
@@ -131,13 +130,13 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | Area | Design |
 |------|--------|
 | **Bounded context** | `messaging` — reader engagement; may depend on `shared`, `user`, `auth` |
-| **Aggregates** | `MessageThread` (title, initiator, recipient, status), `ThreadMessage` (body, author), `UserBlock` (blocker, blocked, optional reason), `MessageReport` (thread, reporter, status) |
+| **Aggregates** | `MessageThread` (title, initiator, recipient, status), `ThreadMessage` (body, author), `UserBlock` (blocker, blocked), `MessageReport` (thread, reporter, status) |
 | **Thread status** | `OPEN` — replies allowed; `CLOSED` — either participant closed, no replies; `FROZEN` — active **user block** between participants, no replies, **User is blocked** banner for both |
 | **Participant state** | `MessageThreadParticipant` per user: `lastReadAt` / `lastReadMessageId` for unread in mailbox |
 | **Layers** | `MessageMailboxEndpoint`, `MessageThreadEndpoint`, `MessageComposeEndpoint`, `UserBlockEndpoint`, `MessageReportAdminEndpoint` → `MessageThreadService`, `MessageComposeService`, `UserBlockService`, `MessageReportService` → `*Repository` |
 | **Access** | `MessageThreadAccess` — participant or `ADMIN` (report review); `UserBlockAccess` — blocker only for unblock |
 | **URLs** | `MessageThreadPaths.mailbox()`, `.thread(id)`, `.compose(to)`, `.blocked()` — templates use `TemplateExtensions.url` |
-| **Forms** | `POST /forms/messages/compose`, `POST /forms/messages/threads/{id}/reply`, `POST /forms/messages/threads/{id}/close`, `POST /forms/messages/threads/{id}/flag`, `POST /forms/messages/blocks`, `DELETE /forms/messages/blocks/{blockedUserId}`, admin `POST /forms/administration/message-reports/{id}/dismiss` |
+| **Forms** | `POST /forms/messages/compose`, `POST /forms/messages/threads/{id}/reply`, `POST /forms/messages/threads/{id}/close`, `POST /forms/messages/threads/{id}/flag`, `POST /forms/messages/blocks/{blockedUserId}`, `POST /forms/messages/blocks/{blockedUserId}/unblock`, admin `POST /forms/administration/message-reports/{id}/dismiss` |
 | **Navigation** | `NavigationHubRegistry` — Account Activity group: add `messages`, `messages/blocked` nested or sibling section `blocked`; Administration Platform group: `message-reports` (`ADMIN` gate) |
 | **Notifications** | New types `NEW_MESSAGE_THREAD`, `NEW_THREAD_MESSAGE`; observer listens to `MessageThreadCreatedEvent`, `ThreadMessagePostedEvent`; link to `MessageThreadPaths.thread(id)`; `blog_id` nullable when `message_thread_id` set; subject to platform **notification retention** ([ADR-0010](../docs/adr/0010-notification-retention.md)) |
 | **CDI events** | `MessageThreadCreatedEvent`, `ThreadMessagePostedEvent`, `MessageThreadClosedEvent`, `MessageThreadFlaggedEvent`, `UserBlockedEvent` — see [cdi-events.md](../docs/cdi-events.md) |
@@ -161,7 +160,7 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 **Version:** 1  
 **Status:** done
 
-**Description:** Private 1:1 titled threads in Account hub; reply, close, flag (admin review), block with reason and freeze; in-app notifications only.
+**Description:** Private 1:1 titled threads in Account hub; reply, close, flag (admin review), block and freeze; in-app notifications only.
 
 **Recommended implementation order:** After [notification-retention.md](notification-retention.md) (T1–T7); messaging migration `V0.0.11__user_messaging.sql` follows `V0.0.10`.
 
@@ -184,7 +183,7 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | FC3 | Reply on open threads | — | ☑ |
 | FC4 | Close thread — no further replies | FQ2 | ☑ |
 | FC5 | Flag thread — admin queue (`ADMIN`) | FQ4 | ☑ |
-| FC6 | Block user with optional reason; freeze thread; **User is blocked** both sides | FQ7 | ☑ |
+| FC6 | Block user; freeze thread; **User is blocked** both sides | FQ7 | ☑ |
 | FC7 | Blocked users list + unblock | FQ7 | ☑ |
 | FC8 | In-app notification on new thread / new reply (no email) | FQ3 | ☑ |
 | FC9 | **Message** on author profile → compose | FQ6 | ☑ |
@@ -203,7 +202,7 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | T4 | `MessageThreadPaths` + `TemplateExtensions` wiring | ☑ |
 | T5 | `MessageComposeService` — create thread + first message; rate limit (10/24h) | ☑ |
 | T6 | `MessageThreadService` — reply, close, flag, mark read / participant unread | ☑ |
-| T7 | `UserBlockService` — block with optional reason, unblock; `MessageThreadFreezeObserver` on `UserBlockedEvent` | ☑ |
+| T7 | `UserBlockService` — block, unblock; `MessageThreadFreezeObserver` on `UserBlockedEvent` | ☑ |
 | T8 | CDI events (`MessageThreadCreatedEvent`, `ThreadMessagePostedEvent`, …) + `MessageNotificationObserver` | ☑ |
 | T9 | `NotificationType.NEW_MESSAGE_THREAD`, `NEW_THREAD_MESSAGE` + nullable blog + thread FK on `Notification` | ☑ |
 | T10 | Account hub: `messages` + `blocked` sections in `NavigationHubRegistry`; mailbox Open/Closed templates | ☑ |
@@ -235,3 +234,14 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 **Development approval:** approved 2026-07-07 — tasks: T1–T18, Tdev
 
 **Implementation notes:** Package `dev.vepo.contraponto.messaging`; compose uses `UserRepository.findActiveByUsername` (any active user, FQ1); notification queries use `LEFT JOIN FETCH` for nullable `blog_id`; migrations `V0.0.10` (notification `read_at`) + `V0.0.11` (messaging tables). `verify` green.
+
+### Remove block reason — 2026-07-07
+
+**Version:** 1.1  
+**Status:** done
+
+**Description:** Blocking no longer collects or stores a reason. `tb_user_blocks.reason` removed from `V0.0.11` (not yet deployed); block confirm modal is title/message/actions only.
+
+**Impact on other features:** None — UI copy and domain vocabulary only.
+
+**Development approval:** approved 2026-07-07 — scope: feature doc, Flyway `V0.0.11`, domain spec, messaging block flow.

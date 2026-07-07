@@ -80,7 +80,7 @@ enum ConfirmModalAction {
             case POST_DELETE -> "/forms/posts/%s".formatted(postId);
             case MESSAGE_CLOSE -> "/forms/messages/threads/%s/close".formatted(postId);
             case MESSAGE_FLAG -> "/forms/messages/threads/%s/flag".formatted(postId);
-            case MESSAGE_BLOCK -> "/forms/messages/blocks";
+            case MESSAGE_BLOCK -> "/forms/messages/blocks/%s".formatted(postId);
         };
     }
 

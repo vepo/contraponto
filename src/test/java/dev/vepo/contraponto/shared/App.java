@@ -938,8 +938,18 @@ public class App {
 
         private MessagesPage() {}
 
+        public MessagesPage assertBlockedBannerNotVisible() {
+            wait.until(d -> d.findElements(cssSelector(".message-thread-page__banner--blocked")).isEmpty());
+            return this;
+        }
+
         public MessagesPage assertBlockedBannerVisible() {
             wait.until(visibilityOfElementLocated(cssSelector(".message-thread-page__banner--blocked")));
+            return this;
+        }
+
+        public MessagesPage assertBlockUserButtonVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector("[data-i18n='messaging.blockUser']")));
             return this;
         }
 
@@ -948,9 +958,54 @@ public class App {
             return this;
         }
 
+        public MessagesPage assertConfirmModalClosed() {
+            wait.until(d -> d.findElements(cssSelector("#confirmModal")).isEmpty());
+            return this;
+        }
+
+        public MessagesPage assertPageSourceContains(String text) {
+            App.this.assertPageSourceContains(text);
+            return this;
+        }
+
+        public MessagesPage assertReplyFormVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".message-thread-reply-form")));
+            return this;
+        }
+
+        public MessagesPage assertSingleMainElement() {
+            App.this.assertSingleMainElement();
+            return this;
+        }
+
+        public MessagesPage assertSingleSiteHeader() {
+            App.this.assertSingleSiteHeader();
+            return this;
+        }
+
+        public MessagesPage assertUnblockButtonVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".message-thread-page__unblock-form [data-i18n='messaging.unblock']")));
+            return this;
+        }
+
+        public MessagesPage clickBlockUser() {
+            reliableClick(wait.until(elementToBeClickable(cssSelector("[data-i18n='messaging.blockUser']"))));
+            App.this.submitConfirmModal();
+            assertConfirmModalClosed();
+            waitForReady();
+            return this;
+        }
+
         public MessagesPage clickCloseThread() {
             reliableClick(wait.until(elementToBeClickable(cssSelector("[hx-get*='confirm-modal/message-close']"))));
             App.this.submitConfirmModal();
+            waitForReady();
+            return this;
+        }
+
+        public MessagesPage clickUnblockUser() {
+            reliableClick(wait.until(elementToBeClickable(
+                                                          cssSelector(".message-thread-page__unblock-form button[type='submit']"))));
             waitForReady();
             return this;
         }
@@ -966,6 +1021,13 @@ public class App {
             var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='title']")));
             input.clear();
             input.sendKeys(title);
+            return this;
+        }
+
+        public MessagesPage fillReplyBody(String body) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector(".message-thread-reply-form textarea[name='body']")));
+            input.clear();
+            input.sendKeys(body);
             return this;
         }
 
@@ -2931,6 +2993,11 @@ public class App {
 
     public App assertSingleMainElement() {
         assertThat(driver.findElements(By.tagName("main"))).hasSize(1);
+        return this;
+    }
+
+    public App assertSingleSiteHeader() {
+        assertThat(driver.findElements(cssSelector("header.site-header"))).hasSize(1);
         return this;
     }
 

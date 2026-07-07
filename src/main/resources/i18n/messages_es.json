@@ -599,7 +599,6 @@
   "messaging.closeThread": "Cerrar conversación",
   "messaging.flagThread": "Denunciar conversación",
   "messaging.blockUser": "Bloquear usuario",
-  "messaging.block.reason": "Motivo del bloqueo (opcional)",
   "messaging.blocked.title": "Usuarios bloqueados",
   "messaging.blocked.subtitle": "Usuarios que has bloqueado.",
   "messaging.blocked.empty": "No has bloqueado a nadie.",

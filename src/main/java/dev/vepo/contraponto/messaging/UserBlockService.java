@@ -12,26 +12,24 @@ import jakarta.ws.rs.NotFoundException;
 @ApplicationScoped
 public class UserBlockService {
 
-    public static final int MAX_REASON_LENGTH = 500;
-
     private final UserBlockRepository blockRepository;
-    private final MessageThreadRepository threadRepository;
     private final UserRepository userRepository;
     private final Event<UserBlockedEvent> userBlockedEvent;
+    private final Event<UserUnblockedEvent> userUnblockedEvent;
 
     @Inject
     public UserBlockService(UserBlockRepository blockRepository,
-                            MessageThreadRepository threadRepository,
                             UserRepository userRepository,
-                            Event<UserBlockedEvent> userBlockedEvent) {
+                            Event<UserBlockedEvent> userBlockedEvent,
+                            Event<UserUnblockedEvent> userUnblockedEvent) {
         this.blockRepository = blockRepository;
-        this.threadRepository = threadRepository;
         this.userRepository = userRepository;
         this.userBlockedEvent = userBlockedEvent;
+        this.userUnblockedEvent = userUnblockedEvent;
     }
 
     @Transactional
-    public UserBlock block(long blockerUserId, long blockedUserId, String reason) {
+    public UserBlock block(long blockerUserId, long blockedUserId) {
         if (blockerUserId == blockedUserId) {
             throw new BadRequestException("You cannot block yourself.");
         }
@@ -45,7 +43,6 @@ public class UserBlockService {
         UserBlock block = new UserBlock();
         block.setBlocker(blocker);
         block.setBlocked(blocked);
-        block.setReason(validateReason(reason));
         blockRepository.save(block);
 
         userBlockedEvent.fire(new UserBlockedEvent(blockerUserId, blockedUserId));
@@ -53,10 +50,10 @@ public class UserBlockService {
     }
 
     @Transactional
-    public void blockByUsername(long blockerUserId, String blockedUsername, String reason) {
+    public void blockByUsername(long blockerUserId, String blockedUsername) {
         User blocked = userRepository.findPublicAuthorByUsername(blockedUsername.trim())
                                      .orElseThrow(() -> new NotFoundException("User not found."));
-        block(blockerUserId, blocked.getId(), reason);
+        block(blockerUserId, blocked.getId());
     }
 
     @Transactional
@@ -64,16 +61,6 @@ public class UserBlockService {
         UserBlock block = blockRepository.findByBlockerAndBlocked(blockerUserId, blockedUserId)
                                          .orElseThrow(NotFoundException::new);
         blockRepository.delete(block);
-    }
-
-    private String validateReason(String reason) {
-        if (reason == null || reason.isBlank()) {
-            return null;
-        }
-        String trimmed = reason.trim();
-        if (trimmed.length() > MAX_REASON_LENGTH) {
-            throw new BadRequestException("Block reason must be at most %s characters.".formatted(MAX_REASON_LENGTH));
-        }
-        return trimmed;
+        userUnblockedEvent.fire(new UserUnblockedEvent(blockerUserId, blockedUserId));
     }
 }

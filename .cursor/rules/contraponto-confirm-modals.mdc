@@ -31,7 +31,9 @@ Legacy templates may still use `hx-confirm` or `onclick` modal close; do not ext
 
 3. **Target element** for the mutation must be addressable globally (e.g. `data-post-id` on the row + `hx-target="[data-post-id='{id}']"`), because the modal is outside `#main`.
 
-4. **Chrome** — close via `[data-confirm-modal-close]`, Escape, or auto-close after successful confirm (`confirm-modal.js`). Use existing `.modal`, `.modal--open`, `.modal__container` blocks ([ui-elements.md](../../docs/ui-elements.md)).
+4. **Hub `main` swaps** — when confirm replaces the Account hub shell (`hx-target="main"`), also set `hx-select="main"` and `hx-swap="outerHTML"`. Redirect responses are full pages; without `hx-select`, the site header is duplicated inside `main`.
+
+5. **Chrome** — close via `[data-confirm-modal-close]`, Escape, or auto-close after successful confirm (`confirm-modal.js`). Hub redirects also clear `#modal-container` via OOB in [`seo-oob.html`](../../src/main/resources/templates/components/seo-oob.html). Use existing `.modal`, `.modal--open`, `.modal__container` blocks ([ui-elements.md](../../docs/ui-elements.md)).
 
 ## Adding a new confirm variant
 

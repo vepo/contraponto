@@ -3,6 +3,7 @@ package dev.vepo.contraponto.activitypub;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.user.User;
@@ -23,6 +24,24 @@ public class ActivityPubActorDocumentBuilder {
         this.subdomainConfig = subdomainConfig;
     }
 
+    private Optional<Map<String, Object>> buildIcon(User user) {
+        var profilePicture = user.getProfilePicture();
+        if (profilePicture == null) {
+            return Optional.empty();
+        }
+        var imagePath = profilePicture.getUrl();
+        if (imagePath == null || imagePath.isBlank()) {
+            return Optional.empty();
+        }
+        var icon = new LinkedHashMap<String, Object>();
+        icon.put("type", "Image");
+        icon.put("url", subdomainConfig.platformUrl(imagePath));
+        if (profilePicture.getContentType() != null && !profilePicture.getContentType().isBlank()) {
+            icon.put("mediaType", profilePicture.getContentType());
+        }
+        return Optional.of(icon);
+    }
+
     public Map<String, Object> buildPerson(User user, ActivityPubActor actor) {
         var document = new LinkedHashMap<String, Object>();
         document.put("@context", CONTEXT);
@@ -34,6 +53,7 @@ public class ActivityPubActorDocumentBuilder {
         if (user.getProfileDescription() != null && !user.getProfileDescription().isBlank()) {
             document.put("summary", user.getProfileDescription());
         }
+        buildIcon(user).ifPresent(icon -> document.put("icon", icon));
         document.put("inbox", ActivityPubPaths.inbox(user, subdomainConfig));
         document.put("outbox", ActivityPubPaths.outbox(user, subdomainConfig));
         document.put("followers", ActivityPubPaths.followers(user, subdomainConfig));

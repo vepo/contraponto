@@ -66,7 +66,7 @@ class MessageComposeServiceTest {
 
     @Test
     void compose_rejectsWhenBlocked() {
-        blockService.block(alice.getId(), bob.getId(), "spam");
+        blockService.block(alice.getId(), bob.getId());
 
         assertThatThrownBy(() -> composeService.compose(bob.getId(), alice.getUsername(), "Hi", "Body"))
                                                                                                         .isInstanceOf(ForbiddenException.class);

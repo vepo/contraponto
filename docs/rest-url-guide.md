@@ -320,7 +320,7 @@ Hub shells: `GET /{hub}` and `GET /{hub}/{section}`. Section slug is **Identifie
 | Verb | URL | Segments |
 |------|-----|----------|
 | POST | `/forms/messages/compose` | G:forms R:messages I:compose |
-| POST | `/forms/messages/blocks` | G:forms R:messages R:blocks |
+| POST | `/forms/messages/blocks/{blockedUserId}` | G:forms R:messages R:blocks I:{blockedUserId} |
 | POST | `/forms/messages/threads/{threadId}/close` | G:forms R:messages R:threads I:{threadId} A:close |
 | POST | `/forms/messages/threads/{threadId}/flag` | … A:flag |
 | POST | `/forms/messages/threads/{threadId}/reply` | … A:reply |

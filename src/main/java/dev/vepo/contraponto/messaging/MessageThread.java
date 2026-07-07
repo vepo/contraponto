@@ -158,4 +158,10 @@ public class MessageThread {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    public void thaw() {
+        if (status == MessageThreadStatus.FROZEN) {
+            status = MessageThreadStatus.OPEN;
+        }
+    }
 }

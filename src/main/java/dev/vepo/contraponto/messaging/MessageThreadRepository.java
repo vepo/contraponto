@@ -50,6 +50,22 @@ public class MessageThreadRepository {
                             .findFirst();
     }
 
+    public List<MessageThread> findFrozenBetweenUsers(long userIdA, long userIdB) {
+        return entityManager.createQuery("""
+                                         SELECT t
+                                         FROM MessageThread t
+                                         WHERE t.status = :frozen
+                                           AND (
+                                             (t.initiator.id = :a AND t.recipient.id = :b)
+                                             OR (t.initiator.id = :b AND t.recipient.id = :a)
+                                           )
+                                         """, MessageThread.class)
+                            .setParameter("frozen", MessageThreadStatus.FROZEN)
+                            .setParameter("a", userIdA)
+                            .setParameter("b", userIdB)
+                            .getResultList();
+    }
+
     public Page<MessageThreadRow> findMailboxPage(long userId, MessageThreadStatus tabStatus, PageQuery query) {
         // Native: latest message preview per thread via correlated subquery.
         long total = ((Number) entityManager.createNativeQuery("""

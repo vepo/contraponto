@@ -14,6 +14,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
@@ -40,14 +41,13 @@ public class MessageFormEndpoint {
     }
 
     @POST
-    @Path("blocks")
+    @Path("blocks/{blockedUserId}")
     @Transactional
     @Produces(MediaType.TEXT_HTML)
-    public Response block(@FormParam("blockedUserId") long blockedUserId,
-                          @FormParam("reason") String reason,
-                          @FormParam("returnUrl") String returnUrl) {
+    public Response block(@PathParam("blockedUserId") long blockedUserId,
+                          @QueryParam("returnUrl") String returnUrl) {
         try {
-            blockService.block(loggedUser.getId(), blockedUserId, reason);
+            blockService.block(loggedUser.getId(), blockedUserId);
             String target = returnUrl != null && !returnUrl.isBlank() ? returnUrl : MessageThreadPaths.blocked();
             return Response.seeOther(UriBuilder.fromPath(target).build()).build();
         } catch (NotFoundException _) {
@@ -128,10 +128,12 @@ public class MessageFormEndpoint {
     @Path("blocks/{blockedUserId}/unblock")
     @Transactional
     @Produces(MediaType.TEXT_HTML)
-    public Response unblock(@PathParam("blockedUserId") long blockedUserId) {
+    public Response unblock(@PathParam("blockedUserId") long blockedUserId,
+                            @FormParam("returnUrl") String returnUrl) {
         try {
             blockService.unblock(loggedUser.getId(), blockedUserId);
-            return Response.seeOther(UriBuilder.fromPath(MessageThreadPaths.blocked()).build()).build();
+            String target = returnUrl != null && !returnUrl.isBlank() ? returnUrl : MessageThreadPaths.blocked();
+            return Response.seeOther(UriBuilder.fromPath(target).build()).build();
         } catch (NotFoundException _) {
             return Toast.response(Response.Status.NOT_FOUND)
                         .i18nKey(I18nKeys.MESSAGING_USER_NOT_FOUND, I18nDefaults.MESSAGING_USER_NOT_FOUND)

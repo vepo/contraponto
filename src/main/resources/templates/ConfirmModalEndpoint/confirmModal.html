@@ -11,26 +11,6 @@
         </div>
         <div class="modal__body">
             <p class="confirm-modal__message" data-i18n="{view.messageKey}">{view.messageDefault}</p>
-            {#if view.extraFormFields}
-            <form class="confirm-modal__form"
-                  hx-post="{view.actionUrl}"
-                  hx-target="{view.targetSelector}"
-                  hx-swap="{view.swap}"
-                  hx-target-error="#toast"
-                  hx-swap-error="innerHTML">
-                {view.extraFormFields.raw}
-                <div class="form-group">
-                    <label for="block-reason" data-i18n="messaging.block.reason">Motivo do bloqueio (opcional)</label>
-                    <textarea id="block-reason" name="reason" rows="3" maxlength="500"></textarea>
-                </div>
-                <div class="confirm-modal__actions" role="group" aria-label="Ações de confirmação">
-                    <button type="button" class="btn btn--outline" data-confirm-modal-close data-i18n="common.cancel">Cancelar</button>
-                    <button type="submit" class="btn btn--primary" data-confirm-submit>
-                        <span data-i18n="{view.confirmKey}">{view.confirmDefault}</span>
-                    </button>
-                </div>
-            </form>
-            {#else}
             <div class="confirm-modal__actions" role="group" aria-label="Ações de confirmação">
                 <button type="button" class="btn btn--outline" data-confirm-modal-close data-i18n="common.cancel">Cancelar</button>
                 {#if view.httpMethod == 'DELETE'}
@@ -39,6 +19,7 @@
                         data-confirm-submit
                         hx-delete="{view.actionUrl}"
                         hx-target="{view.targetSelector}"
+                        {#if view.targetSelector == 'main'}hx-select="main"{/if}
                         hx-swap="{view.swap}"
                         hx-target-error="#toast"
                         hx-swap-error="innerHTML">
@@ -50,6 +31,7 @@
                         data-confirm-submit
                         hx-post="{view.actionUrl}"
                         hx-target="{view.targetSelector}"
+                        {#if view.targetSelector == 'main'}hx-select="main"{/if}
                         hx-swap="{view.swap}"
                         hx-target-error="#toast"
                         hx-swap-error="innerHTML">
@@ -57,7 +39,6 @@
                 </button>
                 {/if}
             </div>
-            {/if}
         </div>
     </div>
 </div>

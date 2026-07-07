@@ -4,3 +4,6 @@
     {#include components/seo-meta-tags seo=seo /}
 </div>
 {/if}
+{#if htmxRequest}
+<div id="modal-container" hx-swap-oob="innerHTML"></div>
+{/if}

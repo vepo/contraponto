@@ -33,7 +33,7 @@ class UserBlockServiceTest {
 
     @Test
     void block_freezesOpenThreadForBothParticipants() {
-        blockService.block(alice.getId(), bob.getId(), "harassment");
+        blockService.block(alice.getId(), bob.getId());
 
         MessageThread reloaded = threadRepository.findById(thread.getId()).orElseThrow();
         assertThat(reloaded.getStatus()).isEqualTo(MessageThreadStatus.FROZEN);
@@ -41,7 +41,9 @@ class UserBlockServiceTest {
         var aliceView = threadService.loadThreadView(thread.getId(), alice.getId());
         var bobView = threadService.loadThreadView(thread.getId(), bob.getId());
         assertThat(aliceView.showBlockedBanner()).isTrue();
+        assertThat(aliceView.blockedByCurrentUser()).isTrue();
         assertThat(bobView.showBlockedBanner()).isTrue();
+        assertThat(bobView.blockedByCurrentUser()).isFalse();
     }
 
     @BeforeEach
@@ -60,5 +62,21 @@ class UserBlockServiceTest {
                    .withPassword(PASSWORD)
                    .persist();
         thread = composeService.compose(alice.getId(), bob.getUsername(), "Chat", "Hello");
+    }
+
+    @Test
+    void unblock_thawsFrozenThreadAndAllowsReply() {
+        blockService.block(alice.getId(), bob.getId());
+        blockService.unblock(alice.getId(), bob.getId());
+
+        MessageThread reloaded = threadRepository.findById(thread.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(MessageThreadStatus.OPEN);
+
+        var aliceView = threadService.loadThreadView(thread.getId(), alice.getId());
+        assertThat(aliceView.showBlockedBanner()).isFalse();
+        assertThat(aliceView.canReply()).isTrue();
+
+        threadService.reply(thread.getId(), alice.getId(), "We can talk again.");
+        assertThat(threadService.loadThreadView(thread.getId(), alice.getId()).messages()).hasSize(2);
     }
 }

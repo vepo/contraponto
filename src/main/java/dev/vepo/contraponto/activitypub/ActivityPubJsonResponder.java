@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.post.PostRepository;
-import dev.vepo.contraponto.user.UserRepository;
 
 import io.smallrye.common.annotation.Blocking;
 
@@ -53,19 +52,16 @@ public class ActivityPubJsonResponder {
     private final ActivityPubSettings settings;
     private final ActivityPubActorService actorService;
     private final ActivityPubOutboxService outboxService;
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
 
     @Inject
     public ActivityPubJsonResponder(ActivityPubSettings settings,
                                     ActivityPubActorService actorService,
                                     ActivityPubOutboxService outboxService,
-                                    UserRepository userRepository,
                                     PostRepository postRepository) {
         this.settings = settings;
         this.actorService = actorService;
         this.outboxService = outboxService;
-        this.userRepository = userRepository;
         this.postRepository = postRepository;
     }
 
@@ -83,15 +79,11 @@ public class ActivityPubJsonResponder {
     }
 
     private Response respondWithActor(String username) {
-        var user = userRepository.findByUsername(username).orElse(null);
-        if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
         var actor = actorService.findEnabledByUsername(username).orElse(null);
         if (actor == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return jsonResponse(actorService.buildActorDocument(user, actor));
+        return jsonResponse(actorService.buildActorDocument(actor.getUser(), actor));
     }
 
     private Response respondWithPostObject(String username, String slug) {

@@ -58,10 +58,21 @@
                 hx-swap="innerHTML"
                 data-i18n="messaging.flagThread">Denunciar conversa</button>
         {/if}
+        {#if view.blockedByCurrentUser}
+        <form class="message-thread-page__unblock-form"
+              hx-post="/forms/messages/blocks/{view.otherParticipant.id}/unblock"
+              hx-select="main"
+              hx-target="main"
+              hx-swap="outerHTML">
+            <input type="hidden" name="returnUrl" value="/account/messages/{view.thread.id}">
+            <button type="submit" class="btn btn--outline btn--small" data-i18n="messaging.unblock">Desbloquear</button>
+        </form>
+        {#else}
         <button type="button" class="btn btn--outline btn--small"
                 hx-get="/components/confirm-modal/message-block/{view.otherParticipant.id}?returnUrl=/account/messages/{view.thread.id}"
                 hx-target="#modal-container"
                 hx-swap="innerHTML"
                 data-i18n="messaging.blockUser">Bloquear usuário</button>
+        {/if}
     </div>
 </div>

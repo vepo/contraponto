@@ -599,7 +599,6 @@
   "messaging.closeThread": "Close thread",
   "messaging.flagThread": "Flag thread",
   "messaging.blockUser": "Block user",
-  "messaging.block.reason": "Block reason (optional)",
   "messaging.blocked.title": "Blocked users",
   "messaging.blocked.subtitle": "Users you have blocked.",
   "messaging.blocked.empty": "You have not blocked anyone.",

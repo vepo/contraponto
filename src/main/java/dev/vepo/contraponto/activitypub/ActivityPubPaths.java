@@ -70,6 +70,13 @@ public final class ActivityPubPaths {
         return "%soutbox".formatted(actorId(user, config));
     }
 
+    public static String outboxPage(User user, BlogSubdomainConfig config, int page) {
+        if (page <= 1) {
+            return outbox(user, config);
+        }
+        return "%soutbox?page=%d".formatted(actorId(user, config), page);
+    }
+
     public static String postObjectId(Post post, BlogSubdomainConfig config) {
         if (config.enabled()) {
             var ownerUsername = post.getBlog().getOwner().getUsername();

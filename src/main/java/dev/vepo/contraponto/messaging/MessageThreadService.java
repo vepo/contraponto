@@ -73,11 +73,13 @@ public class MessageThreadService {
     public MessageThreadView loadThreadView(long threadId, long userId) {
         MessageThread thread = requireParticipantThread(threadId, userId);
         var messages = messageRepository.findByThreadId(threadId);
-        boolean blocked = blockRepository.isBlockedEitherDirection(thread.getInitiator().getId(), thread.getRecipient().getId());
-        boolean showBlockedBanner = blocked || thread.getStatus() == MessageThreadStatus.FROZEN;
         User other = thread.getOtherParticipant(userId);
+        boolean blockedEither = blockRepository.isBlockedEitherDirection(thread.getInitiator().getId(),
+                                                                         thread.getRecipient().getId());
+        boolean blockedByCurrentUser = blockRepository.findByBlockerAndBlocked(userId, other.getId()).isPresent();
+        boolean showBlockedBanner = blockedEither || thread.getStatus() == MessageThreadStatus.FROZEN;
         markRead(threadId, userId, messages);
-        return new MessageThreadView(thread, messages, other, showBlockedBanner);
+        return new MessageThreadView(thread, messages, other, showBlockedBanner, blockedByCurrentUser);
     }
 
     private void markRead(long threadId, long userId, java.util.List<ThreadMessage> messages) {
