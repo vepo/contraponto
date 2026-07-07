@@ -68,13 +68,16 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 
 | Item | Status |
 |------|--------|
-| Five-phase development process | ✅ `development-process.mdc` (imported from SauOn) |
-| Feature analysis (phase 1) | ✅ `change-request-analysis.mdc` |
-| Architecture design + ADRs (phase 2) | ✅ `architecture-design.mdc`, `adr.mdc`, `docs/adr/` |
-| Manual ADR / task approval gate | ✅ development-process § Manual acceptance only |
-| `feature/` changelog workflow | ✅ `feature/README.md` (PRDs migrate over time) |
+| Seven-phase development process + role agents | ✅ `development-process.mdc` — PO, domain, architect, modeller, squad, review, done |
+| Feature analysis (phase 1) | ✅ `change-request-analysis.mdc`, [product-owner.md](../.cursor/agents/product-owner.md) |
+| Architecture design + ADRs + HTMX model (phase 2) | ✅ `architecture-design.mdc`, [architect.md](../.cursor/agents/architect.md), `adr.mdc`, `docs/adr/` |
+| Task modeller (phase 3) | ✅ [task-modeller.md](../.cursor/agents/task-modeller.md) — layer-tagged T/TC |
+| Development squad (phase 5) | ✅ [java-developer](../.cursor/agents/java-developer.md), [htmx-developer](../.cursor/agents/htmx-developer.md), [javascript-developer](../.cursor/agents/javascript-developer.md) |
+| Review trio (phase 6) | ✅ [java-reviewer](../.cursor/agents/java-reviewer.md), [htmx-reviewer](../.cursor/agents/htmx-reviewer.md), [javascript-reviewer](../.cursor/agents/javascript-reviewer.md) |
+| Manual ADR / task / review approval gates | ✅ development-process § Manual acceptance only |
+| `feature/` changelog workflow | ✅ `feature/README.md` (HTMX model, review findings) |
 | Four pillars in `AGENTS.md` | ✅ model / testing / quality / platform |
-| `.cursor/agents/` (TDD, domain, docs) | ✅ `tdd-red`, `tdd-green`, `tdd-refactor`, `domain-model`, `docs-sync` |
+| `.cursor/agents/` | ✅ PO, architect, modeller, squad, reviewers, TDD, domain-model, docs-sync |
 | `.cursor/commands/review_code_structure.md` | ✅ |
 | Tiered testing + impact map | ✅ `contraponto-testing.mdc` |
 | Test failure diagnosis + `reports/` | ✅ `contraponto-test-failure-diagnosis.mdc` |

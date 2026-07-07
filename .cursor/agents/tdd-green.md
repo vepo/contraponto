@@ -5,12 +5,14 @@ description: TDD Green phase for Contraponto. Minimal production code to pass th
 
 You are the **TDD Green** agent for Contraponto.
 
-Follow `.cursor/rules/development-process.mdc` (phase 5), `.cursor/rules/domain-model.mdc`, and `.cursor/rules/contraponto-tests.mdc`.
+Follow `.cursor/rules/development-process.mdc` (phase 5 — squad), `.cursor/rules/domain-model.mdc`, and `.cursor/rules/contraponto-tests.mdc`.
+
+Invoked by **Java Developer** (`T*n*-java`), **HTMX Developer** (`T*n*-htmx` templates/CSS), or **Javascript Developer** (`T*n*-js`).
 
 ## Your job
 
 1. Read the **failing test** from the Red phase (or run it to see the failure).
-2. Implement the **smallest** change in `src/main`, templates, or CSS/JS that makes **only that test** pass.
+2. Implement the **smallest** change in the **layer scope of the current task** (`src/main/java`, templates, or `js/*.js`) that makes **only that test** pass.
 3. Place code in the correct package per [ARCHITECTURE.md](../../ARCHITECTURE.md).
 4. Re-run: `GITHUB_ACTIONS=true ./mvnw -B test -Dtest=ClassName#methodName` until green.
 

@@ -33,13 +33,13 @@ Read these before changing code or tests:
 
 **ActivityPub feature:** [feature/activitypub-integration.md](feature/activitypub-integration.md) — **done** (T1–T13; manual Mastodon interop checklist remains).
 
-**Development process:** [development-process.mdc](.cursor/rules/development-process.mdc) — five phases. **Manual acceptance only:** ADRs → explicit user message; features → explicit task IDs (phase 4). Agents must not auto-accept ADRs or start coding without approval.
+**Development process:** [development-process.mdc](.cursor/rules/development-process.mdc) — seven phases with role agents (PO → domain → architect → modeller → squad → review → done). **Manual acceptance only:** ADRs → explicit user message; tasks → explicit task IDs (phase 4); review → explicit review approval (phase 7). Agents must not auto-accept ADRs, approve tasks, or mark `done`.
 
 ## Agents vs commands
 
 | Surface | Location | Purpose |
 |---------|----------|---------|
-| **Subagents** | `.cursor/agents/*.md` | TDD red/green/refactor, domain modeling, docs sync |
+| **Role agents** | `.cursor/agents/*.md` | PO, architect, modeller, squad (Java/HTMX/JS), reviewers, TDD, domain, docs |
 | **Commands** | `.cursor/commands/*.md` | fix tests, Sonar loop, coverage, structure review |
 
 ## Rules — four pillars (always on)
@@ -71,17 +71,43 @@ Read these before changing code or tests:
 
 Full rule index: [.cursor/rules/](.cursor/rules/) (layered architecture, Tell Don't Ask, Law of Demeter, JPA, pagination, confirm modals, …).
 
-## Project subagents
+## Project agents
 
-| Subagent | When to delegate |
-|----------|------------------|
-| [tdd-red](.cursor/agents/tdd-red.md) | Failing test only |
-| [tdd-green](.cursor/agents/tdd-green.md) | Minimal code to pass |
-| [tdd-refactor](.cursor/agents/tdd-refactor.md) | Refactor with tests green |
-| [domain-model](.cursor/agents/domain-model.md) | Domain-spec and vocabulary |
-| [docs-sync](.cursor/agents/docs-sync.md) | ADRs, feature catalog, ARCHITECTURE |
+### Analysis and planning (phases 1–3)
 
-**TDD cycle (phase 5 only):** analysis → architecture + ADRs → tasks → approval → red → green → refactor.
+| Agent | Phase | When to delegate |
+|-------|-------|------------------|
+| [product-owner](.cursor/agents/product-owner.md) | 1 | Feature doc, wireframe, FQ*n*, cross-feature impact |
+| [domain-model](.cursor/agents/domain-model.md) | 1b | domain-spec ubiquitous language |
+| [architect](.cursor/agents/architect.md) | 2 | ADRs, Architecture, HTMX component model, htmx-events.md |
+| [task-modeller](.cursor/agents/task-modeller.md) | 3 | Layer-tagged tasks T*n*-java/htmx/js, TC mapping |
+
+### Development squad (phase 5)
+
+| Agent | Layer | When to delegate |
+|-------|-------|------------------|
+| [java-developer](.cursor/agents/java-developer.md) | java | Endpoints, services, repos, Flyway, HtmxTriggers |
+| [htmx-developer](.cursor/agents/htmx-developer.md) | htmx | Qute templates, hx-* wiring |
+| [javascript-developer](.cursor/agents/javascript-developer.md) | js | `js/*.js` when Architect approved JS companion |
+| [tdd-red](.cursor/agents/tdd-red.md) | — | Failing test for current layer task |
+| [tdd-green](.cursor/agents/tdd-green.md) | — | Minimal code to pass Red |
+| [tdd-refactor](.cursor/agents/tdd-refactor.md) | — | Refactor with tests green |
+
+### Review (phase 6, readonly)
+
+| Agent | When to delegate |
+|-------|------------------|
+| [java-reviewer](.cursor/agents/java-reviewer.md) | Layering, auth, backend HTMX contracts, tests |
+| [htmx-reviewer](.cursor/agents/htmx-reviewer.md) | Templates vs HTMX model and htmx-events.md |
+| [javascript-reviewer](.cursor/agents/javascript-reviewer.md) | JS necessity, module quality, swap guards |
+
+### Finish (phase 7)
+
+| Agent | When to delegate |
+|-------|------------------|
+| [docs-sync](.cursor/agents/docs-sync.md) | feature-catalog, README, htmx-events, ARCHITECTURE |
+
+**Workflow:** PO → domain → architect → modeller → **you approve tasks** → squad (java → htmx → js per task) → review trio → **you approve review** → docs-sync → `done`.
 
 ## Commands
 
@@ -94,10 +120,10 @@ Full rule index: [.cursor/rules/](.cursor/rules/) (layered architecture, Tell Do
 
 ## Stack-specific workflow
 
-**Backend:** entity → repository → service (if non-trivial) → endpoint → Qute template → `@WebTest` with `App` + `Given`.
+**Squad order per task:** `T*n*-java` → `T*n*-htmx` → `T*n*-js` (if approved) → tests → next task.
 
-**Full-stack surface:** update [feature-catalog.md](docs/feature-catalog.md) for new routes; update [`dev-import.sql`](src/main/resources/dev-import.sql) for happy-path seed.
+**Full-stack surface:** update [feature-catalog.md](docs/feature-catalog.md) for new routes; update [`dev-import.sql`](src/main/resources/dev-import.sql) for happy-path seed; update [htmx-events.md](docs/htmx-events.md) when HTMX/auth patterns change.
 
-**Finish gate:** `GITHUB_ACTIONS=true ./mvnw -B verify`; `scripts/audit-template-seo.sh` when templates/SEO change; `dev-import.sql` + coverage registry when schema or feature behaviour changed.
+**Finish gate:** squad sets `review-ready` → reviewers → **Review approval** → `GITHUB_ACTIONS=true ./mvnw -B verify`; `scripts/audit-template-seo.sh` when templates/SEO change.
 
 **Tests:** never raw Selenium in test methods; extend `App`. Data setup via `Given`; call `Given.cleanup()` when the test mutates shared data.

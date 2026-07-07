@@ -39,9 +39,31 @@ Per [adr.mdc](adr.mdc): new ADR → `Proposed`; edit `Accepted` only after user 
 | Schema / persistence | Tables, Flyway migration file(s) |
 | Cross-context integration | CDI events ([cdi-events.md](../../docs/cdi-events.md)) |
 | Presentation | Qute fragments, `components/`, CSS bundle (main/manage/write) |
+| **HTMX component model** | Per-screen table: component id, route, activator, target/swap, events, JS companion |
+| **HTMX interaction diagram** | Cause → effect across components (when non-trivial) |
 | Tests | `@WebTest` + `App`/`Given`, unit, ArchUnit |
 
 Revise when **AQ*n*** or footprint-changing **FQ*n*** answers change design.
+
+### 3b. HTMX component model (Architect Agent)
+
+For each UI region in the Wireframe, document:
+
+| Column | Content |
+|--------|---------|
+| Component id | Stable DOM id or region (`#comments`, `#recipient-options`) |
+| Fragment route | `GET /components/...` or nested `.../components/...` |
+| Activator | Form, link, `hx-trigger` (`load`, debounced `input`, `{authRefreshTrigger}`) |
+| Request | `hx-get` / `hx-post` path |
+| Swap scope | `hx-target`, `hx-swap`, OOB targets |
+| Events emitted | `HX-Trigger`, `HX-Trigger-After-Settle` via `HtmxTriggers` |
+| Events consumed | `hx-trigger` subscribers |
+| JS companion | `none` or `js/{concern}.js` (justify why HTMX is insufficient) |
+| Auth allowlist | Yes/No — if Yes, row required in [htmx-events.md](../../docs/htmx-events.md) §2 |
+
+Pick refresh mechanism per [htmx-events.md](../../docs/htmx-events.md) §1: inline/OOB → `hx-target` → body broadcast + subscribers.
+
+**Update [htmx-events.md](../../docs/htmx-events.md)** when the change adds custom events (§3), auth-sensitive chrome (§2), scoped refresh patterns (§1), or JS lifecycle coupling (§5). Draft in phase 2; confirm in phase 5; verify in phase 6.
 
 ### 4. Track architecture questions (AQ*n*)
 
@@ -63,6 +85,9 @@ Set changelog **Status:** `architecture-ready`. Present **Architecture**, ADRs, 
 ## Exit criteria
 
 - Relevant ADRs linked; no new ADR in `Accepted` without manual user acceptance.
-- `## Architecture` complete.
+- `## Architecture` complete including **HTMX component model** (and diagram when needed).
+- `htmx-events.md` delta identified for HTMX/auth/JS coupling changes.
 - Blocking **AQ*n*** resolved.
 - Status `architecture-ready`. **No code.**
+
+Agent: [architect.md](../../.cursor/agents/architect.md).

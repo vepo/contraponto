@@ -2,7 +2,7 @@
 
 One markdown file per **high-level capability**: `feature/<feature-slug>.md` (kebab-case).
 
-**Mandatory process:** [development-process.mdc](../.cursor/rules/development-process.mdc) — analysis → architecture (+ ADRs) → tasks → **explicit task approval (manual)** → TDD. **ADR `Accepted` and feature development require explicit human approval** — the agent must not infer acceptance.
+**Mandatory process:** [development-process.mdc](../.cursor/rules/development-process.mdc) — PO → domain → architect (+ ADRs, HTMX model) → task modeller → **explicit task approval** → development squad (Java → HTMX → JS) → **review trio** → **review approval** → `done`. Agents: [.cursor/agents/](../.cursor/agents/). **ADR `Accepted`, task approval, and review approval require explicit human messages** — agents must not infer acceptance.
 
 **ADRs:** transversal decisions in [docs/adr/](../docs/adr/). Baseline Accepted: [0001](../docs/adr/0001-record-architecture-decisions.md)–[0005](../docs/adr/0005-postgresql-database.md). Template: [docs/adr/template.md](../docs/adr/template.md).
 
@@ -24,13 +24,13 @@ See [change-request-analysis.mdc](../.cursor/rules/change-request-analysis.mdc) 
 
 ## Template
 
-Copy into `feature/<feature-slug>.md`. Phases 2–5 add Architecture (+ ADR links), Tasks, approval, implementation.
+Copy into `feature/<feature-slug>.md`. Phases 2–7 add Architecture (+ HTMX model), Tasks, approval, squad implementation, review, done.
 
 ```markdown
 # <Human-readable feature name>
 
 **Feature version:** 1  
-**Status:** planned | in-progress | done  
+**Status:** planned | architecture-ready | tasks-ready | approved | in-progress | review-ready | done  
 **Requested:** YYYY-MM-DD
 
 ## Summary
@@ -96,6 +96,18 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | CDI events | Producers / observers |
 | Tests | `*WebTest` scenarios |
 
+### HTMX component model
+
+| Component id | Route | Activator | Target/swap | Events out | Events in | JS | Auth allowlist |
+|--------------|-------|-----------|-------------|------------|-----------|-----|----------------|
+| `#example` | GET /components/… | `load` | self innerHTML | — | — | none | No |
+
+### HTMX interaction diagram
+
+```
+[Activator] → GET /components/… → swap #target
+```
+
 ### Architecture questions (AQ*n*)
 
 | # | Question | Status | Answer |
@@ -107,9 +119,11 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 ### <Change name> — YYYY-MM-DD
 
 **Version:** 1  
-**Status:** planned | architecture-ready | tasks-ready | approved | in-progress | done
+**Status:** planned | architecture-ready | tasks-ready | approved | in-progress | review-ready | done
 
 **Description:** …
+
+**Domain model:** N/A | updated YYYY-MM-DD (see domain-spec)
 
 **Impact on other features:**
 
@@ -124,20 +138,30 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | FC1 | … | FQ1 | ☐ |
 | FCdev | `dev-import.sql` covers this feature's happy path | dev-import-sql-safety | ☐ |
 
-#### Tasks (phase 3)
+#### Tasks (phase 3) — layer tags
 
-| ID | Task | Done |
-|----|------|------|
-| T1 | … | ☐ |
-| Tdev | Update `dev-import.sql` + feature-catalog § Dev personas | dev-import-sql-safety | ☐ |
+| ID | Layer | Task | Depends | Expected outcome | Tests | Done |
+|----|-------|------|---------|------------------|-------|------|
+| T1-java | java | … | — | … | TC1 | ☐ |
+| T1-htmx | htmx | … | T1-java | … | TC1 | ☐ |
+| T1-js | js | … | T1-htmx | … | — | ☐ |
+| Tdev | doc | Update `dev-import.sql` + feature-catalog § Dev personas | … | … | FCdev | ☐ |
 
 #### Test coverage (phase 3)
 
-| ID | Test | Covers | Done |
-|----|------|--------|------|
-| TC1 | … | T1 | ☐ |
+| ID | Kind | Test | Covers | Done |
+|----|------|------|--------|------|
+| TC1 | unit \| rest \| web \| htmx-contract \| arch | … | T1-java, T1-htmx | ☐ |
 
-**Development approval:** pending | approved YYYY-MM-DD — tasks: T1
+**Development approval:** pending | approved YYYY-MM-DD — tasks: T1-java, T1-htmx
+
+#### Review findings (phase 6)
+
+| Reviewer | Severity | Location | Finding | Status |
+|----------|----------|----------|---------|--------|
+| — | — | — | (pending review) | — |
+
+**Review approval:** pending | approved YYYY-MM-DD
 
 **Implementation notes:** (after done)
 ```
@@ -159,4 +183,5 @@ Add a row here when creating `feature/<slug>.md`.
 - **Feature version** — highest changelog Version in the file.
 - **FQ*n*** / **AQ*n*** — product vs technical questions.
 - **ADRs** — transversal decisions; cite by number in Architecture.
-- **FC*n***, **T*n***, **TC*n*** — per changelog entry; recheck FC before `done`.
+- **FC*n***, **T*n*** (`*-java`, `*-htmx`, `*-js`), **TC*n*** — per changelog entry; recheck FC before `done`.
+- **Review findings** — phase 6; no `done` without **Review approval**.

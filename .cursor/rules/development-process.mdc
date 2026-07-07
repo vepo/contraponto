@@ -1,5 +1,5 @@
 ---
-description: Mandatory agentic development process — feature analysis, architecture design, task break, approval, TDD
+description: Mandatory agentic development process — feature analysis, architecture, tasks, squad development, review
 alwaysApply: true
 ---
 
@@ -7,31 +7,56 @@ alwaysApply: true
 
 **No production or test code** until phases 1–4 are complete for the current changelog entry. Template: [feature/README.md](../../feature/README.md). Feature analysis: [change-request-analysis.mdc](change-request-analysis.mdc). Architecture design + ADRs: [architecture-design.mdc](architecture-design.mdc), [adr.mdc](adr.mdc), [docs/adr/](../../docs/adr/).
 
+Every agent **must** read this rule and operate only in its assigned phase. Agent definitions: [.cursor/agents/](../../.cursor/agents/).
+
+## Agent roster
+
+| Phase | Agent | File |
+|-------|-------|------|
+| 1 | Product Owner | [product-owner.md](../../.cursor/agents/product-owner.md) |
+| 1b | Domain Model | [domain-model.md](../../.cursor/agents/domain-model.md) |
+| 2 | Architect | [architect.md](../../.cursor/agents/architect.md) |
+| 3 | Task Modeller | [task-modeller.md](../../.cursor/agents/task-modeller.md) |
+| 5 | Java Developer | [java-developer.md](../../.cursor/agents/java-developer.md) |
+| 5 | HTMX Developer | [htmx-developer.md](../../.cursor/agents/htmx-developer.md) |
+| 5 | Javascript Developer | [javascript-developer.md](../../.cursor/agents/javascript-developer.md) |
+| 5 | TDD Red / Green / Refactor | [tdd-red.md](../../.cursor/agents/tdd-red.md), [tdd-green.md](../../.cursor/agents/tdd-green.md), [tdd-refactor.md](../../.cursor/agents/tdd-refactor.md) |
+| 5–6 | Docs Sync | [docs-sync.md](../../.cursor/agents/docs-sync.md) |
+| 6 | Java Code Reviewer | [java-reviewer.md](../../.cursor/agents/java-reviewer.md) |
+| 6 | HTMX Reviewer | [htmx-reviewer.md](../../.cursor/agents/htmx-reviewer.md) |
+| 6 | Javascript Reviewer | [javascript-reviewer.md](../../.cursor/agents/javascript-reviewer.md) |
+
 ## Strict phase gate
 
-Phases are **sequential and mandatory**. Never skip phase 2, phase 3, or phase 4.
+Phases are **sequential and mandatory**. Never skip phase 2, phase 3, or phase 4. Never skip phase 6 before `done`.
 
 ```
-planned → architecture-ready → tasks-ready → approved → in-progress → done
-(feature)  (architecture)      (task break)  (explicit     (TDD only)
-                                            task approval)
+planned → architecture-ready → tasks-ready → approved → in-progress → review-ready → done
+  (PO)      (Architect)         (Modeller)   (human)    (squad)       (reviewers)    (human)
 ```
 
 | Action | Phase | Allowed edits |
 |--------|-------|----------------|
-| Feature analysis, feature questions (**FQ*n***) | 1 | `feature/*.md`, `docs/**`, domain spec |
-| Architecture design, architecture questions (**AQ*n***) | 2 | `feature/*.md`, `docs/**` (incl. `docs/adr/`), domain spec, ARCHITECTURE.md |
-| Answer **FQ*n*** or **AQ*n*** in chat or feature doc | 1 or 2 (still) | `feature/*.md`, `docs/**`, ARCHITECTURE.md only — **not** `src/main/**`, `src/test/**` |
-| Task break (Tasks + Test coverage + Feature checklist) | 3 | `feature/*.md` |
+| Feature analysis, **FQ*n*** | 1 | `feature/*.md`, `docs/**` (not domain-spec yet unless PO delegates) |
+| Domain vocabulary | 1b | `docs/domain-specification.md`, `feature/*.md` |
+| Architecture, **AQ*n***, HTMX model, ADR drafts | 2 | `feature/*.md`, `docs/**` (incl. `docs/adr/`, `docs/htmx-events.md`), domain spec |
+| Answer **FQ*n*** or **AQ*n*** | 1 or 2 | `feature/*.md`, `docs/**` only — **not** `src/main/**`, `src/test/**` |
+| Task break | 3 | `feature/*.md` |
 | User approves task IDs | 4 | `feature/*.md` (record approval) |
-| TDD implementation | 5 | `src/main/**`, `src/test/**`, templates, CSS/JS, docs as needed |
+| Squad development (TDD) | 5 | `src/main/**`, `src/test/**`, templates, CSS/JS, docs as needed |
+| Code review (readonly) | 6 | `feature/*.md` (Review findings only); squad fixes blockers |
+| User review approval | 7 | `feature/*.md` (record **Review approval**); set `done` |
+
+### Exempt changes (skip full pipeline)
+
+Typo, comment-only, formatter, docs-only with **no behaviour, schema, or cross-package impact** — per [change-request-analysis.mdc](change-request-analysis.mdc). Still run [static-analysis.mdc](static-analysis.mdc) when code touched.
 
 ### Open question kinds
 
 | Kind | Prefix | Phase | Decides |
 |------|--------|-------|---------|
 | **Feature question** | **FQ*n*** | 1 | Product scope, UX, wireframe, domain rules, user-visible behaviour |
-| **Architecture question** | **AQ*n*** | 2 | Packages, layers, routes, schema, cross-context integration, technical trade-offs |
+| **Architecture question** | **AQ*n*** | 2 | Packages, layers, routes, schema, HTMX, libraries, cross-context integration |
 
 Legacy undifferentiated **Q*n*** in existing feature docs are treated as **FQ*n*** until updated.
 
@@ -39,35 +64,35 @@ Legacy undifferentiated **Q*n*** in existing feature docs are treated as **FQ*n*
 
 **Forbidden:** starting phase 5 because the user answered **FQ1**, **AQ2**, chose an option, said "yes"/"big-bang", or clarified scope. Those actions only update the relevant questions table (status `answered`, **Answer** column) — they do **not** authorize coding.
 
-### Manual acceptance only — ADR and features (mandatory)
+### Manual acceptance only — ADR, tasks, review, done (mandatory)
 
-**An agent never accepts an ADR or feature on its own.** Acceptance is **manual only** — an explicit human message in chat (or an approval line they edited in the doc).
+**An agent never accepts an ADR, approves tasks, approves review, or marks `done` on its own.**
 
 | Artefact | Agent may | User only |
 |----------|-----------|-----------|
-| **ADR** | Create/edit with status `Proposed`, `Under Review`, or `Reopened`; fill Recommendation; record **Changelog** | Set **`Accepted`**, **`Rejected`**, **`Superseded`**, or **`Reopened`** (reopen requires user justification) |
-| **Feature (changelog)** | Phases 1–3; status up to `tasks-ready` | **Phase 4:** approve task IDs; **done:** after verified implementation |
-| **FQ/AQ** | Record answer **if the user provided it** | Treat agent or initial requirement as acceptance |
+| **ADR** | `Proposed`, `Under Review`, `Reopened`; fill Recommendation | **`Accepted`**, **`Rejected`**, **`Superseded`**, **`Reopened`** |
+| **Feature (changelog)** | Phases 1–3; status up to `tasks-ready`; set `review-ready` after squad + verify | **Phase 4:** approve task IDs; **Phase 7:** review approval + `done` |
+| **FQ/AQ** | Record answer **if the user provided it** | Treat agent guesses as acceptance |
 
 **Counts as ADR acceptance:** "Aceito o ADR-0009", "Aprovo o ADR 0009", "ADR-0009 accepted".
 
-**Counts as feature approval (phase 4):** "Approve T1–T8", "Go ahead with T1, T2, T5", "Start development — tasks T1–T6".
+**Counts as development approval (phase 4):** "Approve T1–T8", "Go ahead with T1-java, T2-htmx".
 
-**Does not count as approval:** "implement it" without task IDs; ADR accepted without task IDs; silence after FQ/AQ answers.
+**Counts as review approval (phase 7):** "Review approved", "Mark done".
+
+**Does not count as approval:** "implement it" without task IDs; ADR accepted without task IDs; silence after FQ/AQ answers; reviewers clearing their own blockers without user sign-off on `done`.
 
 Detail: [adr.mdc](adr.mdc).
 
 ### Impact review when answering open questions (mandatory)
 
-Every time the user answers **FQ*n*** or **AQ*n***, the agent **must** run an **impact review**:
+Every time the user answers **FQ*n*** or **AQ*n***, the **Product Owner** or **Architect** agent **must** run an **impact review**:
 
 1. **Record** the answer in the correct table.
-2. **Re-read and update** the feature doc: Impact, changelog cross-impacts, Risks, **Wireframe**, **Architecture**, **ADRs**, **Feature checklist**, **Tasks**, **Test coverage**, [domain-specification.md](../../docs/domain-specification.md), [docs/feature-catalog.md](../../docs/feature-catalog.md), [`dev-import.sql`](../../src/main/resources/dev-import.sql), [ARCHITECTURE.md](../../ARCHITECTURE.md) §9.
+2. **Re-read and update** the feature doc: Impact, changelog cross-impacts, Risks, **Wireframe**, **Architecture**, **HTMX component model**, **ADRs**, **Feature checklist**, **Tasks**, **Test coverage**, [domain-specification.md](../../docs/domain-specification.md), [docs/feature-catalog.md](../../docs/feature-catalog.md), [`dev-import.sql`](../../src/main/resources/dev-import.sql), [docs/htmx-events.md](../../docs/htmx-events.md), [ARCHITECTURE.md](../../ARCHITECTURE.md) §9.
 3. **May open new questions** — add **FQ*n+1** or **AQ*n+1** with status `open`.
 4. **Present** impact deltas; do not assume silence means approval.
 5. If blocking questions remain `open`, **stop** for phase 4.
-
-After all blocking **FQ*n*** and **AQ*n*** are `answered` or `not valid`: ensure phase 3 complete; **stop**; wait for **explicit task approval**.
 
 ## Working code invariant
 
@@ -76,85 +101,161 @@ After all blocking **FQ*n*** and **AQ*n*** are `answered` or `not valid`: ensure
 | Situation | Required action |
 |-----------|-----------------|
 | Task or session ending | `GITHUB_ACTIONS=true ./mvnw -B verify` green — see [static-analysis.mdc](static-analysis.mdc) |
-| Approved tasks incomplete | Keep changelog **`in-progress`** — never `done` |
+| Approved tasks incomplete | Keep changelog **`in-progress`** — never `review-ready` or `done` |
+| Review blockers open | Keep **`review-ready`**; squad fixes; re-run reviewers on blockers |
 | Partial work breaks build/tests | Fix forward **or** revert — do not stop on red |
-| Cannot finish in one session | Leave **`in-progress`** with Implementation notes; workspace still **green** |
+| Cannot finish in one session | Leave **`in-progress`** or **`review-ready`** with Implementation notes; workspace still **green** |
 
 **Forbidden:** marking `done` with failing tests; `@Disabled` or weakened assertions to fake green.
 
-## Five phases
+## Seven phases
 
 ```
-1. Feature analysis  →  2. Architecture design  →  3. Task break  →  4. Development approved  →  5. Development (TDD)
+1. Feature analysis (PO)  →  1b. Domain model  →  2. Architecture (Architect)
+  →  3. Task break (Modeller)  →  4. Development approved (human)
+  →  5. Development squad (Java → HTMX → JS per task)  →  6. Review (readonly trio)
+  →  7. Review approved + done (human)
 ```
 
-| Phase | Agent may | Agent must not |
-|-------|-----------|----------------|
-| **1. Feature analysis** | Create/extend `feature/<slug>.md`, **Wireframe**, domain spec, resolve **FQ*n*** | Write `src/main/**`, `src/test/**`; skip architecture design |
-| **2. Architecture design** | Link baseline ADRs; create ADRs for transversal **AQ*n***; add **Architecture** section; set `architecture-ready` | Start implementation; skip ADRs or **Architecture** section |
-| **3. Task break** | Extend **Feature checklist**; add **Tasks** and **Test coverage**; set `tasks-ready` | Start implementation |
-| **4. Development approved** | Record approval line with task IDs; set `approved` | Implement; treat FQ/AQ answers as approval |
-| **5. Development** | TDD on **approved tasks only**; recheck **Feature checklist** before `done` | Skip tests; implement unapproved tasks; end with broken code |
+| Phase | Primary agent | Agent must not |
+|-------|---------------|----------------|
+| **1. Feature analysis** | Product Owner | Write `src/**`; answer FQ*n* without user; skip architecture |
+| **1b. Domain model** | Domain Model | Write `src/**`; skip when no vocabulary change (record "N/A") |
+| **2. Architecture** | Architect | Start implementation; skip HTMX model or `htmx-events.md` delta |
+| **3. Task break** | Task Modeller | Start implementation; omit layer tags or TC mapping |
+| **4. Development approved** | Human | — |
+| **5. Development squad** | Java / HTMX / JS Developers | Skip tests; implement unapproved tasks; JS without Architect justification |
+| **6. Review** | Java / HTMX / JS Reviewers | Edit production code (findings only in feature doc) |
+| **7. Done** | Human + Docs Sync | Set `done` without review approval and verify green |
 
-## Phase 1 — Feature analysis
+## Phase 1 — Feature analysis (Product Owner Agent)
 
-Required when: new behaviour, route, schema, multi-package refactor, or bug fix with cross-feature impact. Not required: typo, comment-only, formatter, docs-only.
+Required when: new behaviour, route, schema, multi-package refactor, or bug fix with cross-feature impact.
 
 1. Resolve `<feature-slug>` — [change-request-analysis.mdc](change-request-analysis.mdc) §0.
 2. Create or extend `feature/<feature-slug>.md` with Summary, **Wireframe** (when UI), Impact, Risks, changelog entry (`status: planned`).
 3. Build **Feature checklist** (**FC1**, **FC2**, …, **FCdev**).
-4. Read [domain-specification.md](../../docs/domain-specification.md); update before code if vocabulary changes ([domain-model.mdc](domain-model.mdc)).
-5. Track **FQ*n***; run **impact review** after each answer.
+4. Open **FQ*n*** for user flows, edge cases, roles, cross-feature impact, UI copy. **Do not answer** — status `open` until user responds.
+5. Be critical: ask where changes affect other features, auth, SEO, notifications, messaging, etc.
 
-**Exit criteria:** changelog entry with Impact, Feature checklist, Wireframe (or N/A); blocking **FQ*n*** resolved. **No code.** Proceed to phase 2.
+**Exit criteria:** Impact and Wireframe filled; blocking **FQ*n*** resolved. **No code.** Hand off to Domain Model Agent (phase 1b).
 
-## Phase 2 — Architecture design
+## Phase 1b — Domain model (Domain Model Agent)
+
+1. Read [domain-specification.md](../../docs/domain-specification.md) and the feature doc.
+2. If vocabulary or invariants change: update Ubiquitous Language in domain-spec **before** architecture.
+3. If no change: record **Domain model: N/A** in the changelog entry.
+
+**Exit criteria:** domain-spec current or N/A recorded. Hand off to Architect Agent (phase 2).
+
+## Phase 2 — Architecture design (Architect Agent)
 
 Detail: [architecture-design.mdc](architecture-design.mdc), [adr.mdc](adr.mdc).
 
 1. Confirm compliance with Accepted ADRs in [docs/adr/README.md](../../docs/adr/README.md).
-2. Create/update ADRs for transversal **AQ*n*** answers.
-3. Add `## Architecture` on the feature doc — ADR links + packages, routes, schema, templates, tests.
-4. Track **AQ*n***; run impact review after each answer.
-5. Validate against [contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc), [contraponto-bounded-contexts.mdc](contraponto-bounded-contexts.mdc).
-6. Set **Status:** `architecture-ready`. **Stop** for manual ADR acceptance.
+2. Create/update ADRs for transversal **AQ*n*** answers (`Proposed` only).
+3. Add `## Architecture` on the feature doc — ADR links, packages, routes, schema, templates, tests.
+4. Build **`### HTMX component model`** — per Wireframe screen: component id, fragment route, activator, target/swap, events out/in, JS companion (`none` or module), auth allowlist row needed.
+5. Add **`### HTMX interaction diagram`** when flows cross multiple components.
+6. Draft updates to [docs/htmx-events.md](../../docs/htmx-events.md) when adding custom events, auth allowlist rows, scoped refresh patterns, or JS lifecycle coupling.
+7. Track **AQ*n*** (schema, libraries, bounded contexts, HTMX mechanism choice); run impact review after each answer.
+8. Validate against [contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc), [contraponto-bounded-contexts.mdc](contraponto-bounded-contexts.mdc), [htmx-events.md](../../docs/htmx-events.md).
+9. Set **Status:** `architecture-ready`. **Stop** for manual ADR acceptance.
 
-**Exit criteria:** Architecture complete; blocking **AQ*n*** resolved; status `architecture-ready`. **No code.**
+**Exit criteria:** Architecture + HTMX model complete; `htmx-events.md` delta identified; blocking **AQ*n*** resolved; status `architecture-ready`. **No code.**
 
-## Phase 3 — Task break
+## Phase 3 — Task break (Task Modeller Agent)
+
+Read: feature doc, domain-spec, Accepted ADRs, Architecture, HTMX component model.
 
 Add to changelog entry:
 
 - **Feature checklist** — extend **FC*n***; always **FCdev** for `dev-import.sql`.
-- **Tasks** — `T1`, `T2`, …; always **Tdev** for seed + feature-catalog § Dev personas.
-- **Test coverage** — map tasks to tests (`@WebTest`, unit, ArchUnit).
+- **Tasks** — layer-tagged, ordered, small:
+  - `T*n*-java` — entity, repo, service, endpoint, Flyway, `HtmxTriggers`, `Toast`
+  - `T*n*-htmx` — Qute templates, `hx-*`, OOB, navigation attrs (depends on paired `*-java`)
+  - `T*n*-js` — only when Architect marked JS required (depends on paired `*-htmx`)
+  - **Tdev** — `dev-import.sql` + feature-catalog § Dev personas
+- **Test coverage** — **TC*n*** mapped to tasks: `unit`, `rest` (HX headers), `web` (`@WebTest`), `htmx-contract`, `arch`
+
+Each task row: **Depends**, **Expected outcome** (domain language), **Tests**.
 
 Set **Status:** `tasks-ready`. **Stop — do not implement.**
 
-## Phase 4 — Development approved
+## Phase 4 — Development approved (human)
 
 Record:
 
 ```markdown
-**Development approval:** approved YYYY-MM-DD — tasks: T1, T3
+**Development approval:** approved YYYY-MM-DD — tasks: T1-java, T1-htmx, T2-java, …
 ```
 
 Set **Status:** `approved`. Implement **only** approved task IDs.
 
-## Phase 5 — Development (TDD)
+## Phase 5 — Development squad (Java → HTMX → JS per task)
 
 **Precondition:** status `approved` with **Development approval** line.
 
-Set **Status:** `in-progress`. For **each approved task**:
+Set **Status:** `in-progress`. For **each approved task block** in order:
 
-1. Consult **Wireframe** and **Architecture**.
-2. **Red** — failing test ([domain-model.mdc](domain-model.mdc); optional `tdd-red` subagent).
-3. **Green** — minimal production code (`tdd-green`).
-4. **Refactor** — cleanup (`tdd-refactor`).
-5. Mark task, test coverage, and FC rows done when verified.
-6. **Dev seed:** update [`dev-import.sql`](../../src/main/resources/dev-import.sql) + coverage registry ([dev-import-sql-safety.mdc](dev-import-sql-safety.mdc)).
+### Per-task execution order
 
-**Feature checklist recheck (mandatory before `done`):** walk every **FC*n*** row; fix gaps before marking `done`.
+1. **Java Developer** — Red → Green → Refactor on `T*n*-java` (may delegate to `tdd-red`, `tdd-green`, `tdd-refactor`).
+2. **HTMX Developer** — templates for `T*n*-htmx`; follows Architect HTMX model row-by-row.
+3. **Javascript Developer** — `T*n*-js` only when Architect marked JS required; HTMX-first — no duplicate `htmx.ajax` of template `hx-get`.
+4. Run mapped **TC*n*** tests; mark task rows and FC rows when verified.
+5. **Tdev** + **FCdev** before leaving phase 5.
+
+### Squad alignment rules
+
+| Rule | Detail |
+|------|--------|
+| Contract handoff | Java exposes paths, fragment ids, OOB targets, `HtmxTriggers`; HTMX consumes; JS listens with `evt.detail?.target` guards |
+| Routes | Templates use `*Paths` / `TemplateExtensions.url` — not hardcoded endpoint strings |
+| Events | New custom event → `HtmxTriggers.java` + template subscriber + `htmx-events.md` |
+| Forbidden | Full pages from `/forms/*`; `window.location.reload()` on auth; unscoped `#main` refresh on auth |
+
+**End of phase 5:** all approved tasks checked; `GITHUB_ACTIONS=true ./mvnw -B verify` green; set **`review-ready`**.
+
+## Phase 6 — Review (readonly trio)
+
+**Precondition:** status `review-ready`; verify green.
+
+Run **in parallel** (readonly):
+
+| Reviewer | Focus |
+|----------|-------|
+| **Java Code Reviewer** | Layering, bounded contexts, auth, `HtmxTriggers`/`Toast`, tests, Spotless |
+| **HTMX Reviewer** | HTMX model vs templates, `htmx-events.md`, scoped refresh, allowlist, navigation, confirm modals, SEO |
+| **Javascript Reviewer** | Necessity (HTMX-first), module quality, swap guards, i18n, load order |
+
+Record findings in changelog:
+
+```markdown
+#### Review findings
+
+| Reviewer | Severity | Location | Finding | Status |
+|----------|----------|----------|---------|--------|
+| HTMX | blocker | path | … | open / fixed / waived |
+```
+
+**Severity:** `blocker` (must fix before `done`) | `suggestion` (user may waive).
+
+**Squad** fixes `blocker` findings; re-run affected reviewer. **Reviewers must not** edit `src/**` directly.
+
+**Exit criteria:** no open `blocker` findings (or user waived suggestions explicitly).
+
+## Phase 7 — Review approved + done (human + Docs Sync)
+
+Record:
+
+```markdown
+**Review approval:** approved YYYY-MM-DD
+```
+
+**Docs Sync** agent updates feature-catalog, README, ARCHITECTURE, final `htmx-events.md` if not done in phase 2/5.
+
+**Feature checklist recheck (mandatory):** walk every **FC*n*** row.
 
 **Finish (all required):**
 
@@ -163,18 +264,19 @@ Set **Status:** `in-progress`. For **each approved task**:
 3. `GITHUB_ACTIONS=true ./mvnw -B verify` passes.
 4. `ReadLints` clean on edited paths.
 5. Docs per [documentation.mdc](documentation.mdc); **Implementation notes** filled.
-6. Set `done` only after 1–5.
+6. **Review approval** recorded; set **`done`** only after 1–5.
 
 ## Status values
 
 | Status | Meaning |
 |--------|---------|
 | `planned` | Feature analysis in progress |
-| `architecture-ready` | Architecture complete; ready for task break |
-| `tasks-ready` | Awaiting approval |
+| `architecture-ready` | Architecture + HTMX model complete; ready for task break |
+| `tasks-ready` | Awaiting task approval |
 | `approved` | User approved tasks; no code yet |
-| `in-progress` | TDD — **must leave repo working** at session end |
-| `done` | Implemented; FC rechecked; **verify green** |
+| `in-progress` | Squad development — **must leave repo working** at session end |
+| `review-ready` | Implementation complete; awaiting review |
+| `done` | Review approved; FC rechecked; **verify green** |
 
 ## Related rules
 
@@ -182,6 +284,7 @@ Set **Status:** `in-progress`. For **each approved task**:
 - [architecture-design.mdc](architecture-design.mdc)
 - [adr.mdc](adr.mdc)
 - [domain-model.mdc](domain-model.mdc)
+- [contraponto-javascript.mdc](contraponto-javascript.mdc)
 - [contraponto-tests.mdc](contraponto-tests.mdc)
 - [static-analysis.mdc](static-analysis.mdc)
 - [dev-import-sql-safety.mdc](dev-import-sql-safety.mdc)
