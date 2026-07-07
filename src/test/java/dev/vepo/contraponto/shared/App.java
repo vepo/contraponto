@@ -1677,18 +1677,18 @@ public class App {
         }
 
         public ProfilePage assertFediverseHandleVisible() {
-            wait.until(visibilityOfElementLocated(cssSelector(".profile-form__section--activitypub code")));
+            wait.until(visibilityOfElementLocated(cssSelector(".fediverse__handle")));
             return this;
         }
 
         public ProfilePage assertFediverseOptInChecked(boolean checked) {
-            var checkbox = wait.until(presenceOfElementLocated(cssSelector("input[name='federationEnabled']")));
+            var checkbox = wait.until(presenceOfElementLocated(cssSelector(".fediverse__enable-input")));
             assertThat(checkbox.isSelected()).isEqualTo(checked);
             return this;
         }
 
         public ProfilePage assertFediverseSectionVisible() {
-            wait.until(visibilityOfElementLocated(cssSelector(".profile-form__section--activitypub")));
+            wait.until(visibilityOfElementLocated(cssSelector(".fediverse")));
             return this;
         }
 
@@ -1766,13 +1766,13 @@ public class App {
 
         public ProfilePage submitFediverseSettings() {
             reliableClick(wait.until(elementToBeClickable(
-                                                          cssSelector(".profile-form__section--activitypub button[type='submit']"))));
+                                                          cssSelector(".fediverse__actions button[type='submit']"))));
             waitForReady();
             return this;
         }
 
         public ProfilePage toggleFediverseOptIn(boolean enable) {
-            var checkbox = wait.until(elementToBeClickable(cssSelector("input[name='federationEnabled']")));
+            var checkbox = wait.until(elementToBeClickable(cssSelector(".fediverse__enable-input")));
             if (checkbox.isSelected() != enable) {
                 reliableClick(checkbox);
             }
