@@ -148,6 +148,15 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
 
         var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
 
+        if (config.isActivityPubInboxPost(requestContext.getMethod(), subdomainPath)) {
+            var query = uriInfo.getRequestUri().getQuery();
+            var externalPath = subdomainPath.startsWith("/") ? subdomainPath : "/%s".formatted(subdomainPath);
+            if (query != null && !query.isBlank()) {
+                externalPath = "%s?%s".formatted(externalPath, query);
+            }
+            context.setSignatureRequestPath(externalPath);
+        }
+
         if ("GET".equals(requestContext.getMethod()) || "HEAD".equals(requestContext.getMethod())) {
             if (config.isWorkspaceRootPath(subdomainPath)) {
                 if (hasSessionCookie(requestContext)) {

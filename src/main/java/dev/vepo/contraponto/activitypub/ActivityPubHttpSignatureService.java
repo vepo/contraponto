@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.contraponto.blog.BlogSubdomainContext;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -38,18 +40,21 @@ public class ActivityPubHttpSignatureService {
     private final ActivityPubRemoteActorRepository remoteActorRepository;
     private final ActivityPubRemoteActorService remoteActorService;
     private final ActivityPubFetchSettings fetchSettings;
+    private final BlogSubdomainContext subdomainContext;
 
     @Inject
     public ActivityPubHttpSignatureService(ActivityPubKeyPairService keyPairService,
                                            ActivityPubActorRepository actorRepository,
                                            ActivityPubRemoteActorRepository remoteActorRepository,
                                            ActivityPubRemoteActorService remoteActorService,
-                                           ActivityPubFetchSettings fetchSettings) {
+                                           ActivityPubFetchSettings fetchSettings,
+                                           BlogSubdomainContext subdomainContext) {
         this.keyPairService = keyPairService;
         this.actorRepository = actorRepository;
         this.remoteActorRepository = remoteActorRepository;
         this.remoteActorService = remoteActorService;
         this.fetchSettings = fetchSettings;
+        this.subdomainContext = subdomainContext;
     }
 
     private Map<String, String> buildHeaderMapForVerification(String method,
@@ -68,14 +73,7 @@ public class ActivityPubHttpSignatureService {
     }
 
     private String buildRequestTarget(String method, URI uri) {
-        var path = uri.getRawPath();
-        if (path == null || path.isBlank()) {
-            path = "/";
-        }
-        var query = uri.getRawQuery();
-        if (query != null && !query.isBlank()) {
-            path = "%s?%s".formatted(path, query);
-        }
+        var path = subdomainContext.signatureRequestPath().orElseGet(() -> requestPathFromUri(uri));
         return "%s %s".formatted(method.toLowerCase(Locale.ROOT), path);
     }
 
@@ -149,6 +147,18 @@ public class ActivityPubHttpSignatureService {
             params.put(matcher.group(1), matcher.group(2));
         }
         return params;
+    }
+
+    private String requestPathFromUri(URI uri) {
+        var path = uri.getRawPath();
+        if (path == null || path.isBlank()) {
+            path = "/";
+        }
+        var query = uri.getRawQuery();
+        if (query != null && !query.isBlank()) {
+            path = "%s?%s".formatted(path, query);
+        }
+        return path;
     }
 
     private Optional<PublicKey> resolvePublicKey(String keyId) {

@@ -8,6 +8,7 @@ import jakarta.enterprise.context.RequestScoped;
 public class BlogSubdomainContext {
 
     private String subdomainUsername;
+    private String signatureRequestPath;
 
     public void activate(String username) {
         this.subdomainUsername = username;
@@ -15,6 +16,14 @@ public class BlogSubdomainContext {
 
     public boolean onUserSubdomain() {
         return subdomainUsername != null && !subdomainUsername.isBlank();
+    }
+
+    public void setSignatureRequestPath(String path) {
+        this.signatureRequestPath = path;
+    }
+
+    public Optional<String> signatureRequestPath() {
+        return Optional.ofNullable(signatureRequestPath);
     }
 
     public Optional<String> subdomainUsername() {
