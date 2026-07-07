@@ -81,6 +81,10 @@ public final class ActivityPubPaths {
         return config.platformUrl(PostPaths.extractUrl(post));
     }
 
+    public static String profilePageUrl(User user, BlogSubdomainConfig config) {
+        return config.platformUrl("/authors/%s".formatted(user.getUsername()));
+    }
+
     public static String publicKeyId(User user, BlogSubdomainConfig config) {
         return "%s#mainKey".formatted(actorId(user, config));
     }

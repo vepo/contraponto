@@ -38,7 +38,8 @@ public class ActivityPubActorDocumentBuilder {
         document.put("outbox", ActivityPubPaths.outbox(user, subdomainConfig));
         document.put("followers", ActivityPubPaths.followers(user, subdomainConfig));
         document.put("following", ActivityPubPaths.following(user, subdomainConfig));
-        document.put("url", subdomainConfig.platformUrl("/authors/%s".formatted(user.getUsername())));
+        document.put("url", ActivityPubPaths.profilePageUrl(user, subdomainConfig));
+        document.put("discoverable", actor.isFederationEnabled());
         document.put("publicKey", Map.of("id", actor.getPublicKeyId(),
                                          "owner", ActivityPubPaths.actorId(user, subdomainConfig),
                                          "publicKeyPem", actor.getPublicKeyPem()));

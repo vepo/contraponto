@@ -221,11 +221,12 @@ All returned **200** with correct types. Loopback invariant holds: `self` href `
 | Item | Status | Mastodon use |
 |------|--------|--------------|
 | NodeInfo | ❌ Not implemented | Not used in resolve path |
-| WebFinger `rel=profile-page` | ❌ Not implemented | Nice for humans; not validated in resolve |
+| WebFinger `rel=profile-page` | ✅ Done | `ActivityPubWebFingerService` |
+| `discoverable` / `indexable` on actor | ✅ `discoverable` when federation on | `ActivityPubActorDocumentBuilder` |
+| `GET /activities/create/{id}` | ✅ Done | `ActivityPubActivityEndpoint` |
 | WebFinger `rel=subscribe` | ❌ Not implemented | Authorize-interaction / remote follow UI |
-| `discoverable` / `indexable` on actor | ❌ Not set | Profile directory flags on Mastodon |
+| `indexable` on actor | ❌ Not set | Profile directory flag |
 | `sharedInbox` | ❌ Not set | Delivery optimization |
-| `GET /activities/create/{id}` | ❌ 404 | Outbox embeds activities inline; separate fetch fails but discovery still works |
 
 ### 5.3 Known bugs (post-discovery / delivery)
 
@@ -273,9 +274,9 @@ Prioritized for Mastodon findability and follow-up federation — **not** all bl
 |----|------|-------------------|-----------------|
 | **M1** | Fix double-slash activity IDs in outbox | No (delivery) | `ActivityPubPostObjectMapper` — **done** |
 | **M2** | Document / run interop checklist on real Mastodon (search + follow) | Verification | This doc + `feature/activitypub-integration.md` |
-| **M3** | Add WebFinger `profile-page` link to author HTML URL | No | `ActivityPubWebFingerService` |
-| **M4** | Add `discoverable: true` on actor when federation enabled | No (directory) | `ActivityPubActorDocumentBuilder` |
-| **M5** | Implement `GET /activities/{type}/{id}` or fix IDs so outbox items resolve | Post-discovery | New endpoint or mapper fix |
+| **M3** | Add WebFinger `profile-page` link to author HTML URL | No | `ActivityPubWebFingerService` — **done** |
+| **M4** | Add `discoverable: true` on actor when federation enabled | No (directory) | `ActivityPubActorDocumentBuilder` — **done** |
+| **M5** | Implement `GET /activities/{type}/{id}` | Post-discovery | `ActivityPubActivityEndpoint` — **done** |
 | **M6** | Optional: accept signed GET on actor if `AUTHORIZED_FETCH`-style mode added | Future | `ActivityPubJsonResponder` + signature verify |
 | **M7** | Guidance: `sameAs` Mastodon URL when user is local on that instance | Ops | Docs + author UI hint |
 
@@ -304,7 +305,9 @@ Prioritized for Mastodon findability and follow-up federation — **not** all bl
 |---------------|------|
 | WebFinger apex acct | `ActivityPubWebFingerTest` |
 | WebFinger actor-host alias | `ActivityPubWebFingerSubdomainTest` |
-| Actor JSON fields | `ActivityPubOutboxTest#actorJsonReturnsPersonWithInboxAndOutbox` |
+| WebFinger profile-page link | `ActivityPubWebFingerTest#webfingerResolvesAcctResource` |
+| Actor JSON fields + discoverable | `ActivityPubOutboxTest#actorJsonReturnsPersonWithInboxAndOutbox` |
+| Activity GET by ID | `ActivityPubOutboxTest#createActivityIsFetchableById` |
 | Inbox POST + signature | `ActivityPubInboxEndpointTest`, `ActivityPubSignatureTest` |
 | Outbox collection | `ActivityPubOutboxTest` |
 
