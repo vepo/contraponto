@@ -20,6 +20,7 @@ Read these before changing code or tests:
 | [docs/git-jekyll-convention.md](docs/git-jekyll-convention.md) | Git ↔ Jekyll sync layout |
 | [docs/deployment.md](docs/deployment.md) | Production checklist |
 | [docs/blog-subdomain-urls.md](docs/blog-subdomain-urls.md) | Platform vs author subdomain URLs |
+| [docs/mastodon-remote-account-resolution.md](docs/mastodon-remote-account-resolution.md) | Mastodon remote profile discovery flow + Contraponto gap analysis |
 | [docs/greenfield-deployment-tutorial.md](docs/greenfield-deployment-tutorial.md) | First deploy on a new server |
 | [src/test/resources/docker-smoke/README.md](src/test/resources/docker-smoke/README.md) | Prod-faithful smoke stack |
 | [.github/workflows/README.md](.github/workflows/README.md) | CI pipeline and test publishing |

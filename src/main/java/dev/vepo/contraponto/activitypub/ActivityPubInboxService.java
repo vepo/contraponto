@@ -73,7 +73,7 @@ public class ActivityPubInboxService {
         User user = follow.getLocalActor().getUser();
         var activity = new LinkedHashMap<String, Object>();
         activity.put("@context", "https://www.w3.org/ns/activitystreams");
-        activity.put("id", "%s/activities/accept/%d".formatted(ActivityPubPaths.actorId(user, subdomainConfig), follow.getId()));
+        activity.put("id", ActivityPubPaths.activityId(user, subdomainConfig, "accept", follow.getId()));
         activity.put("type", "Accept");
         activity.put("actor", ActivityPubPaths.actorId(user, subdomainConfig));
         activity.put("object", Map.of("id", follow.getFollowActivityId(),

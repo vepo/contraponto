@@ -41,8 +41,7 @@ public class ActivityPubPostObjectMapper {
         var object = toObject(post);
         var activity = new LinkedHashMap<String, Object>();
         activity.put("@context", CONTEXT);
-        activity.put("id", "%s/activities/create/%d".formatted(ActivityPubPaths.actorId(post.getBlog().getOwner(), subdomainConfig),
-                                                               post.getId()));
+        activity.put("id", ActivityPubPaths.activityId(post.getBlog().getOwner(), subdomainConfig, "create", post.getId()));
         activity.put("type", "Create");
         activity.put("actor", ActivityPubPaths.actorId(post.getBlog().getOwner(), subdomainConfig));
         activity.put("to", object.get("to"));
@@ -54,8 +53,7 @@ public class ActivityPubPostObjectMapper {
     public Map<String, Object> toDeleteActivity(Post post) {
         var activity = new LinkedHashMap<String, Object>();
         activity.put("@context", CONTEXT);
-        activity.put("id", "%s/activities/delete/%d".formatted(ActivityPubPaths.actorId(post.getBlog().getOwner(), subdomainConfig),
-                                                               post.getId()));
+        activity.put("id", ActivityPubPaths.activityId(post.getBlog().getOwner(), subdomainConfig, "delete", post.getId()));
         activity.put("type", "Delete");
         activity.put("actor", ActivityPubPaths.actorId(post.getBlog().getOwner(), subdomainConfig));
         activity.put("to", List.of("https://www.w3.org/ns/activitystreams#Public"));

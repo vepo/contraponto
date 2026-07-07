@@ -4,10 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.activitypub.ActivityPubPaths;
 import dev.vepo.contraponto.shared.UnitTest;
+import dev.vepo.contraponto.user.User;
 
 @UnitTest
 class BlogSubdomainConfigTest {
+
+    @Test
+    void activityPubActivityIdAvoidsDoubleSlash() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+        var user = new User();
+        user.setUsername("vepo");
+
+        assertThat(ActivityPubPaths.activityId(user, config, "create", 135L)).isEqualTo("https://vepo.commit-mestre.dev/activities/create/135");
+    }
 
     @Test
     void isPlatformOnlyRootSegment_allowsAuthorAndWorkspacePathsOnSubdomain() {

@@ -71,7 +71,8 @@ class ActivityPubOutboxTest {
                           .asString();
         assertThat(json).contains("\"type\":\"OrderedCollection\"")
                         .contains("\"type\":\"Create\"")
-                        .contains("Outbox Post");
+                        .contains("Outbox Post")
+                        .doesNotContain("//activities/");
     }
 
     @BeforeEach
