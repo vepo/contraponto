@@ -66,6 +66,7 @@ logger.info("Published post {}", post);
 - **`warn`:** unexpected or suspicious behaviour that did **not** fail the operation — stale cache, missing optional data, fallback path taken, retry succeeded, deprecated code path still hit.
 - **`error`:** failures and unexpected exceptions (include context ids; pass the exception as the last argument).
 - Do not log secrets, passwords, or full session tokens.
+- **No log facades:** do not add private methods whose only job is to call `logger` (e.g. `logVerifyFailure`, `logAndReturn`). Emit a **specific** `logger.warn` / `logger.error` at each failure site so the message names the branch directly.
 
 ## Entities
 
