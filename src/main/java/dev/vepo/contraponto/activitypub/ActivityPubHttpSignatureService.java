@@ -92,24 +92,6 @@ public class ActivityPubHttpSignatureService {
         return sb.toString();
     }
 
-    private String buildSigningStringFromHeaderList(String signedHeaders, Map<String, String> headerMap) {
-        var sb = new StringBuilder();
-        var first = true;
-        for (var name : signedHeaders.split("\\s+")) {
-            var key = name.trim().toLowerCase(Locale.ROOT);
-            var value = headerMap.get(key);
-            if (value == null) {
-                continue;
-            }
-            if (!first) {
-                sb.append('\n');
-            }
-            sb.append(key).append(": ").append(value);
-            first = false;
-        }
-        return sb.toString();
-    }
-
     public String computeDigest(String body) {
         try {
             var digest = java.security.MessageDigest.getInstance("SHA-256");
@@ -118,6 +100,19 @@ public class ActivityPubHttpSignatureService {
         } catch (GeneralSecurityException ex) {
             throw new IllegalStateException("SHA-256 unavailable", ex);
         }
+    }
+
+    private Optional<String> findMissingSignedHeader(String signedHeaders, Map<String, String> headerMap) {
+        for (var name : signedHeaders.split("\\s+")) {
+            var key = name.trim().toLowerCase(Locale.ROOT);
+            if (key.isEmpty()) {
+                continue;
+            }
+            if (!headerMap.containsKey(key)) {
+                return Optional.of(key);
+            }
+        }
+        return Optional.empty();
     }
 
     private boolean hasFreshRemoteKey(ActivityPubRemoteActor remote) {
@@ -199,6 +194,27 @@ public class ActivityPubHttpSignatureService {
         }
     }
 
+    private String signingStringFromHeaderList(String signedHeaders, Map<String, String> headerMap) {
+        var sb = new StringBuilder();
+        var first = true;
+        for (var name : signedHeaders.split("\\s+")) {
+            var key = name.trim().toLowerCase(Locale.ROOT);
+            if (key.isEmpty()) {
+                continue;
+            }
+            var value = headerMap.get(key);
+            if (value == null) {
+                throw new IllegalStateException("missing signed header: " + key);
+            }
+            if (!first) {
+                sb.append('\n');
+            }
+            sb.append(key).append(": ").append(value);
+            first = false;
+        }
+        return sb.toString();
+    }
+
     public Map<String, String> signRequest(PrivateKey privateKey,
                                            String keyId,
                                            String method,
@@ -247,6 +263,7 @@ public class ActivityPubHttpSignatureService {
                                  Map<String, String> headers) {
         var signatureHeader = headerValue(headers, "Signature");
         if (signatureHeader == null || signatureHeader.isBlank()) {
+            logger.warn("ActivityPub inbox signature missing Signature header");
             return false;
         }
         var params = parseSignatureHeader(signatureHeader);
@@ -255,17 +272,19 @@ public class ActivityPubHttpSignatureService {
         var signedHeaders = params.get("headers");
         var signature = params.get("signature");
         if (keyId == null || algorithm == null || signedHeaders == null || signature == null) {
+            logger.warn("ActivityPub inbox signature incomplete params keyId={} params={}", keyId, params.keySet());
             return false;
         }
         if (!"rsa-sha256".equalsIgnoreCase(algorithm)) {
+            logger.warn("ActivityPub inbox signature unsupported algorithm keyId={} algorithm={}", keyId, algorithm);
             return false;
         }
         var publicKey = resolvePublicKey(keyId);
         if (publicKey.isEmpty()) {
-            logger.warn("No public key found for keyId={}", keyId);
+            logger.warn("ActivityPub inbox signature no public key for keyId={}", keyId);
             return false;
         }
-        var verified = verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, publicKey.get());
+        var verified = verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, publicKey.get(), keyId);
         if (verified) {
             return true;
         }
@@ -273,9 +292,10 @@ public class ActivityPubHttpSignatureService {
         remoteActorService.fetchAndCache(actorUrl, true);
         var retryKey = resolvePublicKeyFromCache(keyId);
         if (retryKey.isEmpty()) {
+            logger.warn("ActivityPub inbox signature no public key after actor refetch keyId={}", keyId);
             return false;
         }
-        return verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, retryKey.get());
+        return verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, retryKey.get(), keyId);
     }
 
     public boolean verifyRequest(String method,
@@ -293,7 +313,7 @@ public class ActivityPubHttpSignatureService {
         if (signedHeaders == null || signature == null) {
             return false;
         }
-        return verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, publicKey);
+        return verifySignedHeaders(method, requestUri, body, headers, signedHeaders, signature, publicKey, null);
     }
 
     private boolean verifySignedHeaders(String method,
@@ -302,13 +322,49 @@ public class ActivityPubHttpSignatureService {
                                         Map<String, String> headers,
                                         String signedHeaders,
                                         String signature,
-                                        PublicKey publicKey) {
+                                        PublicKey publicKey,
+                                        String keyId) {
         var headerMap = buildHeaderMapForVerification(method, requestUri, body, headers);
+        var requestTarget = buildRequestTarget(method, requestUri);
+        var host = headerValue(headers, "Host");
         var declaredDigest = headerMap.get("digest");
-        if (declaredDigest == null || !declaredDigest.equals(computeDigest(body))) {
+        if (declaredDigest == null) {
+            logger.warn("ActivityPub inbox signature missing Digest header keyId={} requestTarget={} host={} signedHeaders={}",
+                        keyId,
+                        requestTarget,
+                        host,
+                        signedHeaders);
             return false;
         }
-        var signingString = buildSigningStringFromHeaderList(signedHeaders, headerMap);
-        return verify(signingString, signature, publicKey);
+        var computedDigest = computeDigest(body);
+        if (!declaredDigest.equals(computedDigest)) {
+            var bodyBytes = body == null ? 0 : body.length();
+            logger.warn("ActivityPub inbox signature digest mismatch keyId={} requestTarget={} host={} bodyBytes={}",
+                        keyId,
+                        requestTarget,
+                        host,
+                        bodyBytes);
+            return false;
+        }
+        var missingHeader = findMissingSignedHeader(signedHeaders, headerMap);
+        if (missingHeader.isPresent()) {
+            var headerName = missingHeader.get();
+            logger.warn("ActivityPub inbox signature missing signed header keyId={} requestTarget={} host={} header={}",
+                        keyId,
+                        requestTarget,
+                        host,
+                        headerName);
+            return false;
+        }
+        var signingString = signingStringFromHeaderList(signedHeaders, headerMap);
+        if (!verify(signingString, signature, publicKey)) {
+            logger.warn("ActivityPub inbox signature crypto mismatch keyId={} requestTarget={} host={} signedHeaders={}",
+                        keyId,
+                        requestTarget,
+                        host,
+                        signedHeaders);
+            return false;
+        }
+        return true;
     }
 }
