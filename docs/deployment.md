@@ -123,7 +123,7 @@ Authors enable federation per account under **Writing → Appearance**. Platform
 
 **Operator procedure:** [contraponto-prod/docs/MOP-UPDATE.md](../../contraponto-prod/docs/MOP-UPDATE.md) §6.
 
-**DNS / nginx:** author subdomains and `/.well-known/webfinger` must already work (same as blog subdomain setup in §2). No extra nginx locations required.
+**DNS / nginx:** author subdomains, **apex domain** (`commit-mestre.dev` for WebFinger), and `/.well-known/webfinger` must reach the app. Wildcard `*` does not cover the apex — add an apex **A** record to the same server. See [contraponto-prod/docs/MOP-DEPLOYMENT.md](../../contraponto-prod/docs/MOP-DEPLOYMENT.md) §2.2.
 
 See [feature/activitypub-integration.md](feature/activitypub-integration.md) and ADRs [0006](adr/0006-activitypub-federation.md)–[0008](adr/0008-activitypub-actor-identity.md).
 
