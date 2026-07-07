@@ -53,10 +53,11 @@ class ActivityPubWebFingerTest {
     void webfingerResolvesAcctResource() {
         var resource = ActivityPubPaths.acctHandle(user, subdomainConfig);
         var json = given().queryParam("resource", resource)
-                          .accept(ActivityPubPaths.ACTIVITY_JSON)
+                          .accept("application/jrd+json")
                           .get("/.well-known/webfinger")
                           .then()
                           .statusCode(200)
+                          .contentType("application/jrd+json")
                           .extract()
                           .body()
                           .asString();

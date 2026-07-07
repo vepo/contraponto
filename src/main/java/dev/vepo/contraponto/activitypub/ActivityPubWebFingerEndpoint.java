@@ -16,6 +16,8 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class ActivityPubWebFingerEndpoint {
 
+    private static final String JRD_JSON = "application/jrd+json";
+
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private final ActivityPubWebFingerService webFingerService;
@@ -27,9 +29,9 @@ public class ActivityPubWebFingerEndpoint {
 
     @GET
     @Operation(hidden = true)
-    @Produces({ ActivityPubPaths.ACTIVITY_JSON, "application/jrd+json", "application/json" })
+    @Produces(JRD_JSON)
     public Response webfinger(@jakarta.ws.rs.QueryParam("resource") String resource) throws Exception {
         var document = webFingerService.resolve(resource).orElseThrow(NotFoundException::new);
-        return Response.ok(JSON.writeValueAsString(document)).build();
+        return Response.ok(JSON.writeValueAsString(document)).type(JRD_JSON).build();
     }
 }
