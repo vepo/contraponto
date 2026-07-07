@@ -86,3 +86,53 @@
     {#include components/htmx-spinner id='appearance-htmx-indicator' /}
     <button type="submit" class="btn btn--primary" data-i18n="account.saveChanges">Salvar alterações</button>
 </form>
+
+{#if federationView.platformFederationEnabled}
+<section class="profile-form__section profile-form__section--activitypub">
+    <h2 data-i18n="appearance.fediverseSection">Fediverse (ActivityPub)</h2>
+    <div id="activitypubMessage"></div>
+    <form class="profile-form profile-form--inline"
+          hx-post="/forms/writing/activitypub"
+          hx-target="#activitypubMessage"
+          hx-swap="innerHTML">
+        <div class="form-group form-group--checkbox">
+            <label>
+                <input type="checkbox" name="federationEnabled" value="true"
+                       {#if federationView.federationEnabled}checked{/if}>
+                <span data-i18n="appearance.fediverseOptIn">Publish my main blog posts to the Fediverse</span>
+            </label>
+        </div>
+        {#if federationView.federationEnabled}
+        <p class="form-group__hint">
+            <span data-i18n="appearance.fediverseHandle">Your handle</span>:
+            <code>{federationView.handle}</code>
+        </p>
+        <p class="form-group__hint">
+            Actor URL: <a href="{federationView.actorUrl}" rel="noopener noreferrer">{federationView.actorUrl}</a>
+        </p>
+        <p class="form-group__hint">
+            Followers on the Fediverse: {federationView.followerCount}
+        </p>
+        {/if}
+        <button type="submit" class="btn btn--secondary" data-i18n="appearance.fediverseSave">Save Fediverse settings</button>
+    </form>
+    {#if federationView.federationEnabled && !federationView.pendingFollowRequests.isEmpty}
+    <h3 class="profile-form__section-title" data-i18n="appearance.fediverseFollowRequests">Fediverse follow requests</h3>
+    <div id="activitypubFollowRequests">
+        {#for request in federationView.pendingFollowRequests}
+        <div class="activitypub-follow-request">
+            <span class="activitypub-follow-request__handle">{request.remoteActorId}</span>
+            <button type="button" class="btn btn--primary btn--sm"
+                    hx-post="/forms/writing/activitypub/follows/{request.followId}/accept"
+                    hx-target="#activitypubFollowRequests"
+                    hx-swap="innerHTML">Accept</button>
+            <button type="button" class="btn btn--secondary btn--sm"
+                    hx-post="/forms/writing/activitypub/follows/{request.followId}/reject"
+                    hx-target="#activitypubFollowRequests"
+                    hx-swap="innerHTML">Reject</button>
+        </div>
+        {/for}
+    </div>
+    {/if}
+</section>
+{/if}

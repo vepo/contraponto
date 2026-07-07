@@ -1,0 +1,92 @@
+---
+description: Phase 1 — feature analysis before any implementation (part of development process)
+alwaysApply: true
+---
+
+# Feature analysis (phase 1)
+
+Part of [development-process.mdc](development-process.mdc). **Do not write production or test code** until phases 1–4 are complete.
+
+**Answering FQ*n* updates the feature doc only** — not development approval. **Each answer triggers mandatory impact review** — see development-process § Impact review.
+
+After phase 1, **every feature change** proceeds to phase 2 — [architecture-design.mdc](architecture-design.mdc).
+
+Template: [feature/README.md](../../feature/README.md).
+
+## When required
+
+| Trigger | Analysis required |
+|---------|-------------------|
+| New behaviour, route, schema | Yes — create or extend `feature/<feature-slug>.md` |
+| Refactor touching multiple packages or bounded contexts | Yes |
+| Bug fix with cross-feature side effects | Yes — append changelog entry |
+| Typo, comment-only, formatter, docs-only (no behaviour) | No — exempt |
+
+When feature analysis is required, **architecture design (phase 2) is also required**.
+
+## Process
+
+### 0. Resolve `<feature-slug>`
+
+The slug names a **high-level capability**, not a single task.
+
+| Good | Bad |
+|------|-----|
+| `reading-list` | `fix-save-button-bug` |
+| `post-text-highlight` | `add-highlight-css` |
+
+1. **Name the capability** — align with [feature-catalog.md](../../docs/feature-catalog.md) or bounded context.
+2. **Derive slug** — 2–4 words, kebab-case.
+3. **Search** — list `feature/*.md`; check feature-catalog and domain spec.
+4. **Decide** — extend existing doc, create new, or **ask** when unclear.
+
+**When in doubt, ask.**
+
+### 1. Create or open `feature/<feature-slug>.md`
+
+### 2. Impact — document scope before coding
+
+- Bounded contexts ([contraponto-bounded-contexts.mdc](contraponto-bounded-contexts.mdc))
+- **Wireframe** — layouts for every Qute route, modal, shell widget
+- Routes / HTMX fragments / templates (detail in phase 2 **Architecture**)
+- Schema (`db/migration/`), **`dev-import.sql`** — [dev-import-sql-safety.mdc](dev-import-sql-safety.mdc)
+- Tests (`@WebTest`, unit, ArchUnit) and docs
+- Risks; **Feature questions (FQ*n***)** table
+
+**AQ*n*** belong in phase 2.
+
+### 3. Changelog — one entry per discrete change request
+
+- **Change name**, **Status**, **Impact on other features**
+- **Feature checklist** (**FC1**, …, **FCdev**)
+- **Wireframe** at feature doc level
+
+Phases 2–5 continue in the same entry — [development-process.mdc](development-process.mdc).
+
+## Allowed edits by phase
+
+| Phase | Status | May edit |
+|-------|--------|----------|
+| 1 | `planned` | `feature/*.md`, `docs/**`, domain spec |
+| 2 | → `architecture-ready` | `feature/*.md`, `docs/adr/`, ARCHITECTURE.md |
+| 3 | `tasks-ready` | `feature/*.md` (FC, Tasks, Test coverage) |
+| 4 | `approved` | `feature/*.md` (Development approval line) |
+| 5 | `in-progress` / `done` | `src/**`, templates, CSS/JS, docs |
+
+## Order with other gates
+
+```
+Feature analysis → architecture design → domain spec review → task break → development approved → TDD → verify
+```
+
+Domain: [domain-model.mdc](domain-model.mdc). Architecture: [architecture-design.mdc](architecture-design.mdc).
+
+## During implementation (phase 5 only)
+
+- Mark status lifecycle; check off Tasks, Test coverage, FC rows.
+- **Before `done`:** Feature checklist recheck — development-process § Phase 5.
+- **Working code invariant** — fix or revert before stopping.
+
+## Legacy open questions
+
+Undifferentiated **Q*n*** → treat as **FQ*n*** until updated.

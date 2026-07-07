@@ -1,0 +1,45 @@
+---
+description: Keep README.md features, stack, and quick start in sync with the product
+alwaysApply: true
+---
+
+# README maintenance
+
+[README.md](../../README.md) is the **public face of Contraponto** — the first doc visitors and agents read.
+
+## When to update README.md
+
+| Trigger | Action in README |
+|---------|------------------|
+| New user-facing feature shipped | Add bullet under **Features** (or create subsection) |
+| Feature removed or renamed | Update or remove matching bullet |
+| Tech stack change | Update **Tech stack** / stack section |
+| Dev startup or URLs change | Update **Quick start** commands and links |
+| New dev persona in `dev-import.sql` | Update dev login table |
+| New top-level doc agents should know | Add row to documentation index |
+
+## What belongs in README vs other docs
+
+| README | Elsewhere |
+|--------|-----------|
+| One-line pitch, tech stack, quick start | — |
+| Feature bullets (what the product does) | [feature-catalog.md](../../docs/feature-catalog.md) for routes, roles, click paths |
+| Doc index links | Full detail in linked docs |
+| Dev login summary | Full personas in feature-catalog § Dev personas |
+
+Do **not** duplicate route tables in README — link to [feature-catalog.md](../../docs/feature-catalog.md) and [ARCHITECTURE.md](../../ARCHITECTURE.md).
+
+## Finish checklist (user-visible features)
+
+1. Update [feature-catalog.md](../../docs/feature-catalog.md) (routes, steps, § Dev personas).
+2. Update [`dev-import.sql`](../../src/main/resources/dev-import.sql) ([dev-import-sql-safety.mdc](dev-import-sql-safety.mdc)).
+3. Update README **Features** section when capability is newsworthy.
+4. Update [domain-specification.md](../../docs/domain-specification.md) if vocabulary changed.
+5. Update `feature/<slug>.md` changelog per [development-process.mdc](development-process.mdc).
+
+## Related
+
+- [AGENTS.md](../../AGENTS.md)
+- [feature-catalog.mdc](feature-catalog.mdc)
+- [documentation.mdc](documentation.mdc)
+- [docs-sync.md](../agents/docs-sync.md)

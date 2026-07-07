@@ -2,6 +2,8 @@
 
 Canonical reference for developers and AI agents. For route-level UX detail see [docs/application-guidelines.md](docs/application-guidelines.md). For visual design see [docs/ui-guidelines.md](docs/ui-guidelines.md).
 
+**Development process:** five-phase gate (feature analysis → architecture → tasks → approval → TDD) in [AGENTS.md](AGENTS.md) and `.cursor/rules/development-process.mdc`. Feature specs live in [feature/](feature/); transversal decisions in [docs/adr/](docs/adr/).
+
 ## 1. Core principles
 
 - **No client-side framework** — HTMX loads HTML fragments from the server.
@@ -87,7 +89,20 @@ Republishing increments version and triggers notifications again.
 
 Registered before catch-all `/{username}` routes where needed (`SiteWideFeedEndpoint`).
 
-## 8.1 SEO
+## 8.1 ActivityPub federation (planned)
+
+Server-to-server [ActivityPub](https://www.w3.org/TR/activitypub/) so authors syndicate **main-blog** posts to Mastodon and other Fediverse apps. Each opted-in author is a **Person** actor on their **blog subdomain**; **WebFinger** resolves `@user@domain`; **inbox** receives Follow/Undo; **outbox** lists Create activities; delivery uses **HTTP Signatures** and an async retry queue on `PostPublishedEvent` / `PostUnpublishedEvent`.
+
+| Resource | Path (planned) | Notes |
+|----------|----------------|-------|
+| WebFinger | `GET /.well-known/webfinger?resource=acct:user@domain` | Actor discovery |
+| Actor | `GET /` (subdomain) or actor document path per ADR-0008 | `application/activity+json` |
+| Inbox | `POST /{username}/inbox` | Follow, Accept, Create delivery target |
+| Outbox | `GET /{username}/outbox` | OrderedCollection of activities |
+
+**Docs:** [feature/activitypub-integration.md](feature/activitypub-integration.md), ADRs [0006](docs/adr/0006-activitypub-federation.md)–[0008](docs/adr/0008-activitypub-actor-identity.md) (**Accepted** 2026-07-06).
+
+## 8.2 SEO
 
 | Resource | Path | Notes |
 |----------|------|--------|
@@ -150,6 +165,7 @@ dev.vepo.contraponto/
 ├── dashboard/        # Author workspace — manage analytics
 ├── directory/        # Discovery — author/blog directories
 ├── git/              # Integration — Jekyll/Git sync
+├── activitypub/      # Integration — ActivityPub federation
 ├── highlight/        # Reader engagement — text highlights, proposals, notes
 ├── home/             # Discovery — featured homepage
 ├── image/            # Media — upload & storage

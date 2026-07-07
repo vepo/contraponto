@@ -1,0 +1,52 @@
+---
+description: Java formatting (formatter.xml) and import hygiene — required on every Java edit
+globs: "**/*.java"
+alwaysApply: true
+---
+
+# Java formatting and imports
+
+All Java code must match the project Eclipse formatter and import rules. CI enforces this via Spotless and the formatter Maven plugin — both use [`resources/formatter.xml`](../../resources/formatter.xml).
+
+## Formatting
+
+- **Always** format edited `*.java` files with `resources/formatter.xml` (4 spaces, K&R braces, ~120 char lines).
+- After editing Java, run Spotless on touched files before finishing:
+
+```bash
+./mvnw spotless:apply
+```
+
+- Do not hand-style braces, indentation, or line breaks that diverge from the formatter.
+- Import order (formatter + [contraponto-java.mdc](contraponto-java.mdc)): `java.*` / `javax.*` → `io.quarkus.*` → third-party → `dev.vepo.contraponto.*`.
+
+## Imports — required
+
+1. **Every type** used in code must have an `import` (or live in the same package).
+2. **Remove unused imports** after every edit — no dead imports left from refactors or IDE drift.
+3. **Never** use a fully qualified class name when a simple name would work **without** a collision.
+
+## Imports — name collision (only exception)
+
+When two types share the same simple name, import one and use the **fully qualified name** for the other:
+
+```java
+// ✅ collision — import List, FQN for the other
+import java.util.List;
+
+public void merge(List<String> ids, dev.vepo.contraponto.tag.List tagList) { ... }
+
+// ❌ FQN habit without collision
+public void save(java.util.List<String> ids) { ... }
+
+// ❌ missing import
+public void save(List<String> ids) { ... }  // List not imported
+```
+
+Same-package types and `java.lang` types (`String`, `Integer`, …) need no import.
+
+## Before finishing Java changes
+
+1. `./mvnw spotless:apply` (or confirm `spotless:check` passes on changed files).
+2. `ReadLints` on edited paths — fix unused-import warnings and unresolved types.
+3. Full gate: [static-analysis.mdc](static-analysis.mdc) (`GITHUB_ACTIONS=true ./mvnw -B verify`).

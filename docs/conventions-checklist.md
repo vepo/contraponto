@@ -68,6 +68,19 @@ Legend: ✅ done · ⚠️ partial · ❌ missing / outdated
 
 | Item | Status |
 |------|--------|
+| Five-phase development process | ✅ `development-process.mdc` (imported from SauOn) |
+| Feature analysis (phase 1) | ✅ `change-request-analysis.mdc` |
+| Architecture design + ADRs (phase 2) | ✅ `architecture-design.mdc`, `adr.mdc`, `docs/adr/` |
+| Manual ADR / task approval gate | ✅ development-process § Manual acceptance only |
+| `feature/` changelog workflow | ✅ `feature/README.md` (PRDs migrate over time) |
+| Four pillars in `AGENTS.md` | ✅ model / testing / quality / platform |
+| `.cursor/agents/` (TDD, domain, docs) | ✅ `tdd-red`, `tdd-green`, `tdd-refactor`, `domain-model`, `docs-sync` |
+| `.cursor/commands/review_code_structure.md` | ✅ |
+| Tiered testing + impact map | ✅ `contraponto-testing.mdc` |
+| Test failure diagnosis + `reports/` | ✅ `contraponto-test-failure-diagnosis.mdc` |
+| README / docs maintenance rules | ✅ `readme.mdc`, `documentation.mdc` |
+| Technical decisions backlog | ✅ `docs/technical-decisions-backlog.md` |
+| Dev seed coverage registry | ✅ `dev-import-sql-safety.mdc` (always-on) |
 | `.cursor/rules/*.mdc` split by concern | ✅ |
 | Root `AGENTS.md` index | ✅ |
 | Legacy `.cursorrules` removed | ✅ (use `.cursor/rules/`) |

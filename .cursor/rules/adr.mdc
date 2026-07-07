@@ -1,0 +1,82 @@
+---
+description: ADR — when and how to record architecture decisions (phase 2)
+alwaysApply: true
+---
+
+# Architecture Decision Records (ADR)
+
+Transversal decisions live in [docs/adr/](../../docs/adr/). Template: [docs/adr/template.md](../../docs/adr/template.md). Index: [docs/adr/README.md](../../docs/adr/README.md).
+
+**Manual acceptance only:** see [development-process.mdc](development-process.mdc) § Manual acceptance only. The agent **never** sets `Accepted` or `Reopened` without explicit user approval.
+
+## ADRs baseline (Accepted)
+
+| ADR | Decisão |
+|-----|---------|
+| [0001](../../docs/adr/0001-record-architecture-decisions.md) | Processo ADR |
+| [0002](../../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Java + Quarkus + Jakarta EE |
+| [0003](../../docs/adr/0003-frontend-qute-htmx.md) | Qute + HTMX (server-rendered) |
+| [0004](../../docs/adr/0004-package-naming-dev-vepo.md) | Pacotes `dev.vepo.contraponto` |
+| [0005](../../docs/adr/0005-postgresql-database.md) | PostgreSQL + Flyway |
+| [0006](../../docs/adr/0006-activitypub-federation.md) | ActivityPub S2S federation |
+| [0007](../../docs/adr/0007-activitypub-http-signatures.md) | ActivityPub HTTP Signatures |
+| [0008](../../docs/adr/0008-activitypub-actor-identity.md) | ActivityPub actor identity (one Person per User) |
+
+## ADR status
+
+| Status | Meaning |
+|--------|---------|
+| `Proposed` | Agent draft |
+| `Under Review` | Awaiting first acceptance |
+| `Accepted` | Decision in force |
+| `Reopened` | Was `Accepted`; user reopened with justification |
+| `Rejected` | Not adopted |
+| `Superseded` | Replaced by another ADR |
+| `Deprecated` | Historical only |
+
+## Manual ADR acceptance
+
+| Status | Who sets |
+|--------|----------|
+| `Proposed`, `Under Review` | Agent or user during elaboration |
+| **`Accepted`**, **`Rejected`**, **`Superseded`**, **`Reopened`** | **User only** — explicit chat message |
+
+**Agent must:** draft to `Proposed`; **stop** and ask for acceptance; update to `Accepted` only after user phrase ("Aceito o ADR-NNNN").
+
+**Forbidden:** agent marks `Accepted` on creation; edits `Accepted` body without reopen.
+
+## Reopening an ADR
+
+1. User declares reopen **with justification**.
+2. Agent sets **`Reopened`**; Changelog `reopened`.
+3. Agent edits body; preserves Changelog history.
+4. **Stop**; request new acceptance.
+5. After acceptance: `Accepted`; impact review on features and ARCHITECTURE.md.
+
+**Prefer `Superseded` + new ADR** for fundamental scope changes.
+
+## Changelog (every ADR)
+
+```markdown
+## Changelog
+
+| Data | Evento | Detalhe |
+|------|--------|---------|
+| YYYY-MM-DD | proposed | Rascunho inicial. |
+| YYYY-MM-DD | accepted | Aceite manual do usuário. |
+```
+
+## When to create ADR (phase 2)
+
+| Situation | Action |
+|----------|--------|
+| Stack, packages, cross-context integration, security transversal | **New ADR** — `Proposed` |
+| **AQ*n*** with impact beyond one feature | **New ADR** or edit non-Accepted ADR |
+| Single endpoint/template/table for this feature only | Feature **Architecture** section |
+| Invalidates Accepted ADR (large change) | New ADR; previous → `Superseded` |
+
+## Integration with feature doc
+
+**Architecture** section links ADRs by status (`Accepted`, `Proposed`, `Reopened`).
+
+Detail: [architecture-design.mdc](architecture-design.mdc).

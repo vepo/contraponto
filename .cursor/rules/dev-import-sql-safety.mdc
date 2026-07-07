@@ -1,12 +1,64 @@
 ---
-description: Keep dev-import.sql valid across Flyway schema changes — safe resets, protected baseline, seed updates
-globs: src/main/resources/dev-import.sql,src/main/resources/db/migration/*.sql
-alwaysApply: false
+description: Mandatory dev-import.sql — update on every feature/schema change; seed must cover all shipped features
+globs: src/main/resources/dev-import.sql,src/main/resources/db/migration/*.sql,feature/*.md
+alwaysApply: true
 ---
+
+# dev-import.sql — mandatory dev seed (all features)
+
+[`dev-import.sql`](../../src/main/resources/dev-import.sql) is the **single dev database seed**. It runs on **every** `%dev` startup via [`DatabaseDevSetup`](../../src/main/java/dev/vepo/contraponto/shared/infra/DatabaseDevSetup.java), after Flyway applies migrations.
+
+## Mandatory rule
+
+**Every change that touches persistence, domain entities, or user-facing flows must update `dev-import.sql` in the same PR/session** — together with Flyway (`db/migration/`), JPA entities, tests, and docs.
+
+| Trigger | Required `dev-import.sql` action |
+|---------|----------------------------------|
+| New/changed table or column (Flyway) | INSERT/UPDATE seed rows; satisfy NOT NULL and FKs |
+| New entity or repository | Sample rows for local exploration |
+| Feature shipped or extended (`done` / `in-progress`) | Happy-path data so `./mvnw quarkus:dev` exercises the feature without manual setup |
+| New role or permission | Dev user with that role |
+| New UI route with auth gate | Persona that can reach the route |
+| Removed feature | Remove obsolete seed; no dead references |
+
+**Forbidden:** marking a feature `done` while `dev-import.sql` lacks happy-path data; schema PR without seed update; relying only on `Given` for manual dev exploration.
+
+Treat **Flyway + `dev-import.sql` + entities** as one deliverable ([development-process.mdc](development-process.mdc)).
+
+## Feature coverage registry
+
+Keep aligned with [feature/](../../feature/) and [docs/feature-catalog.md](../../docs/feature-catalog.md) § Dev personas. When a shipped feature reaches `done`, its row must be **Covered**.
+
+| Feature area | Status | Required seed (minimum) |
+|--------------|--------|-------------------------|
+| Platform admin | Covered | `admin` user + roles; welcome post |
+| Multi-blog authors | Covered | `alice`, `bob`, `vepo` (+ secondary `notas` blog) |
+| Editor / review | Covered | `editor` user; featured posts for `/review` |
+| Reading list | Covered | `dave` follower; reading-list items on seed posts |
+| Highlights / responses | Covered | Sample highlights and proposals in dev-import |
+| Git sync | Covered | `vepo` blog with Git remote config |
+| Notifications / audience | Covered | `tb_notifications`, `tb_blog_audience` samples |
+| Custom pages | Covered | Migration footer pages + dev examples |
+| Comments moderation | Covered | Sample comments on seed posts |
+| Series / tags / RSS / search | Covered | Tagged posts, series membership, pagination volume |
+| ActivityPub / Fediverse | Covered | `alice` actor + keys; sample accepted remote follow |
+
+**Agent duty:** on completing a feature changelog entry, update this registry and the SQL file. Open a gap row as **Planned** until seed exists.
+
+## Per-feature checklist (phase 3 / phase 5)
+
+Every feature changelog entry with schema or user-visible behaviour must include:
+
+| ID | Criterion |
+|----|-----------|
+| **FC*dev*** | `dev-import.sql` covers this feature's happy path |
+| **T*dev*** | Update `dev-import.sql` + [feature-catalog.md](../../docs/feature-catalog.md) § Dev personas |
+
+Add to **Test coverage** when SQL is non-trivial: `%dev` startup runs `DatabaseDevSetup` without error.
 
 # dev-import.sql — schema change safety
 
-[`dev-import.sql`](../../src/main/resources/dev-import.sql) runs on **every** `%dev` startup ([`DatabaseDevSetup`](../../src/main/java/dev/vepo/contraponto/shared/infra/DatabaseDevSetup.java)), after Flyway applies migrations. **Any schema change must not break that script** — treat migration + `dev-import.sql` as one deliverable.
+**Any schema change must not break that script** — treat migration + `dev-import.sql` as one deliverable.
 
 ## Protected baseline (never wipe)
 

@@ -1,0 +1,187 @@
+---
+description: Mandatory agentic development process — feature analysis, architecture design, task break, approval, TDD
+alwaysApply: true
+---
+
+# Development process (mandatory)
+
+**No production or test code** until phases 1–4 are complete for the current changelog entry. Template: [feature/README.md](../../feature/README.md). Feature analysis: [change-request-analysis.mdc](change-request-analysis.mdc). Architecture design + ADRs: [architecture-design.mdc](architecture-design.mdc), [adr.mdc](adr.mdc), [docs/adr/](../../docs/adr/).
+
+## Strict phase gate
+
+Phases are **sequential and mandatory**. Never skip phase 2, phase 3, or phase 4.
+
+```
+planned → architecture-ready → tasks-ready → approved → in-progress → done
+(feature)  (architecture)      (task break)  (explicit     (TDD only)
+                                            task approval)
+```
+
+| Action | Phase | Allowed edits |
+|--------|-------|----------------|
+| Feature analysis, feature questions (**FQ*n***) | 1 | `feature/*.md`, `docs/**`, domain spec |
+| Architecture design, architecture questions (**AQ*n***) | 2 | `feature/*.md`, `docs/**` (incl. `docs/adr/`), domain spec, ARCHITECTURE.md |
+| Answer **FQ*n*** or **AQ*n*** in chat or feature doc | 1 or 2 (still) | `feature/*.md`, `docs/**`, ARCHITECTURE.md only — **not** `src/main/**`, `src/test/**` |
+| Task break (Tasks + Test coverage + Feature checklist) | 3 | `feature/*.md` |
+| User approves task IDs | 4 | `feature/*.md` (record approval) |
+| TDD implementation | 5 | `src/main/**`, `src/test/**`, templates, CSS/JS, docs as needed |
+
+### Open question kinds
+
+| Kind | Prefix | Phase | Decides |
+|------|--------|-------|---------|
+| **Feature question** | **FQ*n*** | 1 | Product scope, UX, wireframe, domain rules, user-visible behaviour |
+| **Architecture question** | **AQ*n*** | 2 | Packages, layers, routes, schema, cross-context integration, technical trade-offs |
+
+Legacy undifferentiated **Q*n*** in existing feature docs are treated as **FQ*n*** until updated.
+
+### Answering open questions ≠ development approval
+
+**Forbidden:** starting phase 5 because the user answered **FQ1**, **AQ2**, chose an option, said "yes"/"big-bang", or clarified scope. Those actions only update the relevant questions table (status `answered`, **Answer** column) — they do **not** authorize coding.
+
+### Manual acceptance only — ADR and features (mandatory)
+
+**An agent never accepts an ADR or feature on its own.** Acceptance is **manual only** — an explicit human message in chat (or an approval line they edited in the doc).
+
+| Artefact | Agent may | User only |
+|----------|-----------|-----------|
+| **ADR** | Create/edit with status `Proposed`, `Under Review`, or `Reopened`; fill Recommendation; record **Changelog** | Set **`Accepted`**, **`Rejected`**, **`Superseded`**, or **`Reopened`** (reopen requires user justification) |
+| **Feature (changelog)** | Phases 1–3; status up to `tasks-ready` | **Phase 4:** approve task IDs; **done:** after verified implementation |
+| **FQ/AQ** | Record answer **if the user provided it** | Treat agent or initial requirement as acceptance |
+
+**Counts as ADR acceptance:** "Aceito o ADR-0009", "Aprovo o ADR 0009", "ADR-0009 accepted".
+
+**Counts as feature approval (phase 4):** "Approve T1–T8", "Go ahead with T1, T2, T5", "Start development — tasks T1–T6".
+
+**Does not count as approval:** "implement it" without task IDs; ADR accepted without task IDs; silence after FQ/AQ answers.
+
+Detail: [adr.mdc](adr.mdc).
+
+### Impact review when answering open questions (mandatory)
+
+Every time the user answers **FQ*n*** or **AQ*n***, the agent **must** run an **impact review**:
+
+1. **Record** the answer in the correct table.
+2. **Re-read and update** the feature doc: Impact, changelog cross-impacts, Risks, **Wireframe**, **Architecture**, **ADRs**, **Feature checklist**, **Tasks**, **Test coverage**, [domain-specification.md](../../docs/domain-specification.md), [docs/feature-catalog.md](../../docs/feature-catalog.md), [`dev-import.sql`](../../src/main/resources/dev-import.sql), [ARCHITECTURE.md](../../ARCHITECTURE.md) §9.
+3. **May open new questions** — add **FQ*n+1** or **AQ*n+1** with status `open`.
+4. **Present** impact deltas; do not assume silence means approval.
+5. If blocking questions remain `open`, **stop** for phase 4.
+
+After all blocking **FQ*n*** and **AQ*n*** are `answered` or `not valid`: ensure phase 3 complete; **stop**; wait for **explicit task approval**.
+
+## Working code invariant
+
+**No development ends with non-working code.** The tree must compile, tests must pass for the scope touched, and the app must remain runnable.
+
+| Situation | Required action |
+|-----------|-----------------|
+| Task or session ending | `GITHUB_ACTIONS=true ./mvnw -B verify` green — see [static-analysis.mdc](static-analysis.mdc) |
+| Approved tasks incomplete | Keep changelog **`in-progress`** — never `done` |
+| Partial work breaks build/tests | Fix forward **or** revert — do not stop on red |
+| Cannot finish in one session | Leave **`in-progress`** with Implementation notes; workspace still **green** |
+
+**Forbidden:** marking `done` with failing tests; `@Disabled` or weakened assertions to fake green.
+
+## Five phases
+
+```
+1. Feature analysis  →  2. Architecture design  →  3. Task break  →  4. Development approved  →  5. Development (TDD)
+```
+
+| Phase | Agent may | Agent must not |
+|-------|-----------|----------------|
+| **1. Feature analysis** | Create/extend `feature/<slug>.md`, **Wireframe**, domain spec, resolve **FQ*n*** | Write `src/main/**`, `src/test/**`; skip architecture design |
+| **2. Architecture design** | Link baseline ADRs; create ADRs for transversal **AQ*n***; add **Architecture** section; set `architecture-ready` | Start implementation; skip ADRs or **Architecture** section |
+| **3. Task break** | Extend **Feature checklist**; add **Tasks** and **Test coverage**; set `tasks-ready` | Start implementation |
+| **4. Development approved** | Record approval line with task IDs; set `approved` | Implement; treat FQ/AQ answers as approval |
+| **5. Development** | TDD on **approved tasks only**; recheck **Feature checklist** before `done` | Skip tests; implement unapproved tasks; end with broken code |
+
+## Phase 1 — Feature analysis
+
+Required when: new behaviour, route, schema, multi-package refactor, or bug fix with cross-feature impact. Not required: typo, comment-only, formatter, docs-only.
+
+1. Resolve `<feature-slug>` — [change-request-analysis.mdc](change-request-analysis.mdc) §0.
+2. Create or extend `feature/<feature-slug>.md` with Summary, **Wireframe** (when UI), Impact, Risks, changelog entry (`status: planned`).
+3. Build **Feature checklist** (**FC1**, **FC2**, …, **FCdev**).
+4. Read [domain-specification.md](../../docs/domain-specification.md); update before code if vocabulary changes ([domain-model.mdc](domain-model.mdc)).
+5. Track **FQ*n***; run **impact review** after each answer.
+
+**Exit criteria:** changelog entry with Impact, Feature checklist, Wireframe (or N/A); blocking **FQ*n*** resolved. **No code.** Proceed to phase 2.
+
+## Phase 2 — Architecture design
+
+Detail: [architecture-design.mdc](architecture-design.mdc), [adr.mdc](adr.mdc).
+
+1. Confirm compliance with Accepted ADRs in [docs/adr/README.md](../../docs/adr/README.md).
+2. Create/update ADRs for transversal **AQ*n*** answers.
+3. Add `## Architecture` on the feature doc — ADR links + packages, routes, schema, templates, tests.
+4. Track **AQ*n***; run impact review after each answer.
+5. Validate against [contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc), [contraponto-bounded-contexts.mdc](contraponto-bounded-contexts.mdc).
+6. Set **Status:** `architecture-ready`. **Stop** for manual ADR acceptance.
+
+**Exit criteria:** Architecture complete; blocking **AQ*n*** resolved; status `architecture-ready`. **No code.**
+
+## Phase 3 — Task break
+
+Add to changelog entry:
+
+- **Feature checklist** — extend **FC*n***; always **FCdev** for `dev-import.sql`.
+- **Tasks** — `T1`, `T2`, …; always **Tdev** for seed + feature-catalog § Dev personas.
+- **Test coverage** — map tasks to tests (`@WebTest`, unit, ArchUnit).
+
+Set **Status:** `tasks-ready`. **Stop — do not implement.**
+
+## Phase 4 — Development approved
+
+Record:
+
+```markdown
+**Development approval:** approved YYYY-MM-DD — tasks: T1, T3
+```
+
+Set **Status:** `approved`. Implement **only** approved task IDs.
+
+## Phase 5 — Development (TDD)
+
+**Precondition:** status `approved` with **Development approval** line.
+
+Set **Status:** `in-progress`. For **each approved task**:
+
+1. Consult **Wireframe** and **Architecture**.
+2. **Red** — failing test ([domain-model.mdc](domain-model.mdc); optional `tdd-red` subagent).
+3. **Green** — minimal production code (`tdd-green`).
+4. **Refactor** — cleanup (`tdd-refactor`).
+5. Mark task, test coverage, and FC rows done when verified.
+6. **Dev seed:** update [`dev-import.sql`](../../src/main/resources/dev-import.sql) + coverage registry ([dev-import-sql-safety.mdc](dev-import-sql-safety.mdc)).
+
+**Feature checklist recheck (mandatory before `done`):** walk every **FC*n*** row; fix gaps before marking `done`.
+
+**Finish (all required):**
+
+1. Approved tasks and test coverage checked off.
+2. Feature checklist recheck complete (including **FCdev**).
+3. `GITHUB_ACTIONS=true ./mvnw -B verify` passes.
+4. `ReadLints` clean on edited paths.
+5. Docs per [documentation.mdc](documentation.mdc); **Implementation notes** filled.
+6. Set `done` only after 1–5.
+
+## Status values
+
+| Status | Meaning |
+|--------|---------|
+| `planned` | Feature analysis in progress |
+| `architecture-ready` | Architecture complete; ready for task break |
+| `tasks-ready` | Awaiting approval |
+| `approved` | User approved tasks; no code yet |
+| `in-progress` | TDD — **must leave repo working** at session end |
+| `done` | Implemented; FC rechecked; **verify green** |
+
+## Related rules
+
+- [change-request-analysis.mdc](change-request-analysis.mdc)
+- [architecture-design.mdc](architecture-design.mdc)
+- [adr.mdc](adr.mdc)
+- [domain-model.mdc](domain-model.mdc)
+- [contraponto-tests.mdc](contraponto-tests.mdc)
+- [static-analysis.mdc](static-analysis.mdc)
+- [dev-import-sql-safety.mdc](dev-import-sql-safety.mdc)

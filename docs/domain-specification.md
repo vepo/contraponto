@@ -45,12 +45,12 @@ Contraponto is a **modular monolith**: one deployable, many bounded contexts und
 | **Discovery & syndication** | `home`, `search`, `directory`, `rss`, `seo`, `view` | shared, publishing |
 | **Media** | `image` | shared, identity |
 | **Customization** | `custompage` | shared, identity, media |
-| **Integration** | `git` | shared, publishing, media |
+| **Integration** | `git`, `activitypub` | shared, publishing, media, identity |
 | **Author workspace** | `library`, `dashboard`, `admin`, `profile` | shared, identity, publishing |
 | **Presentation shell** | `components`, `navigation` | shared + all contexts (HTTP composition only) |
 | **Platform insights** | `platforminsights` | shared, view, identity |
 
-**Rules:** Feature services must not depend on unrelated contexts (e.g. `git` must not depend on `notification`). Publish side-effects (notifications, RSS, sitemap, Git export) use [CDI events](cdi-events.md). `@TemplateExtension` classes live in their owning context, not in `shared`.
+**Rules:** Feature services must not depend on unrelated contexts (e.g. `git` must not depend on `notification`; `activitypub` must not depend on `comment`). Publish side-effects (notifications, RSS, sitemap, Git export, ActivityPub delivery) use [CDI events](cdi-events.md). `@TemplateExtension` classes live in their owning context, not in `shared`.
 
 ---
 
@@ -255,6 +255,20 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Legacy Jekyll front matter** | Import-only YAML aliases (`permalink`, `image`, `publish_date`, `series`) mapped to slug, cover, publish time, and serie; native keys win when both are set. | `GitFrontMatterResolver` |
 | **Git publish date alignment** | On import, when only `published_at` / `publish_date` (or the dated filename) changes, Contraponto updates both the post and the **live publication** timestamp without creating a new version. On export, filename date and front matter `published_at` use the same live snapshot timestamp; stale dated files for the same slug are removed from the repo. | `PostPublicationService.alignPublicationTimestampFromGit`, `BlogGitIntegrationService` |
 
+### ActivityPub federation
+
+| Term | Meaning | Code / notes |
+|------|---------|--------------|
+| **Fediverse** | Decentralized social network of ActivityPub-compatible servers (Mastodon, Pleroma, Misskey, …). | [feature/activitypub-integration.md](../feature/activitypub-integration.md) |
+| **ActivityPub federation** | Server-to-server syndication: Contraponto exposes **ActivityPub actors** and delivers **Create** / **Update** / **Delete** activities when authors publish on their **main blog**. Distinct from in-app **blog audience Follow** and from the optional **Mastodon profile URL** on author appearance. | `activitypub` package; ADRs [0006](adr/0006-activitypub-federation.md)–[0008](adr/0008-activitypub-actor-identity.md) |
+| **Fediverse actor** | ActivityStreams **Person** — **one per `User`** (not per blog); has `inbox`, `outbox`, `followers`, and `publicKey`. Served as JSON-LD at the actor URL on the user's **blog subdomain**. MVP outbox: **main blog** posts only; future: same actor may carry highlight/comment activities (deferred). | `ActivityPubActor` |
+| **Fediverse handle** | Human-readable `@username@domain` resolved via **WebFinger** to the actor URL (e.g. `@alice@blog.example.com`). | `/.well-known/webfinger` |
+| **Fediverse opt-in** | Author enables federation on **Author appearance**; when off, actor endpoints return **404**. | Author appearance — Fediverse section |
+| **Fediverse follow** | Remote user on another ActivityPub server sends a **Follow** activity to the author's **inbox**; author **Accept** or **Reject** (manual approval model). | `ActivityPubInboxService` |
+| **ActivityPub delivery** | Outbound signed POST of an activity to a remote instance's **inbox** after publish/unpublish (async queue with retry). | `ActivityPubDeliveryService` |
+| **Fediverse follower count** | Count of accepted remote followers (optional display on appearance/profile per **FQ4**). | Followers collection |
+| **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
+
 ### Discovery & feeds
 
 | Term | Meaning | Code / notes |
@@ -445,6 +459,13 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Author appearance — social website field | Site | Author appearance |
 | Author appearance — social X field | X (Twitter) | Author appearance |
 | Author appearance — social Mastodon field | Mastodon | Author appearance |
+| Author appearance — Fediverse section | Fediverse (ActivityPub) | Author appearance |
+| Author appearance — Fediverse opt-in | Publish my main blog posts to the Fediverse | Fediverse section |
+| Author appearance — Fediverse handle | Your handle | Fediverse section — `@user@domain` |
+| Author appearance — regenerate keys | Regenerate keys | Fediverse section — destructive confirm |
+| Fediverse follow requests — Accept | Accept | Follow-request review |
+| Fediverse follow requests — Reject | Reject | Follow-request review |
+| Platform insights — ActivityPub global switch | Enable ActivityPub federation globally | Administration → Platform insights |
 | Author appearance — social GitHub field | GitHub | Author appearance |
 | Author appearance — social LinkedIn field | LinkedIn | Author appearance |
 | Writing hub — blogs nav | Blogs | Writing left nav |
@@ -542,6 +563,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | Notifications & audience | `dev.vepo.contraponto.notification` |
 | Comments | `dev.vepo.contraponto.comment` |
 | Git sync | `dev.vepo.contraponto.git` |
+| ActivityPub federation | `dev.vepo.contraponto.activitypub` |
 | Auth (tokens, account email, recovery) | `dev.vepo.contraponto.auth` |
 | Auth & profile forms | `dev.vepo.contraponto.components.forms` |
 | Profile page | `dev.vepo.contraponto.components` |

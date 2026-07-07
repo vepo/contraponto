@@ -18,7 +18,7 @@ Single Maven module; logical boundaries in `dev.vepo.contraponto.*`. Full table:
 | Discovery & syndication | `home`, `search`, `directory`, `rss`, `seo`, `view` |
 | Media | `image` |
 | Customization | `custompage` |
-| Integration | `git` |
+| Integration | `git`, `activitypub` |
 | Author workspace | `library`, `dashboard`, `admin`, `profile` |
 | Presentation shell | `components`, `navigation` |
 | Platform insights | `platforminsights` |

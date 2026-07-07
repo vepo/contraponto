@@ -1,0 +1,68 @@
+---
+description: Phase 2 — architecture design with ADRs (part of development process)
+alwaysApply: true
+---
+
+# Architecture design (phase 2)
+
+Part of [development-process.mdc](development-process.mdc). **Every feature change** that requires feature analysis also requires architecture design. **No production or test code** until phases 1–4 are complete.
+
+Canonical references: [ARCHITECTURE.md](../../ARCHITECTURE.md), [docs/adr/](../../docs/adr/), [adr.mdc](adr.mdc), [contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc), [contraponto-bounded-contexts.mdc](contraponto-bounded-contexts.mdc).
+
+## When required
+
+Any change that triggers feature analysis ([change-request-analysis.mdc](change-request-analysis.mdc)) — **mandatory**. Docs-only exempt with feature analysis.
+
+## Preconditions
+
+- Phase 1 exit criteria met.
+- Blocking **FQ*n*** are `answered` or `not valid`.
+
+## Process
+
+### 1. Apply baseline ADRs
+
+Confirm design complies with Accepted ADRs [0001–0005](../../docs/adr/README.md). Do not contradict without a new ADR.
+
+### 2. Create or update ADRs for transversal decisions
+
+Per [adr.mdc](adr.mdc): new ADR → `Proposed`; edit `Accepted` only after user **reopens** with justification.
+
+### 3. Add or extend `## Architecture` on the feature doc
+
+| Area | Document |
+|------|----------|
+| **ADRs aplicáveis** | Links to relevant Accepted ADRs |
+| Bounded contexts | Contexts involved; dependency direction |
+| Packages / layers | Endpoint → Service → Repository per operation |
+| Routes / templates | `@Path`, Qute templates, HTMX targets, `*Paths` builders |
+| Schema / persistence | Tables, Flyway migration file(s) |
+| Cross-context integration | CDI events ([cdi-events.md](../../docs/cdi-events.md)) |
+| Presentation | Qute fragments, `components/`, CSS bundle (main/manage/write) |
+| Tests | `@WebTest` + `App`/`Given`, unit, ArchUnit |
+
+Revise when **AQ*n*** or footprint-changing **FQ*n*** answers change design.
+
+### 4. Track architecture questions (AQ*n*)
+
+**When answered:** impact review; transversal → ADR; local → feature **Architecture** only.
+
+### 5. Validate against architecture rules
+
+1. [contraponto-layered-architecture.mdc](contraponto-layered-architecture.mdc)
+2. [docs/domain-specification.md](../../docs/domain-specification.md) bounded contexts
+3. [contraponto-core.mdc](contraponto-core.mdc) — URLs via `*Paths`, not hardcoded templates
+4. [htmx-events.md](../../docs/htmx-events.md) — scoped refresh, auth allowlist
+5. Flyway — incremental `db/migration/V*.sql` (never rewrite applied migrations)
+6. ADRs — no conflict with Accepted decisions
+
+### 6. Set status and stop
+
+Set changelog **Status:** `architecture-ready`. Present **Architecture**, ADRs, open **AQ*n***. **Stop** until blocking AQ resolved.
+
+## Exit criteria
+
+- Relevant ADRs linked; no new ADR in `Accepted` without manual user acceptance.
+- `## Architecture` complete.
+- Blocking **AQ*n*** resolved.
+- Status `architecture-ready`. **No code.**

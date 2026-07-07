@@ -19,6 +19,11 @@ import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
+import dev.vepo.contraponto.activitypub.ActivityPubActor;
+import dev.vepo.contraponto.activitypub.ActivityPubActorService;
+import dev.vepo.contraponto.activitypub.ActivityPubDelivery;
+import dev.vepo.contraponto.activitypub.ActivityPubFollow;
+import dev.vepo.contraponto.activitypub.ActivityPubRemoteActor;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.custompage.CustomPage;
@@ -42,6 +47,35 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 
 public interface Given {
+
+    public static class ActivityPubActorBuilder {
+
+        private User user;
+        private boolean federationEnabled = true;
+
+        private ActivityPubActorBuilder() {}
+
+        public ActivityPubActor persist() {
+            return transaction(() -> {
+                var actorService = inject(ActivityPubActorService.class);
+                var actor = actorService.enableFederation(requireNonNull(user, "'user' cannot be null"));
+                if (!federationEnabled) {
+                    actor = actorService.disableFederation(user);
+                }
+                return actor;
+            });
+        }
+
+        public ActivityPubActorBuilder withFederationEnabled(boolean federationEnabled) {
+            this.federationEnabled = federationEnabled;
+            return this;
+        }
+
+        public ActivityPubActorBuilder withUser(User user) {
+            this.user = user;
+            return this;
+        }
+    }
 
     public static class BlogBuilder {
         private User user;
@@ -358,6 +392,10 @@ public interface Given {
         }
     }
 
+    public static ActivityPubActorBuilder activityPubActor() {
+        return new ActivityPubActorBuilder();
+    }
+
     public static BlogBuilder blog() {
         return new BlogBuilder();
     }
@@ -369,7 +407,17 @@ public interface Given {
             entityManager.createQuery("UPDATE Blog b SET b.banner = null").executeUpdate();
             entityManager.createQuery("UPDATE User u SET u.profilePicture = null, u.defaultBlogBanner = null")
                          .executeUpdate();
-            Stream.of(Post.class, Serie.class, Tag.class, CustomPage.class, Blog.class, Image.class, User.class)
+            Stream.of(ActivityPubDelivery.class,
+                      ActivityPubFollow.class,
+                      ActivityPubActor.class,
+                      ActivityPubRemoteActor.class,
+                      Post.class,
+                      Serie.class,
+                      Tag.class,
+                      CustomPage.class,
+                      Blog.class,
+                      Image.class,
+                      User.class)
                   .sequential()
                   .forEachOrdered(Given::deleteAll);
         });

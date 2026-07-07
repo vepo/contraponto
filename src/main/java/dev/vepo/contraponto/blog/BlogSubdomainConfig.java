@@ -14,7 +14,8 @@ public class BlogSubdomainConfig {
 
     private static final Set<String> PLATFORM_ONLY_ROOT_SEGMENTS = Set.of("authors", "explore", "robots.txt", "sitemap.xml", "openapi.yaml", "openapi");
 
-    private static final Set<String> SUBDOMAIN_AUTHOR_ROOT_SEGMENTS = Set.of("components", "feed", "main-blog", "page", "post", "serie");
+    private static final Set<String> SUBDOMAIN_AUTHOR_ROOT_SEGMENTS =
+            Set.of("components", "feed", "followers", "following", "inbox", "main-blog", "outbox", "page", "post", "serie");
 
     /**
      * Platform workspace routes served on the author subdomain without /{username}
@@ -159,6 +160,17 @@ public class BlogSubdomainConfig {
 
     public boolean enabled() {
         return enabled && !baseDomain.isBlank();
+    }
+
+    public boolean isActivityPubInboxPost(String method, String path) {
+        if (method == null || path == null) {
+            return false;
+        }
+        if (!"POST".equalsIgnoreCase(method)) {
+            return false;
+        }
+        var normalized = path.startsWith("/") ? path.substring(1) : path;
+        return "inbox".equals(normalized) || normalized.endsWith("/inbox");
     }
 
     private boolean isGlobalComponentPath(String normalizedPath) {

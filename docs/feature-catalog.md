@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-06-25 · Post and blog share actions
+**Last verified:** 2026-07-07 · ActivityPub Fediverse appearance controls
 
 ---
 
@@ -129,6 +129,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Account hub (notifications) | `USER` | `GET /account` | 2 | Open user menu → **Account** (notifications panel default). |
 | Account security | `USER` | `GET /account/security` | 2 | Open user menu → **Account** → **Security** in left nav. |
 | Author appearance | `USER` | `GET /writing/appearance` | 2 | Open user menu → **Writing** → **Appearance** in left nav. |
+| Fediverse publishing settings | `USER` | `POST /forms/writing/activitypub` | 2 | Open user menu → **Writing** → **Appearance** → toggle **Publish my main blog posts to the Fediverse**. |
+| Fediverse follow request moderation | `USER` | `POST /forms/writing/activitypub/follows/{followId}/accept` or `/reject` | 2 | Open user menu → **Writing** → **Appearance** → **Accept/Reject** on pending Fediverse follow requests. |
 | Notifications overlay | `USER` | `GET /components/notifications/overlay` | 1 | Header bell → dropdown preview (stays on current page). |
 | Notifications inbox | `USER` | `GET /account/notifications` | 2 | Header bell → **View all notifications** **or** user menu → **Account**. |
 | Notifications (menu path) | `USER` | `GET /account` | 2 | Open user menu → **Account**. |
@@ -183,6 +185,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Administration hub (users) | admin | `GET /administration` | 2 | Open user menu → **Administration** (users panel default). |
 | User list | admin | `GET /administration/users` | 2 | Same as Administration hub (bookmarkable section URL). |
 | Platform insights | admin | `GET /administration/insights` | 3 | Open user menu → **Administration** → **Platform insights**. |
+| ActivityPub global kill-switch | admin | `POST /forms/administration/activitypub` | 3 | Open user menu → **Administration** → **Platform insights** → toggle **Enable ActivityPub federation globally**. |
 | New user | admin | `GET /users/new` | 4 | **Users** → **New User**. |
 | Edit user | admin | `GET /users/{id}/edit` | 4 | **Users** → **Edit** on row. |
 

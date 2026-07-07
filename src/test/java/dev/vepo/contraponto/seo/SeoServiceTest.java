@@ -82,6 +82,27 @@ class SeoServiceTest {
     }
 
     @Test
+    void forBlogHome_withBanner_setsOgImage() {
+        var banner = Given.randomCover(author.getDefaultBlog());
+        Given.transaction(() -> {
+            var mainBlog = author.getDefaultBlog();
+            mainBlog.setBanner(banner);
+            Given.inject(jakarta.persistence.EntityManager.class).merge(mainBlog);
+        });
+
+        SeoMetadata meta = seoService.forBlogHome(author, author.getDefaultBlog());
+
+        assertThat(meta.ogImageUrl()).isPresent();
+        assertThat(meta.ogImageUrl().get()).contains("/api/images/");
+    }
+
+    @Test
+    void forBlogHome_withoutBanner_omitsOgImage() {
+        SeoMetadata meta = seoService.forBlogHome(author, author.getDefaultBlog());
+        assertThat(meta.ogImageUrl()).isEmpty();
+    }
+
+    @Test
     void forError_includesDescriptionAndNoindex() {
         SeoMetadata notFound = seoService.forError(404);
         assertThat(notFound.title()).contains("Página não encontrada");

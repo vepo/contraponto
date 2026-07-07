@@ -72,61 +72,22 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
             return;
         }
         var method = requestContext.getMethod();
-        if (!"GET".equals(method) && !"HEAD".equals(method)) {
-            return;
-        }
-
-        var host = requestContext.getHeaderString("Host");
-        var username = config.parseUserSubdomain(host);
-        if (username.isEmpty()) {
-            return;
-        }
-
-        var authorUsername = username.get();
-        context.activate(authorUsername);
-
         var uriInfo = requestContext.getUriInfo();
         var path = uriInfo.getPath();
         if (path == null) {
             path = "/";
         }
 
-        var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
-
-        if (config.isWorkspaceRootPath(subdomainPath)) {
-            if (hasSessionCookie(requestContext)) {
-                redirectToPlatform(requestContext, subdomainPath, uriInfo);
-            } else {
-                redirectToPlatformSignIn(requestContext, subdomainPath, uriInfo);
-            }
+        if ("POST".equals(method) && config.isActivityPubInboxPost(method, path)) {
+            rewriteAuthorSubdomainRequest(requestContext, path, uriInfo);
             return;
         }
 
-        if (config.shouldSkipSubdomainRewrite(subdomainPath)) {
+        if (!"GET".equals(method) && !"HEAD".equals(method)) {
             return;
         }
 
-        var firstSegment = firstPathSegment(subdomainPath);
-        if (firstSegment.isPresent() && config.isPlatformOnlyRootSegment(firstSegment.get())) {
-            var platformUrl = config.platformUrl(path);
-            if (isHtmxRequest(requestContext)) {
-                requestContext.abortWith(Response.ok()
-                                                 .header(HtmxRequest.REDIRECT_HEADER, platformUrl)
-                                                 .build());
-            } else {
-                requestContext.abortWith(Response.status(Response.Status.FOUND)
-                                                 .location(URI.create(platformUrl))
-                                                 .build());
-            }
-            return;
-        }
-
-        var internalPath = prependUsername(authorUsername, subdomainPath);
-        var targetUri = UriBuilder.fromUri(uriInfo.getBaseUri())
-                                  .path(internalPath.startsWith("/") ? internalPath.substring(1) : internalPath)
-                                  .replaceQuery(uriInfo.getRequestUri().getQuery())
-                                  .build();
-        requestContext.setRequestUri(uriInfo.getBaseUri(), targetUri);
+        rewriteAuthorSubdomainRequest(requestContext, path, uriInfo);
     }
 
     private void redirectToPlatform(ContainerRequestContext requestContext, String path, jakarta.ws.rs.core.UriInfo uriInfo) {
@@ -170,5 +131,58 @@ public class BlogSubdomainFilter implements ContainerRequestFilter {
                                              .location(signInUri)
                                              .build());
         }
+    }
+
+    private void rewriteAuthorSubdomainRequest(ContainerRequestContext requestContext,
+                                               String path,
+                                               jakarta.ws.rs.core.UriInfo uriInfo)
+            throws IOException {
+        var host = requestContext.getHeaderString("Host");
+        var username = config.parseUserSubdomain(host);
+        if (username.isEmpty()) {
+            return;
+        }
+
+        var authorUsername = username.get();
+        context.activate(authorUsername);
+
+        var subdomainPath = config.normalizeAuthorSubdomainRequestPath(authorUsername, path);
+
+        if ("GET".equals(requestContext.getMethod()) || "HEAD".equals(requestContext.getMethod())) {
+            if (config.isWorkspaceRootPath(subdomainPath)) {
+                if (hasSessionCookie(requestContext)) {
+                    redirectToPlatform(requestContext, subdomainPath, uriInfo);
+                } else {
+                    redirectToPlatformSignIn(requestContext, subdomainPath, uriInfo);
+                }
+                return;
+            }
+
+            if (config.shouldSkipSubdomainRewrite(subdomainPath)) {
+                return;
+            }
+
+            var firstSegment = firstPathSegment(subdomainPath);
+            if (firstSegment.isPresent() && config.isPlatformOnlyRootSegment(firstSegment.get())) {
+                var platformUrl = config.platformUrl(path);
+                if (isHtmxRequest(requestContext)) {
+                    requestContext.abortWith(Response.ok()
+                                                     .header(HtmxRequest.REDIRECT_HEADER, platformUrl)
+                                                     .build());
+                } else {
+                    requestContext.abortWith(Response.status(Response.Status.FOUND)
+                                                     .location(URI.create(platformUrl))
+                                                     .build());
+                }
+                return;
+            }
+        }
+
+        var internalPath = prependUsername(authorUsername, subdomainPath);
+        var targetUri = UriBuilder.fromUri(uriInfo.getBaseUri())
+                                  .path(internalPath.startsWith("/") ? internalPath.substring(1) : internalPath)
+                                  .replaceQuery(uriInfo.getRequestUri().getQuery())
+                                  .build();
+        requestContext.setRequestUri(uriInfo.getBaseUri(), targetUri);
     }
 }

@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.components;
 
+import dev.vepo.contraponto.activitypub.ActivityPubAppearanceService;
+import dev.vepo.contraponto.activitypub.ActivityPubFederationView;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.user.User;
@@ -17,7 +19,7 @@ public class AuthorAppearanceEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance panel(User user, long mainBlogId);
+        public static native TemplateInstance panel(User user, long mainBlogId, ActivityPubFederationView federationView);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -27,19 +29,23 @@ public class AuthorAppearanceEndpoint {
     private final LoggedUser loggedUser;
     private final UserRepository userRepository;
     private final BlogRepository blogRepository;
+    private final ActivityPubAppearanceService activityPubAppearanceService;
 
     @Inject
     public AuthorAppearanceEndpoint(LoggedUser loggedUser,
                                     UserRepository userRepository,
-                                    BlogRepository blogRepository) {
+                                    BlogRepository blogRepository,
+                                    ActivityPubAppearanceService activityPubAppearanceService) {
         this.loggedUser = loggedUser;
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
+        this.activityPubAppearanceService = activityPubAppearanceService;
     }
 
     public TemplateInstance renderHubPanel() {
         var user = userRepository.findById(loggedUser.getId()).orElseThrow();
         var mainBlogId = blogRepository.findMainByOwnerId(user.getId()).map(Blog::getId).orElse(0L);
-        return Templates.panel(user, mainBlogId);
+        var federationView = activityPubAppearanceService.buildView(user);
+        return Templates.panel(user, mainBlogId, federationView);
     }
 }

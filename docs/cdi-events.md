@@ -8,8 +8,8 @@ Cross-context side effects in Contraponto use Jakarta CDI `Event` + `@Observes`.
 
 | Event | Payload | Producer | Observers | Notes |
 |-------|---------|----------|-----------|-------|
-| `PostPublishedEvent` | `postId`, `publicationId`, `blogId`, `authorUserId` | `PostPublicationService.publish` | `PostPublishedNotificationObserver`, `RssFeedCacheInvalidator`, `SitemapCacheInvalidator` | Also triggers audience email/in-app notifications |
-| `PostUnpublishedEvent` | `postId`, `blogId`, `authorUserId` | `PostManagementService.unpublish` | `RssFeedCacheInvalidator`, `SitemapCacheInvalidator` | Public URL 404; snapshots retained |
+| `PostPublishedEvent` | `postId`, `publicationId`, `blogId`, `authorUserId` | `PostPublicationService.publish` | `PostPublishedNotificationObserver`, `RssFeedCacheInvalidator`, `SitemapCacheInvalidator`, `ActivityPubDeliveryObserver` | Also triggers audience email/in-app notifications; ActivityPub **Create** when Fediverse opt-in |
+| `PostUnpublishedEvent` | `postId`, `blogId`, `authorUserId` | `PostManagementService.unpublish` | `RssFeedCacheInvalidator`, `SitemapCacheInvalidator`, `ActivityPubDeliveryObserver` | Public URL 404; snapshots retained; ActivityPub **Delete** when Fediverse opt-in |
 | `PostGitSyncRequestedEvent` | `postId`, `GitSyncTrigger` | `PublishEndpoint`, `SaveDraftEndpoint`, `PostManagementService` | `GitPostCommittedObserver` (`AFTER_SUCCESS`) | Git export when blog has `gitEnabled` |
 | `CustomPageChangedEvent` | `pageId` | `CustomPageSaveEndpoint` (create/update/delete) | `CustomPageCacheRefreshObserver`, `SitemapCacheInvalidator` | In-memory custom page cache |
 
@@ -21,10 +21,10 @@ Types under `auth/*Event` (`AccountActivationEvent`, `PasswordResetEvent`, etc.)
 
 | Event | Observer | Notes |
 |-------|----------|-------|
-| Quarkus `StartupEvent` | `DatabaseDevSetup` | Runs `%dev` import script when enabled |
+| Quarkus `StartupEvent` | `DatabaseDevSetup`, `ActivityPubDevSeed` | Runs `%dev` import script; seeds `alice` ActivityPub actor when enabled |
 
 ## Guidelines
 
-- **Prefer events** over direct calls from publishing into notification, RSS, SEO, or Git when the reaction is a side effect of publish/unpublish/custom-page change.
+- **Prefer events** over direct calls from publishing into notification, RSS, SEO, Git, or ActivityPub when the reaction is a side effect of publish/unpublish/custom-page change.
 - **Do not** inject repositories from another bounded context into a service observer unless the read is trivial and documented; prefer the event payload ids.
 - New events: add a row here and in [domain-specification.md](domain-specification.md) if they introduce domain vocabulary.
