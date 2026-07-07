@@ -1,0 +1,52 @@
+---
+description: Keep user-facing documentation in sync with routes and behaviour
+globs:
+  - 'docs/**'
+  - 'README.md'
+  - 'ARCHITECTURE.md'
+  - 'feature/**'
+alwaysApply: false
+---
+
+# Documentation — read and maintain
+
+## Before changing routes or user-visible behaviour
+
+1. Skim [AGENTS.md](../../AGENTS.md) doc map.
+2. Read [development-process.mdc](development-process.mdc) if the change is a new feature (phases 1–4 before code).
+3. Update the **lowest complexity** doc that covers the feature.
+
+## After changes — update when relevant
+
+| Change | Update |
+|--------|--------|
+| New domain term or invariant | [domain-specification.md](../../docs/domain-specification.md) |
+| New/changed UI route or menu | [feature-catalog.md](../../docs/feature-catalog.md), [application-guidelines.md](../../docs/application-guidelines.md) |
+| Schema, entity, or shipped feature | [`dev-import.sql`](../../src/main/resources/dev-import.sql); [dev-import-sql-safety.mdc](dev-import-sql-safety.mdc); feature-catalog § Dev personas |
+| HTMX event or auth refresh pattern | [htmx-events.md](../../docs/htmx-events.md) |
+| CDI event producer/observer | [cdi-events.md](../../docs/cdi-events.md) |
+| Package, URL map, patterns | [ARCHITECTURE.md](../../ARCHITECTURE.md) |
+| Transversal technical decision | [docs/adr/](../../docs/adr/) — new or superseding ADR |
+| Feature workflow narrative | `feature/<slug>.md` changelog |
+| Doc debt closed | [conventions-checklist.md](../../docs/conventions-checklist.md) |
+| User-facing capability bullet | [README.md](../../README.md) — [readme.mdc](readme.mdc) |
+| UI class or token | [ui-elements.md](../../docs/ui-elements.md), [ui-palette.md](../../docs/ui-palette.md) |
+| UX narrative for new page type | [ui-guidelines.md](../../docs/ui-guidelines.md) |
+
+## Complexity order
+
+1. **domain-specification** — vocabulary and rules
+2. **feature/** changelog + **feature-catalog** — routes and click paths
+3. **htmx-events** / **application-guidelines** — interaction flows
+4. **ARCHITECTURE** — technical structure
+5. **README** — pitch and links
+
+## Quality bar
+
+- No stale type names after renames — grep docs when renaming.
+- Cross-link; avoid duplicating ADR rationale in ARCHITECTURE.md — link instead.
+
+## Related
+
+- [AGENTS.md](../../AGENTS.md)
+- [docs-sync.md](../agents/docs-sync.md)

@@ -29,6 +29,18 @@ Before implementing any change, you MUST:
 
 **Do NOT write any code or test until these questions are answered.** If the answer changes the domain, update the specification first.
 
+For **new features**, phases 1–4 in [development-process.mdc](development-process.mdc) (feature doc, ADRs, task approval) run **before** this gate applies to implementation. During phase 5, this rule governs every code change.
+
+## TDD (phase 5)
+
+Per approved task in `feature/<slug>.md`:
+
+1. **Red** — failing test in domain language ([contraponto-tests.mdc](contraponto-tests.mdc); optional `tdd-red` subagent).
+2. **Green** — minimal production/template change (`tdd-green`).
+3. **Refactor** — cleanup with tests green (`tdd-refactor`).
+
+Never skip Red for new behaviour. Never end a session with failing tests ([static-analysis.mdc](static-analysis.mdc)).
+
 ## Coding Rules
 
 ### Code Must Use Domain Language

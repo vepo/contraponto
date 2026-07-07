@@ -106,7 +106,28 @@ See [git-jekyll-convention.md](git-jekyll-convention.md).
 
 For multiple app instances, set `app.session.store=redis` and configure `quarkus.redis.hosts`. Default is in-memory (`app.session.store=memory`), suitable for a single node.
 
-## 8. Build and run
+## 8. Optional: ActivityPub (Fediverse)
+
+Disabled by default in prod (`contraponto.activitypub.enabled=false`). Flyway creates ActivityPub tables on first deploy of a release that includes them; federation remains off until configured.
+
+To enable server-to-server federation (Mastodon and compatible apps):
+
+| Variable | Required | Purpose |
+|----------|:--------:|---------|
+| `CONTRAPONTO_ACTIVITYPUB_ENABLED` | yes | `true` to allow authors to opt in |
+| `CONTRAPONTO_ACTIVITYPUB_KEY_ENCRYPTION_SECRET` | yes | AES key material for encrypting actor private keys at rest — generate once (`openssl rand -base64 32`); **do not rotate** after actors exist |
+
+Do **not** set `CONTRAPONTO_ACTIVITYPUB_INSECURE_ACCEPT_UNSIGNED=true` in production.
+
+Authors enable federation per account under **Writing → Appearance**. Platform administrators can disable federation globally under **Platform insights**.
+
+**Operator procedure:** [contraponto-prod/docs/MOP-UPDATE.md](../../contraponto-prod/docs/MOP-UPDATE.md) §6.
+
+**DNS / nginx:** author subdomains and `/.well-known/webfinger` must already work (same as blog subdomain setup in §2). No extra nginx locations required.
+
+See [feature/activitypub-integration.md](feature/activitypub-integration.md) and ADRs [0006](adr/0006-activitypub-federation.md)–[0008](adr/0008-activitypub-actor-identity.md).
+
+## 9. Build and run
 
 ```bash
 mvn package -DskipTests
@@ -123,7 +144,7 @@ docker run -p 8080:8080 \
 
 **Health:** `GET /q/health` (SmallRye Health).
 
-## 9. Local development email
+## 10. Local development email
 
 By default, `%dev` uses `quarkus.mailer.mock=true` (no outbound mail). For real SMTP in dev, copy [`application-dev.properties.example`](../src/main/resources/application-dev.properties.example) to `application-dev.properties` (gitignored) and fill in credentials.
 

@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.platforminsights;
 
+import dev.vepo.contraponto.activitypub.ActivityPubSettings;
 import dev.vepo.contraponto.shared.infra.Logged;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -20,7 +21,7 @@ public class PlatformInsightsEndpoint {
     public static class Templates {
         public static native TemplateInstance analytics(PlatformInsights insights);
 
-        public static native TemplateInstance panel();
+        public static native TemplateInstance panel(boolean activityPubConfigEnabled, boolean activityPubPlatformEnabled);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -28,10 +29,12 @@ public class PlatformInsightsEndpoint {
     }
 
     private final PlatformInsightsService insightsService;
+    private final ActivityPubSettings activityPubSettings;
 
     @Inject
-    public PlatformInsightsEndpoint(PlatformInsightsService insightsService) {
+    public PlatformInsightsEndpoint(PlatformInsightsService insightsService, ActivityPubSettings activityPubSettings) {
         this.insightsService = insightsService;
+        this.activityPubSettings = activityPubSettings;
     }
 
     @GET
@@ -42,6 +45,6 @@ public class PlatformInsightsEndpoint {
     }
 
     public TemplateInstance renderHubPanel() {
-        return Templates.panel();
+        return Templates.panel(activityPubSettings.configEnabled(), activityPubSettings.enabled());
     }
 }

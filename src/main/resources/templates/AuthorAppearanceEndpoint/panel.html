@@ -86,3 +86,75 @@
     {#include components/htmx-spinner id='appearance-htmx-indicator' /}
     <button type="submit" class="btn btn--primary" data-i18n="account.saveChanges">Salvar alterações</button>
 </form>
+
+{#if federationView.platformFederationEnabled}
+<div id="activitypubMessage"></div>
+<form class="profile-form profile-form--inline"
+      hx-post="/forms/writing/activitypub"
+      hx-target="#activitypubMessage"
+      hx-swap="innerHTML">
+    <fieldset class="fediverse">
+        <legend class="fediverse__legend" data-i18n="appearance.fediverseSection">Fediverse (ActivityPub)</legend>
+        <p class="fediverse__intro form-group__hint" data-i18n="appearance.fediverseIntro">
+            Share published posts from your main blog with Mastodon and other ActivityPub servers.
+            Remote follow requests must be accepted here before they receive your posts.
+        </p>
+        <label class="fediverse__enable">
+            <input type="checkbox"
+                   class="fediverse__enable-input"
+                   name="federationEnabled"
+                   value="true"
+                   {#if federationView.federationEnabled}checked{/if}>
+            <span class="fediverse__enable-card">
+                <span class="fediverse__enable-title" data-i18n="appearance.fediverseOptInTitle">Publish to the Fediverse</span>
+                <span class="fediverse__enable-desc" data-i18n="appearance.fediverseOptInDesc">
+                    Syndicate your main blog posts as ActivityPub activities when you publish.
+                </span>
+            </span>
+        </label>
+        <div class="fediverse__config">
+            <dl class="fediverse__facts">
+                <div class="fediverse__fact">
+                    <dt data-i18n="appearance.fediverseHandle">Your handle</dt>
+                    <dd><code class="fediverse__handle">{federationView.handle}</code></dd>
+                </div>
+                <div class="fediverse__fact">
+                    <dt data-i18n="appearance.fediverseActorUrl">Actor URL</dt>
+                    <dd><a href="{federationView.actorUrl}" rel="noopener noreferrer">{federationView.actorUrl}</a></dd>
+                </div>
+                <div class="fediverse__fact">
+                    <dt data-i18n="appearance.fediverseFollowerCount">Followers on the Fediverse</dt>
+                    <dd>{federationView.followerCount}</dd>
+                </div>
+            </dl>
+            {#if !federationView.pendingFollowRequests.isEmpty}
+            <div class="fediverse__follow-requests">
+                <h3 class="fediverse__follow-requests-title" data-i18n="appearance.fediverseFollowRequests">Fediverse follow requests</h3>
+                <div id="activitypubFollowRequests" class="fediverse__follow-requests-list">
+                    {#for request in federationView.pendingFollowRequests}
+                    <div class="fediverse__follow-request">
+                        <span class="fediverse__follow-request-handle">{request.remoteActorId}</span>
+                        <div class="fediverse__follow-request-actions">
+                            <button type="button" class="btn btn--primary btn--sm"
+                                    hx-post="/forms/writing/activitypub/follows/{request.followId}/accept"
+                                    hx-target="#activitypubFollowRequests"
+                                    hx-swap="innerHTML"
+                                    data-i18n="appearance.fediverseAccept">Accept</button>
+                            <button type="button" class="btn btn--secondary btn--sm"
+                                    hx-post="/forms/writing/activitypub/follows/{request.followId}/reject"
+                                    hx-target="#activitypubFollowRequests"
+                                    hx-swap="innerHTML"
+                                    data-i18n="appearance.fediverseReject">Reject</button>
+                        </div>
+                    </div>
+                    {/for}
+                </div>
+            </div>
+            {/if}
+            <p class="fediverse__actions">
+                <button type="submit" class="btn btn--secondary" data-i18n="appearance.fediverseSave">Save Fediverse settings</button>
+            </p>
+        </div>
+    </fieldset>
+</form>
+{/if}

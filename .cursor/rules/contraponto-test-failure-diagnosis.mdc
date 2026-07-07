@@ -1,0 +1,49 @@
+---
+description: Classify test failures and write reports under reports/
+globs:
+  - 'src/test/**'
+  - 'target/surefire-reports/**'
+alwaysApply: false
+---
+
+# Test failure diagnosis
+
+When tests fail during development or via [fix_tests.md](../commands/fix_tests.md):
+
+## 1. Collect evidence
+
+- Surefire report: `target/surefire-reports/*.txt`
+- Console stack trace from `GITHUB_ACTIONS=true ./mvnw -B test -Dtest=Class#method`
+
+## 2. Classify
+
+| Type | Signs | Action |
+|------|-------|--------|
+| Production bug | Wrong status, missing validation, broken template | Fix `src/main` or templates |
+| Test bug | Wrong assertion, stale `App` DSL, wrong `Given` | Fix test |
+| Data/setup | Missing seed, wrong `Given`, shared data pollution | Fix test data; call `Given.cleanup()` |
+| Environment | Chrome headless, DB, port | Set `GITHUB_ACTIONS=true`; check `%test` config |
+
+## 3. Fix one root cause at a time
+
+- Re-run single test: `GITHUB_ACTIONS=true ./mvnw -B test -Dtest=ClassName#methodName`
+- Then class, then profile (`-Ptest-unit`, `-Ptest-web`), then full `verify`
+
+## 4. Report template
+
+After fixing, write `reports/{NNN}-test-failure-{Class}-{method}-{timestamp}.md`:
+
+```markdown
+# Test failure report
+
+- **Test:** ClassName#methodName
+- **Root cause:** (one sentence)
+- **Fix:** (files changed)
+- **Verify:** GITHUB_ACTIONS=true ./mvnw -B test -Dtest=... (pass)
+```
+
+## Rules
+
+- Domain spec wins over test expectation when behaviour is specified.
+- Never `@Disabled` or `Thread.sleep()` as fixes.
+- Never bypass `App` with raw Selenium for HTMX flows.

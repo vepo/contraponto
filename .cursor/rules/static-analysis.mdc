@@ -7,6 +7,18 @@ alwaysApply: true
 
 Before marking a coding task **done**, run **local** checks only (no SonarCloud, tokens, or upload services).
 
+## Working code invariant
+
+**No development ends with non-working code.** See [development-process.mdc](development-process.mdc) § Working code invariant.
+
+| Situation | Required action |
+|-----------|-----------------|
+| Task or session ending | `GITHUB_ACTIONS=true ./mvnw -B verify` green |
+| Approved tasks incomplete | Feature changelog stays **`in-progress`** — never `done` |
+| Partial work breaks build/tests | Fix forward **or** revert — do not stop on red |
+
+**Forbidden:** marking `done` with failing tests; `@Disabled` or weakened assertions to fake green.
+
 ## When to run
 
 - After production or test code changes (Java, Qute, SQL migrations, CSS/JS you edited).
@@ -41,7 +53,7 @@ On changed source files, run the workspace linter (`ReadLints`) and fix **new** 
 ## What to fix
 
 1. **Compile errors** and test failures from `verify`.
-2. **Formatting** violations (Spotless / Eclipse formatter — `resources/formatter.xml`).
+2. **Formatting** violations (Spotless / Eclipse formatter — `resources/formatter.xml`; see [contraponto-format-imports.mdc](contraponto-format-imports.mdc)).
 3. **New** linter warnings in edited files (null-safety, deprecations, unused code).
 4. Obvious smells you introduced: dead code, duplicate logic, raw types, swallowed exceptions — align with [contraponto-java.mdc](contraponto-java.mdc) and [contraponto-core.mdc](contraponto-core.mdc).
 

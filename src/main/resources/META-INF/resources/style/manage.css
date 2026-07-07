@@ -1087,6 +1087,204 @@
     text-decoration: underline;
 }
 
+.fediverse {
+    margin: 1.5rem 0 0;
+    padding: 1.25rem 1.35rem 1.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-offset);
+}
+
+.fediverse__legend {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding: 0 0.35rem;
+}
+
+.fediverse__intro {
+    margin: 0.35rem 0 1rem;
+    max-width: 42rem;
+    line-height: 1.5;
+}
+
+.fediverse__enable {
+    display: block;
+    cursor: pointer;
+}
+
+.fediverse__enable-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.fediverse__enable-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 2.25rem 1rem 1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    transition:
+        border-color var(--duration-normal) var(--ease-out),
+        background-color var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.fediverse__enable:hover .fediverse__enable-card {
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-offset);
+}
+
+.fediverse:has(.fediverse__enable-input:checked) .fediverse__enable-card {
+    border-color: var(--color-primary);
+    background: var(--color-success-muted);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.fediverse__enable:has(.fediverse__enable-input:focus-visible) .fediverse__enable-card {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.fediverse:has(.fediverse__enable-input:checked) .fediverse__enable-card::after {
+    content: "";
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.25L6.5 11.25L12.5 4.75' stroke='white' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 0.75rem;
+}
+
+.fediverse__enable-title {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.3;
+}
+
+.fediverse__enable-desc {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+.fediverse__config {
+    display: none;
+    flex-direction: column;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.fediverse:has(.fediverse__enable-input:checked) .fediverse__config {
+    display: flex;
+}
+
+.fediverse__facts {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+}
+
+.fediverse__fact {
+    display: grid;
+    grid-template-columns: minmax(8rem, auto) 1fr;
+    gap: 0.35rem 1rem;
+    align-items: baseline;
+    margin: 0;
+}
+
+.fediverse__fact dt {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.fediverse__fact dd {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-text);
+    word-break: break-all;
+}
+
+.fediverse__fact a {
+    color: var(--color-info);
+    text-decoration: underline;
+}
+
+.fediverse__handle {
+    font-size: 0.875rem;
+}
+
+.fediverse__follow-requests {
+    margin-bottom: 1rem;
+}
+
+.fediverse__follow-requests-title {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.fediverse__follow-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fediverse__follow-request {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+}
+
+.fediverse__follow-request-handle {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.875rem;
+    color: var(--color-text);
+    word-break: break-all;
+}
+
+.fediverse__follow-request-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fediverse__actions {
+    margin: 0;
+}
+
 .git-sync-history__row-head {
     display: flex;
     flex-wrap: wrap;

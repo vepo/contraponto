@@ -22,6 +22,10 @@ TRUNCATE TABLE tb_account_email_outbox CASCADE;
 TRUNCATE TABLE tb_notifications CASCADE;
 TRUNCATE TABLE tb_git_sync_run_entries CASCADE;
 TRUNCATE TABLE tb_git_sync_runs CASCADE;
+TRUNCATE TABLE tb_activitypub_deliveries CASCADE;
+TRUNCATE TABLE tb_activitypub_follows CASCADE;
+TRUNCATE TABLE tb_activitypub_remote_actors CASCADE;
+TRUNCATE TABLE tb_activitypub_actors CASCADE;
 TRUNCATE TABLE tb_blog_audience CASCADE;
 TRUNCATE TABLE tb_post_publication_tags CASCADE;
 TRUNCATE TABLE tb_post_publications CASCADE;
@@ -314,7 +318,11 @@ DECLARE
     v_post_bob_main BIGINT;
     v_comment_intro_root BIGINT;
     v_comment_eve_pending BIGINT;
+    v_alice_user BIGINT;
+    v_alice_actor BIGINT;
+    v_remote_actor BIGINT;
 BEGIN
+    SELECT id INTO v_alice_user FROM tb_users WHERE username = 'alice';
     SELECT b.id INTO v_admin_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'admin' AND b.main = TRUE;
     SELECT b.id INTO v_alice_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main = TRUE;
     SELECT b.id INTO v_bob_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.main = TRUE;
@@ -844,6 +852,39 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     FROM tb_users d, tb_blogs b
     JOIN tb_users owner ON b.owner_id = owner.id
     WHERE d.username = 'dave' AND owner.username = 'bob' AND b.slug = 'architecture-notes';
+
+    -- ============================================
+    -- 10b. ActivityPub federation (alice enabled + sample accepted follow)
+    -- ============================================
+    INSERT INTO tb_activitypub_actors (
+        user_id, federation_enabled, private_key_encrypted, public_key_pem, public_key_id, created_at, updated_at
+    ) VALUES (
+        v_alice_user, TRUE,
+        'dev-seed-private-key-placeholder',
+        '-----BEGIN PUBLIC KEY-----\nDEV-SEED-PLACEHOLDER\n-----END PUBLIC KEY-----',
+        'https://alice.localhost/#mainKey',
+        NOW(), NOW()
+    )
+    RETURNING id INTO v_alice_actor;
+
+    INSERT INTO tb_activitypub_remote_actors (
+        actor_id, inbox_url, public_key_pem, public_key_id, profile_fetched_at
+    ) VALUES (
+        'https://mastodon.social/users/dave-reader',
+        'https://mastodon.social/inbox',
+        '-----BEGIN PUBLIC KEY-----\nREMOTE-DEV-SEED-PLACEHOLDER\n-----END PUBLIC KEY-----',
+        'https://mastodon.social/users/dave-reader#main-key',
+        NOW()
+    )
+    RETURNING id INTO v_remote_actor;
+
+    INSERT INTO tb_activitypub_follows (
+        local_actor_id, remote_actor_id, status, follow_activity_id, created_at, accepted_at
+    ) VALUES (
+        v_alice_actor, v_remote_actor, 'ACCEPTED',
+        'https://mastodon.social/activities/dev-seed-follow',
+        NOW(), NOW()
+    );
 
     -- ============================================
     -- 11. Sample in-app notifications

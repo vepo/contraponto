@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogBannerService;
 import dev.vepo.contraponto.blog.BlogPaths;
 import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.blog.BlogRepository;
@@ -74,6 +75,8 @@ public class SeoService {
 
     private final BlogSubdomainContext blogSubdomainContext;
 
+    private final BlogBannerService blogBannerService;
+
     @Inject
     public SeoService(SiteBranding siteBranding,
                       PublicSiteUrl publicSiteUrl,
@@ -85,7 +88,8 @@ public class SeoService {
                       SerieRepository serieRepository,
                       CustomPageCache customPageCache,
                       BlogPublicUrlService blogPublicUrlService,
-                      BlogSubdomainContext blogSubdomainContext) {
+                      BlogSubdomainContext blogSubdomainContext,
+                      BlogBannerService blogBannerService) {
         this.siteBranding = siteBranding;
         this.publicSiteUrl = publicSiteUrl;
         this.structuredData = structuredData;
@@ -97,6 +101,7 @@ public class SeoService {
         this.customPageCache = customPageCache;
         this.blogPublicUrlService = blogPublicUrlService;
         this.blogSubdomainContext = blogSubdomainContext;
+        this.blogBannerService = blogBannerService;
     }
 
     private String describePost(PublishedPostView view) {
@@ -161,13 +166,17 @@ public class SeoService {
             description = "Publicações de %s no %s.".formatted(blogLabel, siteBranding.seoName());
         }
         String canonical = blogPublicUrlService.canonicalOrPlatformAbsolute(blog);
-        return SeoMetadata.builder()
-                          .title(title)
-                          .description(description)
-                          .canonicalUrl(canonical)
-                          .ogType(SeoOgType.WEBSITE)
-                          .jsonLd(structuredData.webPage(blogLabel, canonical, description, breadcrumb))
-                          .build();
+        var builder = SeoMetadata.builder()
+                                 .title(title)
+                                 .description(description)
+                                 .canonicalUrl(canonical)
+                                 .ogType(SeoOgType.WEBSITE)
+                                 .jsonLd(structuredData.webPage(blogLabel, canonical, description, breadcrumb));
+        String bannerUrl = blogBannerService.effectiveBannerUrl(blog);
+        if (bannerUrl != null && !bannerUrl.isBlank()) {
+            builder.ogImageUrl(publicSiteUrl.absolute(bannerUrl));
+        }
+        return builder.build();
     }
 
     public SeoMetadata forCustomPage(CustomPage page) {

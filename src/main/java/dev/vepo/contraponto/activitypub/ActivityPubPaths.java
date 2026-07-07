@@ -1,0 +1,71 @@
+package dev.vepo.contraponto.activitypub;
+
+import dev.vepo.contraponto.blog.BlogSubdomainConfig;
+import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPaths;
+import dev.vepo.contraponto.user.User;
+
+public final class ActivityPubPaths {
+
+    public static final String ACTIVITY_JSON = "application/activity+json";
+    public static final String LD_JSON = "application/ld+json";
+
+    public static String acctHandle(User user, BlogSubdomainConfig config) {
+        var domain = federationDomain(config);
+        return "acct:%s@%s".formatted(user.getUsername(), domain);
+    }
+
+    public static String actorId(User user, BlogSubdomainConfig config) {
+        if (config.enabled()) {
+            return "%s/".formatted(config.subdomainOrigin(user.getUsername()));
+        }
+        var url = config.platformUrl("/%s".formatted(user.getUsername()));
+        return url.endsWith("/") ? url : "%s/".formatted(url);
+    }
+
+    private static String federationDomain(BlogSubdomainConfig config) {
+        if (config.enabled() && !config.baseDomain().isBlank()) {
+            return config.baseDomain();
+        }
+        return config.platformHost();
+    }
+
+    public static String followers(User user, BlogSubdomainConfig config) {
+        return "%sfollowers".formatted(actorId(user, config));
+    }
+
+    public static String following(User user, BlogSubdomainConfig config) {
+        return "%sfollowing".formatted(actorId(user, config));
+    }
+
+    public static String inbox(User user, BlogSubdomainConfig config) {
+        return "%sinbox".formatted(actorId(user, config));
+    }
+
+    public static String outbox(User user, BlogSubdomainConfig config) {
+        return "%soutbox".formatted(actorId(user, config));
+    }
+
+    public static String postObjectId(Post post, BlogSubdomainConfig config) {
+        if (config.enabled()) {
+            var ownerUsername = post.getBlog().getOwner().getUsername();
+            var path = post.getBlog().isMain()
+                                               ? "/post/%s".formatted(post.getSlug())
+                                               : "/%s/post/%s".formatted(post.getBlog().getSlug(), post.getSlug());
+            return "%s%s".formatted(config.subdomainOrigin(ownerUsername), path);
+        }
+        return config.platformUrl(PostPaths.extractUrl(post));
+    }
+
+    public static String publicKeyId(User user, BlogSubdomainConfig config) {
+        return "%s#mainKey".formatted(actorId(user, config));
+    }
+
+    public static String webFingerResource(User user, BlogSubdomainConfig config) {
+        return acctHandle(user, config);
+    }
+
+    private ActivityPubPaths() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+}

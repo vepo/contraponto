@@ -193,7 +193,9 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `post-card` | Library published tab | |
 | `review-row`, `review-row__*` | `ReviewEndpoint/*` | Review queue rows; `review-row__open` opens post in new tab |
 | `pages-manage`, `pages-manage__*` | User/blog/tag/custom page manage | Shared CRUD shell |
-| `pages-form`, `user-roles` | Manage forms | |
+| `git-sync`, `git-sync__*` | `BlogManageEndpoint/gitSyncSection.html` | Git sync fieldset; card-style enable toggle |
+| `fediverse`, `fediverse__*` | `AuthorAppearanceEndpoint/panel.html` | ActivityPub federation; card-style enable toggle |
+| `role-picker`, `role-picker__*` | `UserManageEndpoint/form.html` | Admin role selection cards |
 | `notifications-page`, `notification-list` | `NotificationEndpoint/notifications.html` | |
 | `subscriptions-page`, `subscription-list` | `SubscriptionEndpoint/subscriptions.html` | |
 | `manage-pagination` | `components/manage-pagination.html` | |

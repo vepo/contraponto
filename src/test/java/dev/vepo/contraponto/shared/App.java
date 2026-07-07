@@ -1676,6 +1676,28 @@ public class App {
             return this;
         }
 
+        public ProfilePage assertFediverseHandleVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".fediverse__handle")));
+            return this;
+        }
+
+        public ProfilePage assertFediverseOptInChecked(boolean checked) {
+            var checkbox = wait.until(presenceOfElementLocated(cssSelector(".fediverse__enable-input")));
+            assertThat(checkbox.isSelected()).isEqualTo(checked);
+            return this;
+        }
+
+        public ProfilePage assertFediverseSectionVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".fediverse")));
+            return this;
+        }
+
+        public ProfilePage assertFediverseSuccessMessage(String expectedSubstring) {
+            var successMsg = wait.until(visibilityOfElementLocated(cssSelector("#activitypubMessage .success-message")));
+            assertThat(successMsg.getText()).contains(expectedSubstring);
+            return this;
+        }
+
         public ProfilePage assertNameIs(String expected) {
             var nameInput = wait.until(visibilityOfElementLocated(cssSelector("input[name='name']")));
             assertThat(nameInput.getAttribute("value")).isEqualTo(expected);
@@ -1739,6 +1761,21 @@ public class App {
         public ProfilePage submit() {
             reliableClick(wait.until(visibilityOfElementLocated(cssSelector("button[type='submit']"))));
             waitForReady();
+            return this;
+        }
+
+        public ProfilePage submitFediverseSettings() {
+            reliableClick(wait.until(elementToBeClickable(
+                                                          cssSelector(".fediverse__actions button[type='submit']"))));
+            waitForReady();
+            return this;
+        }
+
+        public ProfilePage toggleFediverseOptIn(boolean enable) {
+            var checkbox = wait.until(elementToBeClickable(cssSelector(".fediverse__enable-input")));
+            if (checkbox.isSelected() != enable) {
+                reliableClick(checkbox);
+            }
             return this;
         }
     }

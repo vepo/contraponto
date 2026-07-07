@@ -1,0 +1,73 @@
+---
+description: Pillar 2 — tiered test execution, impact map, failure workflow
+alwaysApply: true
+---
+
+# Testing
+
+Run the **smallest scope that catches your regression** after substantive edits. Full gate: `GITHUB_ACTIONS=true ./mvnw -B verify` before marking done — see [static-analysis.mdc](static-analysis.mdc).
+
+**Session end:** never stop with failing tests in your diff ([development-process.mdc](development-process.mdc) § Working code invariant).
+
+## Tiered ladder
+
+| When | Command |
+|------|---------|
+| Trivial / compile-only edit | Skip until next substantive change |
+| One package edited | `GITHUB_ACTIONS=true ./mvnw -B test -Dtest=ClassName` |
+| Endpoint + template changed | Related `*WebTest` or `*Test` + navigation if user-facing |
+| CSS/JS/template only | Affected `@WebTest` or `scripts/audit-template-seo.sh` when SEO/chrome |
+| Task done | `GITHUB_ACTIONS=true ./mvnw -B verify` |
+
+```bash
+# Full gate (matches CI)
+GITHUB_ACTIONS=true ./mvnw -B verify
+
+# Single test class
+GITHUB_ACTIONS=true ./mvnw -B test -Dtest=PostWebTest
+
+# Single method
+GITHUB_ACTIONS=true ./mvnw -B test -Dtest=PostWebTest#shouldShowPost
+
+# Unit profile (faster)
+GITHUB_ACTIONS=true ./mvnw -B test -Ptest-unit
+
+# Web profile
+GITHUB_ACTIONS=true ./mvnw -B test -Ptest-web
+
+# Architecture rules
+GITHUB_ACTIONS=true ./mvnw -B test -Dtest=BoundedContextRulesTest
+
+# Dev mode (manual)
+./mvnw quarkus:dev
+```
+
+## Impact map
+
+| You changed | Run |
+|-------------|-----|
+| `post/*` | `Post*Test`, `Post*WebTest` |
+| `auth/*`, `user/*` | `Auth*Test`, `User*Test` |
+| `readinglist/*` | `ReadingList*Test`, `ReadingList*WebTest` |
+| `seo/*`, templates (meta/href) | `SeoServiceTest`, `SeoWebTest`, `scripts/audit-template-seo.sh` |
+| `highlight/*` | `Highlight*Test`, `Highlight*WebTest` |
+| `shared/architecture/*` | `BoundedContextRulesTest` |
+| `components/header.html`, menu | `*WebTest` touching navigation + SEO audit |
+| `dev-import.sql` | Restart `quarkus:dev`; smoke-click affected feature |
+
+Detail: [contraponto-tests.mdc](contraponto-tests.mdc), [test-headless-github-actions.mdc](test-headless-github-actions.mdc).
+
+TDD: [development-process.mdc](development-process.mdc) § Phase 5; subagents `tdd-red`, `tdd-green`, `tdd-refactor`.
+
+## When tests fail
+
+1. Re-run smallest repro — [contraponto-test-failure-diagnosis.mdc](contraponto-test-failure-diagnosis.mdc).
+2. Do not loop full `verify` per fix attempt.
+3. After green: optional report under `reports/` per that rule.
+
+## Infra to reuse
+
+- `Given` builders — never raw repository setup in test methods.
+- `App` DSL — never raw WebDriver in `@WebTest` methods.
+- `Given.cleanup()` when tests mutate shared data.
+- No `Thread.sleep()` — use explicit waits in `App` only when unavoidable.
