@@ -27,15 +27,22 @@
 <ul class="notification-overlay__list">
     {#for n in notifications}
     <li class="notification-overlay__item">
-        <a href="{n.linkUrl}" data-hx-get="{n.linkUrl}"
+        {#if n.navigationUsesHtmx}
+        <a href="{n.navigationUrl}" data-hx-get="{n.navigationUrl}"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
-           hx-push-url="{n.linkUrl}"
+           hx-push-url="{n.navigationUrl}"
            class="notification-overlay__link">
             <span class="notification-overlay__message">{n.message}</span>
             <time class="notification-overlay__time">{n.createdAt.format('dd/MM/yyyy HH:mm')}</time>
         </a>
+        {#else}
+        <a href="{n.navigationUrl}" class="notification-overlay__link">
+            <span class="notification-overlay__message">{n.message}</span>
+            <time class="notification-overlay__time">{n.createdAt.format('dd/MM/yyyy HH:mm')}</time>
+        </a>
+        {/if}
         <form class="notification-overlay__dismiss-form"
               hx-post="/forms/notifications/{n.id}/dismiss"
               hx-target="#notificationOverlay"

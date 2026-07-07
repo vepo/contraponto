@@ -6,6 +6,9 @@ import java.util.List;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.custompage.CustomPage;
+import dev.vepo.contraponto.messaging.MessageReport;
+import dev.vepo.contraponto.messaging.MessageThread;
+import dev.vepo.contraponto.messaging.MessageThreadPaths;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PublishedPostView;
 import dev.vepo.contraponto.serie.Serie;
@@ -146,6 +149,26 @@ public class BreadcrumbService {
 
     public BreadcrumbTrail forMainBlog(User author) {
         return trail(link(HOME_LABEL, HOME_PATH), current(author.getName()));
+    }
+
+    public BreadcrumbTrail forMessageCompose() {
+        return trail(link(NavigationHub.ACCOUNT.label(), hubRegistry.defaultSectionPath(NavigationHub.ACCOUNT)),
+                     link("Messages", MessageThreadPaths.mailbox(), "account.nav.messages"),
+                     current("Compose", "messaging.compose.title"));
+    }
+
+    public BreadcrumbTrail forMessageReportDetail(MessageReport report) {
+        return trail(link(NavigationHub.ADMINISTRATION.label(), hubRegistry.defaultSectionPath(NavigationHub.ADMINISTRATION)),
+                     link("Message reports",
+                          hubRegistry.sectionPath(NavigationHub.ADMINISTRATION, "message-reports"),
+                          "administration.nav.messageReports"),
+                     current(report.getThread().getTitle()));
+    }
+
+    public BreadcrumbTrail forMessageThread(MessageThread thread) {
+        return trail(link(NavigationHub.ACCOUNT.label(), hubRegistry.defaultSectionPath(NavigationHub.ACCOUNT)),
+                     link("Messages", MessageThreadPaths.mailbox(), "account.nav.messages"),
+                     current(thread.getTitle()));
     }
 
     public BreadcrumbTrail forPasswordRecovery() {

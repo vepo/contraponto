@@ -67,5 +67,26 @@ public final class I18nDefaults {
     public static final String LIBRARY_UNPUBLISH_CONFIRM = "Tem certeza de que deseja despublicar esta publicação?";
     public static final String LIBRARY_DELETE_DRAFT_CONFIRM = "Tem certeza de que deseja excluir este rascunho?";
 
+    public static final String MESSAGING_THREAD_SENT = "Conversa iniciada.";
+    public static final String MESSAGING_REPLY_SENT = "Resposta enviada.";
+    public static final String MESSAGING_THREAD_CLOSED = "Conversa encerrada.";
+    public static final String MESSAGING_THREAD_FLAGGED = "Conversa denunciada.";
+    public static final String MESSAGING_USER_BLOCKED = "Usuário bloqueado.";
+    public static final String MESSAGING_USER_UNBLOCKED = "Usuário desbloqueado.";
+    public static final String MESSAGING_USER_NOT_FOUND = "Usuário não encontrado.";
+    public static final String MESSAGING_THREAD_NOT_FOUND = "Conversa não encontrada.";
+    public static final String MESSAGING_REPORT_DISMISSED = "Denúncia dispensada.";
+    public static final String MESSAGING_REPORT_REVIEWED = "Denúncia marcada como revisada.";
+    public static final String MESSAGING_REPORT_NOT_FOUND = "Denúncia não encontrada.";
+    public static final String MESSAGING_CLOSE_THREAD = "Encerrar conversa";
+    public static final String MESSAGING_FLAG_THREAD = "Denunciar conversa";
+    public static final String MESSAGING_BLOCK_USER = "Bloquear usuário";
+    public static final String MESSAGING_CLOSE_CONFIRM_TITLE = "Encerrar conversa?";
+    public static final String MESSAGING_CLOSE_CONFIRM_MESSAGE = "Ninguém poderá enviar novas mensagens nesta conversa.";
+    public static final String MESSAGING_FLAG_CONFIRM_TITLE = "Denunciar conversa?";
+    public static final String MESSAGING_FLAG_CONFIRM_MESSAGE = "Um administrador revisará esta conversa.";
+    public static final String MESSAGING_BLOCK_CONFIRM_TITLE = "Bloquear usuário?";
+    public static final String MESSAGING_BLOCK_CONFIRM_MESSAGE = "Vocês não poderão trocar mensagens enquanto o bloqueio estiver ativo.";
+
     private I18nDefaults() {}
 }

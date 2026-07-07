@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.activitypub;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,17 +41,31 @@ public class ActivityPubOutboxService {
 
     public Map<String, Object> buildOutbox(User user, int page) {
         var outboxId = ActivityPubPaths.outbox(user, subdomainConfig);
-        var posts = postRepository.findPublishedByAuthor(user.getId(), PageQuery.forGrid(OUTBOX_PAGE_SIZE, page));
+        var posts = postRepository.findPublishedMainBlogByAuthor(user.getId(), PageQuery.forGrid(OUTBOX_PAGE_SIZE, page));
         var items = posts.data()
                          .stream()
-                         .filter(post -> post.getBlog().isMain())
                          .map(postObjectMapper::toCreateActivity)
                          .toList();
-        return Map.of("@context", "https://www.w3.org/ns/activitystreams",
-                      "id", outboxId,
-                      "type", "OrderedCollection",
-                      "totalItems", posts.total(),
-                      "orderedItems", items);
+        var document = new LinkedHashMap<String, Object>();
+        document.put("@context", "https://www.w3.org/ns/activitystreams");
+        document.put("id", page > 1 ? ActivityPubPaths.outboxPage(user, subdomainConfig, page) : outboxId);
+        document.put("type", posts.totalPages() > 1 && page > 1 ? "OrderedCollectionPage" : "OrderedCollection");
+        document.put("totalItems", posts.total());
+        if (posts.totalPages() > 1) {
+            document.put("first", ActivityPubPaths.outboxPage(user, subdomainConfig, 1));
+            document.put("last", ActivityPubPaths.outboxPage(user, subdomainConfig, posts.totalPages()));
+            if (posts.hasNext()) {
+                document.put("next", ActivityPubPaths.outboxPage(user, subdomainConfig, posts.nextPage()));
+            }
+            if (posts.hasPrevious()) {
+                document.put("prev", ActivityPubPaths.outboxPage(user, subdomainConfig, posts.previousPage()));
+            }
+            if (page > 1) {
+                document.put("partOf", outboxId);
+            }
+        }
+        document.put("orderedItems", items);
+        return document;
     }
 
     public Map<String, Object> buildPostObject(Post post) {

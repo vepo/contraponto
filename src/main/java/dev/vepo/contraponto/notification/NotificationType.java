@@ -1,6 +1,7 @@
 package dev.vepo.contraponto.notification;
 
 import dev.vepo.contraponto.blog.BlogPaths;
+import dev.vepo.contraponto.messaging.MessageThreadPaths;
 import dev.vepo.contraponto.post.PostPaths;
 
 public enum NotificationType {
@@ -12,7 +13,9 @@ public enum NotificationType {
     PUBLIC_HIGHLIGHT_NOTE,
     POST_RESPONSE,
     GIT_SYNC_SUCCEEDED,
-    GIT_SYNC_FAILED;
+    GIT_SYNC_FAILED,
+    NEW_MESSAGE_THREAD,
+    NEW_THREAD_MESSAGE;
 
     private static String commentLink(Notification notification) {
         if (notification.getPost() != null) {
@@ -29,6 +32,17 @@ public enum NotificationType {
         return BlogPaths.extractUrl(notification.getBlog());
     }
 
+    private static String messageThreadLink(Notification notification) {
+        Long threadId = notification.getMessageThreadId();
+        if (threadId == null && notification.getMessageThread() != null) {
+            threadId = notification.getMessageThread().getId();
+        }
+        if (threadId != null) {
+            return MessageThreadPaths.thread(threadId);
+        }
+        return MessageThreadPaths.mailbox();
+    }
+
     private static String postLink(Notification notification) {
         if (notification.getPost() != null) {
             return PostPaths.extractUrl(notification.getPost());
@@ -43,6 +57,7 @@ public enum NotificationType {
             case NEW_COMMENT -> commentLink(notification);
             case COMMON_HIGHLIGHT_PROPOSAL, PUBLIC_HIGHLIGHT_NOTE, POST_RESPONSE -> "/writing/highlights";
             case NEW_FOLLOW, NEW_SUBSCRIBE -> BlogPaths.extractUrl(notification.getBlog());
+            case NEW_MESSAGE_THREAD, NEW_THREAD_MESSAGE -> messageThreadLink(notification);
         };
     }
 }

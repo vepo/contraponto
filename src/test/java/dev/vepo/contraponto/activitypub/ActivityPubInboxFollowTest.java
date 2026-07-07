@@ -64,6 +64,58 @@ class ActivityPubInboxFollowTest {
     private PrivateKey remotePrivateKey;
     private String remoteKeyId;
 
+    @Test
+    @Transactional
+    void acceptFollowBackfillsHistoricalMainBlogPosts() {
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Historical One")
+             .withSlug("historical-one")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Historical Two")
+             .withSlug("historical-two")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var remoteActorId = "https://remote.example/users/reader";
+        var followActivityId = "https://remote.example/follow/backfill";
+        var body = """
+                   {
+                     "@context": "https://www.w3.org/ns/activitystreams",
+                     "id": "%s",
+                     "type": "Follow",
+                     "actor": "%s",
+                     "object": "%s"
+                   }
+                   """.formatted(followActivityId, remoteActorId, actorId);
+        var target = inboxUri();
+        var signed = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", target, body);
+
+        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
+               .headers(signed)
+               .body(body)
+               .post("/followuser/inbox")
+               .then()
+               .statusCode(202);
+
+        var pending = followRepository.listPendingByLocalActor(actor.getId());
+        inboxService.acceptPendingFollow(pending.get(0).getId());
+
+        var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        var createDeliveries = pendingDeliveries.stream()
+                                                .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                                .toList();
+        assertThat(createDeliveries).hasSize(2);
+        assertThat(createDeliveries.get(0).getPayloadJson()).contains("Historical One");
+        assertThat(createDeliveries.get(1).getPayloadJson()).contains("Historical Two");
+    }
+
     private URI inboxUri() {
         return URI.create("%s://%s:%d/followuser/inbox".formatted(baseUrl.getProtocol(),
                                                                   baseUrl.getHost(),

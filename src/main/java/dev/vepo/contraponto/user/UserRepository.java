@@ -54,6 +54,33 @@ public class UserRepository {
         return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
+    public Optional<User> findActiveByUsername(String username) {
+        return entityManager.createQuery("""
+                                         FROM User u
+                                         WHERE u.username = :username AND u.active = true
+                                         """, User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public List<User> findActiveByUsernamePrefixExcluding(long excludeUserId, String prefix, int limit) {
+        if (prefix == null || prefix.isBlank()) {
+            return List.of();
+        }
+        return entityManager.createQuery("""
+                                         SELECT u FROM User u
+                                         WHERE u.active = true
+                                           AND u.id <> :excludeUserId
+                                           AND LOWER(u.username) LIKE LOWER(:prefix)
+                                         ORDER BY u.username ASC
+                                         """, User.class)
+                            .setParameter("excludeUserId", excludeUserId)
+                            .setParameter("prefix", "%s%%".formatted(prefix.trim()))
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
     public List<String> findAdministratorEmails() {
         return entityManager.createQuery("""
                                          SELECT DISTINCT u.email FROM User u
@@ -122,6 +149,13 @@ public class UserRepository {
 
     public Optional<User> findByUsername(String username) {
         return entityManager.createQuery("FROM User WHERE username = :username", User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public Optional<User> findByUsernameIgnoreCase(String username) {
+        return entityManager.createQuery("FROM User WHERE LOWER(username) = LOWER(:username)", User.class)
                             .setParameter("username", username)
                             .getResultStream()
                             .findFirst();

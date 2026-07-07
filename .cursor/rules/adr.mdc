@@ -21,6 +21,8 @@ Transversal decisions live in [docs/adr/](../../docs/adr/). Template: [docs/adr/
 | [0006](../../docs/adr/0006-activitypub-federation.md) | ActivityPub S2S federation |
 | [0007](../../docs/adr/0007-activitypub-http-signatures.md) | ActivityPub HTTP Signatures |
 | [0008](../../docs/adr/0008-activitypub-actor-identity.md) | ActivityPub actor identity (one Person per User) |
+| [0009](../../docs/adr/0009-user-messaging-retention.md) | User messaging flagged-thread retention (Accepted) |
+| [0010](../../docs/adr/0010-notification-retention.md) | In-app notification retention (Accepted) |
 
 ## ADR status
 

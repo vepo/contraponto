@@ -62,6 +62,32 @@ Before adding JS, try (in order): inline/OOB HTML in the mutation response → `
 - `console.warn` for recoverable issues; no `console.log` in production paths.
 - Scoped `hljs.highlightElement` inside `main` — see `shouldHighlightCode` in `main.js`; never unscoped `hljs.highlightAll()` on every settle.
 
+## Module quality (app JS under `js/*.js`, excluding `third-party/`)
+
+Reference implementations: [`toast.js`](../../src/main/resources/META-INF/resources/js/toast.js), [`header.js`](../../src/main/resources/META-INF/resources/js/header.js), [`confirm-modal.js`](../../src/main/resources/META-INF/resources/js/confirm-modal.js).
+
+| Rule | Requirement |
+|------|-------------|
+| File header | Block comment: purpose, triggers, and any server/OOB companions |
+| Variables | `const` / `let` only — never `var` |
+| Constants | `static` fields on the manager class for selectors and element ids (`MODAL_ID`, `CONTAINER_ID`, …) |
+| Init | `document.readyState === 'loading'` guard; register listeners once via `window.__*Registered` flag |
+| HTMX listeners | Attach on `document.body`; guard with `event.detail?.target` / `event.detail?.elt` |
+| Handlers | Early `return` guards; `.bind(this)` in constructor for methods passed to listeners |
+| DOM lookup | Cache only when reused across events; otherwise `getElementById` per call is fine |
+| i18n | `window.i18n?.apply(target)` after swapping modal/menu fragments |
+| Globals | Expose `window.*` only when another script must call the API; prefer module-local registration |
+
+## `hx-target="main"` swaps
+
+Full-page hub responses include `<header>`, `<main>`, and footer. When swapping `main` from a redirect or `GET` response:
+
+- **Always** pair `hx-target="main"` with `hx-select="main"` and `hx-swap="outerHTML"`.
+- Without `hx-select`, HTMX may swap the entire document into `main`, duplicating the site header.
+- `main.js` `setupMainNavigationSwap()` enforces `outerHTML` when both attributes are present — do not rely on it instead of declaring `hx-select` in templates.
+
+Confirm modals that replace `main` after `POST` + redirect must set `hx-select="main"` on `[data-confirm-submit]` (see [contraponto-confirm-modals.mdc](contraponto-confirm-modals.mdc)).
+
 ## Tests
 
 Web UI: extend `App` DSL ([contraponto-tests.mdc](contraponto-tests.mdc)); no raw WebDriver for HTMX flows.

@@ -67,6 +67,7 @@ public class ActivityPubInboxService {
                                              follow.getFollowActivityId(),
                                              acceptActivity,
                                              follow.getRemoteActor().getInboxUrl());
+        deliveryService.enqueueHistoricalPostsForAcceptedFollow(follow);
     }
 
     private Map<String, Object> buildAcceptActivity(ActivityPubFollow follow) {

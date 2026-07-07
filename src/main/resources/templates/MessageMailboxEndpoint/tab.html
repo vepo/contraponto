@@ -1,0 +1,24 @@
+{#if rows.isEmpty()}
+<p class="notifications-page__empty" data-i18n="messaging.mailbox.empty">Nenhuma conversa nesta aba.</p>
+{#else}
+<ul class="message-thread-list">
+    {#for row in rows.data}
+    <li class="message-thread-list__item {#if row.unread}message-thread-list__item--unread{/if}">
+        <a href="/account/messages/{row.threadId}" data-hx-get="/account/messages/{row.threadId}"
+           hx-select="main"
+           hx-target="main"
+           hx-swap="outerHTML"
+           hx-push-url="/account/messages/{row.threadId}"
+           class="message-thread-list__link">
+            <span class="message-thread-list__title">{row.title}</span>
+            <span class="message-thread-list__meta">{row.otherName} (@{row.otherUsername})</span>
+            {#if row.preview}
+            <span class="message-thread-list__preview">{row.preview}</span>
+            {/if}
+            <time class="message-thread-list__time">{row.updatedAt.format('dd/MM/yyyy HH:mm')}</time>
+        </a>
+    </li>
+    {/for}
+</ul>
+{#include components/manage-pagination page=rows basePath=basePath extraQuery=extraQuery fragmentTarget='' /}
+{/if}

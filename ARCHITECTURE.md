@@ -1,6 +1,6 @@
 # Architecture & Conventions
 
-Canonical reference for developers and AI agents. For route-level UX detail see [docs/application-guidelines.md](docs/application-guidelines.md). For visual design see [docs/ui-guidelines.md](docs/ui-guidelines.md).
+Canonical reference for developers and AI agents. For route-level UX detail see [docs/application-guidelines.md](docs/application-guidelines.md). For REST segment taxonomy and the full path catalog see [docs/rest-url-guide.md](docs/rest-url-guide.md). For visual design see [docs/ui-guidelines.md](docs/ui-guidelines.md).
 
 **Development process:** five-phase gate (feature analysis → architecture → tasks → approval → TDD) in [AGENTS.md](AGENTS.md) and `.cursor/rules/development-process.mdc`. Feature specs live in [feature/](feature/); transversal decisions in [docs/adr/](docs/adr/).
 

@@ -224,7 +224,7 @@ All returned **200** with correct types. Loopback invariant holds: `self` href `
 | WebFinger `rel=profile-page` | ✅ Done | `ActivityPubWebFingerService` |
 | `discoverable` / `indexable` on actor | ✅ `discoverable` when federation on | `ActivityPubActorDocumentBuilder` |
 | `GET /activities/create/{id}` | ✅ Done | `ActivityPubActivityEndpoint` |
-| WebFinger `rel=subscribe` | ❌ Not implemented | Authorize-interaction / remote follow UI |
+| WebFinger `rel=subscribe` | ✅ Done | Author profile `?acct={uri}` template |
 | `indexable` on actor | ❌ Not set | Profile directory flag |
 | `sharedInbox` | ❌ Not set | Delivery optimization |
 
@@ -306,9 +306,9 @@ Prioritized for Mastodon findability and follow-up federation — **not** all bl
 | WebFinger apex acct | `ActivityPubWebFingerTest` |
 | WebFinger actor-host alias | `ActivityPubWebFingerSubdomainTest` |
 | WebFinger profile-page link | `ActivityPubWebFingerTest#webfingerResolvesAcctResource` |
+| WebFinger loopback (`self` == actor `id`) | `ActivityPubWebFingerTest#webfingerSelfHrefMatchesActorId` |
+| WebFinger case-insensitive acct | `ActivityPubWebFingerTest#webfingerResolvesAcctResourceCaseInsensitively` |
 | Actor JSON fields + discoverable | `ActivityPubOutboxTest#actorJsonReturnsPersonWithInboxAndOutbox` |
 | Activity GET by ID | `ActivityPubOutboxTest#createActivityIsFetchableById` |
 | Inbox POST + signature | `ActivityPubInboxEndpointTest`, `ActivityPubSignatureTest` |
 | Outbox collection | `ActivityPubOutboxTest` |
-
-**Missing automated test:** full loopback assertion (WebFinger `self` == actor `id`) in one test; production curl confirms it manually.

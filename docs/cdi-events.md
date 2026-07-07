@@ -23,6 +23,16 @@ Types under `auth/*Event` (`AccountActivationEvent`, `PasswordResetEvent`, etc.)
 |-------|----------|-------|
 | Quarkus `StartupEvent` | `DatabaseDevSetup`, `ActivityPubDevSeed` | Runs `%dev` import script; seeds `alice` ActivityPub actor when enabled |
 
+## User messaging
+
+| Event | Payload | Producer | Observers | Notes |
+|-------|---------|----------|-----------|-------|
+| `MessageThreadCreatedEvent` | `threadId`, `initiatorUserId`, `recipientUserId` | `MessageComposeService` | `MessageNotificationObserver` | `NEW_MESSAGE_THREAD` notification to recipient |
+| `ThreadMessagePostedEvent` | `threadId`, `messageId`, `authorUserId` | `MessageThreadService.reply` | `MessageNotificationObserver` | `NEW_THREAD_MESSAGE` to other participant |
+| `MessageThreadClosedEvent` | `threadId`, `closedByUserId` | `MessageThreadService.close` | — | Status → `CLOSED` |
+| `MessageThreadFlaggedEvent` | `threadId`, `reporterUserId`, `reportId` | `MessageThreadService.flag` | — | Admin report row; no participant email |
+| `UserBlockedEvent` | `blockerUserId`, `blockedUserId`, `blockId` | `UserBlockService.block` | `MessageThreadFreezeObserver` | Freezes open threads between pair → `FROZEN` |
+
 ## Guidelines
 
 - **Prefer events** over direct calls from publishing into notification, RSS, SEO, Git, or ActivityPub when the reaction is a side effect of publish/unpublish/custom-page change.

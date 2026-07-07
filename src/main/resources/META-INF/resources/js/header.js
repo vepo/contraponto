@@ -174,6 +174,12 @@ class HeaderManager {
 
         if (!this.notificationOutsideClickBound) {
             this.notificationOutsideClickBound = true;
+            document.body.addEventListener('htmx:beforeRequest', (evt) => {
+                const elt = evt.detail?.elt;
+                if (elt?.closest('#notificationOverlay') && elt.matches('a[data-hx-get]')) {
+                    this.closeNotificationOverlay();
+                }
+            });
             document.body.addEventListener('click', (evt) => {
                 const bellBtn = document.getElementById('notificationBellBtn');
                 const overlay = document.getElementById('notificationOverlay');
@@ -184,9 +190,6 @@ class HeaderManager {
                     return;
                 }
                 if (overlay.contains(evt.target)) {
-                    if (evt.target.closest('[data-hx-get]')) {
-                        this.closeNotificationOverlay();
-                    }
                     return;
                 }
                 this.closeNotificationOverlay();

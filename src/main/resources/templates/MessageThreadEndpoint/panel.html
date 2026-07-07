@@ -1,0 +1,81 @@
+<header class="hub-panel__header message-thread-panel__header">
+    <div class="hub-panel__header-text">
+        <h2 class="hub-panel__title">{view.thread.title}</h2>
+        <p class="hub-panel__subtitle message-thread-panel__participant">
+            <span data-i18n="messaging.with">Com</span> {view.otherParticipant.name} (@{view.otherParticipant.username})
+        </p>
+    </div>
+</header>
+
+{#if view.showBlockedBanner}
+<div class="message-thread-page__banner message-thread-page__banner--blocked" role="status" data-i18n="messaging.userBlocked">
+    Usuário bloqueado
+</div>
+{/if}
+
+{#if view.thread.status.name() == 'CLOSED'}
+<div class="message-thread-page__banner message-thread-page__banner--closed" role="status" data-i18n="messaging.threadClosed">
+    Esta conversa foi encerrada.
+</div>
+{/if}
+
+<section class="message-thread-page__messages" aria-label="Thread messages">
+    {#for message in view.messages}
+    <article class="message-thread-message">
+        <header class="message-thread-message__header">
+            <span class="message-thread-message__author">{message.author.name}</span>
+            <time class="message-thread-message__time">{message.createdAt.format('dd/MM/yyyy HH:mm')}</time>
+        </header>
+        <p class="message-thread-message__body">{message.body}</p>
+    </article>
+    {/for}
+</section>
+
+<div class="message-thread-page__actions">
+    {#if view.canReply()}
+    <form class="message-thread-reply-form form-group-stack"
+          hx-post="/forms/messages/threads/{view.thread.id}/reply"
+          hx-select="main"
+          hx-target="main"
+          hx-swap="outerHTML"
+          hx-target-error="#toast"
+          hx-swap-error="innerHTML">
+        <div class="form-group">
+            <label for="reply-body" data-i18n="messaging.reply.label">Responder</label>
+            <textarea id="reply-body" name="body" rows="4" required maxlength="2000"></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary" data-i18n="messaging.reply.send">Enviar resposta</button>
+    </form>
+    {/if}
+
+    <div class="message-thread-page__toolbar">
+        {#if view.canReply()}
+        <button type="button" class="btn btn--outline btn--small"
+                hx-get="/components/confirm-modal/message-close/{view.thread.id}"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                data-i18n="messaging.closeThread">Encerrar conversa</button>
+        <button type="button" class="btn btn--outline btn--small"
+                hx-get="/components/confirm-modal/message-flag/{view.thread.id}"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                data-i18n="messaging.flagThread">Denunciar conversa</button>
+        {/if}
+        {#if view.blockedByCurrentUser}
+        <form class="message-thread-page__unblock-form"
+              hx-post="/forms/messages/blocks/{view.otherParticipant.id}/unblock"
+              hx-select="main"
+              hx-target="main"
+              hx-swap="outerHTML">
+            <input type="hidden" name="returnUrl" value="/account/messages/{view.thread.id}">
+            <button type="submit" class="btn btn--outline btn--small" data-i18n="messaging.unblock">Desbloquear</button>
+        </form>
+        {#else}
+        <button type="button" class="btn btn--outline btn--small"
+                hx-get="/components/confirm-modal/message-block/{view.otherParticipant.id}?returnUrl=/account/messages/{view.thread.id}"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                data-i18n="messaging.blockUser">Bloquear usuário</button>
+        {/if}
+    </div>
+</div>

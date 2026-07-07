@@ -41,7 +41,7 @@ Contraponto is a **modular monolith**: one deployable, many bounded contexts und
 | **Shared kernel** | `shared` | JDK/Jakarta only (after kernel cleanup) |
 | **Identity & access** | `auth`, `user` | shared |
 | **Content publishing** | `blog`, `post`, `write`, `tag`, `serie`, `renderer`, `content` | shared, identity, media |
-| **Reader engagement** | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse` | shared, identity, publishing |
+| **Reader engagement** | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse`, `messaging` | shared, identity, publishing |
 | **Discovery & syndication** | `home`, `search`, `directory`, `rss`, `seo`, `view` | shared, publishing |
 | **Media** | `image` | shared, identity |
 | **Customization** | `custompage` | shared, identity, media |
@@ -177,11 +177,38 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Notification bell** | Header control showing unread count; opens **notification overlay**. | `NotificationBadgeEndpoint`, `#notificationBellBtn` |
 | **Notification overlay** | Dropdown preview of latest unread notifications. | `NotificationOverlayEndpoint`, `#notificationOverlay` |
 | **Dismiss notification** | Mark one notification read from the overlay. | `DismissNotificationEndpoint` — button: "Dismiss" |
+| **Read at** | Timestamp when a notification was marked read (`read_at`); null while unread. | Set on dismiss or mark-all-read |
+| **Notification retention (read)** | Purge read notifications when `read_at` is older than configured days (default **7**). | `NotificationRetentionScheduler`, ADR-0010 |
+| **Notification retention (unread)** | Purge unread notifications when `created_at` is older than configured days (default **30**). | `NotificationRetentionScheduler`, ADR-0010 |
 | **Close notification overlay** | Hide the dropdown without changing read state. | Close control (`data-notification-close`) |
 | **Notifications changed** | HTMX event; refreshes badge and open overlay. | `HtmxTriggers.NOTIFICATIONS_CHANGED_ON_BODY` |
-| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`, `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`, `GIT_SYNC_*`. | `NotificationType` |
+| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`, `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`, `GIT_SYNC_*`, `NEW_MESSAGE_THREAD`, `NEW_THREAD_MESSAGE`. | `NotificationType` |
 | **Follow after login** | Guest clicks Follow, signs in via modal, then clicks Follow again. | Post page / audience widget |
 | **Subscriptions page** | Authenticated list of blogs the user follows/subscribes to. | `SubscriptionEndpoint` |
+
+### User messaging
+
+| Term | Meaning | Code / notes |
+|------|---------|--------------|
+| **Mailbox** | A user's private message area listing their **message threads**. | `MessageMailboxEndpoint` — `GET /account/messages` |
+| **Message thread** | A titled 1:1 conversation between exactly two users (initiator + recipient). | `MessageThread` — `tb_message_threads` |
+| **Thread title** | Required subject when opening a thread (max 200 characters after trim). | `MessageThread.title` |
+| **Thread message** | One text body in a thread (initial message or **reply**). | `ThreadMessage` — max **2000** characters |
+| **Reply** | New **thread message** by either participant while thread is **open**. | `MessageThreadService.reply` |
+| **Open thread** | Thread status accepting new replies (`OPEN`). | `MessageThreadStatus.OPEN` |
+| **Closed thread** | Either participant closed the thread; no further replies; listed under **Closed** tab. | `MessageThreadStatus.CLOSED` |
+| **Frozen thread** | Active **user block** between participants; no replies; both see **User is blocked**. | `MessageThreadStatus.FROZEN` |
+| **Close thread** | Participant ends the conversation; thread becomes **closed**. | Button: **Close thread** |
+| **Flag thread** | Participant reports thread as inappropriate; creates **message report** for **administrator** review. | Button: **Flag thread** |
+| **User block** | One user blocks another; prevents new threads; **freezes** existing open threads between the pair. | `UserBlock` — `tb_user_blocks` |
+| **User is blocked** | Banner shown to **both** participants on a **frozen thread**. | i18n `messaging.userBlocked` |
+| **Blocked users** | List of users the current user has blocked; **unblock** restores ability to message (does not auto-reopen closed threads). | `GET /account/messages/blocked` |
+| **Message report** | Admin queue item for a flagged thread: reporter, status (**Pending**, **Dismissed**, **Reviewed**). | `MessageReport` — `ADMIN` only |
+| **Compose message** | Start a new thread: recipient (**To** field with username autocomplete), **thread title**, first **thread message**. Any **active user** may be addressed (`UserRepository.findActiveByUsername`). | `GET /account/messages/compose` |
+| **Recipient username autocomplete** | HTMX-powered `<datalist>` suggestions on compose **To** field (active users, excludes self and blocked). | `GET /components/messages/recipient-suggestions` |
+| **Message** (author profile) | Signed-in CTA on `/authors/{username}` opening compose with recipient prefilled. | Button: **Message** |
+| **New message thread notification** | In-app alert when someone starts a thread with the recipient. | `NotificationType.NEW_MESSAGE_THREAD` |
+| **New thread message notification** | In-app alert when the other participant posts a **reply**. | `NotificationType.NEW_THREAD_MESSAGE` |
 
 ### Comments
 
@@ -261,11 +288,13 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 |------|---------|--------------|
 | **Fediverse** | Decentralized social network of ActivityPub-compatible servers (Mastodon, Pleroma, Misskey, …). | [feature/activitypub-integration.md](../feature/activitypub-integration.md) |
 | **ActivityPub federation** | Server-to-server syndication: Contraponto exposes **ActivityPub actors** and delivers **Create** / **Update** / **Delete** activities when authors publish on their **main blog**. Distinct from in-app **blog audience Follow** and from the optional **Mastodon profile URL** on author appearance. | `activitypub` package; ADRs [0006](adr/0006-activitypub-federation.md)–[0008](adr/0008-activitypub-actor-identity.md) |
-| **Fediverse actor** | ActivityStreams **Person** — **one per `User`** (not per blog); has `inbox`, `outbox`, `followers`, and `publicKey`. Served as JSON-LD at the actor URL on the user's **blog subdomain**. MVP outbox: **main blog** posts only; future: same actor may carry highlight/comment activities (deferred). | `ActivityPubActor` |
+| **Fediverse actor** | ActivityStreams **Person** — **one per `User`** (not per blog); has `inbox`, `outbox`, `followers`, and `publicKey`. Served as JSON-LD at the actor URL on the user's **blog subdomain**. MVP outbox: **main blog** posts only; future: same actor may carry highlight/comment activities (deferred). When the author has a **profile picture**, the actor exposes it as ActivityStreams **`icon`** (`type: Image`) with an absolute image URL. | `ActivityPubActor` |
 | **Fediverse handle** | Human-readable `@username@domain` resolved via **WebFinger** to the actor URL (e.g. `@alice@blog.example.com`). | `/.well-known/webfinger` |
 | **Fediverse opt-in** | Author enables federation on **Author appearance**; when off, actor endpoints return **404**. | Author appearance — Fediverse section |
 | **Fediverse follow** | Remote user on another ActivityPub server sends a **Follow** activity to the author's **inbox**; author **Accept** or **Reject** (manual approval model). | `ActivityPubInboxService` |
 | **ActivityPub delivery** | Outbound signed POST of an activity to a remote instance's **inbox** after publish/unpublish (async queue with retry). | `ActivityPubDeliveryService` |
+| **Fediverse follow backfill** | When the author **Accept**s a pending **Fediverse follow**, Contraponto enqueues **Create** deliveries for every published **main blog** post (oldest first) to that follower's remote inbox so their timeline is populated without waiting for a new publish. | `ActivityPubDeliveryService.enqueueHistoricalPostsForAcceptedFollow` |
+| **Fediverse outbox** | Paged **OrderedCollection** of **Create** activities for published **main blog** posts; exposes `first` / `last` / `next` / `prev` links when the archive spans multiple pages. | `GET /{username}/outbox` |
 | **Fediverse follower count** | Count of accepted remote followers (optional display on appearance/profile per **FQ4**). | Followers collection |
 | **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `GET /administration/activitypub`, `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
 

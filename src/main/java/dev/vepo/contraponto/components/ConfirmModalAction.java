@@ -21,7 +21,34 @@ enum ConfirmModalAction {
             I18nKeys.LIBRARY_DELETE_DRAFT_CONFIRM,
             I18nDefaults.LIBRARY_DELETE_DRAFT_CONFIRM,
             I18nKeys.COMMON_DELETE,
-            I18nDefaults.COMMON_DELETE);
+            I18nDefaults.COMMON_DELETE),
+
+    MESSAGE_CLOSE(
+            "POST",
+            I18nKeys.MESSAGING_CLOSE_CONFIRM_TITLE,
+            I18nDefaults.MESSAGING_CLOSE_CONFIRM_TITLE,
+            I18nKeys.MESSAGING_CLOSE_CONFIRM_MESSAGE,
+            I18nDefaults.MESSAGING_CLOSE_CONFIRM_MESSAGE,
+            I18nKeys.MESSAGING_CLOSE_THREAD,
+            I18nDefaults.MESSAGING_CLOSE_THREAD),
+
+    MESSAGE_FLAG(
+            "POST",
+            I18nKeys.MESSAGING_FLAG_CONFIRM_TITLE,
+            I18nDefaults.MESSAGING_FLAG_CONFIRM_TITLE,
+            I18nKeys.MESSAGING_FLAG_CONFIRM_MESSAGE,
+            I18nDefaults.MESSAGING_FLAG_CONFIRM_MESSAGE,
+            I18nKeys.MESSAGING_FLAG_THREAD,
+            I18nDefaults.MESSAGING_FLAG_THREAD),
+
+    MESSAGE_BLOCK(
+            "POST",
+            I18nKeys.MESSAGING_BLOCK_CONFIRM_TITLE,
+            I18nDefaults.MESSAGING_BLOCK_CONFIRM_TITLE,
+            I18nKeys.MESSAGING_BLOCK_CONFIRM_MESSAGE,
+            I18nDefaults.MESSAGING_BLOCK_CONFIRM_MESSAGE,
+            I18nKeys.MESSAGING_BLOCK_USER,
+            I18nDefaults.MESSAGING_BLOCK_USER);
 
     private final String httpMethod;
     private final String titleKey;
@@ -51,6 +78,9 @@ enum ConfirmModalAction {
         return switch (this) {
             case POST_UNPUBLISH -> "/forms/posts/%s/unpublish".formatted(postId);
             case POST_DELETE -> "/forms/posts/%s".formatted(postId);
+            case MESSAGE_CLOSE -> "/forms/messages/threads/%s/close".formatted(postId);
+            case MESSAGE_FLAG -> "/forms/messages/threads/%s/flag".formatted(postId);
+            case MESSAGE_BLOCK -> "/forms/messages/blocks/%s".formatted(postId);
         };
     }
 

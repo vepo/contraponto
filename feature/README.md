@@ -19,6 +19,8 @@ See [change-request-analysis.mdc](../.cursor/rules/change-request-analysis.mdc) 
 | Blog follow / subscribe | `blog-audience` |
 | Git ↔ Jekyll sync | `git-sync` |
 | ActivityPub / Fediverse | `activitypub-integration` |
+| User-to-user messaging | `user-messaging` |
+| In-app notification retention | `notification-retention` |
 
 ## Template
 
@@ -147,6 +149,8 @@ See [architecture-design.mdc](../.cursor/rules/architecture-design.mdc).
 | Personal reading list | [reading-list.md](reading-list.md) | done |
 | Post text highlights & responses | [post-text-highlight.md](post-text-highlight.md) | done |
 | ActivityPub Fediverse integration | [activitypub-integration.md](activitypub-integration.md) | done |
+| Notification retention | [notification-retention.md](notification-retention.md) | done |
+| User messaging | [user-messaging.md](user-messaging.md) | done |
 
 Add a row here when creating `feature/<slug>.md`.
 

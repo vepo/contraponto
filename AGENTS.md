@@ -13,6 +13,7 @@ Read these before changing code or tests:
 | [docs/technical-decisions-backlog.md](docs/technical-decisions-backlog.md) | Open ADRs / FQ/AQ before coding |
 | [docs/cdi-events.md](docs/cdi-events.md) | CDI event producers, observers, transactional boundaries |
 | [docs/application-guidelines.md](docs/application-guidelines.md) | Route-level UX flows (update when routes change) |
+| [docs/rest-url-guide.md](docs/rest-url-guide.md) | REST URL segment taxonomy and full path catalog |
 | [docs/feature-catalog.md](docs/feature-catalog.md) | UI feature index with step counts and navigation paths |
 | [docs/ui-guidelines.md](docs/ui-guidelines.md) | Visual design system (UX, page flows) |
 | [docs/ui-palette.md](docs/ui-palette.md) | Design tokens — check before UI/CSS changes |

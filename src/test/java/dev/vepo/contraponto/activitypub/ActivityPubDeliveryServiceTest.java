@@ -31,9 +31,33 @@ class ActivityPubDeliveryServiceTest {
     @Inject
     ActivityPubActorRepository actorRepository;
 
+    @Inject
+    ActivityPubDeliveryService deliveryService;
+
     private User user;
     private ActivityPubActor actor;
     private Post post;
+
+    @Test
+    void enqueueHistoricalPostsForAcceptedFollow() {
+        Given.transaction(() -> {
+            var managedActor = actorRepository.findByUserId(user.getId()).orElseThrow();
+            var remote = remoteActorRepository.create(new ActivityPubRemoteActor("https://remote.example/users/backfill",
+                                                                                 "https://remote.example/inbox-backfill"));
+            var follow = new ActivityPubFollow(managedActor, remote, ActivityPubFollowStatus.ACCEPTED, "https://remote.example/follow/backfill");
+            follow.accept();
+            followRepository.create(follow);
+
+            deliveryService.enqueueHistoricalPostsForAcceptedFollow(follow);
+
+            assertThat(deliveryRepository.countPendingForActor(actor.getId())).isEqualTo(1);
+            var pending = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+            assertThat(pending).hasSize(1);
+            assertThat(pending.get(0).getActivityType()).isEqualTo(ActivityPubActivityType.CREATE);
+            assertThat(pending.get(0).getTargetInboxUrl()).isEqualTo("https://remote.example/inbox-backfill");
+            assertThat(pending.get(0).getPayloadJson()).contains("Fediverse Post");
+        });
+    }
 
     @Test
     void enqueueOnPublishEvent() {

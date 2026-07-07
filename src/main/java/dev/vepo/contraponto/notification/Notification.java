@@ -7,6 +7,7 @@ import java.util.Objects;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.comment.PostComment;
 import dev.vepo.contraponto.git.GitSyncRun;
+import dev.vepo.contraponto.messaging.MessageThread;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
@@ -40,8 +41,15 @@ public class Notification {
     private NotificationType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blog_id", nullable = false)
+    @JoinColumn(name = "blog_id")
     private Blog blog;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "message_thread_id")
+    private MessageThread messageThread;
+
+    @Column(name = "message_thread_id", insertable = false, updatable = false)
+    private Long messageThreadId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
@@ -68,6 +76,9 @@ public class Notification {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
 
     // Required by JPA
     public Notification() {}
@@ -111,12 +122,24 @@ public class Notification {
         return id;
     }
 
+    public MessageThread getMessageThread() {
+        return messageThread;
+    }
+
+    public Long getMessageThreadId() {
+        return messageThreadId;
+    }
+
     public Post getPost() {
         return post;
     }
 
     public PostPublication getPublication() {
         return publication;
+    }
+
+    public LocalDateTime getReadAt() {
+        return readAt;
     }
 
     public User getRecipient() {
@@ -155,8 +178,16 @@ public class Notification {
         this.comment = comment;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public void setGitSyncRun(GitSyncRun gitSyncRun) {
         this.gitSyncRun = gitSyncRun;
+    }
+
+    public void setMessageThread(MessageThread messageThread) {
+        this.messageThread = messageThread;
     }
 
     public void setPost(Post post) {
@@ -169,6 +200,10 @@ public class Notification {
 
     public void setRead(boolean read) {
         this.read = read;
+    }
+
+    public void setReadAt(LocalDateTime readAt) {
+        this.readAt = readAt;
     }
 
     public void setRecipient(User recipient) {

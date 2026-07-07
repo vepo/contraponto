@@ -1,0 +1,31 @@
+{#include components/hub-panel-header title='Denúncias de mensagens' subtitle='Threads sinalizadas por usuários.' titleKey='administration.messageReports.title' subtitleKey='administration.messageReports.subtitle' /}
+
+{#if reports.isEmpty()}
+<div class="pages-manage__empty">
+    <p data-i18n="administration.messageReports.empty">Nenhuma denúncia pendente.</p>
+</div>
+{#else}
+<div class="pages-manage__list">
+    {#for row in reports.data}
+    <article class="pages-manage__row">
+        <div class="pages-manage__row-main">
+            <h3 class="pages-manage__row-title">{row.threadTitle}</h3>
+            <div class="pages-manage__row-meta">
+                <span data-i18n="administration.messageReports.reporter">Denunciante:</span> {row.reporterName} (@{row.reporterUsername})
+                <time>{row.reportedAt.format('dd/MM/yyyy HH:mm')}</time>
+            </div>
+        </div>
+        <div class="pages-manage__row-actions">
+            <a href="/administration/message-reports/{row.reportId}" data-hx-get="/administration/message-reports/{row.reportId}"
+               hx-select="main"
+               hx-target="main"
+               hx-swap="outerHTML"
+               hx-push-url="/administration/message-reports/{row.reportId}"
+               class="btn btn--secondary btn--small"
+               data-i18n="common.review">Revisar</a>
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=reports basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

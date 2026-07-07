@@ -35,6 +35,27 @@ class ActivityPubOutboxTest {
     private Post post;
 
     @Test
+    void actorJsonIncludesProfilePictureIcon() {
+        var picture = Given.randomCover(user.getDefaultBlog());
+        Given.transaction(() -> {
+            var managed = Given.inject(jakarta.persistence.EntityManager.class).find(User.class, user.getId());
+            managed.setProfilePicture(picture);
+        });
+
+        var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                          .get("/outboxuser")
+                          .then()
+                          .statusCode(200)
+                          .extract()
+                          .body()
+                          .asString();
+        assertThat(json).contains("\"icon\"")
+                        .contains("\"type\":\"Image\"")
+                        .contains("\"mediaType\":\"image/png\"")
+                        .contains(picture.getUrl());
+    }
+
+    @Test
     void actorJsonReturnsPersonWithInboxAndOutbox() {
         var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
                           .get("/outboxuser")
@@ -48,7 +69,8 @@ class ActivityPubOutboxTest {
                         .contains("\"outbox\"")
                         .contains("\"discoverable\":true")
                         .contains("\"webfinger\":\"outboxuser@")
-                        .contains("outboxuser");
+                        .contains("outboxuser")
+                        .doesNotContain("\"icon\"");
     }
 
     @Test
@@ -76,6 +98,44 @@ class ActivityPubOutboxTest {
                .get("/outboxuser")
                .then()
                .statusCode(404);
+    }
+
+    @Test
+    void outboxExposesPaginationLinksAcrossPages() {
+        for (var index = 2; index <= 21; index++) {
+            Given.post()
+                 .withAuthor(user)
+                 .withTitle("Paged Post %d".formatted(index))
+                 .withSlug("paged-post-%d".formatted(index))
+                 .withDescription("Summary")
+                 .withContent("Body")
+                 .persist();
+        }
+
+        var firstPage = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                               .get("/outboxuser/outbox")
+                               .then()
+                               .statusCode(200)
+                               .extract()
+                               .body()
+                               .asString();
+        assertThat(firstPage).contains("\"totalItems\":21")
+                             .contains("\"first\"")
+                             .contains("\"last\"")
+                             .contains("\"next\"")
+                             .doesNotContain("\"prev\"");
+
+        var secondPage = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                                .get("/outboxuser/outbox?page=2")
+                                .then()
+                                .statusCode(200)
+                                .extract()
+                                .body()
+                                .asString();
+        assertThat(secondPage).contains("\"type\":\"OrderedCollectionPage\"")
+                              .contains("\"partOf\"")
+                              .contains("\"prev\"")
+                              .doesNotContain("\"next\"");
     }
 
     @Test

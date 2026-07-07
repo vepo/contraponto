@@ -19,6 +19,7 @@
                         data-confirm-submit
                         hx-delete="{view.actionUrl}"
                         hx-target="{view.targetSelector}"
+                        {#if view.targetSelector == 'main'}hx-select="main"{/if}
                         hx-swap="{view.swap}"
                         hx-target-error="#toast"
                         hx-swap-error="innerHTML">
@@ -30,6 +31,7 @@
                         data-confirm-submit
                         hx-post="{view.actionUrl}"
                         hx-target="{view.targetSelector}"
+                        {#if view.targetSelector == 'main'}hx-select="main"{/if}
                         hx-swap="{view.swap}"
                         hx-target-error="#toast"
                         hx-swap-error="innerHTML">

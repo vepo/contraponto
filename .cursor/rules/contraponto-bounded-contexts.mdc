@@ -14,7 +14,7 @@ Single Maven module; logical boundaries in `dev.vepo.contraponto.*`. Full table:
 | Shared kernel | `shared` |
 | Identity & access | `auth`, `user` |
 | Content publishing | `blog`, `post`, `write`, `tag`, `serie`, `renderer`, `content` |
-| Reader engagement | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse` |
+| Reader engagement | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse`, `messaging` |
 | Discovery & syndication | `home`, `search`, `directory`, `rss`, `seo`, `view` |
 | Media | `image` |
 | Customization | `custompage` |

@@ -141,6 +141,18 @@ public class PostRepository {
                             .getSingleResult();
     }
 
+    public long countPublishedMainBlogByAuthor(long authorId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.blog.owner.id = :authorId AND
+                                               p.blog.main = true AND
+                                               p.published = true
+                                         """, Long.class)
+                            .setParameter("authorId", authorId)
+                            .getSingleResult();
+    }
+
     public long countSearch(String term) {
         return entityManager.createQuery("""
                                          SELECT COUNT(p)
@@ -530,6 +542,41 @@ public class PostRepository {
                                                                   WHERE p.published = true AND b.active = true
                                                                   ORDER BY p.id
                                                                   """, Post.class)
+                                                     .getResultList());
+    }
+
+    public Page<Post> findPublishedMainBlogByAuthor(long authorId, PageQuery query) {
+        return new Page<>(attachLatestPublications(entityManager.createQuery("""
+                                                                             SELECT DISTINCT p FROM Post p
+                                                                             JOIN FETCH p.blog b
+                                                                             JOIN FETCH b.owner o
+                                                                             LEFT JOIN FETCH p.tags
+                                                                             WHERE b.owner.id = :authorId AND
+                                                                                   b.main = true AND
+                                                                                   p.published = true
+                                                                             ORDER BY p.publishedAt DESC
+                                                                             """, Post.class)
+                                                                .setParameter("authorId", authorId)
+                                                                .setMaxResults(query.maxResults())
+                                                                .setFirstResult(query.skip())
+                                                                .getResultList()),
+                          query.page(),
+                          query.limit(),
+                          countPublishedMainBlogByAuthor(authorId));
+    }
+
+    public List<Post> findPublishedMainBlogByAuthorOldestFirst(long authorId) {
+        return attachLatestPublications(entityManager.createQuery("""
+                                                                  SELECT DISTINCT p FROM Post p
+                                                                  JOIN FETCH p.blog b
+                                                                  JOIN FETCH b.owner o
+                                                                  LEFT JOIN FETCH p.tags
+                                                                  WHERE b.owner.id = :authorId AND
+                                                                        b.main = true AND
+                                                                        p.published = true
+                                                                  ORDER BY p.publishedAt ASC NULLS LAST, p.id ASC
+                                                                  """, Post.class)
+                                                     .setParameter("authorId", authorId)
                                                      .getResultList());
     }
 

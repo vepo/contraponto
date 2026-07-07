@@ -14,6 +14,8 @@ Decisões arquiteturais do **Contraponto** usam o template [GiG Cymru NHS Wales]
 | [0006](0006-activitypub-federation.md) | ActivityPub — federação S2S (Fediverse) | Accepted |
 | [0007](0007-activitypub-http-signatures.md) | ActivityPub — HTTP Signatures (inbox/delivery) | Accepted |
 | [0008](0008-activitypub-actor-identity.md) | ActivityPub — identidade do actor e WebFinger | Accepted |
+| [0009](0009-user-messaging-retention.md) | User messaging — retenção de threads sinalizadas | Accepted |
+| [0010](0010-notification-retention.md) | In-app notification retention (read vs unread) | Accepted |
 
 ## Quando criar um ADR
 

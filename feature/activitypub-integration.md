@@ -223,6 +223,49 @@ After implementation, verify against a test Mastodon instance:
 
 **If search returns 0 accounts:** check ursal.zone domain blocks, Sidekiq logs, and remove `sameAs` Mastodon URL from Contraponto profile when `@vepo` exists locally on ursal.zone.
 
+### Fediverse follow backfill and outbox paging — 2026-07-07
+
+**Version:** 1.1  
+**Status:** done
+
+**Description:** When an author accepts a Fediverse follow, deliver historical main-blog **Create** activities to the new follower; expose standard outbox collection paging links.
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| Fediverse follow Accept | Enqueues historical **Create** deliveries (oldest first) |
+| Outbox GET | Main-blog-only query; `first`/`last`/`next`/`prev` when paginated |
+
+#### Feature checklist
+
+| ID | Criterion | Done |
+|----|-----------|------|
+| FC9 | Accept follow backfills published main-blog posts to remote inbox | ☑ |
+| FC10 | Outbox exposes paging links across multiple pages | ☑ |
+
+#### Tasks
+
+| ID | Task | Done |
+|----|------|------|
+| T14 | `enqueueHistoricalPostsForAcceptedFollow` on follow Accept | ☑ |
+| T15 | Main-blog outbox query + pagination links | ☑ |
+| T16 | Tests for backfill and outbox paging | ☑ |
+
+**Development approval:** approved 2026-07-07 — tasks: T14, T15, T16
+
+#### Test coverage
+
+| ID | Test | Covers | Done |
+|----|------|--------|------|
+| TC10 | `ActivityPubInboxFollowTest.acceptFollowBackfillsHistoricalMainBlogPosts` | T14 | ☑ |
+| TC11 | `ActivityPubDeliveryServiceTest.enqueueHistoricalPostsForAcceptedFollow` | T14 | ☑ |
+| TC12 | `ActivityPubOutboxTest.outboxExposesPaginationLinksAcrossPages` | T15 | ☑ |
+
+**Implementation notes:** Backfill runs after **Accept** delivery is queued; uses existing async delivery queue. Outbox page size remains 20; page 2+ uses `OrderedCollectionPage` with `partOf`.
+
+---
+
 ## References
 
 * [Mastodon remote account resolution](../docs/mastodon-remote-account-resolution.md)

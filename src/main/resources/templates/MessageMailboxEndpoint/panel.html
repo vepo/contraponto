@@ -1,0 +1,39 @@
+<header class="hub-panel__header">
+    <div class="hub-panel__header-text">
+        <h2 class="hub-panel__title" data-i18n="messaging.mailbox.title">Mensagens</h2>
+        <p class="hub-panel__subtitle" data-i18n="messaging.mailbox.subtitle">Conversas privadas com outros usuários.</p>
+    </div>
+    <a href="/account/messages/compose" data-hx-get="/account/messages/compose"
+       hx-select="main"
+       hx-target="main"
+       hx-swap="outerHTML"
+       hx-push-url="/account/messages/compose"
+       class="btn btn--primary btn--small"
+       data-i18n="messaging.compose">Compor</a>
+</header>
+
+<div class="library-tabs__row">
+    <div class="library-tabs">
+        <button type="button" class="library-tab library-tab--active"
+                data-tab="open"
+                hx-get="/account/messages/components/tab/open"
+                hx-target="#messagesListContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                data-i18n="messaging.tab.open">Abertas</button>
+        <button type="button" class="library-tab"
+                data-tab="closed"
+                hx-get="/account/messages/components/tab/closed"
+                hx-target="#messagesListContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                data-i18n="messaging.tab.closed">Fechadas</button>
+    </div>
+</div>
+
+<div id="messagesListContent"
+     hx-trigger="load"
+     hx-get="/account/messages/components/tab/open"
+     hx-swap="innerHTML">
+    <div class="loading-spinner" data-i18n="common.loading">Carregando...</div>
+</div>

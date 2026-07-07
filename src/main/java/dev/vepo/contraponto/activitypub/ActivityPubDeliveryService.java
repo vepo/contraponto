@@ -134,6 +134,25 @@ public class ActivityPubDeliveryService {
         fanOutToFollowers(localActor, ActivityPubActivityType.DELETE, ActivityPubPaths.postObjectId(post, subdomainConfig), activity);
     }
 
+    public void enqueueHistoricalPostsForAcceptedFollow(ActivityPubFollow follow) {
+        if (!settings.enabled() || !follow.getLocalActor().isFederationEnabled()) {
+            return;
+        }
+        if (follow.getStatus() != ActivityPubFollowStatus.ACCEPTED) {
+            return;
+        }
+        var localActor = follow.getLocalActor();
+        var inboxUrl = follow.getRemoteActor().getInboxUrl();
+        for (var post : postRepository.findPublishedMainBlogByAuthorOldestFirst(localActor.getUser().getId())) {
+            var activity = postObjectMapper.toCreateActivity(post);
+            enqueueToRemoteInbox(localActor,
+                                 ActivityPubActivityType.CREATE,
+                                 ActivityPubPaths.postObjectId(post, subdomainConfig),
+                                 activity,
+                                 inboxUrl);
+        }
+    }
+
     public void enqueueToRemoteInbox(ActivityPubActor localActor,
                                      ActivityPubActivityType type,
                                      String objectId,

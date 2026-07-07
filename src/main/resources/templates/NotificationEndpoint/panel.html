@@ -17,15 +17,22 @@
 <ul class="notification-list">
     {#for n in notifications.data}
     <li class="notification-list__item {#if !n.read}notification-list__item--unread{/if}">
-        <a href="{n.linkUrl}" data-hx-get="{n.linkUrl}"
+        {#if n.navigationUsesHtmx}
+        <a href="{n.navigationUrl}" data-hx-get="{n.navigationUrl}"
            hx-select="main"
            hx-target="main"
            hx-swap="outerHTML"
-           hx-push-url="{n.linkUrl}"
+           hx-push-url="{n.navigationUrl}"
            class="notification-list__link">
             <span class="notification-list__message">{n.message}</span>
             <time class="notification-list__time">{n.createdAt.format('dd/MM/yyyy HH:mm')}</time>
         </a>
+        {#else}
+        <a href="{n.navigationUrl}" class="notification-list__link">
+            <span class="notification-list__message">{n.message}</span>
+            <time class="notification-list__time">{n.createdAt.format('dd/MM/yyyy HH:mm')}</time>
+        </a>
+        {/if}
     </li>
     {/for}
 </ul>

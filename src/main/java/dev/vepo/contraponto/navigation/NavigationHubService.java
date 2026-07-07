@@ -112,24 +112,38 @@ public class NavigationHubService {
                                   String imageSearchQuery) {
         var section = registry.requireSection(hub, sectionSlug, loggedUser);
         var meta = meta(hub);
+        return shellWithCustomPanel(hub,
+                                    sectionSlug,
+                                    breadcrumbService.hubSection(hub, section.label(), section.i18nKey()),
+                                    new RawString(panelService.render(hub,
+                                                                      sectionSlug,
+                                                                      page,
+                                                                      emailVerified,
+                                                                      profileError,
+                                                                      blogId,
+                                                                      imageSearchQuery)
+                                                              .render()),
+                                    seoService.forPrivatePage(meta.pageTitle()));
+    }
+
+    public TemplateInstance shellWithCustomPanel(NavigationHub hub,
+                                                 String activeSlug,
+                                                 BreadcrumbTrail breadcrumb,
+                                                 RawString panelContent,
+                                                 SeoMetadata seo) {
+        registry.requireSection(hub, activeSlug, loggedUser);
+        var meta = meta(hub);
         var navGroups = registry.groups(hub, loggedUser);
         return Templates.shellPage(meta.pageTitle(),
                                    meta.hubTitle(),
                                    hub.path(),
-                                   breadcrumbService.hubSection(hub, section.label(), section.i18nKey()),
+                                   breadcrumb,
                                    navGroups,
                                    registry.isSingleSectionHub(hub, loggedUser),
-                                   sectionSlug,
-                                   new RawString(panelService.render(hub,
-                                                                     sectionSlug,
-                                                                     page,
-                                                                     emailVerified,
-                                                                     profileError,
-                                                                     blogId,
-                                                                     imageSearchQuery)
-                                                             .render()),
+                                   activeSlug,
+                                   panelContent,
                                    customPageRepository.loadLinks(),
                                    loggedUser,
-                                   seoService.forPrivatePage(meta.pageTitle()));
+                                   seo);
     }
 }

@@ -167,5 +167,27 @@ public final class I18nKeys {
     public static final String LIBRARY_UNPUBLISH_CONFIRM = "library.unpublishConfirm";
     public static final String LIBRARY_DELETE_DRAFT_CONFIRM = "library.deleteDraftConfirm";
 
+    // Messaging
+    public static final String MESSAGING_THREAD_SENT = "toast.messaging.threadSent";
+    public static final String MESSAGING_REPLY_SENT = "toast.messaging.replySent";
+    public static final String MESSAGING_THREAD_CLOSED = "toast.messaging.threadClosed";
+    public static final String MESSAGING_THREAD_FLAGGED = "toast.messaging.threadFlagged";
+    public static final String MESSAGING_USER_BLOCKED = "toast.messaging.userBlocked";
+    public static final String MESSAGING_USER_UNBLOCKED = "toast.messaging.userUnblocked";
+    public static final String MESSAGING_USER_NOT_FOUND = "toast.messaging.userNotFound";
+    public static final String MESSAGING_THREAD_NOT_FOUND = "toast.messaging.threadNotFound";
+    public static final String MESSAGING_REPORT_DISMISSED = "toast.messaging.reportDismissed";
+    public static final String MESSAGING_REPORT_REVIEWED = "toast.messaging.reportReviewed";
+    public static final String MESSAGING_REPORT_NOT_FOUND = "toast.messaging.reportNotFound";
+    public static final String MESSAGING_CLOSE_THREAD = "messaging.closeThread";
+    public static final String MESSAGING_FLAG_THREAD = "messaging.flagThread";
+    public static final String MESSAGING_BLOCK_USER = "messaging.blockUser";
+    public static final String MESSAGING_CLOSE_CONFIRM_TITLE = "messaging.closeConfirm.title";
+    public static final String MESSAGING_CLOSE_CONFIRM_MESSAGE = "messaging.closeConfirm.message";
+    public static final String MESSAGING_FLAG_CONFIRM_TITLE = "messaging.flagConfirm.title";
+    public static final String MESSAGING_FLAG_CONFIRM_MESSAGE = "messaging.flagConfirm.message";
+    public static final String MESSAGING_BLOCK_CONFIRM_TITLE = "messaging.blockConfirm.title";
+    public static final String MESSAGING_BLOCK_CONFIRM_MESSAGE = "messaging.blockConfirm.message";
+
     private I18nKeys() {}
 }

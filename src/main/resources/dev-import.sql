@@ -20,6 +20,11 @@ TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
 TRUNCATE TABLE tb_account_email_outbox CASCADE;
 TRUNCATE TABLE tb_notifications CASCADE;
+TRUNCATE TABLE tb_message_reports CASCADE;
+TRUNCATE TABLE tb_message_thread_participants CASCADE;
+TRUNCATE TABLE tb_thread_messages CASCADE;
+TRUNCATE TABLE tb_message_threads CASCADE;
+TRUNCATE TABLE tb_user_blocks CASCADE;
 TRUNCATE TABLE tb_git_sync_run_entries CASCADE;
 TRUNCATE TABLE tb_git_sync_runs CASCADE;
 TRUNCATE TABLE tb_activitypub_deliveries CASCADE;
@@ -1207,4 +1212,48 @@ BEGIN
     INSERT INTO tb_highlight_notes (highlight_id, user_id, body, public_note, status, created_at, updated_at)
     SELECT v_h_bob, u.id, 'Would love a follow-up on consensus.', TRUE, 'PENDING', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours'
     FROM tb_users u WHERE u.username = 'bob';
+END $$;
+
+-- ============================================
+-- 9. User messaging — sample open thread (alice ↔ dave)
+-- ============================================
+DO $$
+DECLARE
+    v_alice_id BIGINT;
+    v_dave_id BIGINT;
+    v_thread_id BIGINT;
+    v_message_id BIGINT;
+BEGIN
+    SELECT id INTO v_alice_id FROM tb_users WHERE username = 'alice';
+    SELECT id INTO v_dave_id FROM tb_users WHERE username = 'dave';
+    IF v_alice_id IS NULL OR v_dave_id IS NULL THEN
+        RAISE EXCEPTION 'alice or dave missing from dev seed';
+    END IF;
+
+    INSERT INTO tb_message_threads (title, initiator_user_id, recipient_user_id, status, created_at)
+    VALUES ('Re: collaboration on distributed systems', v_alice_id, v_dave_id, 'OPEN', NOW() - INTERVAL '2 hours')
+    RETURNING id INTO v_thread_id;
+
+    INSERT INTO tb_thread_messages (thread_id, author_user_id, body, created_at)
+    VALUES (v_thread_id, v_alice_id,
+            'Hi Dave — would you be interested in co-authoring a follow-up on consensus algorithms?',
+            NOW() - INTERVAL '2 hours')
+    RETURNING id INTO v_message_id;
+
+    INSERT INTO tb_message_thread_participants (thread_id, user_id, last_read_at, last_read_message_id)
+    VALUES (v_thread_id, v_alice_id, NOW() - INTERVAL '2 hours', v_message_id);
+
+    INSERT INTO tb_message_thread_participants (thread_id, user_id, last_read_at, last_read_message_id)
+    VALUES (v_thread_id, v_dave_id, NULL, NULL);
+
+    INSERT INTO tb_thread_messages (thread_id, author_user_id, body, created_at)
+    VALUES (v_thread_id, v_dave_id,
+            'Sounds great — let us sync on Raft vs Paxos next week.',
+            NOW() - INTERVAL '1 hour');
+
+    INSERT INTO tb_notifications (recipient_user_id, type, message_thread_id, actor_user_id, read, created_at)
+    VALUES (v_dave_id, 'NEW_MESSAGE_THREAD', v_thread_id, v_alice_id, FALSE, NOW() - INTERVAL '2 hours');
+
+    INSERT INTO tb_notifications (recipient_user_id, type, message_thread_id, actor_user_id, read, created_at)
+    VALUES (v_alice_id, 'NEW_THREAD_MESSAGE', v_thread_id, v_dave_id, FALSE, NOW() - INTERVAL '1 hour');
 END $$;
