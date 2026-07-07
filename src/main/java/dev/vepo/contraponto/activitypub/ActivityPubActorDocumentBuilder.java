@@ -29,6 +29,7 @@ public class ActivityPubActorDocumentBuilder {
         document.put("id", ActivityPubPaths.actorId(user, subdomainConfig));
         document.put("type", "Person");
         document.put("preferredUsername", user.getUsername());
+        document.put("webfinger", ActivityPubPaths.webFingerHandle(user, subdomainConfig));
         document.put("name", user.getName());
         if (user.getProfileDescription() != null && !user.getProfileDescription().isBlank()) {
             document.put("summary", user.getProfileDescription());

@@ -1,5 +1,7 @@
 package dev.vepo.contraponto.activitypub;
 
+import java.util.Optional;
+
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPaths;
@@ -13,6 +15,14 @@ public final class ActivityPubPaths {
     public static String acctHandle(User user, BlogSubdomainConfig config) {
         var domain = federationDomain(config);
         return "acct:%s@%s".formatted(user.getUsername(), domain);
+    }
+
+    public static Optional<String> actorHostAcctHandle(User user, BlogSubdomainConfig config) {
+        if (!config.enabled() || config.baseDomain().isBlank()) {
+            return Optional.empty();
+        }
+        var actorHost = "%s.%s".formatted(user.getUsername(), config.baseDomain());
+        return Optional.of("acct:%s@%s".formatted(user.getUsername(), actorHost));
     }
 
     public static String actorId(User user, BlogSubdomainConfig config) {
@@ -42,6 +52,16 @@ public final class ActivityPubPaths {
         return "%sinbox".formatted(actorId(user, config));
     }
 
+    public static boolean matchesFederationAcct(User user, BlogSubdomainConfig config, String resource) {
+        if (resource == null || resource.isBlank()) {
+            return false;
+        }
+        if (resource.equalsIgnoreCase(acctHandle(user, config))) {
+            return true;
+        }
+        return actorHostAcctHandle(user, config).map(alias -> resource.equalsIgnoreCase(alias)).orElse(false);
+    }
+
     public static String outbox(User user, BlogSubdomainConfig config) {
         return "%soutbox".formatted(actorId(user, config));
     }
@@ -59,6 +79,10 @@ public final class ActivityPubPaths {
 
     public static String publicKeyId(User user, BlogSubdomainConfig config) {
         return "%s#mainKey".formatted(actorId(user, config));
+    }
+
+    public static String webFingerHandle(User user, BlogSubdomainConfig config) {
+        return "%s@%s".formatted(user.getUsername(), federationDomain(config));
     }
 
     public static String webFingerResource(User user, BlogSubdomainConfig config) {

@@ -70,13 +70,12 @@ public class ActivityPubWebFingerService {
         if (actor.isEmpty()) {
             return Optional.empty();
         }
-        var expectedHandle = ActivityPubPaths.acctHandle(user, subdomainConfig);
-        if (!resource.equalsIgnoreCase(expectedHandle)) {
+        if (!ActivityPubPaths.matchesFederationAcct(user, subdomainConfig, resource)) {
             return Optional.empty();
         }
         var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
         var response = new LinkedHashMap<String, Object>();
-        response.put("subject", expectedHandle);
+        response.put("subject", resource);
         response.put("links", List.of(Map.of("rel", "self",
                                              "type", ActivityPubPaths.ACTIVITY_JSON,
                                              "href", actorId)));

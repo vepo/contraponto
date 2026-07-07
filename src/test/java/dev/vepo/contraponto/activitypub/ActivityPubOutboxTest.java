@@ -43,6 +43,7 @@ class ActivityPubOutboxTest {
         assertThat(json).contains("\"type\":\"Person\"")
                         .contains("\"inbox\"")
                         .contains("\"outbox\"")
+                        .contains("\"webfinger\":\"outboxuser@")
                         .contains("outboxuser");
     }
 
