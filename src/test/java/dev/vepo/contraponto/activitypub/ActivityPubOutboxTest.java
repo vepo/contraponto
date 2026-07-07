@@ -8,6 +8,7 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import dev.vepo.contraponto.user.User;
@@ -31,6 +32,8 @@ class ActivityPubOutboxTest {
 
     private User user;
 
+    private Post post;
+
     @Test
     void actorJsonReturnsPersonWithInboxAndOutbox() {
         var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
@@ -43,8 +46,23 @@ class ActivityPubOutboxTest {
         assertThat(json).contains("\"type\":\"Person\"")
                         .contains("\"inbox\"")
                         .contains("\"outbox\"")
+                        .contains("\"discoverable\":true")
                         .contains("\"webfinger\":\"outboxuser@")
                         .contains("outboxuser");
+    }
+
+    @Test
+    void createActivityIsFetchableById() {
+        var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                          .get("/outboxuser/activities/create/%d".formatted(post.getId()))
+                          .then()
+                          .statusCode(200)
+                          .extract()
+                          .body()
+                          .asString();
+        assertThat(json).contains("\"type\":\"Create\"")
+                        .contains("Outbox Post")
+                        .contains("/activities/create/%d".formatted(post.getId()));
     }
 
     @Test
@@ -71,7 +89,8 @@ class ActivityPubOutboxTest {
                           .asString();
         assertThat(json).contains("\"type\":\"OrderedCollection\"")
                         .contains("\"type\":\"Create\"")
-                        .contains("Outbox Post");
+                        .contains("Outbox Post")
+                        .doesNotContain("//activities/");
     }
 
     @BeforeEach
@@ -85,12 +104,12 @@ class ActivityPubOutboxTest {
                     .withName("Outbox User")
                     .persist();
         Given.activityPubActor().withUser(user).persist();
-        Given.post()
-             .withAuthor(user)
-             .withTitle("Outbox Post")
-             .withSlug("outbox-post")
-             .withDescription("Summary")
-             .withContent("Body")
-             .persist();
+        post = Given.post()
+                    .withAuthor(user)
+                    .withTitle("Outbox Post")
+                    .withSlug("outbox-post")
+                    .withDescription("Summary")
+                    .withContent("Body")
+                    .persist();
     }
 }

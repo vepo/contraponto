@@ -827,6 +827,164 @@
     margin-top: 1.5rem;
 }
 
+.user-status {
+    margin: 0.25rem 0 1.25rem;
+    padding: 1.25rem 1.35rem 1.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-offset);
+}
+
+.user-status__legend {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding: 0 0.35rem;
+}
+
+.user-status__toggle {
+    display: block;
+    cursor: pointer;
+}
+
+.user-status--self .user-status__toggle {
+    cursor: not-allowed;
+}
+
+.user-status__toggle-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.user-status__toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    transition:
+        border-color var(--duration-normal) var(--ease-out),
+        background-color var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.user-status__toggle:hover .user-status__toggle-card {
+    border-color: var(--color-border-strong);
+}
+
+.user-status:has(.user-status__toggle-input:checked) .user-status__toggle-card {
+    border-color: var(--color-primary);
+    background: var(--color-success-muted);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.user-status:has(.user-status__toggle-input:not(:checked)) .user-status__toggle-card {
+    border-color: var(--color-danger);
+    background: var(--color-danger-muted);
+    box-shadow: inset 0 0 0 1px var(--color-danger);
+}
+
+.user-status__toggle:has(.user-status__toggle-input:focus-visible) .user-status__toggle-card {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.user-status__copy {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+}
+
+.user-status__state--inactive {
+    display: none;
+}
+
+.user-status:has(.user-status__toggle-input:not(:checked)) .user-status__state--active {
+    display: none;
+}
+
+.user-status:has(.user-status__toggle-input:not(:checked)) .user-status__state--inactive {
+    display: grid;
+}
+
+.user-status__title {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.3;
+}
+
+.user-status__desc {
+    margin-top: 0.35rem;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+.user-status:has(.user-status__toggle-input:not(:checked)) .user-status__desc {
+    color: var(--color-danger);
+}
+
+.user-status__switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--color-border-strong);
+    transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.user-status:has(.user-status__toggle-input:checked) .user-status__switch {
+    background: var(--color-primary);
+}
+
+.user-status:has(.user-status__toggle-input:not(:checked)) .user-status__switch {
+    background: var(--color-danger);
+}
+
+.user-status--self .user-status__switch {
+    opacity: 0.55;
+}
+
+.user-status__switch-knob {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--color-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.user-status:has(.user-status__toggle-input:checked) .user-status__switch-knob {
+    transform: translateX(1.25rem);
+}
+
+.user-status__self-hint {
+    margin: 0.85rem 0 0;
+}
+
+.user-status__confirm-message {
+    margin: 0 0 1.25rem;
+    line-height: 1.5;
+}
+
 .form-group--checkbox label {
     display: flex;
     align-items: center;
@@ -1283,6 +1441,10 @@
 
 .fediverse__actions {
     margin: 0;
+}
+
+.fediverse__actions--platform {
+    margin-top: 1rem;
 }
 
 .git-sync-history__row-head {

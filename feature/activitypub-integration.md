@@ -211,16 +211,21 @@ See table above.
 
 ## Mastodon interop checklist (manual)
 
+See **[docs/mastodon-remote-account-resolution.md](../docs/mastodon-remote-account-resolution.md)** for the full Mastodon resolve flow, production smoke commands, and gap analysis.
+
 After implementation, verify against a test Mastodon instance:
 
-1. Search `@alice@{your-dev-domain}` in Mastodon → profile loads.
+1. **While logged in**, search `@vepo@commit-mestre.dev` (not profile URL alone) → profile loads.
 2. Follow → Accept (if manual) → follow shows **Following**.
 3. Publish post on Contraponto → appears in Mastodon home timeline with link.
 4. Unpublish → post removed or marked deleted on Mastodon (best-effort).
 5. [test.activitypub.rocks](https://test.activitypub.rocks/) suite where applicable.
 
+**If search returns 0 accounts:** check ursal.zone domain blocks, Sidekiq logs, and remove `sameAs` Mastodon URL from Contraponto profile when `@vepo` exists locally on ursal.zone.
+
 ## References
 
+* [Mastodon remote account resolution](../docs/mastodon-remote-account-resolution.md)
 * [W3C ActivityPub Recommendation](https://www.w3.org/TR/activitypub/)
 * [ActivityStreams 2.0](https://www.w3.org/TR/activitystreams-core/)
 * Mastodon ActivityPub documentation (implementers' notes)

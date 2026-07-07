@@ -1,0 +1,42 @@
+<h2 class="hub-panel__title" data-i18n="administration.activityPub.title">Fediverse (ActivityPub)</h2>
+<p class="hub-panel__subtitle" data-i18n="administration.activityPub.subtitle">Platform-wide ActivityPub federation settings.</p>
+
+<section class="profile-form__section">
+    <div id="activitypubPlatformMessage"></div>
+    {#if activityPubConfigEnabled}
+    <form class="profile-form profile-form--inline"
+          hx-post="/forms/administration/activitypub"
+          hx-target="#activitypubPlatformMessage"
+          hx-swap="innerHTML">
+        <fieldset class="fediverse">
+            <legend class="fediverse__legend" data-i18n="administration.activityPub.section">Federation</legend>
+            <p class="fediverse__intro form-group__hint" data-i18n="administration.activityPub.intro">
+                Platform-wide kill switch for ActivityPub federation. When disabled, WebFinger, actors, inboxes, and outboxes return 404 for all authors until re-enabled.
+            </p>
+            <label class="fediverse__enable">
+                <input type="checkbox"
+                       class="fediverse__enable-input"
+                       name="platformFederationEnabled"
+                       value="true"
+                       {#if activityPubPlatformEnabled}checked{/if}>
+                <span class="fediverse__enable-card">
+                    <span class="fediverse__enable-title" data-i18n="administration.activityPub.optInTitle">Enable ActivityPub federation globally</span>
+                    <span class="fediverse__enable-desc" data-i18n="administration.activityPub.optInDesc">
+                        Allow authors who opt in to publish to the Fediverse. Turn off to halt all federation traffic immediately.
+                    </span>
+                </span>
+            </label>
+            <p class="fediverse__actions fediverse__actions--platform">
+                <button type="submit" class="btn btn--secondary" data-i18n="administration.activityPub.save">Save Fediverse settings</button>
+            </p>
+        </fieldset>
+    </form>
+    {#else}
+    <fieldset class="fediverse">
+        <legend class="fediverse__legend" data-i18n="administration.activityPub.section">Federation</legend>
+        <p class="fediverse__intro form-group__hint" data-i18n="administration.activityPub.disabled">
+            ActivityPub is disabled by server configuration (<code>contraponto.activitypub.enabled=false</code>). Enable the environment variable and redeploy to use this panel.
+        </p>
+    </fieldset>
+    {/if}
+</section>

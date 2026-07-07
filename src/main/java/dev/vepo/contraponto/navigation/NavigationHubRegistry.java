@@ -21,6 +21,7 @@ public class NavigationHubRegistry {
     private List<HubNavGroup> administrationGroups() {
         return List.of(new HubNavGroup("Platform",
                                        List.of(new HubSectionNav("users", "Users"),
+                                               new HubSectionNav("activitypub", "Fediverse", "administration.nav.activityPub"),
                                                new HubSectionNav("insights", "Platform insights", "administration.nav.insights"))));
     }
 

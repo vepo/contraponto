@@ -63,6 +63,8 @@ class ActivityPubWebFingerTest {
                           .asString();
         assertThat(json).contains("\"subject\":\"" + resource + "\"")
                         .contains("\"rel\":\"self\"")
+                        .contains("http://webfinger.net/rel/profile-page")
+                        .contains("/authors/wfuser")
                         .contains("/wfuser");
     }
 

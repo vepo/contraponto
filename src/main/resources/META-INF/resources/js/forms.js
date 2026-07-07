@@ -3,6 +3,7 @@ class FormsManager {
         this.configureFormsElements = this.configureFormsElements.bind(this);
         this.setupGlobalValidationListener();
         this.setupModalListener();
+        this.setupUserDeactivateConfirm();
         this.setupForms();
     }
 
@@ -181,6 +182,59 @@ class FormsManager {
                     firstInput.dispatchEvent(event);
                     firstInput.focus();
                 }
+            }
+        });
+    }
+
+    setupUserDeactivateConfirm() {
+        let pendingRequest = null;
+
+        const closeModal = () => {
+            const modal = document.getElementById('userDeactivateModal');
+            if (modal) {
+                modal.classList.remove('modal--open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+            pendingRequest = null;
+        };
+
+        document.body.addEventListener('htmx:confirm', (event) => {
+            const form = event.detail?.elt?.closest?.('form.js-user-manage-form');
+            if (!form || form.dataset.wasActive !== 'true') {
+                return;
+            }
+            const active = form.querySelector('.user-status__toggle-input');
+            if (!active || active.checked) {
+                return;
+            }
+            event.preventDefault();
+            pendingRequest = event.detail;
+            const modal = document.getElementById('userDeactivateModal');
+            if (modal) {
+                modal.classList.add('modal--open');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+        });
+
+        document.body.addEventListener('click', (event) => {
+            if (event.target.closest('[data-user-deactivate-cancel]')) {
+                event.preventDefault();
+                closeModal();
+                return;
+            }
+            if (event.target.closest('[data-user-deactivate-confirm]')) {
+                event.preventDefault();
+                if (pendingRequest?.issueRequest) {
+                    pendingRequest.issueRequest(true);
+                }
+                closeModal();
+            }
+        });
+
+        document.body.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.getElementById('userDeactivateModal')?.classList.contains('modal--open')) {
+                event.preventDefault();
+                closeModal();
             }
         });
     }

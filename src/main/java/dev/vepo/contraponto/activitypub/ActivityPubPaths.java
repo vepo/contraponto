@@ -17,6 +17,10 @@ public final class ActivityPubPaths {
         return "acct:%s@%s".formatted(user.getUsername(), domain);
     }
 
+    public static String activityId(User user, BlogSubdomainConfig config, String activityType, long sequentialId) {
+        return underActor(actorId(user, config), "activities/%s/%d".formatted(activityType, sequentialId));
+    }
+
     public static Optional<String> actorHostAcctHandle(User user, BlogSubdomainConfig config) {
         if (!config.enabled() || config.baseDomain().isBlank()) {
             return Optional.empty();
@@ -77,8 +81,18 @@ public final class ActivityPubPaths {
         return config.platformUrl(PostPaths.extractUrl(post));
     }
 
+    public static String profilePageUrl(User user, BlogSubdomainConfig config) {
+        return config.platformUrl("/authors/%s".formatted(user.getUsername()));
+    }
+
     public static String publicKeyId(User user, BlogSubdomainConfig config) {
         return "%s#mainKey".formatted(actorId(user, config));
+    }
+
+    private static String underActor(String actorBase, String relativePath) {
+        var base = actorBase.endsWith("/") ? actorBase : "%s/".formatted(actorBase);
+        var rel = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
+        return base + rel;
     }
 
     public static String webFingerHandle(User user, BlogSubdomainConfig config) {

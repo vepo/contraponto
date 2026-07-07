@@ -16,6 +16,8 @@ public class ActivityPubWebFingerService {
 
     private record AcctResource(String username, String domain) {}
 
+    static final String PROFILE_PAGE_REL = "http://webfinger.net/rel/profile-page";
+
     private final ActivityPubSettings settings;
     private final ActivityPubActorService actorService;
     private final UserRepository userRepository;
@@ -74,11 +76,15 @@ public class ActivityPubWebFingerService {
             return Optional.empty();
         }
         var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var profilePage = ActivityPubPaths.profilePageUrl(user, subdomainConfig);
         var response = new LinkedHashMap<String, Object>();
         response.put("subject", resource);
         response.put("links", List.of(Map.of("rel", "self",
                                              "type", ActivityPubPaths.ACTIVITY_JSON,
-                                             "href", actorId)));
+                                             "href", actorId),
+                                      Map.of("rel", PROFILE_PAGE_REL,
+                                             "type", "text/html",
+                                             "href", profilePage)));
         return Optional.of(response);
     }
 }

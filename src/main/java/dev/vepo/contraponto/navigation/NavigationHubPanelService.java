@@ -19,6 +19,7 @@ import dev.vepo.contraponto.library.LibraryEndpoint;
 import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
 import dev.vepo.contraponto.notification.NotificationEndpoint;
 import dev.vepo.contraponto.notification.SubscriptionEndpoint;
+import dev.vepo.contraponto.activitypub.ActivityPubPlatformManageEndpoint;
 import dev.vepo.contraponto.platforminsights.PlatformInsightsEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
@@ -54,6 +55,7 @@ public class NavigationHubPanelService {
     private final AccountSecurityEndpoint accountSecurityEndpoint;
     private final AuthorAppearanceEndpoint authorAppearanceEndpoint;
     private final UserManageEndpoint userManageEndpoint;
+    private final ActivityPubPlatformManageEndpoint activityPubPlatformManageEndpoint;
     private final PlatformInsightsEndpoint platformInsightsEndpoint;
     private final NavigationHubRegistry registry;
 
@@ -78,6 +80,7 @@ public class NavigationHubPanelService {
                                      AccountSecurityEndpoint accountSecurityEndpoint,
                                      AuthorAppearanceEndpoint authorAppearanceEndpoint,
                                      UserManageEndpoint userManageEndpoint,
+                                     ActivityPubPlatformManageEndpoint activityPubPlatformManageEndpoint,
                                      PlatformInsightsEndpoint platformInsightsEndpoint,
                                      NavigationHubRegistry registry) {
         this.postRepository = postRepository;
@@ -100,6 +103,7 @@ public class NavigationHubPanelService {
         this.accountSecurityEndpoint = accountSecurityEndpoint;
         this.authorAppearanceEndpoint = authorAppearanceEndpoint;
         this.userManageEndpoint = userManageEndpoint;
+        this.activityPubPlatformManageEndpoint = activityPubPlatformManageEndpoint;
         this.platformInsightsEndpoint = platformInsightsEndpoint;
         this.registry = registry;
     }
@@ -161,6 +165,7 @@ public class NavigationHubPanelService {
             case "users" -> userManageEndpoint.renderHubPanel(page,
                                                               registry.sectionPath(NavigationHub.ADMINISTRATION,
                                                                                    sectionSlug));
+            case "activitypub" -> activityPubPlatformManageEndpoint.renderHubPanel();
             case "insights" -> platformInsightsEndpoint.renderHubPanel();
             default -> throw new NotFoundException("Unknown administration section: %s".formatted(sectionSlug));
         };

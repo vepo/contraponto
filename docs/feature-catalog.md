@@ -185,7 +185,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Administration hub (users) | admin | `GET /administration` | 2 | Open user menu → **Administration** (users panel default). |
 | User list | admin | `GET /administration/users` | 2 | Same as Administration hub (bookmarkable section URL). |
 | Platform insights | admin | `GET /administration/insights` | 3 | Open user menu → **Administration** → **Platform insights**. |
-| ActivityPub global kill-switch | admin | `POST /forms/administration/activitypub` | 3 | Open user menu → **Administration** → **Platform insights** → toggle **Enable ActivityPub federation globally**. |
+| ActivityPub global kill-switch | admin | `GET /administration/activitypub`, `POST /forms/administration/activitypub` | 3 | Open user menu → **Administration** → **Fediverse** → toggle **Enable ActivityPub federation globally**. |
 | New user | admin | `GET /users/new` | 4 | **Users** → **New User**. |
 | Edit user | admin | `GET /users/{id}/edit` | 4 | **Users** → **Edit** on row. |
 

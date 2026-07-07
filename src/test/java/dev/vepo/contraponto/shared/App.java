@@ -2152,6 +2152,15 @@ public class App {
             return this;
         }
 
+        private void confirmUserDeactivateIfPrompted() {
+            var modals = driver.findElements(cssSelector("#userDeactivateModal.modal--open"));
+            if (modals.isEmpty()) {
+                return;
+            }
+            reliableClick(wait.until(elementToBeClickable(cssSelector("[data-user-deactivate-confirm]"))));
+            waitForReady();
+        }
+
         public UserManagePage fillEmail(String email) {
             var input = wait.until(visibilityOfElementLocated(cssSelector("#userEmail")));
             input.clear();
@@ -2196,7 +2205,7 @@ public class App {
         }
 
         public UserManagePage setActive(boolean active) {
-            var checkbox = wait.until(visibilityOfElementLocated(cssSelector("input[name='active']")));
+            var checkbox = wait.until(visibilityOfElementLocated(cssSelector("input.user-status__toggle-input")));
             if (checkbox.isSelected() != active) {
                 reliableClick(checkbox);
             }
@@ -2207,6 +2216,7 @@ public class App {
             var submitBtn = wait.until(visibilityOfElementLocated(cssSelector("main form.profile-form button[type='submit']")));
             await().until(submitBtn::isEnabled);
             reliableClick(submitBtn);
+            confirmUserDeactivateIfPrompted();
             waitForReady();
             return this;
         }
