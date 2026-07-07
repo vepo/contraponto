@@ -54,6 +54,16 @@ public class UserRepository {
         return entityManager.createQuery(criteria).getSingleResult() > 0;
     }
 
+    public Optional<User> findActiveByUsername(String username) {
+        return entityManager.createQuery("""
+                                         FROM User u
+                                         WHERE u.username = :username AND u.active = true
+                                         """, User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public List<String> findAdministratorEmails() {
         return entityManager.createQuery("""
                                          SELECT DISTINCT u.email FROM User u
@@ -122,6 +132,13 @@ public class UserRepository {
 
     public Optional<User> findByUsername(String username) {
         return entityManager.createQuery("FROM User WHERE username = :username", User.class)
+                            .setParameter("username", username)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public Optional<User> findByUsernameIgnoreCase(String username) {
+        return entityManager.createQuery("FROM User WHERE LOWER(username) = LOWER(:username)", User.class)
                             .setParameter("username", username)
                             .getResultStream()
                             .findFirst();

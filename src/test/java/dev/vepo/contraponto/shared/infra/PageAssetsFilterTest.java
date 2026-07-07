@@ -10,6 +10,11 @@ class PageAssetsFilterTest {
     void resolvesManageForOperationsHubs() {
         assertThat(PageAssetsFilter.resolveProfile("/manage/dashboard")).isEqualTo(PageAssets.MANAGE);
         assertThat(PageAssetsFilter.resolveProfile("/writing/blogs")).isEqualTo(PageAssets.MANAGE);
+        assertThat(PageAssetsFilter.resolveProfile("/reading/highlights")).isEqualTo(PageAssets.MANAGE);
+        assertThat(PageAssetsFilter.resolveProfile("/account/notifications")).isEqualTo(PageAssets.MANAGE);
+        assertThat(PageAssetsFilter.resolveProfile("/account/mailbox")).isEqualTo(PageAssets.MANAGE);
+        assertThat(PageAssetsFilter.resolveProfile("/account/messages/1")).isEqualTo(PageAssets.MANAGE);
+        assertThat(PageAssetsFilter.resolveProfile("/account/messages/blocked")).isEqualTo(PageAssets.MANAGE);
         assertThat(PageAssetsFilter.resolveProfile("/blogs/1/edit")).isEqualTo(PageAssets.MANAGE);
     }
 

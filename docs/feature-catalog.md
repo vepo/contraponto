@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-07-07 · ActivityPub Fediverse appearance controls
+**Last verified:** 2026-07-07 · User messaging (mailbox, compose, block, admin reports)
 
 ---
 
@@ -135,6 +135,11 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Notifications inbox | `USER` | `GET /account/notifications` | 2 | Header bell → **View all notifications** **or** user menu → **Account**. |
 | Notifications (menu path) | `USER` | `GET /account` | 2 | Open user menu → **Account**. |
 | Subscriptions | `USER` | `GET /account/subscriptions` | 2 | Open user menu → **Account** → **Subscriptions** in left nav. |
+| Messages mailbox | `USER` | `GET /account/messages` | 2 | Open user menu → **Account** → **Messages** in left nav. |
+| Compose message | `USER` | `GET /account/messages/compose` | 3 | **Messages** → **Compose** (or author profile → **Message**). |
+| Message thread | `USER` | `GET /account/messages/{threadId}` | 3 | **Messages** → open row. |
+| Blocked users | `USER` | `GET /account/messages/blocked` | 2 | Open user menu → **Account** → **Blocked users** in left nav. |
+| Message author (profile) | signed in | `GET /account/messages/compose?to={username}` | 3 | Author profile → **Message**. |
 
 ---
 
@@ -186,6 +191,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | User list | admin | `GET /administration/users` | 2 | Same as Administration hub (bookmarkable section URL). |
 | Platform insights | admin | `GET /administration/insights` | 3 | Open user menu → **Administration** → **Platform insights**. |
 | ActivityPub global kill-switch | admin | `GET /administration/activitypub`, `POST /forms/administration/activitypub` | 3 | Open user menu → **Administration** → **Fediverse** → toggle **Enable ActivityPub federation globally**. |
+| Message reports | `ADMIN` | `GET /administration/message-reports` | 3 | Open user menu → **Administration** → **Message reports**. |
 | New user | admin | `GET /users/new` | 4 | **Users** → **New User**. |
 | Edit user | admin | `GET /users/{id}/edit` | 4 | **Users** → **Edit** on row. |
 

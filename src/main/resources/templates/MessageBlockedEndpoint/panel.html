@@ -1,0 +1,35 @@
+<header class="hub-panel__header">
+    <div class="hub-panel__header-text">
+        <h2 class="hub-panel__title" data-i18n="messaging.blocked.title">Usuários bloqueados</h2>
+        <p class="hub-panel__subtitle" data-i18n="messaging.blocked.subtitle">Usuários que você bloqueou.</p>
+    </div>
+</header>
+
+{#if blocks.isEmpty()}
+<p class="notifications-page__empty" data-i18n="messaging.blocked.empty">Você não bloqueou ninguém.</p>
+{#else}
+<div class="pages-manage__list">
+    {#for row in blocks.data}
+    <article class="pages-manage__row" id="block-row-{row.blockedUserId}">
+        <div class="pages-manage__row-main">
+            <h3 class="pages-manage__row-title">{row.blockedName}</h3>
+            <div class="pages-manage__row-meta">
+                <span>@{row.blockedUsername}</span>
+                <time>{row.blockedAt.format('dd/MM/yyyy HH:mm')}</time>
+            </div>
+            {#if row.reason}
+            <p class="pages-manage__row-description">{row.reason}</p>
+            {/if}
+        </div>
+        <div class="pages-manage__row-actions">
+            <form hx-post="/forms/messages/blocks/{row.blockedUserId}/unblock"
+                  hx-target="#block-row-{row.blockedUserId}"
+                  hx-swap="outerHTML delete">
+                <button type="submit" class="btn btn--outline btn--small" data-i18n="messaging.unblock">Desbloquear</button>
+            </form>
+        </div>
+    </article>
+    {/for}
+</div>
+{#include components/manage-pagination page=blocks basePath=basePath extraQuery='' fragmentTarget='' /}
+{/if}

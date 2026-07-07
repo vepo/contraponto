@@ -13,14 +13,20 @@ public class NavigationHubRegistry {
 
     private List<HubNavGroup> accountGroups() {
         return List.of(new HubNavGroup("Activity",
-                                       List.of(new HubSectionNav("notifications", "Notifications"),
-                                               new HubSectionNav("subscriptions", "Subscriptions"))),
+                                       List.of(new HubSectionNav("mailbox", "Messages", "account.nav.messages"),
+                                               new HubSectionNav("notifications", "Notifications"),
+                                               new HubSectionNav("subscriptions", "Subscriptions"),
+                                               new HubSectionNav("blocked",
+                                                                 "Blocked users",
+                                                                 "account.nav.blockedUsers",
+                                                                 "/account/messages/blocked"))),
                        new HubNavGroup("Account", List.of(new HubSectionNav("security", "Security"))));
     }
 
     private List<HubNavGroup> administrationGroups() {
         return List.of(new HubNavGroup("Platform",
                                        List.of(new HubSectionNav("users", "Users"),
+                                               new HubSectionNav("message-reports", "Message reports", "administration.nav.messageReports"),
                                                new HubSectionNav("activitypub", "Fediverse", "administration.nav.activityPub"),
                                                new HubSectionNav("insights", "Platform insights", "administration.nav.insights"))));
     }

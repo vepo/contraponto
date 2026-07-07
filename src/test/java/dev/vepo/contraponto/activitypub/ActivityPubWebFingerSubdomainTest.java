@@ -60,6 +60,7 @@ class ActivityPubWebFingerSubdomainTest {
                           .body()
                           .asString();
         assertThat(json).contains("\"subject\":\"" + actorHostAcct + "\"")
-                        .contains("https://subwf.localhost/");
+                        .contains("https://subwf.localhost/")
+                        .contains("http://ostatus.org/schema/1.0/subscribe");
     }
 }

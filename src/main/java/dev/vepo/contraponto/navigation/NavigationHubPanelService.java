@@ -17,6 +17,9 @@ import dev.vepo.contraponto.dashboard.DashboardPage;
 import dev.vepo.contraponto.image.ImageControlEndpoint;
 import dev.vepo.contraponto.library.LibraryEndpoint;
 import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
+import dev.vepo.contraponto.messaging.MessageBlockedEndpoint;
+import dev.vepo.contraponto.messaging.MessageMailboxEndpoint;
+import dev.vepo.contraponto.messaging.MessageReportAdminEndpoint;
 import dev.vepo.contraponto.notification.NotificationEndpoint;
 import dev.vepo.contraponto.notification.SubscriptionEndpoint;
 import dev.vepo.contraponto.activitypub.ActivityPubPlatformManageEndpoint;
@@ -48,6 +51,9 @@ public class NavigationHubPanelService {
     private final HighlightManageEndpoint highlightManageEndpoint;
     private final HighlightsLibraryEndpoint highlightsLibraryEndpoint;
     private final ReadingListHubEndpoint readingListHubEndpoint;
+    private final MessageMailboxEndpoint messageMailboxEndpoint;
+    private final MessageBlockedEndpoint messageBlockedEndpoint;
+    private final MessageReportAdminEndpoint messageReportAdminEndpoint;
     private final LibraryEndpoint libraryEndpoint;
     private final ImageControlEndpoint imageControlEndpoint;
     private final NotificationEndpoint notificationEndpoint;
@@ -73,6 +79,9 @@ public class NavigationHubPanelService {
                                      HighlightManageEndpoint highlightManageEndpoint,
                                      HighlightsLibraryEndpoint highlightsLibraryEndpoint,
                                      ReadingListHubEndpoint readingListHubEndpoint,
+                                     MessageMailboxEndpoint messageMailboxEndpoint,
+                                     MessageBlockedEndpoint messageBlockedEndpoint,
+                                     MessageReportAdminEndpoint messageReportAdminEndpoint,
                                      LibraryEndpoint libraryEndpoint,
                                      ImageControlEndpoint imageControlEndpoint,
                                      NotificationEndpoint notificationEndpoint,
@@ -96,6 +105,9 @@ public class NavigationHubPanelService {
         this.highlightManageEndpoint = highlightManageEndpoint;
         this.highlightsLibraryEndpoint = highlightsLibraryEndpoint;
         this.readingListHubEndpoint = readingListHubEndpoint;
+        this.messageMailboxEndpoint = messageMailboxEndpoint;
+        this.messageBlockedEndpoint = messageBlockedEndpoint;
+        this.messageReportAdminEndpoint = messageReportAdminEndpoint;
         this.libraryEndpoint = libraryEndpoint;
         this.imageControlEndpoint = imageControlEndpoint;
         this.notificationEndpoint = notificationEndpoint;
@@ -153,8 +165,10 @@ public class NavigationHubPanelService {
                                            String profileError) {
         String basePath = registry.sectionPath(NavigationHub.ACCOUNT, sectionSlug);
         return switch (sectionSlug) {
+            case "mailbox" -> messageMailboxEndpoint.renderHubPanel(basePath);
             case "notifications" -> notificationEndpoint.renderHubPanel(page, basePath);
             case "subscriptions" -> subscriptionEndpoint.renderHubPanel(page, basePath);
+            case "blocked" -> messageBlockedEndpoint.renderHubPanel(page, basePath);
             case "security" -> accountSecurityEndpoint.renderHubPanel(emailVerified, profileError);
             default -> throw new NotFoundException("Unknown account section: %s".formatted(sectionSlug));
         };
@@ -165,6 +179,9 @@ public class NavigationHubPanelService {
             case "users" -> userManageEndpoint.renderHubPanel(page,
                                                               registry.sectionPath(NavigationHub.ADMINISTRATION,
                                                                                    sectionSlug));
+            case "message-reports" -> messageReportAdminEndpoint.renderHubPanel(page,
+                                                                                registry.sectionPath(NavigationHub.ADMINISTRATION,
+                                                                                                     sectionSlug));
             case "activitypub" -> activityPubPlatformManageEndpoint.renderHubPanel();
             case "insights" -> platformInsightsEndpoint.renderHubPanel();
             default -> throw new NotFoundException("Unknown administration section: %s".formatted(sectionSlug));

@@ -74,6 +74,42 @@ class BoundedContextRulesTest {
     }
 
     @Test
+    void messagingContextMustOnlyDependOnAllowedContexts() {
+        ArchRule rule = noClasses()
+                                   .that()
+                                   .resideInAnyPackage("..messaging..")
+                                   .should()
+                                   .dependOnClassesThat()
+                                   .resideInAnyPackage(ROOT + "..")
+                                   .andShould()
+                                   .dependOnClassesThat()
+                                   .resideOutsideOfPackages("..messaging..", "..shared..", "..user..", "..auth..",
+                                                            "..navigation..", "..custompage..", "..seo..",
+                                                            "..components..",
+                                                            "java..", "javax..", "jakarta..", "io..", "org..",
+                                                            "com..", "net..");
+
+        rule.check(CLASSES);
+    }
+
+    @Test
+    void notificationContextMayDependOnMessagingForObservers() {
+        ArchRule rule = classes()
+                                 .that()
+                                 .resideInAnyPackage("..notification..")
+                                 .and()
+                                 .haveSimpleNameEndingWith("Observer")
+                                 .should()
+                                 .onlyDependOnClassesThat()
+                                 .resideInAnyPackage("..notification..", "..messaging..", "..blog..", "..post..",
+                                                     "..comment..", "..git..", "..user..", "..shared..",
+                                                     "java..", "javax..", "jakarta..", "io..", "org..", "com..",
+                                                     "net..");
+
+        rule.check(CLASSES);
+    }
+
+    @Test
     void repositoriesMustNotDependOnEndpointsOrServices() {
         ArchRule rule = noClasses()
                                    .that()

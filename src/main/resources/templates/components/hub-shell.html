@@ -18,11 +18,11 @@
             <ul class="hub-nav__list">
                 {#for section in group.sections}
                 <li>
-                    <a href="{hubBasePath}/{section.slug}" data-hx-get="{hubBasePath}/{section.slug}"
+                    <a href="{section.resolvedPath(hubBasePath)}" data-hx-get="{section.resolvedPath(hubBasePath)}"
                        hx-select="main"
                        hx-target="main"
                        hx-swap="outerHTML"
-                       hx-push-url="{hubBasePath}/{section.slug}"
+                       hx-push-url="{section.resolvedPath(hubBasePath)}"
                        class="hub-nav__link{#if section.slug == activeSlug} hub-nav__link--active{/if}"
                        data-nav
                        {#if section.i18nKey?? && section.i18nKey}data-i18n="{section.i18nKey}"{/if}>

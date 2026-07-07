@@ -3,6 +3,7 @@ package dev.vepo.contraponto.notification;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.comment.PostComment;
 import dev.vepo.contraponto.git.GitSyncRun;
+import dev.vepo.contraponto.messaging.MessageThread;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
 import dev.vepo.contraponto.user.User;
@@ -38,6 +39,18 @@ public class NotificationService {
                         PostComment comment,
                         User actor,
                         GitSyncRun gitSyncRun) {
+        create(recipient, type, blog, post, publication, comment, actor, gitSyncRun, null);
+    }
+
+    private void create(User recipient,
+                        NotificationType type,
+                        Blog blog,
+                        Post post,
+                        PostPublication publication,
+                        PostComment comment,
+                        User actor,
+                        GitSyncRun gitSyncRun,
+                        MessageThread messageThread) {
         Notification notification = new Notification();
         notification.setRecipient(recipient);
         notification.setType(type);
@@ -47,6 +60,7 @@ public class NotificationService {
         notification.setComment(comment);
         notification.setActor(actor);
         notification.setGitSyncRun(gitSyncRun);
+        notification.setMessageThread(messageThread);
         notification.setRead(false);
         notificationRepository.create(notification);
     }
@@ -77,6 +91,11 @@ public class NotificationService {
     }
 
     @Transactional
+    public void notifyNewMessageThread(User recipient, MessageThread thread, User actor) {
+        create(recipient, NotificationType.NEW_MESSAGE_THREAD, null, null, null, null, actor, null, thread);
+    }
+
+    @Transactional
     public void notifyNewPost(User recipient, Blog blog, Post post, PostPublication publication) {
         create(recipient, NotificationType.NEW_POST, blog, post, publication, null, null);
     }
@@ -84,6 +103,11 @@ public class NotificationService {
     @Transactional
     public void notifyNewSubscribe(User recipient, Blog blog, User actor) {
         create(recipient, NotificationType.NEW_SUBSCRIBE, blog, null, null, null, actor);
+    }
+
+    @Transactional
+    public void notifyNewThreadMessage(User recipient, MessageThread thread, User actor) {
+        create(recipient, NotificationType.NEW_THREAD_MESSAGE, null, null, null, null, actor, null, thread);
     }
 
     @Transactional

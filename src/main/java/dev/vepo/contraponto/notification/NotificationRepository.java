@@ -74,6 +74,29 @@ public class NotificationRepository {
         return notification;
     }
 
+    @Transactional
+    public int deleteExpiredRead(LocalDateTime readCutoffExclusive) {
+        return entityManager.createQuery("""
+                                         DELETE FROM Notification n
+                                         WHERE n.read = TRUE
+                                           AND n.readAt IS NOT NULL
+                                           AND n.readAt < :cutoff
+                                         """)
+                            .setParameter("cutoff", readCutoffExclusive)
+                            .executeUpdate();
+    }
+
+    @Transactional
+    public int deleteExpiredUnread(LocalDateTime createdCutoffExclusive) {
+        return entityManager.createQuery("""
+                                         DELETE FROM Notification n
+                                         WHERE n.read = FALSE
+                                           AND n.createdAt < :cutoff
+                                         """)
+                            .setParameter("cutoff", createdCutoffExclusive)
+                            .executeUpdate();
+    }
+
     public Page<Notification> findPage(long recipientUserId, PageQuery query) {
         long total = entityManager.createQuery("""
                                                SELECT COUNT(n)
@@ -84,9 +107,10 @@ public class NotificationRepository {
                                   .getSingleResult();
 
         List<Notification> data = entityManager.createQuery("""
-                                                            SELECT n FROM Notification n
-                                                            JOIN FETCH n.blog b
+                                                            SELECT DISTINCT n FROM Notification n
+                                                            LEFT JOIN FETCH n.blog b
                                                             LEFT JOIN FETCH b.owner
+                                                            LEFT JOIN FETCH n.messageThread
                                                             LEFT JOIN FETCH n.post p
                                                             LEFT JOIN FETCH n.actor
                                                             LEFT JOIN FETCH n.gitSyncRun
@@ -103,9 +127,10 @@ public class NotificationRepository {
 
     public List<Notification> findUnreadRecent(long recipientUserId, int limit) {
         return entityManager.createQuery("""
-                                         SELECT n FROM Notification n
-                                         JOIN FETCH n.blog b
+                                         SELECT DISTINCT n FROM Notification n
+                                         LEFT JOIN FETCH n.blog b
                                          LEFT JOIN FETCH b.owner
+                                         LEFT JOIN FETCH n.messageThread
                                          LEFT JOIN FETCH n.post p
                                          LEFT JOIN FETCH n.actor
                                          LEFT JOIN FETCH n.gitSyncRun
@@ -119,26 +144,30 @@ public class NotificationRepository {
 
     @Transactional
     public int markAllRead(long recipientUserId) {
+        var now = LocalDateTime.now(java.time.ZoneId.systemDefault());
         return entityManager.createQuery("""
                                          UPDATE Notification n
-                                         SET n.read = TRUE
+                                         SET n.read = TRUE, n.readAt = :readAt
                                          WHERE n.recipient.id = :userId AND n.read = FALSE
                                          """)
                             .setParameter(PARAM_USER_ID, recipientUserId)
+                            .setParameter("readAt", now)
                             .executeUpdate();
     }
 
     @Transactional
     public boolean markRead(long notificationId, long recipientUserId) {
+        var now = LocalDateTime.now(java.time.ZoneId.systemDefault());
         int updated = entityManager.createQuery("""
                                                 UPDATE Notification n
-                                                SET n.read = TRUE
+                                                SET n.read = TRUE, n.readAt = :readAt
                                                 WHERE n.id = :id
                                                   AND n.recipient.id = :userId
                                                   AND n.read = FALSE
                                                 """)
                                    .setParameter("id", notificationId)
                                    .setParameter(PARAM_USER_ID, recipientUserId)
+                                   .setParameter("readAt", now)
                                    .executeUpdate();
         return updated > 0;
     }

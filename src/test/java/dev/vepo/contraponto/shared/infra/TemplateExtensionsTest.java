@@ -215,6 +215,18 @@ class TemplateExtensionsTest {
     }
 
     @Test
+    void navigationUrlForMessageThreadReturnsThreadPath() throws Exception {
+        var notification = new Notification();
+        notification.setType(NotificationType.NEW_MESSAGE_THREAD);
+        var field = Notification.class.getDeclaredField("messageThreadId");
+        field.setAccessible(true);
+        field.set(notification, 7L);
+
+        assertThat(NotificationTemplateExtensions.navigationUrl(notification)).isEqualTo("/account/messages/7");
+        assertThat(NotificationTemplateExtensions.linkUrl(notification)).isEqualTo("/account/messages/7");
+    }
+
+    @Test
     void notificationMessageAndLinkForGitSyncFailed() {
         var owner = new User();
         owner.setUsername("alice");

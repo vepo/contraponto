@@ -934,6 +934,54 @@ public class App {
         }
     }
 
+    public final class MessagesPage extends Page<MessagesPage> {
+
+        private MessagesPage() {}
+
+        public MessagesPage assertBlockedBannerVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".message-thread-page__banner--blocked")));
+            return this;
+        }
+
+        public MessagesPage assertClosedBannerVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".message-thread-page__banner--closed")));
+            return this;
+        }
+
+        public MessagesPage clickCloseThread() {
+            reliableClick(wait.until(elementToBeClickable(cssSelector("[hx-get*='confirm-modal/message-close']"))));
+            App.this.submitConfirmModal();
+            waitForReady();
+            return this;
+        }
+
+        public MessagesPage fillComposeBody(String body) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("textarea[name='body']")));
+            input.clear();
+            input.sendKeys(body);
+            return this;
+        }
+
+        public MessagesPage fillComposeTitle(String title) {
+            var input = wait.until(visibilityOfElementLocated(cssSelector("input[name='title']")));
+            input.clear();
+            input.sendKeys(title);
+            return this;
+        }
+
+        public MessagesPage submitCompose() {
+            reliableClick(wait.until(elementToBeClickable(cssSelector(".message-compose-form button[type='submit']"))));
+            waitForReady();
+            return this;
+        }
+
+        public MessagesPage submitReply() {
+            reliableClick(wait.until(elementToBeClickable(cssSelector(".message-thread-reply-form button[type='submit']"))));
+            waitForReady();
+            return this;
+        }
+    }
+
     public abstract class Page<T extends Page<T>> {
         private Page() {}
 
@@ -2595,6 +2643,11 @@ public class App {
         return this;
     }
 
+    public App accountMessages() {
+        _goTo("/account/mailbox");
+        return this;
+    }
+
     public ProfilePage accountSecurity() {
         _goTo("/account/security");
         return new ProfilePage();
@@ -2752,6 +2805,13 @@ public class App {
     public App assertMainContent() {
         var main = driver.findElement(By.tagName("main"));
         assertThat(main.isDisplayed()).isTrue();
+        return this;
+    }
+
+    public App assertManageStylesheetLoaded() {
+        wait.until(d -> (Boolean) ((JavascriptExecutor) d).executeScript("""
+                                                                         return document.querySelector('link[rel="stylesheet"][href="/style/manage.css"]') != null;
+                                                                         """));
         return this;
     }
 
@@ -3055,6 +3115,30 @@ public class App {
         return this;
     }
 
+    public App clickNotificationListLinkContaining(String text) {
+        var link = wait.until(d -> d.findElements(cssSelector(".notification-list a.notification-list__link"))
+                                    .stream()
+                                    .filter(element -> element.getText().contains(text))
+                                    .findFirst()
+                                    .orElse(null));
+        reliableClick(link);
+        waitForReady();
+        return this;
+    }
+
+    public App clickNotificationOverlayLinkContaining(String text) {
+        clickNotificationBell();
+        assertNotificationOverlayOpen();
+        var link = wait.until(d -> d.findElements(cssSelector("#notificationOverlay a.notification-overlay__link"))
+                                    .stream()
+                                    .filter(element -> element.getText().contains(text))
+                                    .findFirst()
+                                    .orElse(null));
+        reliableClick(link);
+        waitForReady();
+        return this;
+    }
+
     public App clickSidebarMenu() {
         reliableClick(wait.until(elementToBeClickable(By.id("menuBtn"))));
         return this;
@@ -3240,6 +3324,16 @@ public class App {
         return new BlogManagePage();
     }
 
+    public MessagesPage messagesCompose(String toUsername) {
+        _goTo("/account/messages/compose?to=" + toUsername);
+        return new MessagesPage();
+    }
+
+    public MessagesPage messagesThread(long threadId) {
+        _goTo("/account/messages/" + threadId);
+        return new MessagesPage();
+    }
+
     public BlogManagePage newBlog() {
         _goTo("/blogs/new");
         return new BlogManagePage();
@@ -3344,6 +3438,14 @@ public class App {
 
     public App setLocaleCookie(String locale) {
         driver.manage().addCookie(new Cookie(LocalePreference.COOKIE_NAME, locale, "/", null));
+        return this;
+    }
+
+    public App submitConfirmModal() {
+        wait.until(visibilityOfElementLocated(cssSelector("#confirmModal.modal--open")));
+        var confirmBtn = wait.until(elementToBeClickable(cssSelector("#confirmModal [data-confirm-submit]")));
+        reliableClick(confirmBtn);
+        waitForReady();
         return this;
     }
 

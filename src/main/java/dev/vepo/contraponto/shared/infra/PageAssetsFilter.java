@@ -13,6 +13,8 @@ public class PageAssetsFilter implements ContainerRequestFilter {
     private static boolean isManagePath(String path) {
         return path.startsWith("/manage")
                 || path.startsWith("/writing")
+                || path.startsWith("/reading")
+                || path.startsWith("/account")
                 || path.startsWith("/library")
                 || path.startsWith("/administration")
                 || path.startsWith("/review")

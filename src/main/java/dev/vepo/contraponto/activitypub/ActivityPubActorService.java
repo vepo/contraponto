@@ -66,6 +66,13 @@ public class ActivityPubActorService {
         return actorRepository.findByUserId(userId);
     }
 
+    public Optional<ActivityPubActor> findEnabledByUserId(long userId) {
+        if (!settings.enabled()) {
+            return Optional.empty();
+        }
+        return actorRepository.findByUserId(userId).filter(ActivityPubActor::isFederationEnabled);
+    }
+
     public Optional<ActivityPubActor> findEnabledByUsername(String username) {
         if (!settings.enabled()) {
             return Optional.empty();

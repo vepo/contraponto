@@ -1,6 +1,5 @@
 package dev.vepo.contraponto.activitypub;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +16,8 @@ public class ActivityPubWebFingerService {
     private record AcctResource(String username, String domain) {}
 
     static final String PROFILE_PAGE_REL = "http://webfinger.net/rel/profile-page";
+
+    static final String SUBSCRIBE_REL = "http://ostatus.org/schema/1.0/subscribe";
 
     private final ActivityPubSettings settings;
     private final ActivityPubActorService actorService;
@@ -55,7 +56,7 @@ public class ActivityPubWebFingerService {
         return Optional.of(new AcctResource(body.substring(0, at), body.substring(at + 1)));
     }
 
-    public Optional<Map<String, Object>> resolve(String resource) {
+    public Optional<WebFingerJrd> resolve(String resource) {
         if (!settings.enabled() || resource == null || resource.isBlank()) {
             return Optional.empty();
         }
@@ -64,11 +65,11 @@ public class ActivityPubWebFingerService {
             return Optional.empty();
         }
         var username = acct.get().username();
-        var user = userRepository.findByUsername(username).orElse(null);
+        var user = userRepository.findByUsernameIgnoreCase(username).orElse(null);
         if (user == null) {
             return Optional.empty();
         }
-        var actor = actorService.findEnabledByUsername(username);
+        var actor = actorService.findEnabledByUserId(user.getId());
         if (actor.isEmpty()) {
             return Optional.empty();
         }
@@ -77,14 +78,16 @@ public class ActivityPubWebFingerService {
         }
         var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
         var profilePage = ActivityPubPaths.profilePageUrl(user, subdomainConfig);
-        var response = new LinkedHashMap<String, Object>();
-        response.put("subject", resource);
-        response.put("links", List.of(Map.of("rel", "self",
-                                             "type", ActivityPubPaths.ACTIVITY_JSON,
-                                             "href", actorId),
-                                      Map.of("rel", PROFILE_PAGE_REL,
-                                             "type", "text/html",
-                                             "href", profilePage)));
-        return Optional.of(response);
+        return Optional.of(new WebFingerJrd(resource,
+                                            List.of(actorId, profilePage),
+                                            List.of(WebFingerLink.hrefLink("self",
+                                                                           ActivityPubPaths.ACTIVITY_JSON,
+                                                                           actorId),
+                                                    WebFingerLink.hrefLink(PROFILE_PAGE_REL,
+                                                                           "text/html",
+                                                                           profilePage),
+                                                    WebFingerLink.templateLink(SUBSCRIBE_REL,
+                                                                               ActivityPubPaths.remoteFollowSubscribeTemplate(user,
+                                                                                                                              subdomainConfig)))));
     }
 }

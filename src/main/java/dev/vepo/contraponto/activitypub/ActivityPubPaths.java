@@ -89,6 +89,10 @@ public final class ActivityPubPaths {
         return "%s#mainKey".formatted(actorId(user, config));
     }
 
+    public static String remoteFollowSubscribeTemplate(User user, BlogSubdomainConfig config) {
+        return "%s?acct={uri}".formatted(profilePageUrl(user, config));
+    }
+
     private static String underActor(String actorBase, String relativePath) {
         var base = actorBase.endsWith("/") ? actorBase : "%s/".formatted(actorBase);
         var rel = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;

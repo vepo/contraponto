@@ -21,6 +21,23 @@
                            hx-push-url="/{author.username}"
                            class="btn btn--primary"
                            data-i18n="authorProfile.mainBlog">Ver blog principal</a>
+                        {#if user.isAuthenticated && user.id != author.id}
+                        <a href="/account/messages/compose?to={author.username}"
+                           data-hx-get="/account/messages/compose?to={author.username}"
+                           hx-select="main"
+                           hx-target="main"
+                           hx-swap="outerHTML"
+                           hx-push-url="/account/messages/compose?to={author.username}"
+                           class="btn btn--outline"
+                           data-i18n="messaging.messageAuthor">Mensagem</a>
+                        {#else if !user.isAuthenticated}
+                        <button type="button"
+                                class="btn btn--outline"
+                                hx-get="/components/login-modal"
+                                hx-target="#modal-container"
+                                hx-swap="innerHTML"
+                                data-i18n="messaging.messageAuthor">Mensagem</button>
+                        {/if}
                     </p>
                 </header>
 

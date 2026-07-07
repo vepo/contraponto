@@ -7,6 +7,8 @@ class AssetLoader {
     static MANAGE_PREFIXES = [
         '/manage',
         '/writing',
+        '/reading',
+        '/account',
         '/library',
         '/administration',
         '/review',

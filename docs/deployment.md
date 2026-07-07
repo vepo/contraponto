@@ -74,6 +74,16 @@ Configure outbound mail (signup verification, password reset, post notifications
 | `QUARKUS_MAILER_FROM` | From address (default in `application.properties`: `noreply@contraponto.blog`) |
 | `APP_ADMIN_NOTIFY_EMAIL` | Optional comma-separated administrator inbox(es) for unauthorized signup reports (`app.admin.notify-email`; when unset, active `ADMIN` / `USER_ADMINISTRATOR` users are notified) |
 
+### In-app notification retention
+
+Read notifications are purged after **`app.notifications.retention.read-days`** (default **7**) from `read_at`. Unread notifications are purged after **`app.notifications.retention.unread-days`** (default **30**) from `created_at`. A scheduled job runs every **`app.notifications.retention.schedule`** (default **24h**). See [ADR-0010](adr/0010-notification-retention.md).
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `APP_NOTIFICATIONS_RETENTION_READ_DAYS` | `7` | Days to keep read in-app notifications |
+| `APP_NOTIFICATIONS_RETENTION_UNREAD_DAYS` | `30` | Days to keep unread in-app notifications |
+| `APP_NOTIFICATIONS_RETENTION_SCHEDULE` | `24h` | Quarkus scheduler interval for purge job |
+
 ## 4. Search indexing (production)
 
 After the app is reachable on the public HTTPS origin:
