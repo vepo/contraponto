@@ -22,6 +22,26 @@ class MessageReportAdminTest {
     private MessageReport report;
 
     @Test
+    void adminDismissesReportFromDetail(App app) {
+        app.login(admin)
+           .goToPath("/administration/message-reports")
+           .assertPageSourceContains("Web report thread")
+           .openMessageReportDetail(report.getId())
+           .assertSingleSiteHeader()
+           .assertSingleMainElement()
+           .assertPageSourceContains("hub-layout")
+           .dismissMessageReport()
+           .assertSingleSiteHeader()
+           .assertSingleMainElement()
+           .assertPageSourceContains("hub-layout");
+
+        assertThat(Given.transaction(() -> Given.inject(MessageReportRepository.class)
+                                                .findById(report.getId())
+                                                .orElseThrow()
+                                                .getStatus())).isEqualTo(MessageReportStatus.DISMISSED);
+    }
+
+    @Test
     void adminSeesPendingReport(App app) {
         app.login(admin)
            .goToPath("/administration/message-reports")

@@ -23,6 +23,8 @@ class MessageThreadWebTest {
            .fillComposeTitle("Web test thread")
            .fillComposeBody("Hello from web test")
            .submitCompose()
+           .assertSingleSiteHeader()
+           .assertSingleMainElement()
            .clickCloseThread()
            .assertClosedBannerVisible();
     }
@@ -60,6 +62,9 @@ class MessageThreadWebTest {
         compose.fillComposeTitle("Hub shell thread")
                .fillComposeBody("Thread inside account hub")
                .submitCompose();
-        app.assertPageSourceContains("hub-layout").assertPageSourceContains("Hub shell thread");
+        app.assertSingleSiteHeader()
+           .assertSingleMainElement()
+           .assertPageSourceContains("hub-layout")
+           .assertPageSourceContains("Hub shell thread");
     }
 }

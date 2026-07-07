@@ -6,6 +6,7 @@ import java.util.List;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.custompage.CustomPage;
+import dev.vepo.contraponto.messaging.MessageReport;
 import dev.vepo.contraponto.messaging.MessageThread;
 import dev.vepo.contraponto.messaging.MessageThreadPaths;
 import dev.vepo.contraponto.post.Post;
@@ -154,6 +155,14 @@ public class BreadcrumbService {
         return trail(link(NavigationHub.ACCOUNT.label(), hubRegistry.defaultSectionPath(NavigationHub.ACCOUNT)),
                      link("Messages", MessageThreadPaths.mailbox(), "account.nav.messages"),
                      current("Compose", "messaging.compose.title"));
+    }
+
+    public BreadcrumbTrail forMessageReportDetail(MessageReport report) {
+        return trail(link(NavigationHub.ADMINISTRATION.label(), hubRegistry.defaultSectionPath(NavigationHub.ADMINISTRATION)),
+                     link("Message reports",
+                          hubRegistry.sectionPath(NavigationHub.ADMINISTRATION, "message-reports"),
+                          "administration.nav.messageReports"),
+                     current(report.getThread().getTitle()));
     }
 
     public BreadcrumbTrail forMessageThread(MessageThread thread) {

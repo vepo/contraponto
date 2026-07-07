@@ -27,8 +27,9 @@ public class MessageReportService {
         return reportRepository.save(report);
     }
 
+    @Transactional
     public MessageReportDetail loadDetail(long reportId) {
-        MessageReport report = reportRepository.findById(reportId).orElseThrow(NotFoundException::new);
+        MessageReport report = reportRepository.findDetailById(reportId).orElseThrow(NotFoundException::new);
         var messages = reportRepository.findThreadMessagesForReport(report.getThread().getId());
         return new MessageReportDetail(report, messages);
     }

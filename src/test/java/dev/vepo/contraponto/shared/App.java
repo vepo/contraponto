@@ -1034,12 +1034,16 @@ public class App {
         public MessagesPage submitCompose() {
             reliableClick(wait.until(elementToBeClickable(cssSelector(".message-compose-form button[type='submit']"))));
             waitForReady();
+            assertSingleSiteHeader();
+            assertSingleMainElement();
             return this;
         }
 
         public MessagesPage submitReply() {
             reliableClick(wait.until(elementToBeClickable(cssSelector(".message-thread-reply-form button[type='submit']"))));
             waitForReady();
+            assertSingleSiteHeader();
+            assertSingleMainElement();
             return this;
         }
     }
@@ -3247,6 +3251,13 @@ public class App {
         return this;
     }
 
+    public App dismissMessageReport() {
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector("[data-i18n='administration.messageReports.dismiss']"))));
+        waitForReady();
+        return this;
+    }
+
     public WritePage editDraft(Long draftId) {
         _goTo("/write/draft/" + draftId);
         return new WritePage();
@@ -3413,6 +3424,15 @@ public class App {
 
     public App openHome() {
         _goTo("/");
+        waitForReady();
+        return this;
+    }
+
+    public App openMessageReportDetail(long reportId) {
+        reliableClick(wait.until(elementToBeClickable(
+                                                      cssSelector("a[href='/administration/message-reports/" + reportId + "']"))));
+        wait.until(visibilityOfElementLocated(
+                                              cssSelector("[data-i18n='administration.messageReports.dismiss']")));
         waitForReady();
         return this;
     }

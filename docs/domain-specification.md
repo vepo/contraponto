@@ -204,7 +204,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **User is blocked** | Banner shown to **both** participants on a **frozen thread**. | i18n `messaging.userBlocked` |
 | **Blocked users** | List of users the current user has blocked; **unblock** restores ability to message (does not auto-reopen closed threads). | `GET /account/messages/blocked` |
 | **Message report** | Admin queue item for a flagged thread: reporter, status (**Pending**, **Dismissed**, **Reviewed**). | `MessageReport` — `ADMIN` only |
-| **Compose message** | Start a new thread: recipient, **thread title**, first **thread message**. Any **active user** may be addressed (`UserRepository.findActiveByUsername`). | `GET /account/messages/compose` |
+| **Compose message** | Start a new thread: recipient (**To** field with username autocomplete), **thread title**, first **thread message**. Any **active user** may be addressed (`UserRepository.findActiveByUsername`). | `GET /account/messages/compose` |
+| **Recipient username autocomplete** | HTMX-powered `<datalist>` suggestions on compose **To** field (active users, excludes self and blocked). | `GET /components/messages/recipient-suggestions` |
 | **Message** (author profile) | Signed-in CTA on `/authors/{username}` opening compose with recipient prefilled. | Button: **Message** |
 | **New message thread notification** | In-app alert when someone starts a thread with the recipient. | `NotificationType.NEW_MESSAGE_THREAD` |
 | **New thread message notification** | In-app alert when the other participant posts a **reply**. | `NotificationType.NEW_THREAD_MESSAGE` |

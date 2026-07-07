@@ -35,6 +35,9 @@
     {#if view.canReply()}
     <form class="message-thread-reply-form form-group-stack"
           hx-post="/forms/messages/threads/{view.thread.id}/reply"
+          hx-select="main"
+          hx-target="main"
+          hx-swap="outerHTML"
           hx-target-error="#toast"
           hx-swap-error="innerHTML">
         <div class="form-group">

@@ -49,7 +49,7 @@ Distinct from **notifications** (platform event alerts), **post comments** (publ
 
 | Region | Elements | Notes |
 |--------|----------|-------|
-| Fields | **To** (username), **Thread title**, **Message** | `?to={username}` prefill from author profile |
+| Fields | **To** (username with autocomplete), **Thread title**, **Message** | `?to={username}` prefill from author profile |
 | Actions | **Send** / **Cancel** | Rate-limited |
 
 ### Screen: Block user (modal from thread)

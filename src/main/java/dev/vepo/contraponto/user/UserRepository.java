@@ -64,6 +64,23 @@ public class UserRepository {
                             .findFirst();
     }
 
+    public List<User> findActiveByUsernamePrefixExcluding(long excludeUserId, String prefix, int limit) {
+        if (prefix == null || prefix.isBlank()) {
+            return List.of();
+        }
+        return entityManager.createQuery("""
+                                         SELECT u FROM User u
+                                         WHERE u.active = true
+                                           AND u.id <> :excludeUserId
+                                           AND LOWER(u.username) LIKE LOWER(:prefix)
+                                         ORDER BY u.username ASC
+                                         """, User.class)
+                            .setParameter("excludeUserId", excludeUserId)
+                            .setParameter("prefix", "%s%%".formatted(prefix.trim()))
+                            .setMaxResults(limit)
+                            .getResultList();
+    }
+
     public List<String> findAdministratorEmails() {
         return entityManager.createQuery("""
                                          SELECT DISTINCT u.email FROM User u

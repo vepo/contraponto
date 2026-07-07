@@ -47,6 +47,19 @@ public class MessageReportRepository {
                             .findFirst();
     }
 
+    public Optional<MessageReport> findDetailById(long id) {
+        return entityManager.createQuery("""
+                                         SELECT r
+                                         FROM MessageReport r
+                                         JOIN FETCH r.thread
+                                         JOIN FETCH r.reporter
+                                         WHERE r.id = :id
+                                         """, MessageReport.class)
+                            .setParameter("id", id)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public Page<MessageReportRow> findPageByStatus(MessageReportStatus status, PageQuery query) {
         long total = entityManager.createQuery("""
                                                SELECT COUNT(r)
@@ -80,6 +93,7 @@ public class MessageReportRepository {
         return entityManager.createQuery("""
                                          SELECT m
                                          FROM ThreadMessage m
+                                         JOIN FETCH m.author
                                          WHERE m.thread.id = :threadId
                                          ORDER BY m.createdAt ASC
                                          """, ThreadMessage.class)

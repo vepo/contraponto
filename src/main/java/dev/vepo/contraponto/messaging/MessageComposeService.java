@@ -2,6 +2,7 @@ package dev.vepo.contraponto.messaging;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -20,6 +21,8 @@ public class MessageComposeService {
 
     public static final int MAX_TITLE_LENGTH = 200;
     public static final int MAX_BODY_LENGTH = 2000;
+    public static final int MIN_RECIPIENT_SUGGESTION_LENGTH = 2;
+    public static final int MAX_RECIPIENT_SUGGESTIONS = 10;
 
     private final MessageThreadRepository threadRepository;
     private final ThreadMessageRepository messageRepository;
@@ -97,6 +100,20 @@ public class MessageComposeService {
         if (count >= maxThreadsPerDay) {
             throw new BadRequestException("You have reached the limit of %s new threads per 24 hours.".formatted(maxThreadsPerDay));
         }
+    }
+
+    public List<RecipientSuggestion> suggestRecipients(long initiatorUserId, String usernamePrefix) {
+        if (usernamePrefix == null || usernamePrefix.trim().length() < MIN_RECIPIENT_SUGGESTION_LENGTH) {
+            return List.of();
+        }
+        return userRepository.findActiveByUsernamePrefixExcluding(initiatorUserId,
+                                                                  usernamePrefix,
+                                                                  MAX_RECIPIENT_SUGGESTIONS)
+                             .stream()
+                             .filter(candidate -> !blockRepository.isBlockedEitherDirection(initiatorUserId,
+                                                                                            candidate.getId()))
+                             .map(candidate -> new RecipientSuggestion(candidate.getUsername(), candidate.getName()))
+                             .toList();
     }
 
     private String validateBody(String body) {

@@ -88,4 +88,20 @@ class MessageComposeServiceTest {
                    .withPassword(PASSWORD)
                    .persist();
     }
+
+    @Test
+    void suggestRecipients_excludesSelfBlockedUsersAndShortPrefix() {
+        assertThat(composeService.suggestRecipients(alice.getId(), "compose-a")).isEmpty();
+        assertThat(composeService.suggestRecipients(alice.getId(), "c")).isEmpty();
+
+        blockService.block(alice.getId(), bob.getId());
+        assertThat(composeService.suggestRecipients(alice.getId(), "compose-b")).isEmpty();
+    }
+
+    @Test
+    void suggestRecipients_returnsMatchingActiveUsers() {
+        assertThat(composeService.suggestRecipients(alice.getId(), "compose-b"))
+                                                                                .extracting(RecipientSuggestion::username)
+                                                                                .containsExactly("compose-bob");
+    }
 }
