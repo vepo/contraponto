@@ -51,9 +51,6 @@ class ActivityPubInboxFollowTest {
     ActivityPubFollowRepository followRepository;
 
     @Inject
-    ActivityPubInboxService inboxService;
-
-    @Inject
     ActivityPubDeliveryObserver deliveryObserver;
 
     @Inject
@@ -65,7 +62,6 @@ class ActivityPubInboxFollowTest {
     private String remoteKeyId;
 
     @Test
-    @Transactional
     void acceptFollowBackfillsHistoricalMainBlogPosts() {
         Given.post()
              .withAuthor(user)
@@ -104,8 +100,8 @@ class ActivityPubInboxFollowTest {
                .then()
                .statusCode(202);
 
-        var pending = followRepository.listPendingByLocalActor(actor.getId());
-        inboxService.acceptPendingFollow(pending.get(0).getId());
+        assertThat(followRepository.listPendingByLocalActor(actor.getId())).isEmpty();
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
 
         var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
         var createDeliveries = pendingDeliveries.stream()
@@ -150,7 +146,7 @@ class ActivityPubInboxFollowTest {
 
     @Test
     @Transactional
-    void signedFollowCreatesPendingRequestAcceptEnqueuesCreateOnPublish() {
+    void signedFollowAutoAcceptsAndEnqueuesCreateOnPublish() {
         var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
         var remoteActorId = "https://remote.example/users/reader";
         var followActivityId = "https://remote.example/follow/1";
@@ -173,10 +169,7 @@ class ActivityPubInboxFollowTest {
                .then()
                .statusCode(202);
 
-        var pending = followRepository.listPendingByLocalActor(actor.getId());
-        assertThat(pending).hasSize(1);
-
-        inboxService.acceptPendingFollow(pending.get(0).getId());
+        assertThat(followRepository.listPendingByLocalActor(actor.getId())).isEmpty();
         assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
 
         var post = Given.post()

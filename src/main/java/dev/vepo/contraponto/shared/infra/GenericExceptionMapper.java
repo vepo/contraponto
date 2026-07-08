@@ -12,6 +12,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -30,19 +31,35 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
 
+    private static String clientIp(ContainerRequestContext context) {
+        var forwarded = context.getHeaderString("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        var realIp = context.getHeaderString("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp;
+        }
+        return "unknown";
+    }
+
     private final Template error;
     private final LoggedUser loggedUser;
     private final SeoService seoService;
+    private final ContainerRequestContext requestContext;
+
     private final boolean showErrorDetails;
 
     @Inject
     public GenericExceptionMapper(Template error,
                                   LoggedUser loggedUser,
                                   SeoService seoService,
+                                  ContainerRequestContext requestContext,
                                   @ConfigProperty(name = "app.show-error-details", defaultValue = "false") boolean showErrorDetails) {
         this.error = error;
         this.loggedUser = loggedUser;
         this.seoService = seoService;
+        this.requestContext = requestContext;
         this.showErrorDetails = showErrorDetails;
     }
 
@@ -81,10 +98,35 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         String userMessage = getUserMessage(status);
         String technicalMessage = showErrorDetails ? exception.getMessage() : null;
 
+        var method = requestContext.getMethod();
+        var uri = requestContext.getUriInfo().getRequestUri();
+        var clientIp = clientIp(requestContext);
+        var userAgent = requestContext.getHeaderString("User-Agent");
+        var referer = requestContext.getHeaderString("Referer");
+        var host = requestContext.getHeaderString("Host");
+        var htmx = requestContext.getHeaderString("HX-Request");
+
         if (status >= 500) {
-            logger.error("Internal server error", exception);
+            logger.error("Internal server error method={} uri={} clientIp={} host={} userAgent={} referer={} htmx={}",
+                         method,
+                         uri,
+                         clientIp,
+                         host,
+                         userAgent,
+                         referer,
+                         htmx,
+                         exception);
         } else {
-            logger.warn("Client error status={} exception={}", status, exception);
+            logger.warn("Client error status={} method={} uri={} clientIp={} host={} userAgent={} referer={} htmx={} exception={}",
+                        status,
+                        method,
+                        uri,
+                        clientIp,
+                        host,
+                        userAgent,
+                        referer,
+                        htmx,
+                        exception);
         }
 
         String html = error.data("user", loggedUser)
