@@ -18,7 +18,7 @@ Single Maven module; logical boundaries in `dev.vepo.contraponto.*`. Full table:
 | Discovery & syndication | `home`, `search`, `directory`, `rss`, `seo`, `view` |
 | Media | `image` |
 | Customization | `custompage` |
-| Integration | `git`, `activitypub` |
+| Integration | `git`, `activitypub` (+ `activitypub.*` subpackages — one context) |
 | Author workspace | `library`, `dashboard`, `admin`, `profile` |
 | Presentation shell | `components`, `navigation` |
 | Platform insights | `platforminsights` |
@@ -34,7 +34,14 @@ Single Maven module; logical boundaries in `dev.vepo.contraponto.*`. Full table:
 
 ## Enforcement
 
-ArchUnit tests in `src/test/java/dev/vepo/contraponto/shared/architecture/BoundedContextRulesTest.java` — keep green on every change (bounded-context deps, PascalCase type names / Sonar `java:S101`, …).
+ArchUnit tests in `src/test/java/dev/vepo/contraponto/shared/architecture/` — keep green on every change:
+
+| Test | Rule |
+|------|------|
+| `BoundedContextRulesTest` | Bounded-context deps, PascalCase type names (Sonar `java:S101`), … |
+| `PackageSizeRulesTest` | Max **25** top-level types per exact Java package; grandfathered flat packages (auth, messaging, git, image, highlight, notification) frozen at current counts until split; ActivityPub subpackage dependency DAG |
+
+When a package reaches the cap, add a subpackage (see `activitypub.*`) rather than growing the flat package.
 
 ## When adding a feature
 

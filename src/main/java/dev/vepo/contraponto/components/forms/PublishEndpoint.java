@@ -3,38 +3,6 @@ package dev.vepo.contraponto.components.forms;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogPublicUrlService;
-import dev.vepo.contraponto.post.PostWriteService;
-import dev.vepo.contraponto.postresponse.PostResponseService;
-import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.custompage.Links;
-import dev.vepo.contraponto.git.GitSyncTrigger;
-import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
-import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
-import dev.vepo.contraponto.image.ImageRepository;
-import dev.vepo.contraponto.image.PostImageDependencyService;
-import dev.vepo.contraponto.post.Post;
-import dev.vepo.contraponto.post.PostEndpoint;
-import dev.vepo.contraponto.post.PostPublication;
-import dev.vepo.contraponto.post.PostPublicationService;
-import dev.vepo.contraponto.post.PostRepository;
-import dev.vepo.contraponto.post.PostTemplateExtensions;
-import dev.vepo.contraponto.post.PublishedPostView;
-import dev.vepo.contraponto.shared.share.ShareLinks;
-import dev.vepo.contraponto.readinglist.ReadingListService;
-import dev.vepo.contraponto.renderer.Format;
-import dev.vepo.contraponto.serie.SerieService;
-import dev.vepo.contraponto.shared.Slug;
-import dev.vepo.contraponto.tag.TagService;
-import dev.vepo.contraponto.seo.SeoService;
-import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.user.LoggedUser;
-import dev.vepo.contraponto.shared.i18n.I18nDefaults;
-import dev.vepo.contraponto.shared.i18n.I18nKeys;
-import dev.vepo.contraponto.shared.toast.Toast;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
@@ -48,6 +16,38 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import dev.vepo.contraponto.activitypub.inbox.ActivityPubFavouriteService;
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.git.GitSyncTrigger;
+import dev.vepo.contraponto.git.PostGitSyncRequestedEvent;
+import dev.vepo.contraponto.image.ImageRepository;
+import dev.vepo.contraponto.image.PostImageDependencyService;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
+import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostEndpoint;
+import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.post.PostPublicationService;
+import dev.vepo.contraponto.post.PostRepository;
+import dev.vepo.contraponto.post.PostTemplateExtensions;
+import dev.vepo.contraponto.post.PostWriteService;
+import dev.vepo.contraponto.post.PublishedPostView;
+import dev.vepo.contraponto.postresponse.PostResponseService;
+import dev.vepo.contraponto.readinglist.ReadingListService;
+import dev.vepo.contraponto.renderer.Format;
+import dev.vepo.contraponto.seo.SeoService;
+import dev.vepo.contraponto.serie.SerieService;
+import dev.vepo.contraponto.shared.Slug;
+import dev.vepo.contraponto.shared.i18n.I18nDefaults;
+import dev.vepo.contraponto.shared.i18n.I18nKeys;
+import dev.vepo.contraponto.shared.infra.Logged;
+import dev.vepo.contraponto.shared.share.ShareLinks;
+import dev.vepo.contraponto.shared.toast.Toast;
+import dev.vepo.contraponto.tag.TagService;
+import dev.vepo.contraponto.user.LoggedUser;
 
 @Logged
 @ApplicationScoped
@@ -81,6 +81,7 @@ public class PublishEndpoint {
     private final SeoService seoService;
     private final ReadingListService readingListService;
     private final BlogPublicUrlService blogPublicUrlService;
+    private final ActivityPubFavouriteService activityPubFavouriteService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -98,7 +99,8 @@ public class PublishEndpoint {
                            PostResponseService postResponseService,
                            SeoService seoService,
                            ReadingListService readingListService,
-                           BlogPublicUrlService blogPublicUrlService) {
+                           BlogPublicUrlService blogPublicUrlService,
+                           ActivityPubFavouriteService activityPubFavouriteService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -115,6 +117,7 @@ public class PublishEndpoint {
         this.seoService = seoService;
         this.readingListService = readingListService;
         this.blogPublicUrlService = blogPublicUrlService;
+        this.activityPubFavouriteService = activityPubFavouriteService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -169,7 +172,8 @@ public class PublishEndpoint {
                                                       share,
                                                       readingListService.buildActionView(post, loggedUser.getId()),
                                                       breadcrumb,
-                                                      seoService.forPost(view, breadcrumb)))
+                                                      seoService.forPost(view, breadcrumb),
+                                                      activityPubFavouriteService.buildPostView(post, loggedUser.getId())))
                     .build();
     }
 

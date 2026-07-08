@@ -33,7 +33,7 @@ public class LoggedUserProducer {
         }
         return loggedUserProvider.find(sessionId)
                                  .map(user -> {
-                                     logger.info("Logged cookie={} user={}", sessionId, user);
+                                     logger.debug("Logged cookie={} user={}", sessionId, user);
                                      return user;
                                  })
                                  .orElseGet(LoggedUser::new);

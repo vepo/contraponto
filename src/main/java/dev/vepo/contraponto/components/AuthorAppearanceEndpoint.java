@@ -1,17 +1,17 @@
 package dev.vepo.contraponto.components;
 
-import dev.vepo.contraponto.activitypub.ActivityPubAppearanceService;
-import dev.vepo.contraponto.activitypub.ActivityPubFederationView;
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogRepository;
-import dev.vepo.contraponto.user.User;
-import dev.vepo.contraponto.user.UserRepository;
-import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.user.LoggedUser;
-import io.quarkus.qute.CheckedTemplate;
-import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import io.quarkus.qute.CheckedTemplate;
+import io.quarkus.qute.TemplateInstance;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubAppearanceService;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubFederationView;
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.shared.infra.Logged;
+import dev.vepo.contraponto.user.LoggedUser;
+import dev.vepo.contraponto.user.User;
+import dev.vepo.contraponto.user.UserRepository;
 
 @Logged
 @ApplicationScoped

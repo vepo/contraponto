@@ -13,14 +13,15 @@ Contraponto is a publishing platform designed to combine the elegance of a class
 ## 2. Design Principles
 
 ### 2.1 Typography-driven hierarchy
-- **Serif fonts** (Cormorant Garamond, Playfair Display) for headings, titles, and body copy to evoke a timeless editorial feel.
-- **Sans‑serif font** (Inter) for UI elements, metadata, and navigation – ensuring clean contrast.
+- **Serif display** (Playfair Display) for titles, logo, and editorial accents.
+- **Sans-serif reading** (Inter via `--font-reading`) for body copy and article text — stronger strokes on white backgrounds.
+- **Sans-serif** (Inter) for UI elements, metadata, and navigation.
 - Font sizes follow a modular scale: `16px` base for body, `1.1rem` for article content, `2.25rem` for main post titles on desktop. Full token table: [ui-palette.md](ui-palette.md).
 
 ### 2.2 Color restraint (muted editorial)
-- Primary brand colour: `#3a6b3e` (sage green) – links, buttons, accents.
+- Primary brand colour: `#2f5c33` (sage green) – links, buttons, accents.
 - Accent colour: `#7a3344` (muted burgundy) – drop caps, pull‑quote borders, critical alerts.
-- Neutrals: warm paper `#f6f5f2` (background), `#1a1a18` (text), `#3a3a37` / `#5a5a56` (secondary/muted).
+- Neutrals: white `#ffffff` (background), `#0a0a0a` (text), `#1f1f1d` / `#3d3d3a` (secondary/muted).
 - **Canonical reference:** [ui-palette.md](ui-palette.md) — check before adding UI colours.
 
 ### 2.3 Compact, readable layout

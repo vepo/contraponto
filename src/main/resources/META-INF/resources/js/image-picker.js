@@ -166,6 +166,18 @@ class ImagePickerManager {
     }
 }
 
+function initImagePicker() {
+    if (!window.imagePicker) {
+        window.imagePicker = new ImagePickerManager();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    window.imagePicker = new ImagePickerManager();
+    initImagePicker();
+});
+
+document.addEventListener('contraponto:assets-ready', (event) => {
+    if (event.detail?.profile === 'write') {
+        initImagePicker();
+    }
 });

@@ -2,17 +2,17 @@
 /* ========== DESIGN SYSTEM (see docs/ui-palette.md) ========== */
 :root {
   /* Surfaces */
-  --color-bg: #f6f5f2;
-  --color-bg-offset: #ebeae6;
-  --color-bg-elevated: #fdfcfa;
+  --color-bg: #ffffff;
+  --color-bg-offset: #f0eeea;
+  --color-bg-elevated: #f8f7f4;
   --color-bg-subtle: var(--color-bg-offset);
-  --color-surface-muted: #f0efeb;
-  --header-bg: rgba(246, 245, 242, 0.96);
+  --color-surface-muted: #f3f2ee;
+  --header-bg: rgba(255, 255, 255, 0.96);
 
   /* Text */
-  --color-text: #1a1a18;
-  --color-text-light: #3a3a37;
-  --color-text-muted: #5a5a56;
+  --color-text: #0a0a0a;
+  --color-text-light: #1f1f1d;
+  --color-text-muted: #3d3d3a;
   --color-text-secondary: var(--color-text-light);
 
   /* Borders */
@@ -20,13 +20,13 @@
   --color-border-strong: #b8b7b2;
 
   /* Brand */
-  --color-primary: #3a6b3e;
-  --color-primary-dark: #2d5530;
-  --color-primary-hover: #325f36;
+  --color-primary: #2f5c33;
+  --color-primary-dark: #254a28;
+  --color-primary-hover: #2a5530;
   --color-accent: #7a3344;
   --color-secondary: var(--color-accent);
   --color-secondary-hover: #65303d;
-  --color-on-primary: #f6f5f2;
+  --color-on-primary: #faf9f6;
 
   /* Semantic */
   --color-success: #2d5c40;
@@ -46,6 +46,7 @@
   --font-serif: 'Cormorant Garamond', 'Times New Roman', Times, serif;
   --font-serif-display: 'Playfair Display', Georgia, serif;
   --font-sans: 'Inter', Helvetica, sans-serif;
+  --font-reading: var(--font-sans);
   --font-mono: ui-monospace, 'Courier New', Courier, monospace;
 
   --text-xs: 0.7rem;
@@ -110,7 +111,7 @@
   --duration-normal: 200ms;
   --duration-slow: 280ms;
 
-  --focus-ring-color: rgba(58, 107, 62, 0.35);
+  --focus-ring-color: rgba(47, 92, 51, 0.35);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
@@ -397,9 +398,10 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: 16px;
-  line-height: 1.6;
+  font-weight: 400;
+  line-height: 1.65;
   color: var(--color-text);
   background-color: var(--color-bg);
 }
@@ -1958,11 +1960,15 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
 }
 
 .article-page__content {
+  font-family: var(--font-reading);
   font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--color-text);
 }
 
 .article-page__content a:where(:not(:has(> img))) {
-  color: var(--color-primary);
+  color: var(--color-primary-dark);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
   text-underline-offset: 0.12em;
@@ -2015,9 +2021,9 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
 
 /* Blockquotes (Markdown and other non-AsciiDoc) */
 .article-page__content blockquote {
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: 1.1rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-light);
   background-color: var(--color-bg-offset);
   border-radius: var(--radius-md);
   border-left: 3px solid var(--color-accent);
@@ -2081,7 +2087,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   margin-top: var(--spacing-sm);
   padding-top: var(--spacing-xs);
   border-top: 1px solid var(--color-border);
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: var(--text-base);
   font-style: italic;
   font-weight: 500;
@@ -2121,7 +2127,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   padding: 0;
   overflow: visible;
   white-space: pre-wrap;
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: 1.15rem;
   font-style: italic;
   font-weight: 500;
@@ -2134,7 +2140,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
 .article-page__content .verseblock .attribution {
   margin-top: var(--spacing-sm);
   padding-top: var(--spacing-xs);
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: var(--text-sm);
   font-style: normal;
   color: var(--color-text-muted);
@@ -2153,7 +2159,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
 
 .article-page__content .quoteblock > .title {
   margin-bottom: var(--spacing-sm);
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: var(--text-sm);
   font-style: italic;
   font-weight: 500;
@@ -2166,7 +2172,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   background: transparent;
   border: none;
   border-radius: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: 1.15rem;
   font-style: italic;
   font-weight: 500;
@@ -2189,7 +2195,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
 .article-page__content .quoteblock .attribution {
   margin-top: var(--spacing-sm);
   padding-top: var(--spacing-xs);
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: var(--text-sm);
   font-style: normal;
   color: var(--color-text-muted);
@@ -2223,7 +2229,7 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   caption-side: top;
   padding: 0 0 var(--spacing-xs);
   margin-bottom: var(--spacing-xs);
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: var(--text-base);
   font-style: italic;
   font-weight: 500;
@@ -2981,7 +2987,7 @@ hr:after {
 .image-lightbox__caption {
   margin: 0;
   padding: 0 var(--spacing-sm);
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: var(--text-base);
   font-style: italic;
   color: rgba(255, 255, 255, 0.85);

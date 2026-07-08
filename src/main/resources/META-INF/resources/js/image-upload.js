@@ -127,6 +127,20 @@ class ImageUploader {
     }
 }
 
+function initImageUploader() {
+    if (!window.imageUploader) {
+        window.imageUploader = new ImageUploader();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    new ImageUploader();
+    if (document.getElementById('coverUploadArea') || document.querySelector('[data-image-upload]')) {
+        initImageUploader();
+    }
+});
+
+document.addEventListener('contraponto:assets-ready', (event) => {
+    if (event.detail?.profile === 'write') {
+        initImageUploader();
+    }
 });

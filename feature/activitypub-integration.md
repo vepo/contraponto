@@ -6,6 +6,226 @@
 
 ## Changelog
 
+### ActivityPub subpackage refactor — 2026-07-08
+
+**Version:** 1.6 (internal)  
+**Status:** done
+
+**Description:** Refactor-only — split flat `dev.vepo.contraponto.activitypub` (63 types) into protocol subpackages (`actor`, `remote`, `security`, `discovery`, `inbox`, `outbox`, `delivery`, `admin`). No user-visible behaviour change. Added `PackageSizeRulesTest` (25-type cap per package, grandfather ratchet for other oversized flat contexts).
+
+### Fediverse inbound Likes (Mastodon favourites) — 2026-07-08
+
+**Version:** 1.5  
+**Status:** tasks-ready
+
+**Description:** Extend ActivityPub so **published posts** continue to federate as Mastodon-compatible **statuses** (ActivityStreams **`Create`** wrapping **`Note`** / **`Article`** — colloquially “toots”), and add **inbound `Like`** handling per [Mastodon ActivityPub § Supported activities for statuses](https://docs.joinmastodon.org/spec/activitypub/#supported-activities-for-statuses): remote users who favourite a federated post on Mastodon send a signed **`Like`** to the author's **inbox**; Contraponto **records** the favourite and surfaces it to the author (and optionally on the post). **`Undo`** of **`Like`** removes the favourite. **Outbound Creates** for every published post on all blogs when **Fediverse opt-in** is on are **already shipped** (v1.4); this changelog adds **inbound engagement** deferred since [ADR-0006](../docs/adr/0006-activitypub-federation.md) MVP (“Block, Like” → later).
+
+**Baseline (already live — not in v1.5 scope unless FQ27 changes opt-in):**
+
+| Direction | Today | Mastodon term |
+|-----------|-------|---------------|
+| Publish → remote | `Create` + `Note`/`Article` to follower inboxes + outbox | status / toot |
+| Remote → Contraponto | `Follow`, `Undo` Follow only | follow / unfollow |
+| Remote → Contraponto (new) | `Like`, `Undo` Like on post object URI | favourite / unfavourite |
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| ActivityPub inbox (`ActivityPubInboxService`) | New handlers for `Like` and `Undo`+`Like`; signature verify path (unlike no-op `Delete`) |
+| Post / reader engagement | New persistence for remote favourites; may show count or list on post page |
+| Notifications | Optional in-app notification to author on new Fediverse favourite (**FQ30**) |
+| Domain spec | New terms: Fediverse favourite, Fediverse like activity; business rules for idempotency |
+| ADR-0006 | MVP “Later: Block, Like” — **Like** moves to shipped; **Block** / **Announce** still deferred unless FQ*n* expand |
+| ADR-0008 | Same **Person** per User; Like `object` resolves to `ActivityPubPaths.postObjectId` |
+| Dashboard / analytics | Optional Fediverse favourite metrics (**FQ31**) |
+| Comments / highlights | Distinct — Like is not a comment or highlight |
+| `dev-import.sql` | Sample inbound Like rows or manual interop only (**FCdev**) |
+
+**Wireframe (author-visible — per FQ28–FQ29, FQ30):**
+
+Public post page (guest + logged-in reader):
+
+```
+┌─ Published post ────────────────────────────────────────┐
+│ … post body …                                           │
+│                                                         │
+│ ♥ 3 Fediverse favourites                                │
+│   (count only — no public who-liked list)               │
+└─────────────────────────────────────────────────────────┘
+```
+
+Author manage / post detail (owner only):
+
+```
+┌─ Post — Fediverse favourites ───────────────────────────┐
+│ Total: 3                                                │
+│   @reader@mastodon.social                               │
+│   @bot@pleroma.example                                  │
+│   @alice@ursal.zone                                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+No in-app notification row in v1.5 (**FQ30** = no).
+
+**Risks**
+
+* **Spam likes** — unsigned or forged Likes blocked by HTTP Signatures; rate-limit inbox per actor/IP.
+* **Object URI mismatch** — Like `object` may be activity id vs post object id; parser must accept both Mastodon variants.
+* **Duplicate Likes** — same remote actor re-sending Like; idempotent upsert by `(post, remote_actor)` or activity id.
+* **Undo without prior Like** — no-op locally; must not decrement below zero.
+* **Opt-in gate** — Likes on posts whose author disabled federation: reject or accept silently (**FQ32**).
+* **Privacy** — displaying remote handles on post page may surprise authors (**FQ29**).
+
+#### Feature checklist (v1.5)
+
+| ID | Criterion | Status |
+|----|-----------|--------|
+| FC34 | Every **published** post on an opted-in author's blogs is delivered as a **Create** status (toot) on publish and in outbox/backfill (regression / docs — already v1.4) | ☐ |
+| FC35 | Signed inbound **`Like`** on a known federated post object URI is stored | ☐ |
+| FC36 | Signed inbound **`Undo`** of **`Like`** removes the stored favourite | ☐ |
+| FC37 | Duplicate Like from same remote actor is idempotent (no double count) | ☐ |
+| FC38 | Author-visible surface for Fediverse favourites matches **FQ28** / **FQ29** | ☐ |
+| FC39 | Inbox rejects unsigned Like in production (ADR-0007) | ☐ |
+| FCdev | Dev persona + docs to exercise Like handling (seed or interop checklist) | ☐ |
+
+#### Feature questions (FQ*n*) — v1.5
+
+| # | Question | Blocking? | Status | Answer | PO recommendation (not an answer) |
+|---|----------|-----------|--------|--------|-----------------------------------|
+| FQ27 | “Every post be a toot” — keep **Fediverse opt-in** (author must enable), or **auto-federate all published posts** for every author? | **blocking** | answered | **Keep opt-in** — outbound Creates unchanged; v1.5 adds **inbound Like** capture only. | Prefer **keep opt-in** — matches ADR-0006/0008 and spam control; v1.5 focuses on **inbound Likes** unless you want to remove opt-in. |
+| FQ28 | Where should captured likes appear? **Count only** on post, **list of remote handles**, **author manage hub only**, or **notifications only**? | **blocking** | answered | **Public count on post** + **author sees who liked** (author-only handle list; not shown to guests). | Prefer **count + author-only list** on post manage or post analytics; public count optional. |
+| FQ29 | Should **public readers** (guests) see Fediverse favourite **count** or **who** liked on the post page? | **blocking** | answered | **Count only** on public post page; **who** liked is **author-only** (per FQ28). | Prefer **count only** for guests; full handle list author-only (like Mastodon “favourited by” visibility). |
+| FQ30 | Send **in-app notification** to author on new Fediverse favourite? | **blocking** | answered | **No** — author sees who liked in an **author-only** surface (manage/analytics); no new notification type in v1.5. | Prefer **yes** — mirrors `NEW_COMMENT`; type e.g. `FEDIVERSE_FAVOURITE`. |
+| FQ31 | Include Fediverse favourites in **dashboard analytics**? | informational | open | | Defer to follow-up unless trivial with new table. |
+| FQ32 | Accept Like when author **Fediverse opt-in is off** but post was previously federated? | **blocking** | answered | **Reject** inbound Likes when Fediverse opt-in is **currently off** (inbox no-op or 404 gate before store). | Prefer **accept and store** if object URI matches a published post (engagement still valid); do not re-deliver Creates. |
+| FQ33 | Scope v1.5 to **`Like` only**, or also **`Announce`** (boost) and **`Undo` Announce**? | **blocking** | answered | **Like + Undo Like only** — Announce deferred. | Prefer **Like + Undo Like only** in v1.5; Announce is separate product surface. |
+| FQ34 | Must liker be an **accepted Fediverse follower**, or **any** verified remote actor? | **blocking** | answered | **Any verified remote actor** — Mastodon allows liking public statuses without follow. | Prefer **any verified remote actor** — Mastodon allows liking public statuses without follow. |
+
+**Domain model:** updated 2026-07-08 (phase 1b). Ubiquitous Language: **Fediverse favourite**, **Fediverse favourite count**, **Fediverse favourite list**; inbound **`Like`** / **`Undo` Like** on **Fediverse post object URL**; business rules **36–38**. See [`docs/domain-specification.md`](../docs/domain-specification.md).
+
+**Architecture (phase 2):** see **Architecture (v1.5)** below. **ADR-0006** MVP table “Later: Like” — propose editorial amend after ship (**AQ35**); no new ADR unless user reopens 0006.
+
+#### Architecture questions (AQ*n*) — v1.5
+
+| # | Question | Blocking? | Status | Answer |
+|---|----------|-----------|--------|--------|
+| AQ35 | Reopen **ADR-0006** to move **Like** from “Later” to shipped, or feature doc + domain-spec only? | informational (docs) | open | Prefer **domain-spec + feature doc** first; optional small **0006** table amend when user accepts. |
+| AQ36 | Resolve Like `object` when Mastodon sends **Create activity id** instead of **Note object id** — fetch object vs normalize URL only? | no (design) | answered | **Normalize URI** (strip fragment, trailing slash) and match against `ActivityPubPaths.postObjectId` for published posts; also accept object id equal to **Create activity id** (`…/activities/create/{postId}`) as alias. No outbound fetch in v1.5. |
+| AQ37 | Author favourite list surface: **post manage** page section vs **writing hub** post row vs dedicated `/writing/posts/{id}/fediverse`? | no (design) | answered | **Post manage** edit page — new “Fediverse favourites” section below engagement stats (author-only). |
+
+#### Architecture (v1.5)
+
+### ADRs aplicáveis
+
+| ADR | Status | Relevância |
+|-----|--------|------------|
+| [0006](../docs/adr/0006-activitypub-federation.md) | Accepted | S2S scope; **Like** was “Later” — v1.5 ships inbound Like |
+| [0007](../docs/adr/0007-activitypub-http-signatures.md) | Accepted | Verify Like/Undo before store |
+| [0008](../docs/adr/0008-activitypub-actor-identity.md) | Accepted | Post object URLs unchanged |
+| [0015](../docs/adr/0015-federation-outbound-fetch-ssrf.md) | Accepted | No fetch for Like object resolution (AQ36) |
+
+### Bounded contexts
+
+| Context | Role |
+|---------|------|
+| **`activitypub`** | Inbox Like/Undo handlers, `ActivityPubFavourite` persistence, count/list queries |
+| **`post`** | Resolve post by canonical path from Like `object`; post manage template section |
+| **Presentation shell** | Public post template — favourite count |
+
+No cross-context CDI events in v1.5 (no notifications per FQ30).
+
+### Packages / layers
+
+```
+ActivityPubInboxService.handleInbox
+  → verifySignature (Like requires verify — not no-op path)
+  → handleLike / handleUndoLike
+       → ActivityPubFavouriteService.recordLike | removeLike
+            → resolve post via ActivityPubPostResolver (object URI → Post)
+            → ActivityPubFavouriteRepository upsert/delete
+
+PostEndpoint (public)
+  → ActivityPubFavouriteService.countByPost(post) → template
+
+PostManageEndpoint (author)
+  → ActivityPubFavouriteService.listByPost(post) → manage template section
+```
+
+### Schema / persistence
+
+**Flyway** `V*.sql`:
+
+| Table | Columns |
+|-------|---------|
+| `tb_activitypub_favourites` | `id`, `post_id` FK, `remote_actor_id` FK → `tb_activitypub_remote_actors`, `like_activity_id` (unique), `created_at` |
+
+Unique constraint: `(post_id, remote_actor_id)`.
+
+### Inbox behaviour (Mastodon-aligned)
+
+| Activity | Action |
+|----------|--------|
+| `Like` | Verify → resolve `object` → upsert favourite |
+| `Undo` + `Like` object | Verify → remove favourite for remote actor + post |
+| Other types | Unchanged (Follow/Undo Follow; no-op Delete) |
+
+**FQ32:** opt-in off → existing `findEnabledByUsername` → **404** before handlers (Like rejected).
+
+### Routes / templates
+
+| Surface | Change |
+|---------|--------|
+| `POST /{username}/inbox` | Behaviour: Like + Undo Like |
+| Public `PostEndpoint` template | Fediverse favourite count (if > 0 or always show 0?) — show when federation enabled globally |
+| Post manage template | Author-only favourite list |
+
+### `docs/htmx-events.md` delta
+
+**No change** — read-only surfaces; no new HTMX events.
+
+### HTMX component model
+
+N/A — server-rendered count and manage section only.
+
+### Tests
+
+| Area | Tests |
+|------|-------|
+| Inbox | Signed Like → row created; Undo → removed; duplicate idempotent; opt-in off → 404; unsigned → 401 |
+| Resolver | Object URI main + secondary post paths; Create activity id alias |
+| Post page | Count visible to guest |
+| Manage | List visible to author only |
+| Arch | `BoundedContextRulesTest` green |
+
+#### Tasks (v1.5)
+
+| ID | Layer | Depends | Expected outcome | Tests | Done |
+|----|-------|---------|------------------|-------|------|
+| T31-java | java | — | Flyway + `ActivityPubFavourite` entity/repository; unique `(post, remote_actor)` | TC30 | ☐ |
+| T32-java | java | T31 | `ActivityPubPostResolver`: Like `object` URI → published `Post` (platform paths + create-activity id alias per AQ36) | TC31 | ☐ |
+| T33-java | java | T31, T32 | `ActivityPubFavouriteService` + inbox `handleLike` / `handleUndoLike` in `ActivityPubInboxService`; signature required; opt-in gate | TC32, TC33 | ☐ |
+| T34-htmx | htmx | T33 | Public post template: **Fediverse favourite count**; post manage: **Fediverse favourite list** (author-only) | TC34, TC35 | ☐ |
+| Tdev | dev | T33, T34 | `dev-import.sql`: sample favourites on alice seed post; feature-catalog if click path changes | TC36 | ☐ |
+
+**Stop for Development approval (phase 4)** — approve task IDs before implementation.
+
+#### Test coverage (v1.5)
+
+| ID | Kind | Covers | Scenario | Done |
+|----|------|--------|----------|------|
+| TC30 | unit / migration | T31 | Flyway + entity mapping; unique constraint | ☐ |
+| TC31 | unit | T32 | Resolver matches main/secondary post URLs and create-activity alias | ☐ |
+| TC32 | quarkus | T33 | Signed Like creates favourite; Undo removes | ☐ |
+| TC33 | quarkus | T33 | Duplicate Like idempotent; opt-in off → 404; unsigned → 401 | ☐ |
+| TC34 | web | T34 | Guest sees favourite count on post | ☐ |
+| TC35 | web | T34 | Author sees handle list on manage; guest does not | ☐ |
+| TC36 | quarkus | Tdev | Dev seed favourites exercisable | ☐ |
+
+**Gate:** All **blocking** FQs for v1.5 answered (2026-07-08). Proceed to phase 1b (domain) → phase 2 (architecture) → phase 3 (tasks) → **stop for Development approval**.
+
+---
+
 ### Mastodon-like author timeline (remote profile statuses) — 2026-07-08
 
 **Version:** 1.4  

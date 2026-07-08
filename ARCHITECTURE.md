@@ -119,6 +119,24 @@ Server-to-server [ActivityPub](https://www.w3.org/TR/activitypub/) so authors sy
 
 **Docs:** [feature/activitypub-integration.md](feature/activitypub-integration.md), ADRs [0006](docs/adr/0006-activitypub-federation.md)–[0008](docs/adr/0008-activitypub-actor-identity.md) (**Accepted** 2026-07-06).
 
+### ActivityPub package layout
+
+Single bounded context `activitypub`; protocol-aligned subpackages (max **25** top-level types per package — see `PackageSizeRulesTest`):
+
+| Subpackage | Responsibility |
+|------------|----------------|
+| `activitypub` (root) | `ActivityPubPaths`, `ActivityPubSettings`, shared enums, dev seed |
+| `activitypub.actor` | Local Person, keys, author Fediverse opt-in |
+| `activitypub.remote` | Remote actor cache and profile fetch |
+| `activitypub.security` | HTTP Signatures, JSON-LD response helpers |
+| `activitypub.discovery` | WebFinger, NodeInfo, HostMeta, ingress rewrite, follower collections |
+| `activitypub.inbox` | Inbound Follow / Like / Undo |
+| `activitypub.outbox` | Outbox collections and post object mapping |
+| `activitypub.delivery` | Async outbound queue and CDI observer |
+| `activitypub.admin` | Platform kill-switch and manage UI |
+
+Dependency direction: `admin` → root; `security` → root (+ actor/remote/outbox for signing and JSON); `discovery` → actor (+ inbox for followers list); `outbox` → actor; `delivery` → outbox, remote, security, actor; `inbox` → remote, security, delivery, actor. Enforced in `PackageSizeRulesTest` (subpackage DAG).
+
 ## 8.2 SEO
 
 | Resource | Path | Notes |
@@ -182,7 +200,7 @@ dev.vepo.contraponto/
 ├── dashboard/        # Author workspace — manage analytics
 ├── directory/        # Discovery — author/blog directories
 ├── git/              # Integration — Jekyll/Git sync
-├── activitypub/      # Integration — ActivityPub federation
+├── activitypub/      # Integration — ActivityPub federation (subpackages: actor, remote, security, discovery, inbox, outbox, delivery, admin)
 ├── highlight/        # Reader engagement — text highlights, proposals, notes
 ├── home/             # Discovery — featured homepage
 ├── image/            # Media — upload & storage

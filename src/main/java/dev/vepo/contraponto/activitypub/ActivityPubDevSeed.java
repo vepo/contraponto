@@ -1,18 +1,17 @@
 package dev.vepo.contraponto.activitypub;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dev.vepo.contraponto.user.UserRepository;
-
-import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.interceptor.Interceptor;
 import jakarta.transaction.Transactional;
+import io.quarkus.runtime.StartupEvent;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubActorService;
+import dev.vepo.contraponto.user.UserRepository;
 
 @ApplicationScoped
 public class ActivityPubDevSeed {

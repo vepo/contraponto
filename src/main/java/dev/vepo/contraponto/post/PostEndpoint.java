@@ -5,31 +5,6 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import org.eclipse.microprofile.openapi.annotations.Operation;
-
-import dev.vepo.contraponto.blog.Blog;
-import dev.vepo.contraponto.blog.BlogPublicUrlService;
-import dev.vepo.contraponto.blog.BlogRepository;
-import dev.vepo.contraponto.shared.share.ShareLinks;
-import dev.vepo.contraponto.shared.share.ShareView;
-import dev.vepo.contraponto.custompage.CustomPageRepository;
-import dev.vepo.contraponto.custompage.Links;
-import dev.vepo.contraponto.navigation.BreadcrumbService;
-import dev.vepo.contraponto.navigation.BreadcrumbTrail;
-import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
-import dev.vepo.contraponto.notification.BlogAudienceView;
-import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.user.LoggedUser;
-import dev.vepo.contraponto.readinglist.ReadingListActionView;
-import dev.vepo.contraponto.readinglist.ReadingListService;
-import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
-import dev.vepo.contraponto.seo.SeoMetadata;
-import dev.vepo.contraponto.seo.SeoService;
-import dev.vepo.contraponto.view.SessionIdProvider;
-import dev.vepo.contraponto.view.ViewRepository;
-import io.quarkus.qute.CheckedTemplate;
-import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -45,6 +20,31 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.UriBuilder;
+import io.quarkus.qute.CheckedTemplate;
+import io.quarkus.qute.TemplateInstance;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import dev.vepo.contraponto.activitypub.inbox.ActivityPubFavouriteService;
+import dev.vepo.contraponto.activitypub.inbox.FediverseFavouritePostView;
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.blog.BlogPublicUrlService;
+import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.Links;
+import dev.vepo.contraponto.navigation.BreadcrumbService;
+import dev.vepo.contraponto.navigation.BreadcrumbTrail;
+import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
+import dev.vepo.contraponto.notification.BlogAudienceView;
+import dev.vepo.contraponto.readinglist.ReadingListActionView;
+import dev.vepo.contraponto.readinglist.ReadingListService;
+import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
+import dev.vepo.contraponto.seo.SeoMetadata;
+import dev.vepo.contraponto.seo.SeoService;
+import dev.vepo.contraponto.shared.infra.Logged;
+import dev.vepo.contraponto.shared.share.ShareLinks;
+import dev.vepo.contraponto.shared.share.ShareView;
+import dev.vepo.contraponto.user.LoggedUser;
+import dev.vepo.contraponto.view.SessionIdProvider;
+import dev.vepo.contraponto.view.ViewRepository;
 
 @Path("{username}")
 @ApplicationScoped
@@ -67,7 +67,8 @@ public class PostEndpoint {
                                                    ShareView share,
                                                    ReadingListActionView readingListView,
                                                    BreadcrumbTrail breadcrumb,
-                                                   SeoMetadata seo);
+                                                   SeoMetadata seo,
+                                                   FediverseFavouritePostView fediverseFavourites);
 
         public static native TemplateInstance toggle(Post post, LoggedUser user);
 
@@ -95,6 +96,7 @@ public class PostEndpoint {
     private final PostSlugAliasRepository postSlugAliasRepository;
     private final ReadingListService readingListService;
     private final BlogPublicUrlService blogPublicUrlService;
+    private final ActivityPubFavouriteService activityPubFavouriteService;
 
     @Inject
     public PostEndpoint(PostRepository postRepository,
@@ -112,7 +114,8 @@ public class PostEndpoint {
                         BlogRepository blogRepository,
                         PostSlugAliasRepository postSlugAliasRepository,
                         ReadingListService readingListService,
-                        BlogPublicUrlService blogPublicUrlService) {
+                        BlogPublicUrlService blogPublicUrlService,
+                        ActivityPubFavouriteService activityPubFavouriteService) {
         this.postRepository = postRepository;
         this.publicationRepository = publicationRepository;
         this.changeDiffService = changeDiffService;
@@ -129,6 +132,7 @@ public class PostEndpoint {
         this.postSlugAliasRepository = postSlugAliasRepository;
         this.readingListService = readingListService;
         this.blogPublicUrlService = blogPublicUrlService;
+        this.activityPubFavouriteService = activityPubFavouriteService;
     }
 
     @GET
@@ -241,6 +245,7 @@ public class PostEndpoint {
         BreadcrumbTrail breadcrumb = breadcrumbService.forPost(view);
         ShareView share = ShareLinks.from(PostTemplateExtensions.liveTitle(view),
                                           blogPublicUrlService.canonicalOrPlatformAbsolute(post));
+        var fediverseFavourites = activityPubFavouriteService.buildPostView(post, viewerUserId);
         TemplateInstance template = Templates.post(view,
                                                    seriePostsFor(post),
                                                    relatedPostsFor(post),
@@ -252,7 +257,8 @@ public class PostEndpoint {
                                                    share,
                                                    readingListView,
                                                    breadcrumb,
-                                                   seoService.forPost(view, breadcrumb));
+                                                   seoService.forPost(view, breadcrumb),
+                                                   fediverseFavourites);
         ResponseBuilder response = Response.ok(template);
         if (headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE) == null) {
             response.cookie(sessionIdProvider.createSessionCookie(sessionId));

@@ -304,7 +304,10 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Fediverse follow backfill** | When a **Fediverse follow** is **auto-accepted** (or **reopened** after **REJECTED**), Contraponto enqueues **Create** deliveries for **every** published post on **all** of the author's blogs (no recent-N cap), ordered primarily by **`publishedAt`** (oldest first; **interleaved** across main and secondary blogs). Membership, ids, `published`, and order must match the **Fediverse outbox**. | `ActivityPubDeliveryService.enqueueHistoricalPostsForAcceptedFollow` |
 | **Fediverse outbox** | Paged **OrderedCollection** of **Create** activities for all published posts on the author's **main and secondary** blogs; ordered primarily by **`publishedAt`** (blogs interleaved); exposes `first` / `last` / `next` / `prev` when the archive spans multiple pages. | `GET /{username}/outbox` |
 | **Fediverse follower count** | Count of accepted remote followers (optional display on appearance/profile per **FQ4**). | Followers collection |
-| **Fediverse post object URL** | Stable `id` and `url` on delivered **Note** / **Article** objects on the **platform** host (never author-subdomain-only as object id), via `PostPaths` / `ActivityPubPaths.postObjectId`: **main blog** `/{username}/post/{slug}`; **secondary blog** `/{username}/{blogSlug}/post/{slug}`. Content link uses the same canonical post path. | `ActivityPubPaths.postObjectId`, `PostPaths` |
+| **Fediverse post object URL** | Stable `id` and `url` on delivered **Note** / **Article** objects on the **platform** host (never author-subdomain-only as object id), via `PostPaths` / `ActivityPubPaths.postObjectId`: **main blog** `/{username}/post/{slug}`; **secondary blog** `/{username}/{blogSlug}/post/{slug}`. Content link uses the same canonical post path. Inbound **`Like`** activities reference this URI as `object`. | `ActivityPubPaths.postObjectId`, `PostPaths` |
+| **Fediverse favourite** | A remote user's **`Like`** activity targeting a published post's **Fediverse post object URL**; stored when inbox verifies the signature and the author has **Fediverse opt-in** on. **`Undo`** of **`Like`** removes the favourite. One row per `(post, remote actor)`; idempotent on duplicate Like. | `ActivityPubFavourite` |
+| **Fediverse favourite count** | Number of stored **Fediverse favourites** on a post — shown on the **public post page** (count only; no public who-liked list). | Post template |
+| **Fediverse favourite list** | Author-only list of remote **`@handle`** rows who favourited a post — not shown to guests. | Post manage / author surface |
 | **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `GET /administration/activitypub`, `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
 
 ### Discovery & feeds
@@ -506,6 +509,8 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Fediverse follow requests — Reject | Reject | Follow-request review |
 | Fediverse follow request row — display name | Remote follower display name (from fetched actor) | Follow-request review |
 | Fediverse follow request row — remote handle | `@user@domain` derived from remote actor | Follow-request review |
+| Post page — Fediverse favourite count | ♥ {n} Fediverse favourites | Public post page — count only (FQ29) |
+| Post manage — Fediverse favourite list | Fediverse favourites | Author-only — remote handles who liked |
 | Platform insights — ActivityPub global switch | Enable ActivityPub federation globally | Administration → Fediverse |
 | Author appearance — social GitHub field | GitHub | Author appearance |
 | Author appearance — social LinkedIn field | LinkedIn | Author appearance |
@@ -578,6 +583,9 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 33. When **Fediverse opt-in** is on, federation covers **all blogs** of that author under **one** appearance control; outbox, Accept/re-Follow **backfill**, and live publish Create/Update/Delete include **main and secondary** published posts (drafts/unlisted excluded as for public reading).
 34. **Fediverse outbox** and **Fediverse follow backfill** list the same archive membership and order primarily by **`publishedAt`** (interleave across blogs); Create activities set top-level **`published`** to that publication date.
 35. **Undo** of a **Fediverse follow** sets the edge to **REJECTED**; a later **Follow** from the same remote **reopens** the edge (Accept + backfill again).
+36. Inbound **`Like`** / **`Undo` Like** on a post are processed only when the post owner has **Fediverse opt-in** on and federation is globally enabled; unsigned activities are rejected (ADR-0007).
+37. A **Fediverse favourite** is unique per **(post, remote actor)**; duplicate **`Like`** from the same remote is idempotent; **`Undo` Like** removes the row.
+38. **Fediverse favourite count** is public on the post page; the **Fediverse favourite list** (who liked) is visible only to the post author.
 
 ---
 

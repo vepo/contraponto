@@ -1,8 +1,7 @@
 package dev.vepo.contraponto.shared;
 
-import static java.util.Objects.requireNonNull;
-import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
@@ -16,14 +15,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
 import javax.imageio.ImageIO;
-
-import dev.vepo.contraponto.activitypub.ActivityPubActor;
-import dev.vepo.contraponto.activitypub.ActivityPubActorService;
-import dev.vepo.contraponto.activitypub.ActivityPubDelivery;
-import dev.vepo.contraponto.activitypub.ActivityPubFollow;
-import dev.vepo.contraponto.activitypub.ActivityPubRemoteActor;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubActor;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubActorService;
+import dev.vepo.contraponto.activitypub.delivery.ActivityPubDelivery;
+import dev.vepo.contraponto.activitypub.inbox.ActivityPubFavourite;
+import dev.vepo.contraponto.activitypub.inbox.ActivityPubFollow;
+import dev.vepo.contraponto.activitypub.remote.ActivityPubRemoteActor;
 import dev.vepo.contraponto.auth.PasswordService;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.custompage.CustomPage;
@@ -36,15 +38,11 @@ import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.renderer.Format;
 import dev.vepo.contraponto.serie.Serie;
 import dev.vepo.contraponto.serie.SerieRepository;
+import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.tag.TagRepository;
-import dev.vepo.contraponto.shared.Slug;
 import dev.vepo.contraponto.user.Role;
 import dev.vepo.contraponto.user.User;
-import jakarta.enterprise.inject.spi.CDI;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaDelete;
 
 public interface Given {
 
@@ -58,7 +56,7 @@ public interface Given {
         public ActivityPubActor persist() {
             return transaction(() -> {
                 var actorService = inject(ActivityPubActorService.class);
-                var actor = actorService.enableFederation(requireNonNull(user, "'user' cannot be null"));
+                var actor = actorService.enableFederation(Objects.requireNonNull(user, "'user' cannot be null"));
                 if (!federationEnabled) {
                     actor = actorService.disableFederation(user);
                 }
@@ -90,10 +88,10 @@ public interface Given {
         public Blog persist() {
             return transaction(() -> {
                 var entityManager = inject(EntityManager.class);
-                var blog = new Blog(requireNonNull(user, "'user' cannot be null!"),
-                                    requireNonNull(slug, "'slug' cannot be null"),
-                                    requireNonNull(name, "'name' cannot be null"),
-                                    requireNonNull(description, "'description' cannot be null"));
+                var blog = new Blog(Objects.requireNonNull(user, "'user' cannot be null!"),
+                                    Objects.requireNonNull(slug, "'slug' cannot be null"),
+                                    Objects.requireNonNull(name, "'name' cannot be null"),
+                                    Objects.requireNonNull(description, "'description' cannot be null"));
                 entityManager.persist(blog);
                 return blog;
             });
@@ -330,11 +328,11 @@ public interface Given {
         }
 
         public User get() {
-            var user = new User(requireNonNull(username, "'username' cannot be null"),
-                                requireNonNull(email, "'email' cannot be null"),
-                                requireNonNull(name, "'name' cannot be null"),
-                                requireNonNull(roles, "'roles' cannot be null"),
-                                inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
+            var user = new User(Objects.requireNonNull(username, "'username' cannot be null"),
+                                Objects.requireNonNull(email, "'email' cannot be null"),
+                                Objects.requireNonNull(name, "'name' cannot be null"),
+                                Objects.requireNonNull(roles, "'roles' cannot be null"),
+                                inject(PasswordService.class).hashPassword(Objects.requireNonNull(password, "'password' cannot be null")));
             user.setBlogs(Set.of(new Blog(user)));
             return user;
         }
@@ -342,11 +340,11 @@ public interface Given {
         public User persist() {
             var createdUser = transaction(() -> {
                 var entityManager = inject(EntityManager.class);
-                var user = new User(requireNonNull(username, "'username' cannot be null"),
-                                    requireNonNull(email, "'email' cannot be null"),
-                                    requireNonNull(name, "'name' cannot be null"),
-                                    requireNonNull(roles, "'roles' cannot be null"),
-                                    inject(PasswordService.class).hashPassword(requireNonNull(password, "'password' cannot be null")));
+                var user = new User(Objects.requireNonNull(username, "'username' cannot be null"),
+                                    Objects.requireNonNull(email, "'email' cannot be null"),
+                                    Objects.requireNonNull(name, "'name' cannot be null"),
+                                    Objects.requireNonNull(roles, "'roles' cannot be null"),
+                                    inject(PasswordService.class).hashPassword(Objects.requireNonNull(password, "'password' cannot be null")));
                 entityManager.persist(user);
                 var defaultBlog = new Blog(user);
                 entityManager.persist(defaultBlog);
@@ -409,6 +407,7 @@ public interface Given {
                          .executeUpdate();
             Stream.of(ActivityPubDelivery.class,
                       ActivityPubFollow.class,
+                      ActivityPubFavourite.class,
                       ActivityPubActor.class,
                       ActivityPubRemoteActor.class,
                       Post.class,
