@@ -77,7 +77,7 @@ src/main/java/dev/vepo/contraponto/
 - **Search** — HTMX modal + paginated `/search`
 - **RSS** — site, blog, serie, and tag feeds
 - **Git sync** — optional Jekyll-shaped repos per blog ([convention](docs/git-jekyll-convention.md))
-- **Fediverse (ActivityPub)** — authors opt in to syndicate main-blog posts to Mastodon and compatible servers ([feature doc](feature/activitypub-integration.md))
+- **Fediverse (ActivityPub)** — authors opt in to syndicate posts from **all blogs** (main and secondary) to Mastodon and compatible servers; full archive on follow with publication dates ([feature doc](feature/activitypub-integration.md))
 - **Roles** — `USER`, `EDITOR`, `USER_ADMINISTRATOR`, `ADMIN`
 - **HTMX** — SPA-like navigation, toasts, modals
 

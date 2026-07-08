@@ -2,8 +2,6 @@ package dev.vepo.contraponto.activitypub;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -150,7 +148,6 @@ public class ActivityPubInboxService {
         }
         var actor = actorService.findEnabledByUsername(username)
                                 .orElseThrow(NotFoundException::new);
-        verifySignature(body, headers, requestUri);
         JsonNode root;
         try {
             root = JSON.readTree(body);
@@ -158,6 +155,11 @@ public class ActivityPubInboxService {
             logger.warn("Invalid ActivityPub inbox payload for user {}", username);
             throw new NotAuthorizedException("Invalid activity payload");
         }
+        if (ignoresInboxActivityWithoutLocalEffect(actor, root)) {
+            logger.debug("Ignoring no-op inbox activity type={} for user={}", textValue(root, "type"), username);
+            return;
+        }
+        verifySignature(body, headers, requestUri);
         assertActivityActorMatchesKeyId(root, headers);
         var type = textValue(root, "type");
         if ("Follow".equals(type)) {
@@ -202,6 +204,22 @@ public class ActivityPubInboxService {
         return null;
     }
 
+    /**
+     * Delete and some Undo activities are ignored locally. Skipping HTTP signature
+     * verification avoids refetching remote actor keys that often return HTTP 410
+     * for deleted accounts when remotes clean up old deliveries.
+     */
+    private boolean ignoresInboxActivityWithoutLocalEffect(ActivityPubActor localActor, JsonNode root) {
+        var type = textValue(root, "type");
+        if ("Delete".equals(type)) {
+            return true;
+        }
+        if ("Undo".equals(type)) {
+            return !wouldUndoFollowChangeLocalState(localActor, root);
+        }
+        return false;
+    }
+
     public void rejectPendingFollow(long followId) {
         var follow = followRepository.findById(followId)
                                      .orElseThrow(NotFoundException::new);
@@ -224,5 +242,27 @@ public class ActivityPubInboxService {
         if (!signatureService.verifyRequest("POST", requestUri, body, headers)) {
             throw new NotAuthorizedException("Invalid HTTP signature");
         }
+    }
+
+    private boolean wouldUndoFollowChangeLocalState(ActivityPubActor localActor, JsonNode root) {
+        var objectNode = root.get("object");
+        if (objectNode == null || !objectNode.isObject()) {
+            return false;
+        }
+        if (!"Follow".equals(textValue(objectNode, "type"))) {
+            return false;
+        }
+        var remoteActorUrl = textValue(objectNode, "actor");
+        if (remoteActorUrl == null) {
+            return false;
+        }
+        var remote = remoteActorRepository.findByActorId(ActivityPubActorUrls.normalizeActorUri(remoteActorUrl))
+                                          .orElse(null);
+        if (remote == null) {
+            return false;
+        }
+        return followRepository.findByLocalAndRemote(localActor.getId(), remote.getId())
+                               .map(follow -> follow.getStatus() != ActivityPubFollowStatus.REJECTED)
+                               .orElse(false);
     }
 }

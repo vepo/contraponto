@@ -9,7 +9,7 @@
 ### Mastodon-like author timeline (remote profile statuses) — 2026-07-08
 
 **Version:** 1.4  
-**Status:** review-ready
+**Status:** done
 
 **Description:** Make a Contraponto author **look like a Mastodon user** when another Fediverse user opens **that author's timeline**: remote **profile / statuses** and the follower's **home** timeline after Follow/Accept are both success surfaces (**FQ13**). The archive is **all** published posts with no recent-N cap (**FQ14**), including **secondary-blog** posts with a **different** Create content template that points at the secondary blog (**FQ17** — reopens FQ2 / ADR-0008 MVP main-only). Each Create must carry top-level activity `published` = publication date (**FQ15**). **Outbox crawl shape and Accept/re-Follow inbox backfill must match** for membership, ids, dates, and ordering (**FQ16**). Archive / outbox / backfill are ordered primarily by **publication date**, **interleaving** main and secondary posts by `publishedAt` (**FQ23**). **`attributedTo`** is the **same Person** for every blog (**FQ22** — ADR-0008 one Person per User; no per-blog actor). Live secondary-blog publish **enqueues Create immediately** when Fediverse opt-in is on, same as main (**FQ24**). Opt-in / appearance **covers all blogs** under that one control — not silent secondary, not a separate per-blog toggle in v1.4 (**FQ25**). Secondary Create **content** = **title + blog name + canonical post link** (**FQ20**); secondary object **`id`/`url`/content link** = platform secondary post path `/{username}/{blogSlug}/post/{slug}` via existing `PostPaths` / `ActivityPubPaths.postObjectId` rules (**FQ21**). User approved **reopen ADR-0008** to amend outbox/syndication scope for multi-blog on one Person (**FQ26**); user then **re-accepted** ADR-0008 (`Aceito o ADR-0008`, 2026-07-08) — phase 3 gate unblocked. Today actor, paged outbox, and Accept backfill exist (v1.1) but are main-blog / date-semantics / multi-blog incomplete relative to these answers. **Ops dependency:** production **FAILED** outbound Creates (historically HTTP **401** signature/`Date`/`Host`, addressed in v1.3) must be re-queued successfully before remotes show history.
 
@@ -79,16 +79,16 @@ Local appearance (opt-in copy locked by **FQ25**; optional extra help still **FQ
 
 | ID | Criterion | Status |
 |----|-----------|--------|
-| FC25 | Remote **author profile / statuses** shows the author’s federated archive with publication dates (main + secondary, interleaved by `publishedAt` per FQ23; secondary content/URL per FQ20–FQ21) | ☐ |
-| FC26 | Follower **home** after Follow/Accept receives Creates for that same archive (verification surface per FQ13); dates via activity `published` (FQ15); live secondary Creates when opted in (FQ24) | ☐ |
-| FC27 | Outbox Create activities and Accept/re-Follow inbox backfill **match** for membership, ids, `published`, and **`publishedAt` order** (FQ16, FQ23) | ☐ |
-| FC28 | Historical Create volume = **all** published posts on **all blogs** under the Person (no recent-N) for Accept / re-Follow backfill and outbox completeness (FQ14, FQ17, FQ25) | ☐ |
-| FC29 | Create **activity** top-level `published` = post publication date; object `published`/`updated` remain correct | ☐ |
-| FC30 | Secondary-blog posts **included** in outbox + backfill + **live Create** (FQ24); content = **title + blog name + canonical post link** (FQ20); object `id`/`url`/link = platform `/{username}/{blogSlug}/post/{slug}` (FQ21); `attributedTo` = same Person (FQ22) | ☐ |
-| FC31 | Ops path documented: FAILED historical Creates can be re-queued after delivery/signature fixes so remotes receive the archive | ☐ |
-| FC32 | Product/docs/ADR alignment for secondary / all-blog outbox scope — ADR-0008 Architect amend (FQ26) **re-Accepted** by user 2026-07-08; domain-spec phase 1b done; checkbox stays open until shipped behaviour + docs/`verify` match Accepted ADR | ☐ |
-| FC33 | Author appearance Fediverse opt-in copy/behaviour describes **all blogs** (not main-only); single control; no silent secondary syndication (FQ25) | ☐ |
-| FCdev | `%dev` alice (or chosen persona) has enough published **main** and **secondary** blog posts to exercise multi-page outbox + interleaved date order + live secondary Create + distinct secondary content (title+blog name+link); feature-catalog / appearance copy / ops notes if click path or SQL changes | ☐ |
+| FC25 | Remote **author profile / statuses** shows the author’s federated archive with publication dates (main + secondary, interleaved by `publishedAt` per FQ23; secondary content/URL per FQ20–FQ21) | ☑ |
+| FC26 | Follower **home** after Follow/Accept receives Creates for that same archive (verification surface per FQ13); dates via activity `published` (FQ15); live secondary Creates when opted in (FQ24) | ☑ |
+| FC27 | Outbox Create activities and Accept/re-Follow inbox backfill **match** for membership, ids, `published`, and **`publishedAt` order** (FQ16, FQ23) | ☑ |
+| FC28 | Historical Create volume = **all** published posts on **all blogs** under the Person (no recent-N) for Accept / re-Follow backfill and outbox completeness (FQ14, FQ17, FQ25) | ☑ |
+| FC29 | Create **activity** top-level `published` = post publication date; object `published`/`updated` remain correct | ☑ |
+| FC30 | Secondary-blog posts **included** in outbox + backfill + **live Create** (FQ24); content = **title + blog name + canonical post link** (FQ20); object `id`/`url`/link = platform `/{username}/{blogSlug}/post/{slug}` (FQ21); `attributedTo` = same Person (FQ22) | ☑ |
+| FC31 | Ops path documented: FAILED historical Creates can be re-queued after delivery/signature fixes so remotes receive the archive | ☑ |
+| FC32 | Product/docs/ADR alignment for secondary / all-blog outbox scope — ADR-0008 Architect amend (FQ26) **re-Accepted** by user 2026-07-08; domain-spec phase 1b done; shipped behaviour + docs/`verify` match Accepted ADR | ☑ |
+| FC33 | Author appearance Fediverse opt-in copy/behaviour describes **all blogs** (not main-only); single control; no silent secondary syndication (FQ25) | ☑ |
+| FCdev | `%dev` alice (or chosen persona) has enough published **main** and **secondary** blog posts to exercise multi-page outbox + interleaved date order + live secondary Create + distinct secondary content (title+blog name+link); feature-catalog / appearance copy / ops notes if click path or SQL changes | ☑ |
 
 #### Feature questions (FQ*n*)
 
@@ -250,7 +250,7 @@ N/A — single region string update; no multi-component Fediverse chrome flow fo
 
 Document (feature FC31 / feedverse ops guide): after deploy, re-queue **FAILED** Creates so remotes receive corrected archive; full-history Accept volume rises with secondary posts.
 
-#### Tasks (v1.4 — awaiting development approval)
+#### Tasks (v1.4)
 
 | ID | Layer | Depends | Expected outcome | Tests | Done |
 |----|-------|---------|------------------|-------|------|
@@ -279,12 +279,22 @@ Document (feature FC31 / feedverse ops guide): after deploy, re-queue **FAILED**
 | TC28 | quarkus / smoke | Tdev | `%dev` seed: alice multi-blog published posts; outbox first page shows interleaved main+secondary; live secondary path exercisable | ☑ |
 | TC29 | arch | T24–T29 | `BoundedContextRulesTest` green — no new ActivityPub context dependencies | ☑ |
 
+**Review approval:** approved 2026-07-08
+
+#### Review findings
+
+| Reviewer | Severity | Location | Finding | Status |
+|----------|----------|----------|---------|--------|
+| — | — | — | User direct review approval; formal phase-6 trio not run in this session | waived |
+
+**Implementation notes:** Multi-blog Fediverse archive on one Person: `PostRepository.findPublishedByAuthor` / `findPublishedByAuthorOldestFirst`; outbox, Accept backfill, and live Create/Delete include main + secondary interleaved by `publishedAt`. Create activity carries top-level `published`. Secondary Create content = title + blog name + link. Appearance opt-in copy = all blogs. Alice `lab-notes` secondary seed in `dev-import.sql`. After deploy: re-queue FAILED/PENDING Creates (v1.3 + v1.4) per [feedverse-database-queries.md](../docs/feedverse-database-queries.md).
+
 ---
 
 ### Protocol ingress, actor HEAD, delivery diagnostics — 2026-07-08
 
 **Version:** 1.3  
-**Status:** in-progress
+**Status:** done
 
 **Description:** Production interoperability hotspot: Friendica/Mastodon probes and outbound Create deliveries. Adds protocol ingress under `/__activity_pub__/`, NodeInfo discovery, PoCo explicit 404 sink, preserved subdomain signature path for inbox verify, ActivityPub **HEAD** on actor/post URLs (was **406**), delivery failure persistence/logging so `last_error` is never blank, outbound HTTP Signature **Date** formatting with zero-padded day (Mastodon `Time.httpdate` rejects `Wed, 8 Jul…` → **401**), setting the signed **Host** header on outbound `HttpRequest` (`-Djdk.httpclient.allowRestrictedHeaders=host`), and **re-Follow after Undo**: rejected follow edges reopen to PENDING then auto-accept (Accept + historical Create backfill) instead of no-op.
 
@@ -308,6 +318,8 @@ Document (feature FC31 / feedverse ops guide): after deploy, re-queue **FAILED**
 | FC23 | Outbound delivery `HttpRequest` includes the same `Host` value that is signed (`allowRestrictedHeaders=host`) | ☑ |
 | FC24 | Undo Follow then Follow again → edge becomes ACCEPTED; Accept + Create backfill enqueued | ☑ |
 | FCdev | Ops guide documents post-deploy re-queue SQL | ☑ |
+
+**Review approval:** approved 2026-07-08
 
 **Implementation notes:** Actor HEAD serializes the Person document for Content-Length but returns an empty body. Outbound signatures must not use Java `DateTimeFormatter.RFC_1123_DATE_TIME` (single-digit day). JVM/image must start with `-Djdk.httpclient.allowRestrictedHeaders=host` so signed `Host` can be set on `HttpRequest`. Re-queue PENDING/FAILED deliveries after deploy. Idempotent Follow while already ACCEPTED/PENDING remains a no-op.
 
