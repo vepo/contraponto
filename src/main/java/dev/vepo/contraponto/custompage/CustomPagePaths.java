@@ -45,6 +45,11 @@ public final class CustomPagePaths {
                                                                 "post",
                                                                 "serie",
                                                                 "auth",
+                                                                "followers",
+                                                                "following",
+                                                                "inbox",
+                                                                "outbox",
+                                                                "activities",
                                                                 "_custom_page");
 
     /**
@@ -52,7 +57,7 @@ public final class CustomPagePaths {
      * literal — keep in sync with the set; see {@code CustomPagePathsTest}).
      */
     static final String RESERVED_SEGMENT_ALTERNATION =
-            "components|js|style|images|i18n|explore|feed|authors|main-blog|forms|api|write|writing|manage|account|editor|administration|search|library|dashboard|profile|review|reading|pages|blogs|users|comments|notifications|subscriptions|tags|post|serie|auth|_custom_page";
+            "components|js|style|images|i18n|explore|feed|authors|main-blog|forms|api|write|writing|manage|account|editor|administration|search|library|dashboard|profile|review|reading|pages|blogs|users|comments|notifications|subscriptions|tags|post|serie|auth|followers|following|inbox|outbox|activities|_custom_page";
 
     /**
      * Single path-segment form for secondary blog slugs in {@code @Path} (excludes

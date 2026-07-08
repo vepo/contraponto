@@ -78,13 +78,6 @@ public final class ActivityPubPaths {
     }
 
     public static String postObjectId(Post post, BlogSubdomainConfig config) {
-        if (config.enabled()) {
-            var ownerUsername = post.getBlog().getOwner().getUsername();
-            var path = post.getBlog().isMain()
-                                               ? "/post/%s".formatted(post.getSlug())
-                                               : "/%s/post/%s".formatted(post.getBlog().getSlug(), post.getSlug());
-            return "%s%s".formatted(config.subdomainOrigin(ownerUsername), path);
-        }
         return config.platformUrl(PostPaths.extractUrl(post));
     }
 

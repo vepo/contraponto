@@ -83,6 +83,19 @@ class ActivityPubWebFingerTest {
     }
 
     @Test
+    void webfingerResolvesAuthorProfileHttpsResource() {
+        var resource = ActivityPubPaths.profilePageUrl(user, subdomainConfig);
+        given().queryParam("resource", resource)
+               .accept("application/jrd+json")
+               .get("/.well-known/webfinger")
+               .then()
+               .statusCode(200)
+               .contentType("application/jrd+json")
+               .body("subject", org.hamcrest.Matchers.equalTo(resource))
+               .body("links.find { it.rel == 'self' }.href", org.hamcrest.Matchers.notNullValue());
+    }
+
+    @Test
     void webfingerSelfHrefMatchesActorId() {
         var resource = ActivityPubPaths.acctHandle(user, subdomainConfig);
         var selfHref = given().queryParam("resource", resource)
