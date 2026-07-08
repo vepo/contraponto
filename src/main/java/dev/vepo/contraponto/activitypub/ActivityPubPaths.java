@@ -1,7 +1,6 @@
 package dev.vepo.contraponto.activitypub;
 
 import java.util.Optional;
-
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPaths;

@@ -1,0 +1,296 @@
+package dev.vepo.contraponto.activitypub.inbox;
+
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.net.URI;
+import java.net.URL;
+import java.security.PrivateKey;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import dev.vepo.contraponto.activitypub.ActivityPubActivityType;
+import dev.vepo.contraponto.activitypub.ActivityPubFollowStatus;
+import dev.vepo.contraponto.activitypub.ActivityPubPaths;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubActor;
+import dev.vepo.contraponto.activitypub.actor.ActivityPubKeyPairService;
+import dev.vepo.contraponto.activitypub.delivery.ActivityPubDeliveryRepository;
+import dev.vepo.contraponto.activitypub.delivery.ActivityPubDeliveryService;
+import dev.vepo.contraponto.activitypub.remote.ActivityPubRemoteActor;
+import dev.vepo.contraponto.activitypub.remote.ActivityPubRemoteActorRepository;
+import dev.vepo.contraponto.activitypub.security.ActivityPubHttpSignatureService;
+import dev.vepo.contraponto.blog.BlogSubdomainConfig;
+import dev.vepo.contraponto.shared.Given;
+import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.user.User;
+import io.quarkus.test.common.http.TestHTTPResource;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+
+@QuarkusIntegrationTest
+class ActivityPubInboxFollowTest {
+
+    private static final class RestAssuredPort {
+        static void configure(URL baseUrl) {
+            io.restassured.RestAssured.baseURI = baseUrl.getProtocol() + "://" + baseUrl.getHost();
+            io.restassured.RestAssured.port = baseUrl.getPort();
+            io.restassured.RestAssured.basePath = "";
+        }
+
+        private RestAssuredPort() {}
+    }
+
+    @TestHTTPResource("/")
+    URL baseUrl;
+
+    @Inject
+    BlogSubdomainConfig subdomainConfig;
+
+    @Inject
+    ActivityPubKeyPairService keyPairService;
+
+    @Inject
+    ActivityPubHttpSignatureService signatureService;
+
+    @Inject
+    ActivityPubRemoteActorRepository remoteActorRepository;
+
+    @Inject
+    ActivityPubFollowRepository followRepository;
+
+    @Inject
+    ActivityPubDeliveryService deliveryService;
+
+    @Inject
+    ActivityPubDeliveryRepository deliveryRepository;
+
+    @Inject
+    EntityManager entityManager;
+
+    private User user;
+    private ActivityPubActor actor;
+    private PrivateKey remotePrivateKey;
+    private String remoteKeyId;
+
+    @Test
+    void acceptFollowBackfillsHistoricalMainBlogPosts() {
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Historical One")
+             .withSlug("historical-one")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Historical Two")
+             .withSlug("historical-two")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var remoteActorId = "https://remote.example/users/reader";
+        var followActivityId = "https://remote.example/follow/backfill";
+        postSignedFollow(remoteActorId, followActivityId, actorId);
+
+        assertThat(followRepository.listPendingByLocalActor(actor.getId())).isEmpty();
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
+
+        var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        var createDeliveries = pendingDeliveries.stream()
+                                                .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                                .toList();
+        assertThat(createDeliveries).hasSize(2);
+        assertThat(createDeliveries.get(0).getPayloadJson()).contains("Historical One");
+        assertThat(createDeliveries.get(1).getPayloadJson()).contains("Historical Two");
+    }
+
+    @Test
+    void acceptFollowBackfillsHistoricalSecondaryBlogPosts() {
+        var secondary = Given.blog()
+                             .withUser(user)
+                             .withSlug("lab-notes")
+                             .withName("Lab Notes")
+                             .withDescription("Secondary archive for follow backfill")
+                             .persist();
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Main Historical")
+             .withSlug("main-historical")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+        Given.post()
+             .withAuthor(user)
+             .withBlog(secondary)
+             .withTitle("Secondary Historical")
+             .withSlug("secondary-historical")
+             .withDescription("Ignored description")
+             .withContent("Body")
+             .persist();
+
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        postSignedFollow("https://remote.example/users/reader",
+                         "https://remote.example/follow/secondary-backfill",
+                         actorId);
+
+        var createDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1))
+                                                 .stream()
+                                                 .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                                 .toList();
+        assertThat(createDeliveries).hasSize(2);
+        assertThat(createDeliveries.get(0).getPayloadJson()).contains("Main Historical");
+        assertThat(createDeliveries.get(1).getPayloadJson()).contains("Secondary Historical")
+                                                            .contains("Lab Notes")
+                                                            .contains("/followuser/lab-notes/post/secondary-historical")
+                                                            .contains("\"published\"");
+    }
+
+    private URI inboxUri() {
+        return URI.create("%s://%s:%d/followuser/inbox".formatted(baseUrl.getProtocol(),
+                                                                  baseUrl.getHost(),
+                                                                  baseUrl.getPort()));
+    }
+
+    private void postSignedFollow(String remoteActorId, String followActivityId, String localActorId) {
+        var body = """
+                   {
+                     "@context": "https://www.w3.org/ns/activitystreams",
+                     "id": "%s",
+                     "type": "Follow",
+                     "actor": "%s",
+                     "object": "%s"
+                   }
+                   """.formatted(followActivityId, remoteActorId, localActorId);
+        var target = inboxUri();
+        var signed = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", target, body);
+        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
+               .headers(signed)
+               .body(body)
+               .post("/followuser/inbox")
+               .then()
+               .statusCode(202);
+    }
+
+    private void seedRemoteActorWithKeys() {
+        Given.transaction(() -> {
+            var remoteKeyPair = keyPairService.generateRsaKeyPair();
+            var remoteActorId = "https://remote.example/users/reader";
+            remoteKeyId = remoteActorId + "#mainKey";
+            remotePrivateKey = remoteKeyPair.getPrivate();
+            var remote = new ActivityPubRemoteActor(remoteActorId, "https://remote.example/inbox");
+            remote.updatePublicKey(keyPairService.toPublicKeyPem(remoteKeyPair.getPublic()), remoteKeyId);
+            remoteActorRepository.create(remote);
+        });
+    }
+
+    @BeforeEach
+    void setUp() {
+        Given.cleanup();
+        RestAssuredPort.configure(baseUrl);
+        user = Given.user()
+                    .withUsername("followuser")
+                    .withEmail("followuser@example.com")
+                    .withPassword("pw123456789")
+                    .withName("Follow User")
+                    .persist();
+        actor = Given.activityPubActor().withUser(user).persist();
+        seedRemoteActorWithKeys();
+    }
+
+    @Test
+    @Transactional
+    void signedFollowAutoAcceptsAndEnqueuesCreateOnPublish() {
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var remoteActorId = "https://remote.example/users/reader";
+        postSignedFollow(remoteActorId, "https://remote.example/follow/1", actorId);
+
+        assertThat(followRepository.listPendingByLocalActor(actor.getId())).isEmpty();
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
+
+        var post = Given.post()
+                        .withAuthor(user)
+                        .withTitle("Fediverse Delivery")
+                        .withSlug("fediverse-delivery")
+                        .withDescription("Summary")
+                        .withContent("Body")
+                        .persist();
+        deliveryService.enqueueCreateForPublishedPost(post.getId(), actor);
+        var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        assertThat(pendingDeliveries.stream().filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)).hasSize(1);
+    }
+
+    @Test
+    void unfollowThenFollowAgainReacceptsAndBackfills() {
+        Given.post()
+             .withAuthor(user)
+             .withTitle("After Refollow")
+             .withSlug("after-refollow")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var remoteActorId = "https://remote.example/users/reader";
+        postSignedFollow(remoteActorId, "https://remote.example/follow/first", actorId);
+
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
+
+        var undoBody = """
+                       {
+                         "@context": "https://www.w3.org/ns/activitystreams",
+                         "id": "https://remote.example/undo/follow/1",
+                         "type": "Undo",
+                         "actor": "%s",
+                         "object": {
+                           "id": "https://remote.example/follow/first",
+                           "type": "Follow",
+                           "actor": "%s",
+                           "object": "%s"
+                         }
+                       }
+                       """.formatted(remoteActorId, remoteActorId, actorId);
+        var undoTarget = inboxUri();
+        var undoSigned = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", undoTarget, undoBody);
+        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
+               .headers(undoSigned)
+               .body(undoBody)
+               .post("/followuser/inbox")
+               .then()
+               .statusCode(202);
+
+        entityManager.clear();
+
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).isEmpty();
+        var rejected = followRepository.findByLocalAndRemote(actor.getId(),
+                                                             remoteActorRepository.findByActorId(remoteActorId).orElseThrow().getId())
+                                       .orElseThrow();
+        assertThat(rejected.getStatus()).isEqualTo(ActivityPubFollowStatus.REJECTED);
+
+        var createsBeforeRefollow = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1))
+                                                      .stream()
+                                                      .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                                      .count();
+
+        postSignedFollow(remoteActorId, "https://remote.example/follow/second", actorId);
+
+        entityManager.clear();
+
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
+        var reaccepted = followRepository.findByLocalAndRemote(actor.getId(),
+                                                               remoteActorRepository.findByActorId(remoteActorId).orElseThrow().getId())
+                                         .orElseThrow();
+        assertThat(reaccepted.getStatus()).isEqualTo(ActivityPubFollowStatus.ACCEPTED);
+        assertThat(reaccepted.getFollowActivityId()).isEqualTo("https://remote.example/follow/second");
+
+        var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        var createCount = pendingDeliveries.stream()
+                                           .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                           .count();
+        assertThat(createCount).isGreaterThan(createsBeforeRefollow);
+        assertThat(pendingDeliveries.stream().anyMatch(d -> d.getActivityType() == ActivityPubActivityType.ACCEPT)).isTrue();
+    }
+}

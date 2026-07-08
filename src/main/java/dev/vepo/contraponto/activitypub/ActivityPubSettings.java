@@ -1,13 +1,12 @@
 package dev.vepo.contraponto.activitypub;
 
 import java.util.Optional;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import io.quarkus.runtime.Startup;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.annotation.PostConstruct;
+import io.quarkus.runtime.Startup;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import dev.vepo.contraponto.activitypub.admin.ActivityPubPlatformSettingsRepository;
 
 @Startup
 @ApplicationScoped

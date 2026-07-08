@@ -6,6 +6,13 @@
 
 ## Changelog
 
+### ActivityPub subpackage refactor — 2026-07-08
+
+**Version:** 1.6 (internal)  
+**Status:** done
+
+**Description:** Refactor-only — split flat `dev.vepo.contraponto.activitypub` (63 types) into protocol subpackages (`actor`, `remote`, `security`, `discovery`, `inbox`, `outbox`, `delivery`, `admin`). No user-visible behaviour change. Added `PackageSizeRulesTest` (25-type cap per package, grandfather ratchet for other oversized flat contexts).
+
 ### Fediverse inbound Likes (Mastodon favourites) — 2026-07-08
 
 **Version:** 1.5  

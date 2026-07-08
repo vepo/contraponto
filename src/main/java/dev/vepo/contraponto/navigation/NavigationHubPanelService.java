@@ -1,39 +1,38 @@
 package dev.vepo.contraponto.navigation;
 
 import java.util.Map;
-
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
+import io.quarkus.qute.TemplateInstance;
+import dev.vepo.contraponto.activitypub.admin.ActivityPubPlatformManageEndpoint;
 import dev.vepo.contraponto.admin.ReviewEndpoint;
 import dev.vepo.contraponto.blog.BlogAccess;
 import dev.vepo.contraponto.blog.BlogManageEndpoint;
 import dev.vepo.contraponto.comment.CommentManageEndpoint;
-import dev.vepo.contraponto.highlight.HighlightManageEndpoint;
-import dev.vepo.contraponto.highlight.HighlightsLibraryEndpoint;
 import dev.vepo.contraponto.components.AccountSecurityEndpoint;
 import dev.vepo.contraponto.components.AuthorAppearanceEndpoint;
 import dev.vepo.contraponto.custompage.CustomPageManageEndpoint;
 import dev.vepo.contraponto.dashboard.DashboardAnalyticsService;
 import dev.vepo.contraponto.dashboard.DashboardEndpoint;
 import dev.vepo.contraponto.dashboard.DashboardPage;
+import dev.vepo.contraponto.highlight.HighlightManageEndpoint;
+import dev.vepo.contraponto.highlight.HighlightsLibraryEndpoint;
 import dev.vepo.contraponto.image.ImageControlEndpoint;
 import dev.vepo.contraponto.library.LibraryEndpoint;
-import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
 import dev.vepo.contraponto.messaging.MessageBlockedEndpoint;
 import dev.vepo.contraponto.messaging.MessageMailboxEndpoint;
 import dev.vepo.contraponto.messaging.MessageReportAdminEndpoint;
 import dev.vepo.contraponto.notification.NotificationEndpoint;
 import dev.vepo.contraponto.notification.SubscriptionEndpoint;
-import dev.vepo.contraponto.activitypub.ActivityPubPlatformManageEndpoint;
 import dev.vepo.contraponto.platforminsights.PlatformInsightsEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
-import dev.vepo.contraponto.user.LoggedUser;
+import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
 import dev.vepo.contraponto.tag.TagManageEndpoint;
+import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.UserManageEndpoint;
 import dev.vepo.contraponto.view.ViewRepository;
-import io.quarkus.qute.TemplateInstance;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class NavigationHubPanelService {

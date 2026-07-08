@@ -16,7 +16,7 @@ import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
-final class ActivityPubTestHttpsActorServer implements AutoCloseable {
+public final class ActivityPubTestHttpsActorServer implements AutoCloseable {
 
     private static final String KEYSTORE_RESOURCE = "/activitypub-test-https.p12";
     private static final char[] KEYSTORE_PASSWORD = "changeit".toCharArray();
@@ -36,7 +36,7 @@ final class ActivityPubTestHttpsActorServer implements AutoCloseable {
         }
     }
 
-    static ActivityPubTestHttpsActorServer start(String actorPath, String responseBody) throws Exception {
+    public static ActivityPubTestHttpsActorServer start(String actorPath, String responseBody) throws Exception {
         var sslContext = loadSslContext();
         var server = HttpsServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         var actorServer = new ActivityPubTestHttpsActorServer(server, server.getAddress().getPort());
@@ -64,7 +64,7 @@ final class ActivityPubTestHttpsActorServer implements AutoCloseable {
         this.port = port;
     }
 
-    String actorUrl(String actorPath) {
+    public String actorUrl(String actorPath) {
         return "https://127.0.0.1:%d%s".formatted(port, actorPath);
     }
 
@@ -73,11 +73,11 @@ final class ActivityPubTestHttpsActorServer implements AutoCloseable {
         server.stop(0);
     }
 
-    int port() {
+    public int port() {
         return port;
     }
 
-    void updateResponse(String body) {
+    public void updateResponse(String body) {
         responseBody.set(body);
     }
 
