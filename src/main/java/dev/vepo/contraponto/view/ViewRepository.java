@@ -159,7 +159,7 @@ public class ViewRepository {
 
     @Transactional
     public void recordView(Post post, Long userId, String sessionId, LocalDateTime viewedAt) {
-        logger.info("Creating view for post! userId={} post={}", userId, post);
+        logger.debug("Creating view for post! userId={} post={}", userId, post);
         // Native: direct INSERT for view deduplication relies on unique constraint
         // handling.
         String sql = """
