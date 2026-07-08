@@ -63,4 +63,25 @@ class ActivityPubSubdomainInboxSignatureTest {
 
         assertThat(signatureService.verifyRequest("POST", internalInbox, body, signed, keyPair.getPublic())).isTrue();
     }
+
+    @Test
+    void verifiesInboxSignatureWhenPathIsActivityPubInternalAfterBothRewrites() {
+        var body = "{\"type\":\"Follow\"}";
+        var externalInbox = URI.create("https://vepo.commit-mestre.dev/inbox");
+        var signed = signatureService.signRequest(keyPair.getPrivate(),
+                                                  "https://remote.example/users/reader#main-key",
+                                                  "POST",
+                                                  externalInbox,
+                                                  body);
+
+        subdomainContext.activate("vepo");
+        subdomainContext.setSignatureRequestPath("/inbox");
+        var activityPubInternalInbox = URI.create("https://vepo.commit-mestre.dev/__activity_pub__/user/vepo/inbox");
+
+        assertThat(signatureService.verifyRequest("POST",
+                                                  activityPubInternalInbox,
+                                                  body,
+                                                  signed,
+                                                  keyPair.getPublic())).isTrue();
+    }
 }

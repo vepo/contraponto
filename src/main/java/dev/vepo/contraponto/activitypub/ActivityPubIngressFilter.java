@@ -44,11 +44,17 @@ public class ActivityPubIngressFilter implements ContainerRequestFilter {
         }
         var path = internalPath.get();
         var query = uriInfo.getRequestUri().getQuery();
-        var externalPath = publicPath.startsWith("/") ? publicPath : "/%s".formatted(publicPath);
-        if (query != null && !query.isBlank()) {
-            externalPath = "%s?%s".formatted(externalPath, query);
+        // Preserve signature path set by BlogSubdomainFilter (e.g. POST /inbox on
+        // author
+        // subdomain). Remotes sign the external path they POST to — never the platform
+        // rewrite (/vepo/inbox) or this internal prefix.
+        if (subdomainContext.signatureRequestPath().isEmpty()) {
+            var externalPath = publicPath.startsWith("/") ? publicPath : "/%s".formatted(publicPath);
+            if (query != null && !query.isBlank()) {
+                externalPath = "%s?%s".formatted(externalPath, query);
+            }
+            subdomainContext.setSignatureRequestPath(externalPath);
         }
-        subdomainContext.setSignatureRequestPath(externalPath);
 
         var targetUri = UriBuilder.fromUri(uriInfo.getBaseUri())
                                   .path(path.substring(1))
