@@ -9,7 +9,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class UsernameValidator {
 
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_-]{2,19}$");
+    /**
+     * Single path-segment form of {@link #USERNAME_PATTERN} for JAX-RS
+     * {@code @Path} params (e.g.
+     * {@code @Path("/" + UsernameValidator.USERNAME_PATH_PARAM)}).
+     */
+    public static final String USERNAME_PATH_SEGMENT = "[a-zA-Z0-9][a-zA-Z0-9_-]{2,19}";
+
+    public static final String USERNAME_PATH_PARAM = "{username: " + USERNAME_PATH_SEGMENT + "}";
+
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^" + USERNAME_PATH_SEGMENT + "$");
 
     public Optional<String> validate(String username) {
         if (username == null || username.isBlank()) {

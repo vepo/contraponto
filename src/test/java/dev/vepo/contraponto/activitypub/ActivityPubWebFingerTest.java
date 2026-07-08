@@ -122,4 +122,12 @@ class ActivityPubWebFingerTest {
                .then()
                .statusCode(404);
     }
+
+    @Test
+    void wellKnownWebfingerMustNotMatchBlogSecondaryRoute() {
+        given().accept("application/jrd+json")
+               .get("/.well-known/webfinger")
+               .then()
+               .statusCode(404);
+    }
 }
