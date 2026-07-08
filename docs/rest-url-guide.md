@@ -4,7 +4,7 @@ Canonical reference for Contraponto HTTP paths, classified by **segment role** u
 
 **Related:** [ARCHITECTURE.md](../ARCHITECTURE.md) §3 (public URL patterns), [blog-subdomain-urls.md](blog-subdomain-urls.md) (author subdomain aliases), [application-guidelines.md](application-guidelines.md) (UX flows), [feature-catalog.md](feature-catalog.md) (click paths).
 
-**Last verified:** 2026-07-07 — against `*Endpoint` classes in `src/main/java`.
+**Last verified:** 2026-07-08 — against `*Endpoint` classes in `src/main/java`.
 
 ---
 
@@ -14,7 +14,7 @@ Each path segment (slash-separated token) plays one primary role. Dynamic tokens
 
 | Role | Meaning | REST role | Examples |
 |------|---------|-----------|----------|
-| **Grouping** | Namespace that scopes workspace, transport, or UI shell — not a domain entity | Context / gateway | `forms`, `components`, `api`, `account`, `writing`, `manage`, `reading`, `editor`, `administration`, `auth`, `_custom_page`, `.well-known` |
+| **Grouping** | Namespace that scopes workspace, transport, or UI shell — not a domain entity | Context / gateway | `forms`, `components`, `api`, `account`, `writing`, `manage`, `reading`, `editor`, `administration`, `auth`, `__custom_page__`, `__activity_pub__`, `.well-known` |
 | **Resource** | Noun: entity or collection whose state is transferred | Resource name | `posts`, `blogs`, `users`, `tags`, `messages`, `threads`, `comments`, `highlights`, `notifications`, `feed`, `search`, `page`, `serie`, `images`, `inbox`, `outbox`, `activities` |
 | **Identifier** | Instance key within a resource (path param or fixed literal picking one item) | Resource identity | `{username}`, `{blogSlug}`, `{slug}`, `{id}`, `{postId}`, `{uuid}`, `{threadId}`, `{tab}`, `open`, `closed` |
 | **Info** | View, format, or metadata about the representation — not a state change | Representation qualifier | `components`, `grid`, `modal`, `analytics`, `history`, `badge`, `overlay`, `results`, `edit`, `new`, `settings`, `compose`, `feed`, `main-blog`, `tab`, `blocked`, `security`, `appearance` |
@@ -80,7 +80,8 @@ On `{username}.{base-domain}`, public paths shorten per [blog-subdomain-urls.md]
 | `/explore` | Grouping | Discovery |
 | `/blogs`, `/users`, `/pages` | Resource | CRUD manage surfaces (full page) |
 | `/i18n` | Grouping | Locale message bundles |
-| `/_custom_page` | Grouping | Internal custom page resolver (after `CustomPageFilter` rewrite) |
+| `/__custom_page__` | Grouping | Internal custom page resolver (after `CustomPageFilter` rewrite) |
+| `/__activity_pub__` | Grouping | Internal ActivityPub / federation resolver (after `ActivityPubIngressFilter` rewrite) |
 | `/.well-known` | Grouping | Federation discovery |
 
 ---
@@ -129,13 +130,13 @@ On `{username}.{base-domain}`, public paths shorten per [blog-subdomain-urls.md]
 
 ### 3.4 Custom pages (public)
 
-`CustomPageFilter` rewrites public URLs to `/_custom_page/...`.
+`CustomPageFilter` rewrites public URLs to `/__custom_page__/...`.
 
 | Verb | Public URL | Internal URL | Segments (public) |
 |------|------------|--------------|-------------------|
-| GET | `/page/{slug}` | `/_custom_page/global/{slug}` | R:page I:{slug} |
-| GET | `/{username}/page/{slug}` | `/_custom_page/user/{username}/{slug}` | I:{username} R:page I:{slug} |
-| GET | `/{username}/{blogSlug}/page/{slug}` | `/_custom_page/blog/{username}/{blogSlug}/{slug}` | I:{username} I:{blogSlug} R:page I:{slug} |
+| GET | `/page/{slug}` | `/__custom_page__/global/{slug}` | R:page I:{slug} |
+| GET | `/{username}/page/{slug}` | `/__custom_page__/user/{username}/{slug}` | I:{username} R:page I:{slug} |
+| GET | `/{username}/{blogSlug}/page/{slug}` | `/__custom_page__/blog/{username}/{blogSlug}/{slug}` | I:{username} I:{blogSlug} R:page I:{slug} |
 
 ### 3.5 RSS
 
@@ -393,16 +394,46 @@ Hub shells: `GET /{hub}` and `GET /{hub}/{section}`. Section slug is **Identifie
 
 ## 11. ActivityPub federation
 
+`ActivityPubIngressFilter` rewrites public federation URLs to `/__activity_pub__/...` (same `InternalRoutePrefixes` pattern as `CustomPageFilter` → `/__custom_page__`).
+
+### 11.1 Public URLs
+
 | Verb | URL | Segments | Content-Type |
 |------|-----|----------|--------------|
 | GET | `/.well-known/webfinger` | G:.well-known R:webfinger | JRD JSON |
 | GET | `/.well-known/host-meta` | G:.well-known R:host-meta | XRD XML |
+| GET | `/.well-known/nodeinfo` | G:.well-known R:nodeinfo | JRD JSON |
+| GET | `/nodeinfo/2.0` | R:nodeinfo I:2.0 | JSON |
+| GET | `/nodeinfo/2.1` | R:nodeinfo I:2.1 | JSON (alias of 2.0) |
+| GET | `/api/nodeinfo` | G:api R:nodeinfo | JSON (Friendica compatibility) |
 | GET | `/{username}/outbox` | I:{username} R:outbox | `activity+json` |
 | GET | `/{username}/followers` | I:{username} R:followers | `activity+json` |
+| GET | `/{username}/following` | I:{username} R:following | `activity+json` |
 | POST | `/{username}/inbox` | I:{username} R:inbox | `activity+json` |
 | GET | `/{username}/activities/{activityType}/{activityId}` | I:{username} R:activities I:{activityType} I:{activityId} | `activity+json` |
+| GET | `/{username}/poco` | I:{username} R:poco | Friendica probe → **404** |
 
 Actor document: `GET /` on author subdomain with `Accept: application/activity+json` (see [ADR-0008](adr/0008-activitypub-actor-identity.md)).
+
+Post object JSON: `GET /{username}/post/{slug}` with `Accept: application/activity+json` (`ActivityPubJsonResourceFilter`).
+
+### 11.2 Internal rewrite (`ActivityPubIngressPaths`)
+
+| Public URL | Internal URL |
+|------------|--------------|
+| `/.well-known/webfinger` | `/__activity_pub__/well-known/webfinger` |
+| `/.well-known/host-meta` | `/__activity_pub__/well-known/host-meta` |
+| `/.well-known/nodeinfo` | `/__activity_pub__/well-known/nodeinfo` |
+| `/nodeinfo/2.0` | `/__activity_pub__/nodeinfo/2.0` |
+| `/nodeinfo/2.1` | `/__activity_pub__/nodeinfo/2.1` |
+| `/api/nodeinfo` | `/__activity_pub__/nodeinfo/2.0` |
+| `/{username}/api/nodeinfo` | `/__activity_pub__/nodeinfo/2.0` |
+| `/{username}/inbox` | `/__activity_pub__/user/{username}/inbox` |
+| `/{username}/outbox` | `/__activity_pub__/user/{username}/outbox` |
+| `/{username}/followers` | `/__activity_pub__/user/{username}/followers` |
+| `/{username}/following` | `/__activity_pub__/user/{username}/following` |
+| `/{username}/activities/{type}/{id}` | `/__activity_pub__/user/{username}/activities/{type}/{id}` |
+| `/{username}/poco` | `/__activity_pub__/user/{username}/poco` |
 
 ---
 

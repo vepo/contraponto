@@ -13,7 +13,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
-@Path("/{username}/activities/{activityType}/{activityId}")
+@Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/user/{username}/activities/{activityType}/{activityId}")
 @ApplicationScoped
 public class ActivityPubActivityEndpoint {
 

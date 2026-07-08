@@ -33,7 +33,7 @@
 | Bounded contexts | `custompage` |
 | Schema | `tb_custom_pages`, `tb_custom_page_image_dependencies` |
 | CDI | `CustomPageChangedEvent` → cache + sitemap invalidation |
-| Filter | `CustomPageFilter` rewrites public GET to `/_custom_page/...` |
+| Filter | `CustomPageFilter` rewrites public GET to `/__custom_page__/...` |
 | Tests | `CustomPageTest`, `CustomPageManageTest`, `CustomPageCacheTest` |
 
 

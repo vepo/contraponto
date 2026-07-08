@@ -17,7 +17,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 
-@Path("/{username}/outbox")
+@Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/user/{username}/outbox")
 @ApplicationScoped
 public class ActivityPubOutboxEndpoint {
 

@@ -18,7 +18,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
-@Path("/{username}/inbox")
+@Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/user/{username}/inbox")
 @ApplicationScoped
 public class ActivityPubInboxEndpoint {
 

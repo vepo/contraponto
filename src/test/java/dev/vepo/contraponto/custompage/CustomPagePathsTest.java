@@ -73,9 +73,9 @@ class CustomPagePathsTest {
 
     @Test
     void internalUrlCoversPlacementSwitchEntries() {
-        assertThat(CustomPagePaths.internalUrl(PageType.GLOBAL, "glob")).isEqualTo("/_custom_page/global/glob");
-        assertThat(CustomPagePaths.internalUrl(PageType.USER, "alice", "p1")).isEqualTo("/_custom_page/user/alice/p1");
-        assertThat(CustomPagePaths.internalUrl(PageType.BLOG, "3", "b", "slug")).isEqualTo("/_custom_page/blog/3/b/slug");
+        assertThat(CustomPagePaths.internalUrl(PageType.GLOBAL, "glob")).isEqualTo("/__custom_page__/global/glob");
+        assertThat(CustomPagePaths.internalUrl(PageType.USER, "alice", "p1")).isEqualTo("/__custom_page__/user/alice/p1");
+        assertThat(CustomPagePaths.internalUrl(PageType.BLOG, "3", "b", "slug")).isEqualTo("/__custom_page__/blog/3/b/slug");
         assertThatThrownBy(() -> CustomPagePaths.slug(List.of(seg("page")), PageType.NONE))
                                                                                            .isInstanceOf(IllegalArgumentException.class)
                                                                                            .hasMessageContaining("NONE");
