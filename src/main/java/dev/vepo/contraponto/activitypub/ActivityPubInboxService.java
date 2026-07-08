@@ -128,6 +128,16 @@ public class ActivityPubInboxService {
         }
         var existing = followRepository.findByLocalAndRemote(localActor.getId(), remote.getId());
         if (existing.isPresent()) {
+            var follow = existing.get();
+            if (follow.getStatus() == ActivityPubFollowStatus.ACCEPTED
+                    || follow.getStatus() == ActivityPubFollowStatus.PENDING) {
+                return;
+            }
+            // REJECTED after Undo (unfollow): reopen and auto-accept again so
+            // Accept + historical Create backfill run for the new Follow.
+            follow.reopenAsPending(activityId);
+            followRepository.update(follow);
+            acceptPendingFollow(follow.getId());
             return;
         }
         var follow = followRepository.create(new ActivityPubFollow(localActor, remote, ActivityPubFollowStatus.PENDING, activityId));

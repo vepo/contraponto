@@ -394,6 +394,7 @@ Inbound POSTs from deleted remotes will still get **401** (no fetchable public k
 | `crypto mismatch` + `requestTarget=post /vepo/inbox` on subdomain Host | Signature path rewrite bug (should keep `/inbox`) | App / ingress fix — not a DB row |
 | `Remote actor fetch HTTP 410` + `no public key` | Remote deleted or moved actor | Remote `actor_id` row; optional [§4.5](#45-clear-a-dead-remote-eg-http-410-on-actor-fetch) |
 | Follows stay `PENDING` forever | Pre-auto-accept leftovers | [§2.3](#23-follows-stuck-in-pending); ask remote to re-follow |
+| Unfollow then re-follow does nothing | Old bug: `REJECTED` row blocked new Follow | Fixed: reopen + auto-accept; check `status` + `accepted_at` |
 | Many `FAILED` deliveries | Network, remote inbox, bad URL, or signature reject (`HTTP 401`) | `last_error`, `attempts`, `target_inbox_url` — then [§4.2](#42-re-queue-failed--pending) |
 | Outbound CREATE → Mastodon `HTTP 401` while actor GET/HEAD is 200 | (1) Actor HEAD was **406** (fixed). (2) **Date** header used Java RFC-1123 without zero-padded day (`Wed, 8 Jul…`); Ruby `Time.httpdate` rejects → 401. Fix: `EEE, dd MMM yyyy HH:mm:ss GMT`. (3) Confirm image has `-Djdk.httpclient.allowRestrictedHeaders=host` so signed `Host` is on the wire | Deploy fix; [§4.2](#42-re-queue-failed--pending) |
 | `FAILED` with empty `last_error` | Older bug: null exception message; or need newer logging | Re-queue after deploy; watch app logs for `ActivityPub delivery` |

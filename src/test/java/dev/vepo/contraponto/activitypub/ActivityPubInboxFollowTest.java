@@ -17,6 +17,7 @@ import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @QuarkusIntegrationTest
@@ -56,6 +57,9 @@ class ActivityPubInboxFollowTest {
     @Inject
     ActivityPubDeliveryRepository deliveryRepository;
 
+    @Inject
+    EntityManager entityManager;
+
     private User user;
     private ActivityPubActor actor;
     private PrivateKey remotePrivateKey;
@@ -81,24 +85,7 @@ class ActivityPubInboxFollowTest {
         var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
         var remoteActorId = "https://remote.example/users/reader";
         var followActivityId = "https://remote.example/follow/backfill";
-        var body = """
-                   {
-                     "@context": "https://www.w3.org/ns/activitystreams",
-                     "id": "%s",
-                     "type": "Follow",
-                     "actor": "%s",
-                     "object": "%s"
-                   }
-                   """.formatted(followActivityId, remoteActorId, actorId);
-        var target = inboxUri();
-        var signed = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", target, body);
-
-        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
-               .headers(signed)
-               .body(body)
-               .post("/followuser/inbox")
-               .then()
-               .statusCode(202);
+        postSignedFollow(remoteActorId, followActivityId, actorId);
 
         assertThat(followRepository.listPendingByLocalActor(actor.getId())).isEmpty();
         assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
@@ -116,6 +103,26 @@ class ActivityPubInboxFollowTest {
         return URI.create("%s://%s:%d/followuser/inbox".formatted(baseUrl.getProtocol(),
                                                                   baseUrl.getHost(),
                                                                   baseUrl.getPort()));
+    }
+
+    private void postSignedFollow(String remoteActorId, String followActivityId, String localActorId) {
+        var body = """
+                   {
+                     "@context": "https://www.w3.org/ns/activitystreams",
+                     "id": "%s",
+                     "type": "Follow",
+                     "actor": "%s",
+                     "object": "%s"
+                   }
+                   """.formatted(followActivityId, remoteActorId, localActorId);
+        var target = inboxUri();
+        var signed = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", target, body);
+        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
+               .headers(signed)
+               .body(body)
+               .post("/followuser/inbox")
+               .then()
+               .statusCode(202);
     }
 
     private void seedRemoteActorWithKeys() {
@@ -149,25 +156,7 @@ class ActivityPubInboxFollowTest {
     void signedFollowAutoAcceptsAndEnqueuesCreateOnPublish() {
         var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
         var remoteActorId = "https://remote.example/users/reader";
-        var followActivityId = "https://remote.example/follow/1";
-        var body = """
-                   {
-                     "@context": "https://www.w3.org/ns/activitystreams",
-                     "id": "%s",
-                     "type": "Follow",
-                     "actor": "%s",
-                     "object": "%s"
-                   }
-                   """.formatted(followActivityId, remoteActorId, actorId);
-        var target = inboxUri();
-        var signed = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", target, body);
-
-        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
-               .headers(signed)
-               .body(body)
-               .post("/followuser/inbox")
-               .then()
-               .statusCode(202);
+        postSignedFollow(remoteActorId, "https://remote.example/follow/1", actorId);
 
         assertThat(followRepository.listPendingByLocalActor(actor.getId())).isEmpty();
         assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
@@ -185,5 +174,76 @@ class ActivityPubInboxFollowTest {
                                                              user.getId()));
         var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
         assertThat(pendingDeliveries.stream().filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)).hasSize(1);
+    }
+
+    @Test
+    void unfollowThenFollowAgainReacceptsAndBackfills() {
+        Given.post()
+             .withAuthor(user)
+             .withTitle("After Refollow")
+             .withSlug("after-refollow")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var remoteActorId = "https://remote.example/users/reader";
+        postSignedFollow(remoteActorId, "https://remote.example/follow/first", actorId);
+
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
+
+        var undoBody = """
+                       {
+                         "@context": "https://www.w3.org/ns/activitystreams",
+                         "id": "https://remote.example/undo/follow/1",
+                         "type": "Undo",
+                         "actor": "%s",
+                         "object": {
+                           "id": "https://remote.example/follow/first",
+                           "type": "Follow",
+                           "actor": "%s",
+                           "object": "%s"
+                         }
+                       }
+                       """.formatted(remoteActorId, remoteActorId, actorId);
+        var undoTarget = inboxUri();
+        var undoSigned = signatureService.signRequest(remotePrivateKey, remoteKeyId, "POST", undoTarget, undoBody);
+        given().contentType(ActivityPubPaths.ACTIVITY_JSON)
+               .headers(undoSigned)
+               .body(undoBody)
+               .post("/followuser/inbox")
+               .then()
+               .statusCode(202);
+
+        entityManager.clear();
+
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).isEmpty();
+        var rejected = followRepository.findByLocalAndRemote(actor.getId(),
+                                                             remoteActorRepository.findByActorId(remoteActorId).orElseThrow().getId())
+                                       .orElseThrow();
+        assertThat(rejected.getStatus()).isEqualTo(ActivityPubFollowStatus.REJECTED);
+
+        var createsBeforeRefollow = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1))
+                                                      .stream()
+                                                      .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                                      .count();
+
+        postSignedFollow(remoteActorId, "https://remote.example/follow/second", actorId);
+
+        entityManager.clear();
+
+        assertThat(followRepository.listAcceptedByLocalActor(actor.getId())).hasSize(1);
+        var reaccepted = followRepository.findByLocalAndRemote(actor.getId(),
+                                                               remoteActorRepository.findByActorId(remoteActorId).orElseThrow().getId())
+                                         .orElseThrow();
+        assertThat(reaccepted.getStatus()).isEqualTo(ActivityPubFollowStatus.ACCEPTED);
+        assertThat(reaccepted.getFollowActivityId()).isEqualTo("https://remote.example/follow/second");
+
+        var pendingDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        var createCount = pendingDeliveries.stream()
+                                           .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                           .count();
+        assertThat(createCount).isGreaterThan(createsBeforeRefollow);
+        assertThat(pendingDeliveries.stream().anyMatch(d -> d.getActivityType() == ActivityPubActivityType.ACCEPT)).isTrue();
     }
 }

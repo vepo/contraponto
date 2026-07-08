@@ -121,4 +121,15 @@ public class ActivityPubFollow {
     public void reject() {
         this.status = ActivityPubFollowStatus.REJECTED;
     }
+
+    /**
+     * Puts a previously rejected (or stale) follow back into
+     * {@link ActivityPubFollowStatus#PENDING} so auto-accept can run again after a
+     * remote unfollow + re-follow.
+     */
+    public void reopenAsPending(String newFollowActivityId) {
+        this.status = ActivityPubFollowStatus.PENDING;
+        this.acceptedAt = null;
+        this.followActivityId = newFollowActivityId;
+    }
 }
