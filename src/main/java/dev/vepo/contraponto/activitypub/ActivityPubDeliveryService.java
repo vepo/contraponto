@@ -51,6 +51,14 @@ public class ActivityPubDeliveryService {
         });
     }
 
+    private static String failureMessage(Exception ex) {
+        var message = ex.getMessage();
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+        return ex.getClass().getSimpleName();
+    }
+
     private final ActivityPubSettings settings;
     private final ActivityPubDeliveryRepository deliveryRepository;
     private final ActivityPubFollowRepository followRepository;
@@ -58,6 +66,7 @@ public class ActivityPubDeliveryService {
     private final ActivityPubHttpSignatureService signatureService;
     private final ActivityPubPostObjectMapper postObjectMapper;
     private final PostRepository postRepository;
+
     private final BlogSubdomainConfig subdomainConfig;
 
     private final HttpClient httpClient;
@@ -103,7 +112,6 @@ public class ActivityPubDeliveryService {
     }
 
     private void deliverOne(ActivityPubDelivery delivery) {
-        delivery.recordAttempt();
         try {
             var privateKey = keyPairService.decryptPrivateKey(delivery.getLocalActor().getPrivateKeyEncrypted());
             var target = URI.create(delivery.getTargetInboxUrl());
@@ -122,11 +130,14 @@ public class ActivityPubDeliveryService {
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 delivery.markDelivered();
             } else {
-                delivery.markFailed("HTTP %d".formatted(response.statusCode()), nextRetry(delivery.getAttempts()));
+                var error = "HTTP %d".formatted(response.statusCode());
+                delivery.markFailed(error, nextRetry(delivery.getAttempts() + 1));
+                logDeliveryFailure(delivery, error, null);
             }
         } catch (Exception ex) {
-            logger.warn("ActivityPub delivery failed id={}", delivery.getId(), ex);
-            delivery.markFailed(ex.getMessage(), nextRetry(delivery.getAttempts()));
+            var error = failureMessage(ex);
+            delivery.markFailed(error, nextRetry(delivery.getAttempts() + 1));
+            logDeliveryFailure(delivery, error, ex);
         }
         deliveryRepository.update(delivery);
     }
@@ -198,6 +209,26 @@ public class ActivityPubDeliveryService {
                                                               payload,
                                                               follow.getRemoteActor().getInboxUrl()));
         }
+    }
+
+    private void logDeliveryFailure(ActivityPubDelivery delivery, String error, Exception ex) {
+        if (delivery.getStatus() == ActivityPubDeliveryStatus.FAILED) {
+            logger.warn("ActivityPub delivery exhausted retries id={} type={} target={} attempts={} error={}",
+                        delivery.getId(),
+                        delivery.getActivityType(),
+                        delivery.getTargetInboxUrl(),
+                        delivery.getAttempts(),
+                        error,
+                        ex);
+            return;
+        }
+        logger.warn("ActivityPub delivery failed id={} type={} target={} attempts={} error={}",
+                    delivery.getId(),
+                    delivery.getActivityType(),
+                    delivery.getTargetInboxUrl(),
+                    delivery.getAttempts(),
+                    error,
+                    ex);
     }
 
     private LocalDateTime nextRetry(int attempts) {

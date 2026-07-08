@@ -151,13 +151,20 @@ public class ActivityPubDelivery {
         this.lastError = null;
     }
 
+    /**
+     * Records a failed send. Increments {@link #attempts}; keeps {@code PENDING}
+     * for retry until the attempt limit, then marks
+     * {@link ActivityPubDeliveryStatus#FAILED}. {@code error} must not be blank so
+     * operators can diagnose via {@code last_error}.
+     */
     public void markFailed(String error, LocalDateTime nextRetryAt) {
-        this.status = ActivityPubDeliveryStatus.PENDING;
         this.attempts = attempts + 1;
-        this.lastError = error;
+        this.lastError = (error == null || error.isBlank()) ? "unknown delivery failure" : error;
         this.nextRetryAt = nextRetryAt;
         if (attempts >= 5) {
             this.status = ActivityPubDeliveryStatus.FAILED;
+        } else {
+            this.status = ActivityPubDeliveryStatus.PENDING;
         }
     }
 
@@ -169,9 +176,5 @@ public class ActivityPubDelivery {
         if (status == null) {
             status = ActivityPubDeliveryStatus.PENDING;
         }
-    }
-
-    public void recordAttempt() {
-        this.attempts = attempts + 1;
     }
 }
