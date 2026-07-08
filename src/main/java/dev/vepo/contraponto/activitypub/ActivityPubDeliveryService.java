@@ -162,7 +162,7 @@ public class ActivityPubDeliveryService {
             return;
         }
         var post = postRepository.findById(postId).orElse(null);
-        if (post == null || !post.isPublished() || !post.getBlog().isMain()) {
+        if (post == null || !post.isPublished() || post.getBlog() == null || !post.getBlog().isActive()) {
             return;
         }
         var activity = postObjectMapper.toCreateActivity(post);
@@ -174,7 +174,7 @@ public class ActivityPubDeliveryService {
             return;
         }
         var post = postRepository.findById(postId).orElse(null);
-        if (post == null || !post.getBlog().isMain()) {
+        if (post == null || post.getBlog() == null || !post.getBlog().isActive()) {
             return;
         }
         var activity = postObjectMapper.toDeleteActivity(post);
@@ -190,7 +190,7 @@ public class ActivityPubDeliveryService {
         }
         var localActor = follow.getLocalActor();
         var inboxUrl = follow.getRemoteActor().getInboxUrl();
-        for (var post : postRepository.findPublishedMainBlogByAuthorOldestFirst(localActor.getUser().getId())) {
+        for (var post : postRepository.findPublishedByAuthorOldestFirst(localActor.getUser().getId())) {
             var activity = postObjectMapper.toCreateActivity(post);
             enqueueToRemoteInbox(localActor,
                                  ActivityPubActivityType.CREATE,

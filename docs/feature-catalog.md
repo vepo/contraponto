@@ -129,7 +129,7 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Account hub (notifications) | `USER` | `GET /account` | 2 | Open user menu → **Account** (notifications panel default). |
 | Account security | `USER` | `GET /account/security` | 2 | Open user menu → **Account** → **Security** in left nav. |
 | Author appearance | `USER` | `GET /writing/appearance` | 2 | Open user menu → **Writing** → **Appearance** in left nav. |
-| Fediverse publishing settings | `USER` | `POST /forms/writing/activitypub` | 2 | Open user menu → **Writing** → **Appearance** → toggle **Publish my main blog posts to the Fediverse**. |
+| Fediverse publishing settings | `USER` | `POST /forms/writing/activitypub` | 2 | Open user menu → **Writing** → **Appearance** → toggle **Publish to the Fediverse** (all blogs). |
 | Fediverse follow request moderation | `USER` | `POST /forms/writing/activitypub/follows/{followId}/accept` or `/reject` | 2 | Open user menu → **Writing** → **Appearance** → **Accept/Reject** on pending Fediverse follow requests. |
 | Notifications overlay | `USER` | `GET /components/notifications/overlay` | 1 | Header bell → dropdown preview (stays on current page). |
 | Notifications inbox | `USER` | `GET /account/notifications` | 2 | Header bell → **View all notifications** **or** user menu → **Account**. |
@@ -204,6 +204,7 @@ Use [dev-import.sql](../src/main/resources/dev-import.sql) — all dev users sha
 | Username | Roles | Use to reach |
 |----------|-------|----------------|
 | `alice`, `bob`, `carol` | `USER` | Write, Library, Blogs, Dashboard, own posts |
+| `alice` | `USER` | Secondary blog `lab-notes` (Fediverse multi-blog Creates / outbox); main posts + ActivityPub actor |
 | `bob` | `USER` | Secondary blog `architecture-notes`, multi-blog URLs |
 | `dave` | `USER` | Follower, notifications |
 | `eve` | `USER` | Email subscriber |

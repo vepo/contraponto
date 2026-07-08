@@ -28,13 +28,27 @@ public class ActivityPubPostObjectMapper {
 
     private String buildContent(Post post, String canonicalUrl) {
         var title = post.getTitle() == null ? "" : post.getTitle().trim();
-        var summary = post.getDescription() == null ? "" : post.getDescription().trim();
-        return "<p><strong>%s</strong></p><p>%s</p><p><a href=\"%s\">%s</a></p>".formatted(title, summary, canonicalUrl, canonicalUrl);
+        var blog = post.getBlog();
+        if (blog != null && !blog.isMain()) {
+            var blogName = blog.getName() == null ? "" : blog.getName().trim();
+            return "<p><strong>%s</strong></p><p>%s</p><p><a href=\"%s\">%s</a></p>".formatted(title,
+                                                                                               blogName,
+                                                                                               canonicalUrl,
+                                                                                               canonicalUrl);
+        }
+        return "<p><strong>%s</strong></p><p><a href=\"%s\">%s</a></p>".formatted(title, canonicalUrl, canonicalUrl);
     }
 
     private boolean isArticle(Post post) {
         var content = post.getContent();
         return content != null && content.length() > 500;
+    }
+
+    private String publishedInstant(Post post) {
+        if (post.getPublishedAt() == null) {
+            return null;
+        }
+        return post.getPublishedAt().atZone(ZoneOffset.UTC).format(ISO_INSTANT);
     }
 
     public Map<String, Object> toCreateActivity(Post post) {
@@ -44,6 +58,10 @@ public class ActivityPubPostObjectMapper {
         activity.put("id", ActivityPubPaths.activityId(post.getBlog().getOwner(), subdomainConfig, "create", post.getId()));
         activity.put("type", "Create");
         activity.put("actor", ActivityPubPaths.actorId(post.getBlog().getOwner(), subdomainConfig));
+        var published = publishedInstant(post);
+        if (published != null) {
+            activity.put("published", published);
+        }
         activity.put("to", object.get("to"));
         activity.put("cc", object.get("cc"));
         activity.put("object", object);
@@ -71,12 +89,12 @@ public class ActivityPubPostObjectMapper {
         document.put("id", objectId);
         document.put("type", objectType);
         document.put("name", post.getTitle());
-        document.put("summary", post.getDescription());
         document.put("content", content);
         document.put("url", canonicalUrl);
         document.put("attributedTo", ActivityPubPaths.actorId(post.getBlog().getOwner(), subdomainConfig));
-        if (post.getPublishedAt() != null) {
-            document.put("published", post.getPublishedAt().atZone(ZoneOffset.UTC).format(ISO_INSTANT));
+        var published = publishedInstant(post);
+        if (published != null) {
+            document.put("published", published);
         }
         if (post.getUpdatedAt() != null) {
             document.put("updated", post.getUpdatedAt().atZone(ZoneOffset.UTC).format(ISO_INSTANT));

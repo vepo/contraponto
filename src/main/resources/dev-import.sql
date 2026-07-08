@@ -114,6 +114,10 @@ SELECT 'Alice on Systems', 'alice', 'Distributed systems, Java, and cloud-native
 FROM tb_users u WHERE u.username = 'alice';
 
 INSERT INTO tb_blogs (name, slug, description, owner_id, main, active, created_at)
+SELECT 'Lab Notes', 'lab-notes', 'Shorter experiments and secondary Fediverse Create samples', u.id, FALSE, TRUE, NOW()
+FROM tb_users u WHERE u.username = 'alice';
+
+INSERT INTO tb_blogs (name, slug, description, owner_id, main, active, created_at)
 SELECT 'Bob Writes Code', 'bob', 'Architecture notes and backend craft', u.id, TRUE, TRUE, NOW()
 FROM tb_users u WHERE u.username = 'bob';
 
@@ -300,6 +304,7 @@ DO $$
 DECLARE
     v_admin_blog BIGINT;
     v_alice_blog BIGINT;
+    v_alice_lab BIGINT;
     v_bob_blog BIGINT;
     v_bob_arch BIGINT;
     v_carol_blog BIGINT;
@@ -330,12 +335,16 @@ BEGIN
     SELECT id INTO v_alice_user FROM tb_users WHERE username = 'alice';
     SELECT b.id INTO v_admin_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'admin' AND b.main = TRUE;
     SELECT b.id INTO v_alice_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.main = TRUE;
+    SELECT b.id INTO v_alice_lab FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'alice' AND b.slug = 'lab-notes';
     SELECT b.id INTO v_bob_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.main = TRUE;
     SELECT b.id INTO v_bob_arch FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'bob' AND b.slug = 'architecture-notes';
     SELECT b.id INTO v_carol_blog FROM tb_blogs b JOIN tb_users u ON b.owner_id = u.id WHERE u.username = 'carol' AND b.main = TRUE;
 
     IF v_admin_blog IS NULL THEN
         RAISE EXCEPTION 'Admin main blog not found; migration seed may be missing';
+    END IF;
+    IF v_alice_lab IS NULL THEN
+        RAISE EXCEPTION 'Alice secondary blog lab-notes not found; check blog seed';
     END IF;
 
     SELECT id INTO v_serie_dist FROM tb_series WHERE blog_id = v_alice_blog AND slug = 'distributed-foundations';
@@ -703,6 +712,33 @@ Extract services only when team boundaries and scaling needs are clear — not b
         'MARKDOWN', TRUE, FALSE,
         '2024-05-01 10:00:00', '2024-05-01 10:00:00', '2024-05-01 10:00:00', NULL, NULL
     ) RETURNING id INTO v_post_bob_main;
+
+    -- Alice: secondary blog (Fediverse v1.4 — interleaved publishedAt with main)
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'quick-heap-dump-checklist',
+        'Quick Heap Dump Checklist',
+        v_alice_lab,
+        'A short lab-note checklist — secondary Fediverse Create sample.',
+        '## Checklist
+
+Capture, transfer, open in Eclipse MAT — keep this on the secondary blog for Fediverse content shape.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-01-20 11:00:00', '2024-01-20 11:00:00', '2024-01-20 11:00:00', NULL, NULL
+    );
+
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
+    VALUES (
+        'side-project-log-april',
+        'Side Project Log — April',
+        v_alice_lab,
+        'Lab diary entry interleaved after Kafka main post for outbox ordering.',
+        '## April notes
+
+Small wins, broken builds, and what to try next week — secondary blog syndication sample.',
+        'MARKDOWN', TRUE, FALSE,
+        '2024-04-12 16:00:00', '2024-04-12 16:00:00', '2024-04-12 16:00:00', NULL, NULL
+    );
 
     -- ============================================
     -- 8. Post tags

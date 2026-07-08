@@ -49,7 +49,7 @@ public class ActivityPubOutboxService {
 
     public Map<String, Object> buildOutbox(User user, int page) {
         var outboxId = ActivityPubPaths.outbox(user, subdomainConfig);
-        var posts = postRepository.findPublishedMainBlogByAuthor(user.getId(), PageQuery.forGrid(OUTBOX_PAGE_SIZE, page));
+        var posts = postRepository.findPublishedByAuthor(user.getId(), PageQuery.forGrid(OUTBOX_PAGE_SIZE, page));
         var items = posts.data()
                          .stream()
                          .map(postObjectMapper::toCreateActivity)

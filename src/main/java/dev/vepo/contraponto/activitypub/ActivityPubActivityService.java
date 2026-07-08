@@ -48,7 +48,7 @@ public class ActivityPubActivityService {
             return Optional.empty();
         }
         var post = postRepository.findByIdWithBlog(activityId).orElse(null);
-        if (!isMainBlogPostOwnedBy(post, user)) {
+        if (!isOwnedBlogPost(post, user)) {
             return Optional.empty();
         }
         if ("create".equals(activityType) && !post.isPublished()) {
@@ -61,11 +61,8 @@ public class ActivityPubActivityService {
         });
     }
 
-    private boolean isMainBlogPostOwnedBy(Post post, User user) {
-        if (post == null) {
-            return false;
-        }
-        if (!post.getBlog().isMain()) {
+    private boolean isOwnedBlogPost(Post post, User user) {
+        if (post == null || post.getBlog() == null || !post.getBlog().isActive()) {
             return false;
         }
         return post.getBlog().getOwner().getId().equals(user.getId());
