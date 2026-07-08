@@ -34,21 +34,36 @@ public class ActivityPubDeliveryService {
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(30);
 
     /**
-     * {@link HttpClient} sets these from the request URI; including them in
-     * {@link HttpRequest.Builder#header} throws {@link IllegalArgumentException}.
+     * Headers the JDK forbids on {@link HttpRequest.Builder} even when signed.
+     * {@code Host} is <strong>not</strong> listed: outbound ActivityPub deliveries
+     * must set the same {@code Host} value that appears in the HTTP Signature
+     * (requires {@code -Djdk.httpclient.allowRestrictedHeaders=host}).
      */
     private static final Set<String> HTTP_CLIENT_RESTRICTED_HEADERS = Set.of("connection",
                                                                              "content-length",
                                                                              "expect",
-                                                                             "host",
                                                                              "upgrade");
 
+    /**
+     * Applies signed headers to the outbound request, including {@code Host}. The
+     * JVM must allow the Host header
+     * ({@code jdk.httpclient.allowRestrictedHeaders=host}); otherwise
+     * {@link IllegalArgumentException} is wrapped with an operator hint.
+     */
     static void applySignedHeaders(HttpRequest.Builder requestBuilder, Map<String, String> signedHeaders) {
-        signedHeaders.forEach((name, value) -> {
-            if (!HTTP_CLIENT_RESTRICTED_HEADERS.contains(name.toLowerCase(Locale.ROOT))) {
-                requestBuilder.header(name, value);
+        try {
+            signedHeaders.forEach((name, value) -> {
+                if (!HTTP_CLIENT_RESTRICTED_HEADERS.contains(name.toLowerCase(Locale.ROOT))) {
+                    requestBuilder.header(name, value);
+                }
+            });
+        } catch (IllegalArgumentException ex) {
+            if (ex.getMessage() != null && ex.getMessage().toLowerCase(Locale.ROOT).contains("host")) {
+                throw new IllegalStateException("ActivityPub delivery requires setting the Host header used in the HTTP Signature. Start the JVM with -Djdk.httpclient.allowRestrictedHeaders=host",
+                                                ex);
             }
-        });
+            throw ex;
+        }
     }
 
     private static String failureMessage(Exception ex) {

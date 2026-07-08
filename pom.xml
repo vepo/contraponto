@@ -217,6 +217,10 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- Outbound ActivityPub deliveries set signed Host on HttpRequest -->
+                    <jvmArgs>-Djdk.httpclient.allowRestrictedHeaders=host</jvmArgs>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -230,7 +234,8 @@
                 <version>${surefire-plugin.version}</version>
                 <configuration>
                     <!-- Must include JaCoCo ${argLine}; a bare argLine replaced the agent and hid plain unit-test coverage -->
-                    <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <!-- Host must be settable on HttpRequest for ActivityPub HTTP Signature interoperability -->
+                    <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED -Djdk.httpclient.allowRestrictedHeaders=host</argLine>
                     <excludedGroups>docker-smoke</excludedGroups>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -250,7 +255,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED -Djdk.httpclient.allowRestrictedHeaders=host</argLine>
                     <excludedGroups>docker-smoke</excludedGroups>
                     <systemPropertyVariables>
                         <native.image.path>
