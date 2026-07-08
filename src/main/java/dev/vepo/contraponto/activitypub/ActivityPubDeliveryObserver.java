@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class ActivityPubDeliveryObserver {
@@ -28,6 +29,7 @@ public class ActivityPubDeliveryObserver {
         this.deliveryService = deliveryService;
     }
 
+    @Transactional
     void afterPublish(@Observes(during = TransactionPhase.AFTER_SUCCESS) PostPublishedEvent event) {
         if (!settings.enabled()) {
             return;
@@ -41,6 +43,7 @@ public class ActivityPubDeliveryObserver {
                        .ifPresent(actor -> deliveryService.enqueueCreateForPublishedPost(event.postId(), actor));
     }
 
+    @Transactional
     void afterUnpublish(@Observes(during = TransactionPhase.AFTER_SUCCESS) PostUnpublishedEvent event) {
         if (!settings.enabled()) {
             return;
