@@ -93,6 +93,14 @@ SELECT
     WHERE u.username = 'vepo' AND d.status = 'FAILED') AS failed_deliveries;
 ```
 
+UPDATE tb_activitypub_deliveries d
+SET next_retry_at = NULL, attempts = 0, last_error = NULL
+FROM tb_activitypub_actors a
+JOIN tb_users u ON u.id = a.user_id
+WHERE d.local_actor_id = a.id
+  AND u.username = 'vepo'
+  AND d.status IN ('PENDING', 'FAILED');
+
 ---
 
 ## Follows (who follows whom)
@@ -309,7 +317,8 @@ Inbound POSTs from deleted remotes will still get **401** (no fetchable public k
 | `crypto mismatch` + `requestTarget=post /vepo/inbox` on subdomain Host | Signature path rewrite bug (should keep `/inbox`) | App version / ingress fix |
 | `Remote actor fetch HTTP 410` + `no public key` | Remote deleted/moved actor | Remote `actor_id` row; optional cleanup above |
 | Follows stay `PENDING` forever | Pre-auto-accept leftovers | `status = 'PENDING'` list |
-| Many `FAILED` deliveries | Network / remote inbox / bad URL | `last_error`, `target_inbox_url`, `object_id` |
+| Many `FAILED` deliveries | Network / remote inbox / bad URL / signature reject (`HTTP 401`) | `last_error`, `attempts`, `target_inbox_url` |
+| `FAILED` with empty `last_error` | Older bug: exception with null message overwrote the real error; or run with logging fixed | Re-queue after deploy; watch app logs for `ActivityPub delivery` |
 | `federation_enabled = false` | User opted out or kill-switch | Actor + platform settings |
 
 ---
