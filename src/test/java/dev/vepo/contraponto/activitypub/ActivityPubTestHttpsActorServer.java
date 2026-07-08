@@ -53,10 +53,6 @@ final class ActivityPubTestHttpsActorServer implements AutoCloseable {
         return actorServer;
     }
 
-    static ActivityPubTestHttpsActorServer startInbox() throws Exception {
-        return start("/inbox", "");
-    }
-
     private final HttpsServer server;
 
     private final int port;
@@ -77,10 +73,6 @@ final class ActivityPubTestHttpsActorServer implements AutoCloseable {
         server.stop(0);
     }
 
-    String inboxUrl() {
-        return "https://127.0.0.1:%d/inbox".formatted(port);
-    }
-
     int port() {
         return port;
     }
@@ -93,13 +85,9 @@ final class ActivityPubTestHttpsActorServer implements AutoCloseable {
         var body = responseBody.get();
         var bytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", ActivityPubPaths.ACTIVITY_JSON);
-        exchange.sendResponseHeaders(body.isEmpty() ? 202 : 200, body.isEmpty() ? -1 : bytes.length);
-        if (!body.isEmpty()) {
-            try (OutputStream output = exchange.getResponseBody()) {
-                output.write(bytes);
-            }
-        } else {
-            exchange.close();
+        exchange.sendResponseHeaders(200, bytes.length);
+        try (OutputStream output = exchange.getResponseBody()) {
+            output.write(bytes);
         }
     }
 }
