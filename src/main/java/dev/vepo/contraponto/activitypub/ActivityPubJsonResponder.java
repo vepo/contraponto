@@ -1,9 +1,11 @@
 package dev.vepo.contraponto.activitypub;
 
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 
 import io.smallrye.common.annotation.Blocking;
@@ -14,6 +16,13 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * Serves ActivityStreams JSON on canonical blog/post URLs when the client
+ * requests {@code application/activity+json}, without registering duplicate
+ * JAX-RS paths that would shadow {@code BlogEndpoint} and {@code PostEndpoint}
+ * for HTML browsers. Handles {@code GET} and {@code HEAD} (Fediverse clients
+ * often probe actor URLs with HEAD before verifying outbound signatures).
+ */
 @Blocking
 @ApplicationScoped
 public class ActivityPubJsonResponder {
@@ -32,9 +41,21 @@ public class ActivityPubJsonResponder {
         return lower.contains(ActivityPubPaths.ACTIVITY_JSON) || lower.contains(ActivityPubPaths.LD_JSON);
     }
 
-    private static Response jsonResponse(Object document) {
+    private static boolean isHead(ContainerRequestContext requestContext) {
+        return "HEAD".equalsIgnoreCase(requestContext.getMethod());
+    }
+
+    private static Response jsonResponse(Object document, boolean headOnly) {
         try {
-            return Response.ok(JSON.writeValueAsString(document))
+            var body = JSON.writeValueAsString(document);
+            if (headOnly) {
+                return Response.ok()
+                               .header(HttpHeaders.CONTENT_TYPE, ActivityPubPaths.ACTIVITY_JSON)
+                               .header(HttpHeaders.CONTENT_LENGTH,
+                                       Integer.toString(body.getBytes(StandardCharsets.UTF_8).length))
+                               .build();
+            }
+            return Response.ok(body)
                            .header(HttpHeaders.CONTENT_TYPE, ActivityPubPaths.ACTIVITY_JSON)
                            .build();
         } catch (Exception ex) {
@@ -65,48 +86,56 @@ public class ActivityPubJsonResponder {
         this.postRepository = postRepository;
     }
 
+    /**
+     * Builds an ActivityPub JSON response for the request path, or {@code null}
+     * when the path is not an actor/post object URL this filter owns.
+     */
     public Response respond(ContainerRequestContext requestContext) {
         var path = normalizePath(requestContext.getUriInfo().getPath());
+        var headOnly = isHead(requestContext);
         var postMatch = MAIN_POST.matcher(path);
         if (postMatch.matches()) {
-            return respondWithPostObject(postMatch.group(1), postMatch.group(2));
+            return respondWithPostObject(postMatch.group(1), postMatch.group(2), headOnly);
         }
         var userMatch = USER_ROOT.matcher(path);
         if (userMatch.matches()) {
-            return respondWithActor(userMatch.group(1));
+            return respondWithActor(userMatch.group(1), headOnly);
         }
         return null;
     }
 
-    private Response respondWithActor(String username) {
+    private Response respondWithActor(String username, boolean headOnly) {
         var actor = actorService.findEnabledByUsername(username).orElse(null);
         if (actor == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return jsonResponse(actorService.buildActorDocument(actor.getUser(), actor));
+        return jsonResponse(actorService.buildActorDocument(actor.getUser(), actor), headOnly);
     }
 
-    private Response respondWithPostObject(String username, String slug) {
+    private Response respondWithPostObject(String username, String slug, boolean headOnly) {
         if (actorService.findEnabledByUsername(username).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         var post = postRepository.findMainBlogPost(username, slug)
-                                 .filter(p -> p.isPublished())
+                                 .filter(Post::isPublished)
                                  .orElse(null);
         if (post == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return jsonResponse(outboxService.buildPostObject(post));
+        return jsonResponse(outboxService.buildPostObject(post), headOnly);
     }
 
+    /**
+     * Whether this filter should short-circuit the request with ActivityPub JSON
+     * (GET/HEAD + activity+json Accept on actor or main-post paths).
+     */
     public boolean shouldHandle(ContainerRequestContext requestContext) {
         if (!settings.enabled()) {
             return false;
         }
         var method = requestContext.getMethod();
         // HEAD must succeed for ActivityPub clients (e.g. Mastodon keyId probes);
-        // without
-        // this, JAX-RS returns 406 Not Acceptable for Accept:
+        // without this, JAX-RS returns 406 Not Acceptable for Accept:
         // application/activity+json.
         if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
             return false;
