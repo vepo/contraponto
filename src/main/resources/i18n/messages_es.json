@@ -441,7 +441,7 @@
   "appearance.currentPasswordHint": "Contraseña actual (para cambiar el nombre)",
   "appearance.nameChangeHint": "Obligatorio al cambiar el nombre para mostrar.",
   "appearance.fediverseSection": "Fediverso (ActivityPub)",
-  "appearance.fediverseIntro": "Comparte publicaciones de tu blog principal con Mastodon y otros servidores ActivityPub. Las solicitudes de seguimiento remotas deben aceptarse aquí antes de recibir tus publicaciones.",
+  "appearance.fediverseIntro": "Comparte publicaciones de tu blog principal con Mastodon y otros servidores ActivityPub. Los seguimientos remotos se aceptan automáticamente; las publicaciones históricas del blog principal se entregan al seguir.",
   "appearance.fediverseOptInTitle": "Publicar en el Fediverso",
   "appearance.fediverseOptInDesc": "Sindica las publicaciones de tu blog principal como actividades ActivityPub al publicar.",
   "appearance.fediverseHandle": "Tu identificador",

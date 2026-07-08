@@ -46,7 +46,7 @@ Rastreie FQ/AQ nos respectivos `feature/<slug>.md`. Índice completo: [feature/R
 | Git sync | [git-sync.md](../feature/git-sync.md) | done | FQ1 (manual sync button) |
 | User administration | [user-administration.md](../feature/user-administration.md) | done | FQ1 (`/administration` naming) |
 | ActivityPub | [activitypub-integration.md](../feature/activitypub-integration.md) | done | AQ5 (NodeInfo) optional |
-| Bluesky platform syndication | [bluesky-platform-syndication.md](../feature/bluesky-platform-syndication.md) | planned | FQ5–FQ10, AQ1–AQ6; ADR-0016 draft |
+| Bluesky platform syndication | [bluesky-platform-syndication.md](../feature/bluesky-platform-syndication.md) | planned | AQ1, AQ2, AQ4, AQ6; ADR-0016 draft |
 | Reading list | [reading-list.md](../feature/reading-list.md) | done | — |
 | Post text highlight | [post-text-highlight.md](../feature/post-text-highlight.md) | done | — |
 

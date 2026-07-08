@@ -130,7 +130,8 @@ public class ActivityPubInboxService {
         if (existing.isPresent()) {
             return;
         }
-        followRepository.create(new ActivityPubFollow(localActor, remote, ActivityPubFollowStatus.PENDING, activityId));
+        var follow = followRepository.create(new ActivityPubFollow(localActor, remote, ActivityPubFollowStatus.PENDING, activityId));
+        acceptPendingFollow(follow.getId());
     }
 
     public void handleInbox(String username, String body, Map<String, String> headers, URI requestUri) {

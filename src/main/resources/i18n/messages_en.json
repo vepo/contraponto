@@ -444,7 +444,7 @@
   "appearance.currentPasswordHint": "Current password (for name changes)",
   "appearance.nameChangeHint": "Required when changing your display name.",
   "appearance.fediverseSection": "Fediverse (ActivityPub)",
-  "appearance.fediverseIntro": "Share published posts from your main blog with Mastodon and other ActivityPub servers. Remote follow requests must be accepted here before they receive your posts.",
+  "appearance.fediverseIntro": "Share published posts from your main blog with Mastodon and other ActivityPub servers. Remote follows are accepted automatically; historical main-blog posts are delivered on follow.",
   "appearance.fediverseOptInTitle": "Publish to the Fediverse",
   "appearance.fediverseOptInDesc": "Syndicate your main blog posts as ActivityPub activities when you publish.",
   "appearance.fediverseHandle": "Your handle",

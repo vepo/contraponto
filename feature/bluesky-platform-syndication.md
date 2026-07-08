@@ -19,18 +19,26 @@
 
 | Feature / area | Impact |
 |----------------|--------|
-| Publish / republish | New observer enqueues Bluesky delivery when blog toggle on |
+| Publish / republish | Create or update Bluesky record when blog toggle on; republish updates only if **title changed** (FQ5) |
+| Unpublish | Delete Bluesky record when post unpublished (FQ6) |
 | Blog manage / edit | New Bluesky section (checkbox + hint) beside Git sync |
+| Notifications | New type `BLUESKY_SYNDICATION_FAILED` → blog owner after exhausted retries (FQ10) |
 | ActivityPub Fediverse | **Independent** — Mastodon follow ≠ Bluesky channel; both may run for same publish |
 | Share actions | Unchanged — manual “Share to Bluesky” compose link remains |
 | Author appearance | Unchanged — `User.blueskyUrl` remains profile link only |
-| RSS / SEO | Same canonical post URL in syndication message |
-| Platform admin | Optional global kill-switch (FQ9) |
+| RSS / SEO | Same canonical post URL in syndication message + link-card embed (FQ7) |
+| Platform admin | **Required** global kill-switch on admin hub (FQ9) — mirror ActivityPub platform panel |
 | Deployment | New `%prod` env vars; docker-smoke + `docs/deployment.md` |
 
 ## Summary
 
 Enable **readers on Bluesky** to discover **published posts** from commit-mestre by following a **single platform Bluesky account** (e.g. `@commitmestre.bsky.social`). **Authors** opt in **per blog**: when enabled, each **publish** on that blog triggers an outbound `app.bsky.feed.post` via the AT Protocol XRPC API (`com.atproto.repo.createRecord`).
+
+**Lifecycle (FQ5–FQ7):**
+
+- **First publish:** `createRecord` with `text` (FQ4 template), `app.bsky.embed.external` link card (FQ7); store `at://` record URI + last syndicated title.
+- **Republish:** if title **unchanged** → no Bluesky action. If title **changed** → `putRecord` update; on failure → `deleteRecord` then `createRecord`.
+- **Unpublish:** `deleteRecord` for stored URI (FQ6).
 
 **Not in scope for v1:**
 
@@ -38,6 +46,7 @@ Enable **readers on Bluesky** to discover **published posts** from commit-mestre
 - Hosting a Personal Data Server (PDS) on `*.commit-mestre.dev`
 - AT Protocol custom feeds, OAuth login, or inbound Bluesky interactions
 - Native interoperability with ActivityPub (Bridgy Fed remains external)
+- Republish Bluesky update when only body/tags/link change but title unchanged
 
 **Depends on (Accepted ADRs):**
 
@@ -78,6 +87,20 @@ Placed in blog manage/edit form alongside **Git sync** (`BlogManageEndpoint` / `
 
 No change. Publish triggers syndication automatically when blog toggle is on (same as Git export on publish).
 
+### Screen: Platform admin — Bluesky syndication kill-switch
+
+Mirror [ActivityPubPlatformManageEndpoint/panel.html](../src/main/resources/templates/ActivityPubPlatformManageEndpoint/panel.html) on Platform insights / administration hub.
+
+```
+┌─ Bluesky (platform syndication) ──────────────────────────┐
+│ [ ] Allow Bluesky syndication for opted-in blogs          │
+│     Turn off to halt all outbound Bluesky posts           │
+│     immediately (credentials remain in env).              │
+│                                                           │
+│ [ Save Bluesky settings ]                                 │
+└───────────────────────────────────────────────────────────┘
+```
+
 ### Screen: N/A — public reader surfaces
 
 No Bluesky badge on post pages in v1. Discovery is “follow the platform account on Bluesky.”
@@ -86,11 +109,12 @@ No Bluesky badge on post pages in v1. Discovery is “follow the platform accoun
 
 | Area | Effect |
 |------|--------|
-| Bounded contexts | New **`bluesky`** (or `atproto`) under **Integration**; observes `post` / `blog` via `PostPublishedEvent` |
+| Bounded contexts | New **`bluesky`** under **Integration**; observes `post` / `blog`; notifies via `notification` on failure |
 | Packages | `dev.vepo.contraponto.bluesky` (TBD in Architecture) |
-| API / routes | No public routes in v1 — outbound XRPC only |
-| UI | Blog edit checkbox + hint; optional admin kill-switch on Platform insights (if FQ9=yes) |
-| Schema | `tb_blogs.bluesky_syndication_enabled` (BOOLEAN NOT NULL DEFAULT false); `tb_bluesky_deliveries` (queue: post id, blog id, status, record uri, retries) |
+| API / routes | Admin form `POST /forms/administration/bluesky` (kill-switch); outbound XRPC only otherwise |
+| UI | Blog edit checkbox + hint; admin kill-switch panel (FQ9) |
+| Schema | `tb_blogs.bluesky_syndication_enabled`; `tb_bluesky_platform_settings` (singleton kill-switch); `tb_bluesky_post_records` (post id → `at_uri`, `last_syndicated_title`); `tb_bluesky_deliveries` (queue + retries) |
+| Notifications | `NotificationType.BLUESKY_SYNDICATION_FAILED` + `NotificationService` helper (FQ10) |
 | Config | `%prod`: `contraponto.bluesky.enabled`, `.handle`, `.app-password`, `.mention-handle`, `.pds-url` (default `https://bsky.social`) |
 | **`dev-import.sql`** | One blog with toggle on for manual dev (e.g. `vepo` secondary or `alice` main) when `%dev` credentials set |
 | Tests | Unit (message template, truncation); integration (mock XRPC); `@WebTest` blog settings toggle |
@@ -103,8 +127,9 @@ No Bluesky badge on post pages in v1. Discovery is “follow the platform accoun
 | **App password leak** via env misconfiguration | Document in deployment.md; never log password; use Bluesky app password only |
 | **Platform account spam / reputation** | Per-blog opt-in; author owns blog content; operator moderates platform account |
 | **300-character limit** on Bluesky | Truncate title/tags in template builder; always preserve canonical URL |
-| **Delivery failures** (rate limit, PDS down) | Async queue + retries; optional author notification (FQ10) |
-| **Duplicate skeets on republish** | Define FQ5 — store AT record URI; update vs new post |
+| **Delivery failures** (rate limit, PDS down) | Async queue + retries; in-app notification to blog owner (FQ10) |
+| **Republish / update failure** | FQ5 fallback: delete old record then create new; log + notify if still failing |
+| **Delete failure on unpublish** | Retry queue; notify owner if record cannot be removed (stale skeet may remain) |
 | **Outbound HTTPS** to PDS | Fixed allowlist host (`bsky.social` or configured PDS); not user-supplied URL (lower SSRF than ActivityPub fetch) |
 
 ### Feature questions (FQ*n*)
@@ -115,12 +140,12 @@ No Bluesky badge on post pages in v1. Discovery is “follow the platform accoun
 | FQ2 | **Opt-in:** per-**blog** checkbox in blog configuration, **disabled by default**? | answered | **Yes** |
 | FQ3 | **Which blogs:** main blog only (like ActivityPub) or **any blog** with toggle on? | answered | **Any blog** — toggle is per `Blog` |
 | FQ4 | **Message template** (fixed, Portuguese): see below? | answered | **Yes** — platform-fixed template with placeholders |
-| FQ5 | **Republish** when post already syndicated: post **new** skeet, **update** existing record, or **skip**? | open | |
-| FQ6 | **Unpublish:** delete Bluesky record, leave it, or out of scope v1? | open | |
-| FQ7 | Add **`app.bsky.embed.external`** link card for richer preview, or plain `text` only? | open | |
-| FQ8 | **Tags** in `{{TAGS}}`: hashtag per tag (`#java`), comma-separated names, or omit when empty only? | open | |
-| FQ9 | Platform **admin kill-switch** to disable all Bluesky syndication (like ActivityPub FQ5)? | open | |
-| FQ10 | Notify **blog owner** in-app when Bluesky delivery fails after retries? | open | |
+| FQ5 | **Republish** when post already syndicated: post **new** skeet, **update** existing record, or **skip**? | answered | **Update** existing record when **title changed**; if update fails, **delete** old record then **create** new. If title unchanged, **skip** Bluesky action. |
+| FQ6 | **Unpublish:** delete Bluesky record, leave it, or out of scope v1? | answered | **Delete** Bluesky record (`deleteRecord`) |
+| FQ7 | Add **`app.bsky.embed.external`** link card for richer preview, or plain `text` only? | answered | **Yes** — link card embed on create and update |
+| FQ8 | **Tags** in `{{TAGS}}`: hashtag per tag (`#java`), comma-separated names, or omit when empty only? | answered | **`#PascalCase` per tag**, space-separated (e.g. `#Java #DistributedSystems`); omit `{{tags}}` segment when no tags |
+| FQ9 | Platform **admin kill-switch** to disable all Bluesky syndication (like ActivityPub FQ5)? | answered | **Yes** — admin hub panel; halts all outbound syndication |
+| FQ10 | Notify **blog owner** in-app when Bluesky delivery fails after retries? | answered | **Yes** — after delivery queue exhausts retries |
 
 **Message template (FQ4):**
 
@@ -134,10 +159,12 @@ Novo post de {{mentionHandle}}  "{{postTitle}}" {{tags}}
 |-------------|--------|
 | `{{mentionHandle}}` | Config `contraponto.bluesky.mention-handle` (e.g. `@commitmestre.bsky.social`) |
 | `{{postTitle}}` | Title from live publication at publish time |
-| `{{tags}}` | Published snapshot tags — format per FQ8 |
+| `{{tags}}` | Published snapshot tags — FQ8: `#PascalCase` each, space-separated |
 | `{{postLink}}` | Canonical absolute post URL (`PostPaths` + subdomain rules) |
 
-**Gate:** phase 3 requires blocking **FQ*n*** answered or marked `not valid`. **FQ5** and **FQ6** should be resolved before task break.
+**Tag → hashtag rule (FQ8):** For each tag on the live publication, render `#` + PascalCase of the tag **name** (split on spaces, hyphens, underscores; capitalize each segment; concatenate — e.g. `distributed-systems` → `#DistributedSystems`, `java` → `#Java`). Join with a single space. Truncate from the end if needed for the 300-grapheme limit (after preserving URL).
+
+**Gate:** phase 3 requires blocking **FQ*n*** answered or marked `not valid`. **All FQ*n*** answered — ready for phase 1b / 2.
 
 ### Architecture questions (AQ*n*)
 
@@ -145,9 +172,9 @@ Novo post de {{mentionHandle}}  "{{postTitle}}" {{tags}}
 |---|----------|--------|--------|
 | AQ1 | Delivery: synchronous on `PostPublishedEvent` vs **async DB queue** + scheduler? | open | Recommend **async** (parity with ActivityPub AQ1) |
 | AQ2 | Package name: `bluesky` vs `atproto`? | open | |
-| AQ3 | Persist **AT Protocol record URI** (`at://…`) per post for update/delete? | open | Required if FQ5/FQ6 ≠ skip/none |
+| AQ3 | Persist **AT Protocol record URI** (`at://…`) per post for update/delete? | answered | **Yes** — `tb_bluesky_post_records` with `at_uri` + `last_syndicated_title` (FQ5/FQ6) |
 | AQ4 | Session: create JWT per delivery vs cache refresh token in memory? | open | |
-| AQ5 | Admin UI for kill-switch: reuse Platform insights pattern from ActivityPub? | open | Depends on FQ9 |
+| AQ5 | Admin UI for kill-switch: reuse Platform insights pattern from ActivityPub? | answered | **Yes** — `BlueskyPlatformManageEndpoint` mirrors ActivityPub platform panel (FQ9) |
 | AQ6 | New ADR for platform syndication scope + credential handling? | open | Recommend **yes** — ADR-0016 |
 
 ## Architecture
@@ -169,10 +196,12 @@ Novo post de {{mentionHandle}}  "{{postTitle}}" {{tags}}
 | Area | Design (draft — confirm in phase 2) |
 |------|--------------------------------------|
 | **Bounded context** | `bluesky` — Integration; depends on `shared`, `blog`, `post` |
-| **Layers** | `BlueskyDeliveryObserver` → `BlueskyDeliveryService` → `BlueskyXrpcClient` → `BlueskyDeliveryRepository` |
-| **Events** | `@Observes(during = AFTER_SUCCESS) PostPublishedEvent` when `blog.blueskySyndicationEnabled` && platform enabled |
-| **XRPC** | `com.atproto.server.createSession` (app password) → `com.atproto.repo.createRecord` (`app.bsky.feed.post`) |
-| **Message** | `BlueskySyndicationMessageBuilder` applies FQ4 template + FQ8 tag rules + 300-grapheme truncation |
+| **Layers** | `BlueskyDeliveryObserver`, `BlueskyUnpublishObserver` → `BlueskyDeliveryService` → `BlueskyXrpcClient` → `*Repository`; `BlueskyPlatformSettingsEndpoint` (admin) |
+| **Events** | `PostPublishedEvent` → create/update queue; `PostUnpublishedEvent` → delete queue (FQ6) |
+| **XRPC** | `createSession` → `createRecord` / `putRecord` / `deleteRecord`; embed `app.bsky.embed.external` (FQ7) |
+| **Message** | `BlueskySyndicationMessageBuilder` — FQ4 template + FQ8 hashtags + 300-grapheme truncation |
+| **Republish** | Compare title to `last_syndicated_title`; update or delete+create per FQ5 |
+| **Failure notify** | `NotificationService.notifyBlueskySyndicationFailed(blog, post)` after max retries (FQ10) |
 | **Blog flag** | `Blog.blueskySyndicationEnabled` — saved via existing blog save form |
 | **Config** | `BlueskySettings` — maps env; `enabled()` false when handle/password missing |
 | **Tests** | Mock XRPC server; template unit tests; WebTest toggles blog checkbox |
@@ -183,6 +212,7 @@ Novo post de {{mentionHandle}}  "{{postTitle}}" {{tags}}
 |--------------|----------------|-----------|-------------|--------|-----|----------------|
 | `#blog-edit-form` | `GET /blogs/{id}/edit` | — | — | — | none | `@Logged` blog owner |
 | Bluesky fieldset | same page (inline in `gitSyncSection` sibling partial) | Blog save `hx-post` `/forms/blogs/...` | `#blog-edit-form` or full form swap per existing blog save | — | none | blog owner |
+| Admin kill-switch | `GET` platform insights Bluesky panel | Admin `hx-post` `/forms/administration/bluesky` | panel region or hub swap per ActivityPub pattern | — | none | `ADMIN` |
 
 No new custom `HtmxTriggers` events in v1.
 
@@ -195,7 +225,14 @@ Blog owner checks "Enable Bluesky syndication" → Save blog
 Author publishes post on that blog
   → PostPublicationService → PostPublishedEvent
   → BlueskyDeliveryObserver → enqueue delivery
-  → Scheduler → XRPC createRecord → platform Bluesky timeline
+  → Scheduler → XRPC createRecord (or putRecord / delete+create on republish)
+  → platform Bluesky timeline
+
+Author unpublishes
+  → PostUnpublishedEvent → BlueskyUnpublishObserver → deleteRecord
+
+Delivery exhausted retries
+  → NotificationService → blog owner in-app notification
 ```
 
 #### Feature checklist
@@ -206,8 +243,12 @@ Author publishes post on that blog
 | FC2 | Blog edit shows Bluesky toggle (hidden when platform disabled) | FQ2 | ☐ |
 | FC3 | Publish on enabled blog creates skeet with FQ4 template | FQ4 | ☐ |
 | FC4 | Toggle off → no delivery on publish | FQ2 | ☐ |
-| FC5 | Republish/unpublish behaviour per FQ5/FQ6 | FQ5, FQ6 | ☐ |
-| FC6 | Admin kill-switch (if FQ9=yes) | FQ9 | ☐ |
+| FC5 | Republish: update when title changes; delete+create fallback; skip when title unchanged | FQ5 | ☐ |
+| FC6 | Unpublish deletes Bluesky record | FQ6 | ☐ |
+| FC7 | Link card embed on skeet | FQ7 | ☐ |
+| FC8 | Hashtags `#PascalCase` space-separated in message | FQ8 | ☐ |
+| FC9 | Admin kill-switch halts all syndication | FQ9 | ☐ |
+| FC10 | Blog owner notified after delivery failure | FQ10 | ☐ |
 | FCdev | `dev-import.sql` — at least one blog with toggle on for manual click-through | dev-import | ☐ |
 
 #### Tasks (phase 3)
