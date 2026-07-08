@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-07-07 · User messaging (mailbox, compose, block, admin reports)
+**Last verified:** 2026-07-08 · ActivityPub v1.4 multi-blog Fediverse timeline + appearance copy
 
 ---
 

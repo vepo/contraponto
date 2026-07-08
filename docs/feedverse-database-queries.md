@@ -336,28 +336,28 @@ WHERE d.local_actor_id = a.id
 **Destructive.** Deletes that author’s deliveries and follows, then drops orphan remote actors nobody follows anymore. Remotes must Follow again afterward (auto-accept + historical Create backfill run on accept).
 
 ```sql
-BEGIN;
+  BEGIN;
 
-DELETE FROM tb_activitypub_deliveries
-WHERE local_actor_id IN (
-  SELECT a.id FROM tb_activitypub_actors a
-  JOIN tb_users u ON u.id = a.user_id
-  WHERE u.username = 'vepo'
-);
+  DELETE FROM tb_activitypub_deliveries
+  WHERE local_actor_id IN (
+    SELECT a.id FROM tb_activitypub_actors a
+    JOIN tb_users u ON u.id = a.user_id
+    WHERE u.username = 'vepo'
+  );
 
-DELETE FROM tb_activitypub_follows
-WHERE local_actor_id IN (
-  SELECT a.id FROM tb_activitypub_actors a
-  JOIN tb_users u ON u.id = a.user_id
-  WHERE u.username = 'vepo'
-);
+  DELETE FROM tb_activitypub_follows
+  WHERE local_actor_id IN (
+    SELECT a.id FROM tb_activitypub_actors a
+    JOIN tb_users u ON u.id = a.user_id
+    WHERE u.username = 'vepo'
+  );
 
-DELETE FROM tb_activitypub_remote_actors r
-WHERE NOT EXISTS (
-  SELECT 1 FROM tb_activitypub_follows f WHERE f.remote_actor_id = r.id
-);
+  DELETE FROM tb_activitypub_remote_actors r
+  WHERE NOT EXISTS (
+    SELECT 1 FROM tb_activitypub_follows f WHERE f.remote_actor_id = r.id
+  );
 
-COMMIT;
+  COMMIT;
 ```
 
 ### 4.5 Clear a dead remote (e.g. HTTP 410 on actor fetch)
@@ -385,7 +385,7 @@ WHERE actor_id = 'https://mstdn.social/ap/users/116619700957379404';
 COMMIT;
 ```
 
-Inbound POSTs from deleted remotes will still get **401** (no fetchable public key) — that is expected, not a local routing bug.
+Inbound **Delete** and no-op **Undo** (no active follow edge to reject) are accepted without refetching a gone actor key. Other inbox POSTs from deleted remotes may still get **401** (no fetchable public key).
 
 ---
 
@@ -394,7 +394,7 @@ Inbound POSTs from deleted remotes will still get **401** (no fetchable public k
 | Log / symptom | Likely cause | DB check / action |
 |---------------|--------------|-------------------|
 | `crypto mismatch` + `requestTarget=post /vepo/inbox` on subdomain Host | Signature path rewrite bug (should keep `/inbox`) | App / ingress fix — not a DB row |
-| `Remote actor fetch HTTP 410` + `no public key` | Remote deleted or moved actor | Remote `actor_id` row; optional [§4.5](#45-clear-a-dead-remote-eg-http-410-on-actor-fetch) |
+| `Remote actor fetch HTTP 410` + `no public key` on **Follow** | Remote deleted or moved actor | Remote `actor_id` row; optional [§4.5](#45-clear-a-dead-remote-eg-http-410-on-actor-fetch). **Delete** / no-op **Undo** skip key fetch |
 | Follows stay `PENDING` forever | Pre-auto-accept leftovers | [§2.3](#23-follows-stuck-in-pending); ask remote to re-follow |
 | Unfollow then re-follow does nothing | Old bug: `REJECTED` row blocked new Follow | Fixed: reopen + auto-accept; check `status` + `accepted_at` |
 | Many `FAILED` deliveries | Network, remote inbox, bad URL, or signature reject (`HTTP 401`) | `last_error`, `attempts`, `target_inbox_url` — then [§4.2](#42-re-queue-failed--pending) |
