@@ -34,6 +34,7 @@ See [change-request-analysis.mdc](../.cursor/rules/change-request-analysis.mdc) 
 | Author profile | `author-profile` |
 | Dashboard analytics | `dashboard-analytics` |
 | ActivityPub / Fediverse | `activitypub-integration` |
+| Bluesky platform syndication | `bluesky-platform-syndication` |
 | User-to-user messaging | `user-messaging` |
 | In-app notification retention | `notification-retention` |
 
@@ -159,6 +160,7 @@ Shipped capabilities use a **single Production baseline** changelog entry contai
 | Author profile & appearance | [author-profile.md](author-profile.md) | done |
 | Dashboard & platform analytics | [dashboard-analytics.md](dashboard-analytics.md) | done |
 | ActivityPub Fediverse integration | [activitypub-integration.md](activitypub-integration.md) | done |
+| Bluesky platform syndication | [bluesky-platform-syndication.md](bluesky-platform-syndication.md) | planned |
 | Notification retention | [notification-retention.md](notification-retention.md) | done |
 | User messaging | [user-messaging.md](user-messaging.md) | done |
 

@@ -47,6 +47,22 @@ public final class CustomPagePaths {
                                                                 "auth",
                                                                 "_custom_page");
 
+    /**
+     * Pipe-separated {@link #RESERVED_SEGMENTS} for JAX-RS path regex (compile-time
+     * literal — keep in sync with the set; see {@code CustomPagePathsTest}).
+     */
+    static final String RESERVED_SEGMENT_ALTERNATION =
+            "components|js|style|images|i18n|explore|feed|authors|main-blog|forms|api|write|writing|manage|account|editor|administration|search|library|dashboard|profile|review|reading|pages|blogs|users|comments|notifications|subscriptions|tags|post|serie|auth|_custom_page";
+
+    /**
+     * Single path-segment form for secondary blog slugs in {@code @Path} (excludes
+     * {@link #RESERVED_SEGMENTS} so routes like {@code /{username}/feed} reach
+     * RSS).
+     */
+    public static final String BLOG_SLUG_PATH_SEGMENT = "(?!(" + RESERVED_SEGMENT_ALTERNATION + "))[a-zA-Z0-9][a-zA-Z0-9_-]*";
+
+    public static final String BLOG_SLUG_PATH_PARAM = "{blogSlug: " + BLOG_SLUG_PATH_SEGMENT + "}";
+
     public static String blogSlug(java.util.List<jakarta.ws.rs.core.PathSegment> segments) {
         return segments.get(1).getPath();
     }
