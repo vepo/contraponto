@@ -665,6 +665,8 @@
 .review-row__content {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-width: 0;
 }
 
 .review-row__title {
@@ -679,9 +681,17 @@
 
 .review-row__actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
     gap: var(--spacing-sm);
     align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.review-row__actions .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .btn--featured {
@@ -1596,13 +1606,15 @@
   }
 
   .post-card__actions,
-  .draft-card__actions {
+  .draft-card__actions,
+  .review-row__actions {
     width: auto;
     flex-wrap: nowrap;
   }
 
   .post-card__actions .btn,
-  .draft-card__actions .btn {
+  .draft-card__actions .btn,
+  .review-row__actions .btn {
     flex: 0 1 auto;
   }
 
