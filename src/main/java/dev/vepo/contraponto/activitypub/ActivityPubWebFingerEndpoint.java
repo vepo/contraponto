@@ -10,7 +10,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 
-@Path("/.well-known/webfinger")
+@Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/well-known/webfinger")
 @ApplicationScoped
 public class ActivityPubWebFingerEndpoint {
 

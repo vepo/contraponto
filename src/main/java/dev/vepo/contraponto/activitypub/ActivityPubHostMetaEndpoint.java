@@ -11,7 +11,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
-@Path("/.well-known/host-meta")
+@Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/well-known/host-meta")
 @ApplicationScoped
 public class ActivityPubHostMetaEndpoint {
 

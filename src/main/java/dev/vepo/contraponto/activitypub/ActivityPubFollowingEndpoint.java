@@ -15,7 +15,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
-@Path("/{username}/following")
+@Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/user/{username}/following")
 @ApplicationScoped
 public class ActivityPubFollowingEndpoint {
 

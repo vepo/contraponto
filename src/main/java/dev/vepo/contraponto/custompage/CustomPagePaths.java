@@ -3,8 +3,14 @@ package dev.vepo.contraponto.custompage;
 import java.util.Set;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.shared.infra.InternalRoutePrefixes;
 
 public final class CustomPagePaths {
+
+    /**
+     * Internal JAX-RS prefix after {@link CustomPageFilter} rewrite.
+     */
+    public static final String INTERNAL_PREFIX = InternalRoutePrefixes.CUSTOM_PAGE;
 
     /**
      * First-path segments that must not be used as usernames or blog slugs, and
@@ -50,14 +56,17 @@ public final class CustomPagePaths {
                                                                 "inbox",
                                                                 "outbox",
                                                                 "activities",
-                                                                "_custom_page");
+                                                                "poco",
+                                                                "nodeinfo",
+                                                                "__activity_pub__",
+                                                                "__custom_page__");
 
     /**
      * Pipe-separated {@link #RESERVED_SEGMENTS} for JAX-RS path regex (compile-time
      * literal — keep in sync with the set; see {@code CustomPagePathsTest}).
      */
     static final String RESERVED_SEGMENT_ALTERNATION =
-            "components|js|style|images|i18n|explore|feed|authors|main-blog|forms|api|write|writing|manage|account|editor|administration|search|library|dashboard|profile|review|reading|pages|blogs|users|comments|notifications|subscriptions|tags|post|serie|auth|followers|following|inbox|outbox|activities|_custom_page";
+            "components|js|style|images|i18n|explore|feed|authors|main-blog|forms|api|write|writing|manage|account|editor|administration|search|library|dashboard|profile|review|reading|pages|blogs|users|comments|notifications|subscriptions|tags|post|serie|auth|followers|following|inbox|outbox|activities|poco|nodeinfo|__activity_pub__|__custom_page__";
 
     /**
      * Single path-segment form for secondary blog slugs in {@code @Path} (excludes
@@ -73,7 +82,7 @@ public final class CustomPagePaths {
     }
 
     public static String internalUrl(PageType type, String... segments) {
-        var builder = new StringBuilder("/_custom_page");
+        var builder = new StringBuilder(INTERNAL_PREFIX);
         switch (type) {
             case GLOBAL -> builder.append("/global/").append(segments[0]);
             case USER -> builder.append("/user/").append(segments[0]).append('/').append(segments[1]);

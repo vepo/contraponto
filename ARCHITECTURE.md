@@ -22,6 +22,23 @@ Canonical reference for developers and AI agents. For route-level UX detail see 
 
 **Scoped refresh:** Form mutations return the smallest HTML (target fragment + optional `hx-swap-oob`), not a full page. Auth login/signup/logout OOB-update `#menu-container` and broadcast `loggedIn` / `loggedOut` on `body` so only declared chrome subscribers refetch themselves; `#main` stays unchanged. See [docs/htmx-events.md](docs/htmx-events.md).
 
+### Internal route prefixes (`/__{feature}__/`)
+
+Some public URLs would collide with `/{username}/…` blog routes or need a dedicated JAX-RS tree. **`@PreMatching` filters** rewrite them to an internal grouping prefix before routing:
+
+| Pattern | Example | Filter | Internal endpoint |
+|---------|---------|--------|-------------------|
+| `/__{feature_snake_case}__` | `/__custom_page__` | `CustomPageFilter` | `CustomPageEndpoint` |
+| `/__{feature_snake_case}__` | `/__activity_pub__` | `ActivityPubIngressFilter` | ActivityPub `*Endpoint` classes |
+
+- **Builder:** `InternalRoutePrefixes.of("feature_snake_case")` in `shared.infra` — constants `CUSTOM_PAGE`, `ACTIVITY_PUB`.
+- **Public URLs unchanged** — only the servlet path seen by JAX-RS is rewritten (same idea as custom pages).
+- **Reserved segments:** internal prefix tokens (`__custom_page__`, `__activity_pub__`, …) are listed in `CustomPagePaths` so they cannot be usernames or blog slugs.
+- **Never** link internal prefixes in HTML, sitemap, or RSS; list them in `CrawlerPrivatePaths`.
+- **New ingress:** add a constant to `InternalRoutePrefixes`, a `*Paths` matcher, a `@PreMatching` filter, and register handlers only under the internal prefix — do not add protocol logic to `BlogEndpoint` / `PostEndpoint`.
+
+See [docs/rest-url-guide.md](docs/rest-url-guide.md) §2 and §11.
+
 ## 3. Multi-blog model
 
 - Each **user** has one **main** blog (auto-created) and optional secondary blogs (`tb_blogs`, unique `(owner_id, slug)`).
@@ -43,7 +60,7 @@ Each blog and post has a **dual blog URL**: platform path (below) and author **b
 
 Use `BlogPublicUrlService` in templates, SEO, RSS, and emails for reader-facing links. Internal path builders `PostPaths.extractUrl(post)` and `BlogPaths.extractUrl(blog)` remain the platform-path form used after `BlogSubdomainFilter` rewrites subdomain requests.
 
-`CustomPageFilter` rewrites public custom-page URLs to `/_custom_page/...`; `CustomPageEndpoint` loads published pages via `CustomPageCache` (in-memory, invalidated on `CustomPageChangedEvent`).
+`CustomPageFilter` rewrites public custom-page URLs to `/__custom_page__/...`; `CustomPageEndpoint` loads published pages via `CustomPageCache` (in-memory, invalidated on `CustomPageChangedEvent`).
 
 ## 4. Post publications (versioning)
 

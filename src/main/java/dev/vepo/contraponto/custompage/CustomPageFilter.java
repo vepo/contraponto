@@ -10,6 +10,11 @@ import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.ext.Provider;
 
+/**
+ * Rewrites public custom-page GET/HEAD URLs to
+ * {@link CustomPagePaths#INTERNAL_PREFIX} ({@code /__custom_page__/...}) before
+ * JAX-RS routing.
+ */
 @PreMatching
 @Provider
 @Priority(Priorities.ENTITY_CODER)

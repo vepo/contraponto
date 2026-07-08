@@ -17,7 +17,9 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-@Path("/_custom_page")
+import dev.vepo.contraponto.shared.infra.InternalRoutePrefixes;
+
+@Path(InternalRoutePrefixes.CUSTOM_PAGE)
 @ApplicationScoped
 public class CustomPageEndpoint {
 

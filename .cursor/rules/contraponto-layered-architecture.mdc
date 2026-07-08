@@ -14,6 +14,7 @@ Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) §9 and §11. Dependencies flow 
 ## *Endpoint — HTTP boundary
 
 - `@ApplicationScoped` + `@Path`; handle requests, auth gates (`@Logged`, `*Access`), status codes, Qute rendering.
+- **Internal ingress endpoints** register only under `/__{feature_snake_case}__` (see `InternalRoutePrefixes`); a `@PreMatching` filter rewrites public URLs — never put protocol or collision-prone paths on `BlogEndpoint`.
 - Map path/query/form input to domain calls; build `Response` and template view models.
 - **May** inject `*Repository` for trivial read-only lookups (single `find`, existence check) with no business rules.
 - **Must** inject `*Service` when logic spans entities, enforces invariants, fires CDI events, or coordinates writes.

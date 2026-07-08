@@ -2,6 +2,8 @@ package dev.vepo.contraponto.seo;
 
 import java.util.List;
 
+import dev.vepo.contraponto.shared.infra.InternalRoutePrefixes;
+
 public final class CrawlerPrivatePaths {
 
     private static final List<String> PREFIXES = List.of("/write",
@@ -26,7 +28,8 @@ public final class CrawlerPrivatePaths {
                                                          "/notifications",
                                                          "/subscriptions",
                                                          "/password-recovery",
-                                                         "/_custom_page",
+                                                         InternalRoutePrefixes.CUSTOM_PAGE,
+                                                         InternalRoutePrefixes.ACTIVITY_PUB,
                                                          "/components/",
                                                          "/search");
 

@@ -126,7 +126,7 @@ No change to post editor wireframe in MVP (publish triggers delivery automatical
 | AQ2 | Shared inbox URL pattern: per-actor inbox vs platform **sharedInbox**? | answered | **Per-actor inbox** on subdomain host per ADR-0008 |
 | AQ3 | Activity **object id** for post: canonical post URL vs stable UUID path `/posts/{uuid}`? | answered | **stable object id** |
 | AQ4 | Private key encryption: Quarkus **SmallRye JWT** secret vs dedicated `ACTIVITYPUB_KEY_ENCRYPTION_SECRET`? | answered | **yes** — dedicated `ACTIVITYPUB_KEY_ENCRYPTION_SECRET` |
-| AQ5 | Mastodon **NodeInfo** / **FediWellKnown** endpoints for discovery? | open | Optional v1.1 — not blocking MVP |
+| AQ5 | Mastodon **NodeInfo** / **FediWellKnown** endpoints for discovery? | answered | **NodeInfo 2.0** + `/.well-known/nodeinfo` JRD; public URLs rewritten to `/__activity_pub__/...` via `ActivityPubIngressFilter` |
 
 ## Architecture
 
@@ -152,7 +152,7 @@ No change to post editor wireframe in MVP (publish triggers delivery automatical
 | **Post object** | `type`: `Article`; content format = **title + canonical link** (FQ3); `published`, `updated`, `url`, `to`: `Public`, `cc`: followers collection |
 | **Follow flow** | Inbound `Follow` → store pending → author Accept → `Accept` activity to remote + add to followers collection |
 | **Delivery** | POST signed JSON to remote `inbox` from actor record; exponential backoff |
-| **Paths** | New `ActivityPubPaths` — no hardcoded URLs in templates |
+| **Paths** | `ActivityPubPaths` public URLs; `ActivityPubIngressFilter` rewrites to `/__activity_pub__/...` internal JAX-RS tree (see [rest-url-guide.md](../docs/rest-url-guide.md) §11) |
 | **Manage auth** | Actor owner enables federation; **admin global kill-switch required** (FQ5=yes) |
 | **Tests** | Signature verify/generate; inbox rejects unsigned; outbox paging; delivery job marks success/failure |
 

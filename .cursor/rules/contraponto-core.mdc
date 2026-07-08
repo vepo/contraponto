@@ -29,6 +29,7 @@ Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) and existing code in the same pa
 ## URLs (do not hardcode in templates)
 
 - Canonical builders: `*Paths` classes — [contraponto-no-method-bypass-allowed.mdc](contraponto-no-method-bypass-allowed.mdc).
+- **Internal ingress** (never in templates or SEO): `/__{feature_snake_case}__` via `InternalRoutePrefixes` — [ARCHITECTURE.md](../../ARCHITECTURE.md) §2; `CustomPagePaths.INTERNAL_PREFIX`, `ActivityPubIngressPaths.INTERNAL_PREFIX`.
 - Posts: `PostPaths.extractUrl(post)` — `/{username}/post/{slug}` or `/{username}/{blogSlug}/post/{slug}`.
 - Custom pages: `CustomPagePaths.publicUrl(page)` — always includes `/page/` segment.
 - Links in Qute: `TemplateExtensions.url(...)` (must delegate to `*Paths`, not `*Endpoint` statics).
