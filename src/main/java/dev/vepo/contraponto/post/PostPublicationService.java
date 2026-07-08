@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.notification.PostPublishedEvent;
+import dev.vepo.contraponto.content.render.PostContentRenderer;
 import dev.vepo.contraponto.tag.Tag;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
@@ -34,6 +35,7 @@ public class PostPublicationService {
     private final PostImageDependencyService postImageDependencyService;
     private final PostSlugAliasRepository postSlugAliasRepository;
     private final PostRepository postRepository;
+    private final PostContentRenderer postContentRenderer;
     private final Event<PostPublishedEvent> postPublishedEvents;
 
     @Inject
@@ -41,11 +43,13 @@ public class PostPublicationService {
                                   PostImageDependencyService postImageDependencyService,
                                   PostSlugAliasRepository postSlugAliasRepository,
                                   PostRepository postRepository,
+                                  PostContentRenderer postContentRenderer,
                                   Event<PostPublishedEvent> postPublishedEvents) {
         this.publicationRepository = publicationRepository;
         this.postImageDependencyService = postImageDependencyService;
         this.postSlugAliasRepository = postSlugAliasRepository;
         this.postRepository = postRepository;
+        this.postContentRenderer = postContentRenderer;
         this.postPublishedEvents = postPublishedEvents;
     }
 
@@ -115,6 +119,7 @@ public class PostPublicationService {
         int nextVersion = publicationRepository.findMaxVersion(post.getId()).orElse(0) + 1;
         candidate.setVersion(nextVersion);
         candidate.setPublishedAt(resolvePublicationTimestamp(post, live));
+        candidate.setRenderedHtml(postContentRenderer.renderBody(candidate.getContent(), candidate.getFormat()));
         publicationRepository.save(candidate);
         publicationRepository.flush();
         postImageDependencyService.snapshotPublicationDependencies(candidate, post);

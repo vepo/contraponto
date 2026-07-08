@@ -1,10 +1,9 @@
 package dev.vepo.contraponto.content.render;
 
-import dev.vepo.contraponto.image.ContentImageMarkerService;
 import dev.vepo.contraponto.image.RenderedHtmlEnricher;
+import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.post.PostPublicationRenderedHtmlBackfill;
 import dev.vepo.contraponto.renderer.Format;
-import dev.vepo.contraponto.renderer.Renderer;
-import dev.vepo.contraponto.shared.security.HtmlSanitizer;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -13,35 +12,51 @@ import jakarta.inject.Inject;
 @Unremovable
 public class PostContentRenderer {
 
-    private final ContentImageMarkerService contentImageMarkerService;
-    private final ContentRenderTagProcessor tagProcessor;
-    private final HtmlSanitizer htmlSanitizer;
+    private final PostContentBodyRenderer bodyRenderer;
+    private final PostPublicationRenderedHtmlBackfill renderedHtmlBackfill;
     private final RenderedHtmlEnricher renderedHtmlEnricher;
 
     @Inject
-    public PostContentRenderer(ContentImageMarkerService contentImageMarkerService,
-                               ContentRenderTagProcessor tagProcessor,
-                               HtmlSanitizer htmlSanitizer,
+    public PostContentRenderer(PostContentBodyRenderer bodyRenderer,
+                               PostPublicationRenderedHtmlBackfill renderedHtmlBackfill,
                                RenderedHtmlEnricher renderedHtmlEnricher) {
-        this.contentImageMarkerService = contentImageMarkerService;
-        this.tagProcessor = tagProcessor;
-        this.htmlSanitizer = htmlSanitizer;
+        this.bodyRenderer = bodyRenderer;
         this.renderedHtmlEnricher = renderedHtmlEnricher;
+        this.renderedHtmlBackfill = renderedHtmlBackfill;
     }
 
-    public String render(String content, Format format) {
-        if (content == null || content.trim().isEmpty()) {
+    private String enrich(String html) {
+        return renderedHtmlEnricher.enrichHtml(html);
+    }
+
+    /**
+     * Renders a publication snapshot: stored HTML when present, otherwise cache +
+     * lazy DB backfill.
+     */
+    public String render(PostPublication publication) {
+        if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
             return "";
         }
-        String withoutMarkers = contentImageMarkerService.toEditorContent(content)
-                                                         .replace("//api/images/", "/api/images/");
-        // Expand render tags before conversion. AsciiDoc safe mode escapes raw HTML and
-        // autolinks URLs inside tags, so plugin HTML is wrapped in passthrough blocks
-        // first.
-        String html = format == Format.ASCIIDOC
-                                                ? Renderer.get(format).render(tagProcessor.applyWithAsciiDocPassthrough(withoutMarkers))
-                                                : Renderer.get(format).render(tagProcessor.apply(withoutMarkers));
-        html = htmlSanitizer.sanitizePostHtml(html);
-        return renderedHtmlEnricher.enrichHtml(html);
+        String body = publication.getRenderedHtml();
+        if (body == null || body.isBlank()) {
+            body = renderBody(publication.getContent(), publication.getFormat());
+            renderedHtmlBackfill.backfillIfAbsent(publication, body);
+        }
+        return enrich(body);
+    }
+
+    /**
+     * Renders draft or unpublished post content (in-memory cache only).
+     */
+    public String render(String content, Format format) {
+        return enrich(renderBody(content, format));
+    }
+
+    /**
+     * Sanitized HTML body without image alt enrichment — stored on
+     * {@link PostPublication} at publish.
+     */
+    public String renderBody(String content, Format format) {
+        return bodyRenderer.render(content, format);
     }
 }

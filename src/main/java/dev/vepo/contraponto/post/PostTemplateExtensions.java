@@ -122,7 +122,7 @@ public class PostTemplateExtensions {
         if (publication == null || publication.getContent() == null || publication.getContent().trim().isEmpty()) {
             return "";
         }
-        return postContentRenderer().render(publication.getContent(), publication.getFormat());
+        return postContentRenderer().render(publication);
     }
 
     @TemplateExtension

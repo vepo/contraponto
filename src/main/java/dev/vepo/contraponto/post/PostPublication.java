@@ -54,6 +54,14 @@ public class PostPublication {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    /**
+     * Sanitized HTML snapshot of {@link #content} at publish time (before
+     * per-request image alt enrichment). Null for rows created before rendered-html
+     * caching.
+     */
+    @Column(name = "rendered_html", columnDefinition = "TEXT")
+    private String renderedHtml;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Format format;
@@ -110,6 +118,10 @@ public class PostPublication {
         return publishedAt;
     }
 
+    public String getRenderedHtml() {
+        return renderedHtml;
+    }
+
     public String getSlug() {
         return slug;
     }
@@ -157,6 +169,10 @@ public class PostPublication {
 
     public void setPublishedAt(LocalDateTime publishedAt) {
         this.publishedAt = publishedAt;
+    }
+
+    public void setRenderedHtml(String renderedHtml) {
+        this.renderedHtml = renderedHtml;
     }
 
     public void setSlug(String slug) {
