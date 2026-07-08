@@ -131,6 +131,8 @@ Do **not** set `CONTRAPONTO_ACTIVITYPUB_INSECURE_ACCEPT_UNSIGNED=true` in produc
 
 Authors enable federation per account under **Writing → Appearance**. Platform administrators can disable federation globally under **Platform insights**.
 
+**Outbound HTTP Signatures:** deliveries set `Host` on the signed POST (same value as in the Signature header list). The JVM image sets `-Djdk.httpclient.allowRestrictedHeaders=host` at start ([Dockerfile.jvm](../src/main/docker/Dockerfile.jvm)). Local `./mvnw quarkus:dev` / IDE runs need the same flag if you exercise Delivery against a real remote.
+
 **Operator procedure:** [contraponto-prod/docs/MOP-UPDATE.md](../../contraponto-prod/docs/MOP-UPDATE.md) §6.
 
 **DNS / nginx:** author subdomains, **apex domain** (`commit-mestre.dev` for WebFinger), and `/.well-known/webfinger` must reach the app. Wildcard `*` does not cover the apex — add an apex **A** record to the same server. See [contraponto-prod/docs/MOP-DEPLOYMENT.md](../../contraponto-prod/docs/MOP-DEPLOYMENT.md) §2.2.

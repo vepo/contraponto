@@ -18,5 +18,7 @@ COPY --chown=quarkus:quarkus target/quarkus-app/quarkus/ /deployments/quarkus/
 USER 1001
 EXPOSE 8080
 
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-ENTRYPOINT ["java", "-jar", "/deployments/quarkus-run.jar"]
+# allowRestrictedHeaders=host: ActivityPub outbound signatures include Host; JDK forbids
+# setting Host on HttpRequest unless this property is set at JVM start.
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djdk.httpclient.allowRestrictedHeaders=host"
+ENTRYPOINT [ "sh", "-c", "exec java $JAVA_OPTS -jar /deployments/quarkus-run.jar" ]
