@@ -139,6 +139,51 @@ class ActivityPubOutboxTest {
     }
 
     @Test
+    void outboxIncludesSecondaryBlogCreateWithBlogNameAndPath() {
+        var secondary = Given.blog()
+                             .withUser(user)
+                             .withSlug("lab-notes")
+                             .withName("Lab Notes")
+                             .withDescription("Secondary blog for Fediverse outbox")
+                             .persist();
+        var secondaryPost = Given.post()
+                                 .withAuthor(user)
+                                 .withBlog(secondary)
+                                 .withTitle("Secondary Outbox Note")
+                                 .withSlug("secondary-outbox-note")
+                                 .withDescription("Must not appear in Create content")
+                                 .withContent("Body")
+                                 .persist();
+
+        var outbox = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                            .get("/outboxuser/outbox")
+                            .then()
+                            .statusCode(200)
+                            .extract()
+                            .body()
+                            .asString();
+        assertThat(outbox).contains("Outbox Post")
+                          .contains("Secondary Outbox Note")
+                          .contains("Lab Notes")
+                          .contains("/outboxuser/lab-notes/post/secondary-outbox-note")
+                          .contains("\"published\"");
+
+        var activity = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                              .get("/outboxuser/activities/create/%d".formatted(secondaryPost.getId()))
+                              .then()
+                              .statusCode(200)
+                              .extract()
+                              .body()
+                              .asString();
+        assertThat(activity).contains("\"type\":\"Create\"")
+                            .contains("Secondary Outbox Note")
+                            .contains("Lab Notes")
+                            .contains("/outboxuser/lab-notes/post/secondary-outbox-note")
+                            .contains("\"published\"")
+                            .doesNotContain("Must not appear in Create content");
+    }
+
+    @Test
     void outboxListsCreateAfterPublish() {
         var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
                           .get("/outboxuser/outbox")

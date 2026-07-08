@@ -6,6 +6,281 @@
 
 ## Changelog
 
+### Mastodon-like author timeline (remote profile statuses) — 2026-07-08
+
+**Version:** 1.4  
+**Status:** review-ready
+
+**Description:** Make a Contraponto author **look like a Mastodon user** when another Fediverse user opens **that author's timeline**: remote **profile / statuses** and the follower's **home** timeline after Follow/Accept are both success surfaces (**FQ13**). The archive is **all** published posts with no recent-N cap (**FQ14**), including **secondary-blog** posts with a **different** Create content template that points at the secondary blog (**FQ17** — reopens FQ2 / ADR-0008 MVP main-only). Each Create must carry top-level activity `published` = publication date (**FQ15**). **Outbox crawl shape and Accept/re-Follow inbox backfill must match** for membership, ids, dates, and ordering (**FQ16**). Archive / outbox / backfill are ordered primarily by **publication date**, **interleaving** main and secondary posts by `publishedAt` (**FQ23**). **`attributedTo`** is the **same Person** for every blog (**FQ22** — ADR-0008 one Person per User; no per-blog actor). Live secondary-blog publish **enqueues Create immediately** when Fediverse opt-in is on, same as main (**FQ24**). Opt-in / appearance **covers all blogs** under that one control — not silent secondary, not a separate per-blog toggle in v1.4 (**FQ25**). Secondary Create **content** = **title + blog name + canonical post link** (**FQ20**); secondary object **`id`/`url`/content link** = platform secondary post path `/{username}/{blogSlug}/post/{slug}` via existing `PostPaths` / `ActivityPubPaths.postObjectId` rules (**FQ21**). User approved **reopen ADR-0008** to amend outbox/syndication scope for multi-blog on one Person (**FQ26**); user then **re-accepted** ADR-0008 (`Aceito o ADR-0008`, 2026-07-08) — phase 3 gate unblocked. Today actor, paged outbox, and Accept backfill exist (v1.1) but are main-blog / date-semantics / multi-blog incomplete relative to these answers. **Ops dependency:** production **FAILED** outbound Creates (historically HTTP **401** signature/`Date`/`Host`, addressed in v1.3) must be re-queued successfully before remotes show history.
+
+**Domain model:** updated 2026-07-08 (phase 1b). Ubiquitous Language (ActivityPub) amended in [`docs/domain-specification.md`](../docs/domain-specification.md): dropped MVP **main-blog-only** outbox/syndication; **multi-blog** Creates on **one Person** (`attributedTo` same); archive/outbox/backfill ordered by **`publishedAt`** (interleaved); **Fediverse Create content** (main = title + canonical post link per FQ3; secondary = title + blog name + canonical post link); **Fediverse post object URL** documents main `/{username}/post/{slug}` and secondary `/{username}/{blogSlug}/post/{slug}`; **Fediverse opt-in** = one control for **all blogs**; **Fediverse author timeline** = remote profile/statuses **and** follower home; Create top-level **`published`**; unfollow → **REJECTED**, re-Follow reopens (retained). Business rules **32–35** added. UI label: Fediverse opt-in copy → all blogs. Boundedness: Integration (`activitypub`); no new packages.
+
+**Architecture (phase 2):** 2026-07-08 — see **Architecture (v1.4)** below. **ADR-0008** amended (multi-blog outbox/syndication) and **Accepted** again by user 2026-07-08. **ADR-0006** Accepted MVP table still says “main blog posts in outbox” — drift tracked as **AQ27** (editorial reopen optional; **0008** governs outbox membership).
+
+**Task break (phase 3):** 2026-07-08 — Tasks **T24-java** … **T30-htmx**, **Tdev**; Test coverage **TC21–TC29**. Status **`tasks-ready`**. **Stop for Development approval (phase 4)** — no production/test code until user approves task IDs.
+
+**Development (phase 5):** 2026-07-08 — Java/HTMX/`Tdev` implementation in progress under **Development approval**. Status **`in-progress`**.
+
+**Impact review (2026-07-08, Architect):** Verified code gaps: outbox/backfill/live fan-out/activity fetch are **main-blog-only**; Create lacks top-level `published`; `content` still embeds post description (align FQ3/FQ20); appearance i18n says main blog. Locked product answers unchanged. Opened **AQ27–AQ29**; answered **AQ28**, **AQ29**. **FQ18** / **FQ19** remain informational open.
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| ActivityPub outbox (v1.1) | Must list **full** archive (main **+ secondary**) ordered primarily by **`publishedAt`** (interleaved across blogs, **FQ23**), with correct activity `published`, stable ids (`/{username}/{blogSlug}/post/{slug}` for secondary, **FQ21**), and paging so crawlers match inbox backfill (**FQ14**, **FQ16**, **FQ17**) |
+| Fediverse follow backfill (v1.1) | Deliver **all** published posts in that interleaved archive to new followers (no recent-N); same order rule as outbox; activity top-level `published`; secondary content = **title + blog name + post link** (**FQ14**, **FQ15**, **FQ17**, **FQ20**, **FQ23**) |
+| Publish / unpublish observers | **Live Create** on secondary publish when opt-in on (**FQ24**), same path as main; Deletes/unpublish for secondary expected to mirror main (Architect — no extra FQ) |
+| ActivityPub delivery queue / ops | Full-history + secondary + live secondary publish multiplies volume; FAILED historical Creates still block visible remote history; re-queue / monitoring after v1.3 |
+| Actor identity / ADR-0008 | **FQ22** locks **same Person** `attributedTo` for all blogs (no per-blog actor). **FQ26:** ADR-0008 reopened, amended, and **re-Accepted** 2026-07-08 (outbox/syndication = multi-blog Creates on one Person) |
+| Secondary blogs / FQ2 | **Scope expansion** — FQ2 “main only” superseded for v1.4 by FQ17 + FQ20–FQ26; content/URL/ADR path now locked |
+| Multi-blog URLs / `PostPaths` | Secondary Create `id`/`url`/content link = platform `/{username}/{blogSlug}/post/{slug}` (**FQ21**) via `PostPaths` / `ActivityPubPaths.postObjectId` — align with RSS/SEO platform forms (not blog-subdomain-only) |
+| Blog audience Follow (in-app) | No change — distinct from Fediverse Follow |
+| Contraponto UI (appearance, follow requests) | Still primarily S2S; **FQ25** requires opt-in label/copy to say **all blogs** (not “main blog”); **FQ19** may still add optional history/timeline help under that control |
+| RSS / SEO | Same platform canonical post URLs in Activity objects as HTML public URLs (secondary includes `blogSlug` segment); no reader HTML chrome change expected |
+| Author appearance Fediverse opt-in | **All blogs** under one toggle (**FQ25**); update wireframe checkbox copy; existing authors who opted in under old “main” wording now federate secondary too once shipped — communicate via copy change |
+| Domain spec | Phase 1b must drop / amend “MVP outbox main blog only” and backfill wording to all blogs + secondary content template + secondary post object path |
+
+**Wireframe:** N/A for local **timeline** chrome — no new Contraponto Qute/HTMX timeline surface. Observable UX is on **remote** Mastodon (or compatible):
+
+1. **Author profile / statuses** — full archive, statuses dated/ordered by publication date, main + secondary interleaved (**FQ23**); all statuses `attributedTo` the same Person (**FQ22**).
+2. **Follower home** after Follow/Accept — same archive membership via backfill + **live** Creates including secondary (**FQ13**, **FQ24**).
+
+**Create content (remote status text):**
+
+| Blog | Content template (FQ3 / FQ20) |
+|------|-------------------------------|
+| Main | **title + link** (FQ3) — title + canonical main post link |
+| Secondary | **title + blog name + canonical post link** (**FQ20**) — includes secondary blog name so the status is distinct under one Person |
+
+**Object `id` / `url` / content link (**FQ21**):** platform secondary path `/{username}/{blogSlug}/post/{slug}` (same stable platform-URL rules as main via `PostPaths` / `ActivityPubPaths.postObjectId`) — not blog-home-only, not subdomain-only as the object id.
+
+Local appearance (opt-in copy locked by **FQ25**; optional extra help still **FQ19**):
+
+```
+┌─ Fediverse (ActivityPub) ─────────────────────────────┐
+│ [ ] Publish my blog posts to the Fediverse            │
+│     (all blogs — main and secondary)                    │
+│ …                                                     │
+└───────────────────────────────────────────────────────┘
+```
+
+**Risks**
+
+* **Delivery load (confirmed)** — **full** archive (**FQ14**) to every new follower, including **secondary** (**FQ17**), + **live** secondary Creates (**FQ24**), floods queue/inboxes for multi-blog authors.
+* **Outbox ↔ inbox drift** — product requires **both** paths to match (**FQ16**), including **interleaved `publishedAt` order** (**FQ23**); fixing only one leaves wrong profile or home behaviour.
+* **Date semantics** — activity-level `published` required (**FQ15**); ordering primarily by publication date (**FQ23**).
+* **Ops gate** — protocol fixes do not surface history while Creates remain FAILED; product “done” depends on successful delivery after v1.3.
+* **Idempotent re-deliver** — re-queue or re-Follow backfill may duplicate statuses if activity/object IDs unstable or remotes do not dedupe; **FQ18** (informational) covers wrong-date remediation via Update.
+* **Secondary presentation** — content template and URLs locked (**FQ20**, **FQ21**); remotes must still show blog name clearly so secondary statuses do not look like duplicate main title+link posts under the same Person (**FQ22**).
+* **ADR / domain drift** — **FQ26** path locked: ADR-0008 Architect amend **re-Accepted** 2026-07-08. ADR-0006 Accepted MVP row still says main-only (**AQ27**). Domain-spec vocabulary is aligned with FQ17 / FQ20–FQ25 (phase 1b).
+* **Opt-in expectation shift** — authors who enabled under “main blog” copy will get **all blogs** after ship (**FQ25**); mitigate with updated appearance wording (not silent). Existing enabled actors need migration/comms awareness in Implementation notes later.
+
+#### Feature checklist
+
+| ID | Criterion | Status |
+|----|-----------|--------|
+| FC25 | Remote **author profile / statuses** shows the author’s federated archive with publication dates (main + secondary, interleaved by `publishedAt` per FQ23; secondary content/URL per FQ20–FQ21) | ☐ |
+| FC26 | Follower **home** after Follow/Accept receives Creates for that same archive (verification surface per FQ13); dates via activity `published` (FQ15); live secondary Creates when opted in (FQ24) | ☐ |
+| FC27 | Outbox Create activities and Accept/re-Follow inbox backfill **match** for membership, ids, `published`, and **`publishedAt` order** (FQ16, FQ23) | ☐ |
+| FC28 | Historical Create volume = **all** published posts on **all blogs** under the Person (no recent-N) for Accept / re-Follow backfill and outbox completeness (FQ14, FQ17, FQ25) | ☐ |
+| FC29 | Create **activity** top-level `published` = post publication date; object `published`/`updated` remain correct | ☐ |
+| FC30 | Secondary-blog posts **included** in outbox + backfill + **live Create** (FQ24); content = **title + blog name + canonical post link** (FQ20); object `id`/`url`/link = platform `/{username}/{blogSlug}/post/{slug}` (FQ21); `attributedTo` = same Person (FQ22) | ☐ |
+| FC31 | Ops path documented: FAILED historical Creates can be re-queued after delivery/signature fixes so remotes receive the archive | ☐ |
+| FC32 | Product/docs/ADR alignment for secondary / all-blog outbox scope — ADR-0008 Architect amend (FQ26) **re-Accepted** by user 2026-07-08; domain-spec phase 1b done; checkbox stays open until shipped behaviour + docs/`verify` match Accepted ADR | ☐ |
+| FC33 | Author appearance Fediverse opt-in copy/behaviour describes **all blogs** (not main-only); single control; no silent secondary syndication (FQ25) | ☐ |
+| FCdev | `%dev` alice (or chosen persona) has enough published **main** and **secondary** blog posts to exercise multi-page outbox + interleaved date order + live secondary Create + distinct secondary content (title+blog name+link); feature-catalog / appearance copy / ops notes if click path or SQL changes | ☐ |
+
+#### Feature questions (FQ*n*)
+
+| # | Question | Blocking? | Status | Answer | PO recommendation (not an answer) |
+|---|----------|-----------|--------|--------|-----------------------------------|
+| FQ13 | Which remote surface is the success criterion: Mastodon **remote profile / statuses** (author timeline), the follower's **home** timeline after Follow/Accept, or **both**? | **blocking** | answered | **both** — remote profile/statuses AND follower home timeline | Prefer **remote profile / statuses** as primary; treat home as secondary verification. |
+| FQ14 | Must **all** published main-blog posts appear on that surface, or is a **recent-N** cap acceptable for Accept/re-Follow backfill (and optionally outbox completeness for crawlers)? (~100+ posts on large authors.) | **blocking** | answered | **all** — all posts (no recent-N cap). Scope now includes secondary blogs per FQ17 (volume impact). | Prefer **all** for archive parity; measure queue after secondary expansion. |
+| FQ15 | Should the Create **activity** also set top-level `published` (matching the object / `Post.getPublishedAt()`), or is object-level `published` enough for Mastodon status dates? | **blocking** | answered | **yes** — Create activity top-level `published` = publication date | Prefer activity `published` = object publication time. |
+| FQ16 | For "timeline", is the product expectation primarily **outbox crawl** (Mastodon fetches `/outbox`), **inbox backfill** on Accept/re-Follow, or **both must match**? | **blocking** | answered | **both** — outbox crawl shape AND inbox backfill must match | Prefer both match for ids, `published`, membership. |
+| FQ17 | Are **secondary blogs** still deferred (main blog only), or should this change reopen FQ2 / ADR-0008? | **blocking** | answered | **no (secondary blogs included)** — Secondary blog **is** included, but the message/content is **different**, pointing to the blog (not the same as main-blog Create preview). Reopens FQ2 MVP main-only for v1.4 product scope; ADR-0008 Person-per-User confirmed by FQ22; outbox scope via FQ26 reopen. | Had preferred defer; user chose include-with-different-content — FQ20–FQ21, FQ26 closed. |
+| FQ18 | If remotes already stored statuses with wrong dates from earlier Creates, is **re-delivery / Update** required in v1.4, or is **correct dates for new + re-Follow backfill** enough? | informational | open | | Prefer **correct going forward + ops re-queue of FAILED** in v1.4; explicit Update-to-fix-dates as follow-up unless interop shows remotes never correct without Update. |
+| FQ19 | Should authors see any Contraponto UI copy about "your Fediverse profile shows your post history with publication dates", or remain S2S-only? | informational | open | | Prefer **S2S-only** for v1.4 beyond the **FQ25** all-blogs opt-in wording (already required). Optional one-line timeline/history help under Fediverse appearance later. |
+| FQ20 | For **secondary-blog** Creates, what is the exact **content template** (e.g. title + blog name + link; title + blog name + blog home link only; other)? How does it differ field-by-field from main-blog **title + link** (FQ3)? | **blocking** | answered | **title + blog name + canonical post link** — Secondary Create content = post title, secondary **blog name**, and canonical **post** link. Differs from main (**FQ3** title + link) by inserting the blog name between title and link (no summary; not blog-home-only). | Prefer title + **blog name** + canonical **post** link so the status points at the secondary blog context without a second actor (FQ22 locked). |
+| FQ21 | Which **URL(s)** appear on secondary Creates — post object `id` / `url`, and any link in content: platform `/{username}/{blogSlug}/post/{slug}`, blog-subdomain form, **blog home** only, or mix? | **blocking** | answered | **platform secondary post path** — object `id` / `url` and content link use `/{username}/{blogSlug}/post/{slug}` via existing `PostPaths` / `ActivityPubPaths.postObjectId` rules (same stable **platform** URL rules as main). Not blog-home-only; not subdomain-only as object id. | Prefer same stable **post object id** rules as main (platform username-prefixed secondary path) so remotes resolve the post; content may still name the blog. |
+| FQ22 | Does `attributedTo` remain the **same User Person actor** for secondary-blog Creates (ADR-0008 one Person), with no per-blog actor? | **blocking** | answered | **yes** — same Person `attributedTo` for all blogs | Prefer **yes — same Person**; secondary is outbox membership + different content only. |
+| FQ23 | How is the **full archive** composed for outbox + backfill: all main + secondary posts **interleaved by `publishedAt`**, main then secondary, or another rule? Unlisted/draft excluded as today? | **blocking** | answered | **publish date is the main order** — archive / outbox / backfill ordered primarily by publication date (interleave across blogs by `publishedAt`) | Prefer **single timeline interleaved by publication date** across blogs the user owns (published only). |
+| FQ24 | On **live publish** of a secondary-blog post (Fediverse opt-in on), enqueue Create to followers immediately (same as main), or only ensure secondary appears via outbox/backfill? | **blocking** | answered | **create now** — live secondary-blog publish enqueues Create immediately (same as main) | Prefer **live Create** same as main so home timeline stays current. |
+| FQ25 | Author appearance opt-in currently says publish **main blog** posts — with FQ17, update copy/behaviour to **all blogs**, keep main-only wording but deliver secondary, or add a separate secondary control? | **blocking** | answered | **all blogs** — Fediverse opt-in / appearance covers all blogs (not silent, not separate per-blog control for v1.4) | Prefer update copy to reflect **all blogs** under one Person; avoid silent secondary syndication. |
+| FQ26 | How should **Accepted ADR-0008** / domain-spec “MVP main-blog outbox only” be handled for this changelog — user **reopens** ADR-0008 for amendment, **Superseded** by a new ADR, or feature-local Architecture note only (ADR stays Person-per-User, outbox scope updated elsewhere)? | **blocking** | answered | **reopen ADR-0008** — User-declared reopen (justification: FQ17 secondary blogs federated with distinct Create content). Amend **outbox/syndication scope** for multi-blog on one Person; keep one-Person-per-User (**FQ22**). PO records path only — Architect/parent may set status `Reopened`; user alone later Accepts amendment. Not Superseded; not feature-local Architecture-only. | Prefer **reopen ADR-0008** (or small amend) so Accepted text matches all-blog outbox + FQ22 one Person; do not leave Accepted ADR contradicting shipped behaviour. Person rule already matches FQ22; amend primarily **syndication/outbox scope**. |
+
+**Gate:** All **blocking** FQs for v1.4 (**FQ13–FQ17**, **FQ20–FQ26**) are `answered`. **FQ18** / **FQ19** remain informational open. **ADR-0008** re-Accepted 2026-07-08 — phase 3 complete (`tasks-ready`). Optionally answer **AQ27** (ADR-0006 sync). **Stop for Development approval (phase 4):** user must approve task IDs below before squad starts phase 5.
+
+#### Architecture questions (AQ*n*) — v1.4
+
+| # | Question | Blocking? | Status | Answer |
+|---|----------|-----------|--------|--------|
+| AQ27 | ADR-0006 Accepted MVP table still lists “main blog posts in outbox” / “Secondary blog actors” later — after ADR-0008 re-accept, **reopen ADR-0006** for a small MVP-table amend, or leave 0006 as historical S2S scope and treat **0008** as governing outbox membership? | informational (docs) | open | Prefer: **re-accept 0008 first** (governs v1.4). Then either reopen **0006** for editorial MVP-table sync or add “see ADR-0008 for outbox membership” in 0006 More Information — user chooses. **Do not** implement against the stale 0006 row. |
+| AQ28 | Shared archive query for outbox + backfill: new `PostRepository` methods (all blogs, `publishedAt` ASC/DESC + page) vs reuse/extend `findPublishedByAuthor` (already all-blog `DESC`)? Backfill needs **full** list oldest-first; outbox keeps page size **20**. | no (design) | answered | **Shared predicate** (owner, `published = true`, blog active as public read) in `PostRepository`: paged **DESC** for outbox (may refactor `findPublishedByAuthor` / replace `findPublishedMainBlogByAuthor`); **ASC NULLS LAST, id ASC** full list (or paged chunk if memory becomes an issue — v1.4 keeps full list like today) for backfill. Drop main-only ActivityPub call sites. Outbox page size remains **20**. |
+| AQ29 | Object AS2 `summary` field today = `Post.description`; FQ3/FQ20 require Create **`content`** without description. Strip description from `content` only, also clear/omit object `summary`, or keep `summary` as description? | no (design) | answered | **`content` HTML** = title (+ blog name if secondary) + link only — **no** description paragraph. Omit object **`summary`** (or leave unset) so remotes do not surface the old description as a second blurb. Aligns FQ3/FQ20. |
+
+#### Architecture (v1.4)
+
+### ADRs aplicáveis
+
+| ADR | Status | Relevância |
+|-----|--------|------------|
+| [0002](../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Accepted | Stack |
+| [0003](../docs/adr/0003-frontend-qute-htmx.md) | Accepted | Appearance panel i18n / form (FQ25) |
+| [0005](../docs/adr/0005-postgresql-database.md) | Accepted | Existing delivery queue |
+| [0006](../docs/adr/0006-activitypub-federation.md) | Accepted | S2S scope; **MVP table still main-only** — see **AQ27**; do not contradict 0008 after re-accept |
+| [0007](../docs/adr/0007-activitypub-http-signatures.md) | Accepted | Signatures unchanged |
+| [0008](../docs/adr/0008-activitypub-actor-identity.md) | **Accepted** (re-accepted 2026-07-08) | One Person per User (**unchanged**); **outbox/syndication = all blogs** (Architect amend) |
+| [0015](../docs/adr/0015-federation-outbound-fetch-ssrf.md) | Accepted | Unchanged |
+
+### Bounded contexts
+
+| Context | Role |
+|---------|------|
+| **`activitypub`** (Integration) | Outbox, Create/Delete mapping, delivery observer/service, appearance copy consumers |
+| **`post`** | `PostRepository` archive queries (all blogs by author, `publishedAt` order) |
+| **`blog` / `user`** | Blog ownership / `Blog.name` for secondary content; actor still 1:1 User |
+| **Presentation shell** | Author appearance Fediverse section (copy only) |
+
+No new package. No new CDI event types — continue observing `PostPublishedEvent` / `PostUnpublishedEvent`.
+
+### Current gaps (verified 2026-07-08)
+
+| Area | Today | Target (v1.4) |
+|------|-------|----------------|
+| Outbox | `findPublishedMainBlogByAuthor` | All blogs, `publishedAt DESC`, page 20 |
+| Accept backfill | `findPublishedMainBlogByAuthorOldestFirst` | All blogs, `publishedAt ASC`, full archive |
+| Live Create/Delete | Observer + delivery service **`blog.isMain()`** guards | Any owned blog when opt-in |
+| Activity GET | `ActivityPubActivityService.isMainBlogPostOwnedBy` | Any owned blog post |
+| Create JSON | No activity `published`; `content` includes description | Activity `published` = `publishedAt`; content per FQ3/FQ20 |
+| Appearance | i18n “main blog” | All-blogs copy (**FQ25**) |
+
+`ActivityPubPaths.postObjectId` already uses `PostPaths.extractUrl` (secondary path correct when secondary posts are admitted).
+
+### Packages / layers
+
+```
+ActivityPubDeliveryObserver (AFTER_SUCCESS)
+  → drop isMain gate → ActivityPubDeliveryService.enqueueCreate|Delete…
+
+ActivityPubDeliveryService
+  → enqueueCreateForPublishedPost / enqueueDelete… (any owned published blog)
+  → enqueueHistoricalPostsForAcceptedFollow
+       → PostRepository.findPublished*ByAuthorOldestFirst (all blogs)
+  → fanOut / enqueueToRemoteInbox (unchanged queue)
+
+ActivityPubOutboxService
+  → PostRepository paged all-blog publishedAt DESC
+  → ActivityPubPostObjectMapper.toCreateActivity per item
+
+ActivityPubActivityService
+  → findActivity: owned blog (main or secondary), not main-only
+
+ActivityPubPostObjectMapper
+  → toCreateActivity: put top-level published = post.publishedAt (ISO UTC)
+  → buildContent(main): title + link
+  → buildContent(secondary): title + Blog.name + link
+  → omit object summary; attributedTo unchanged (Person)
+
+PostRepository (Content publishing)
+  → shared all-blog archive queries (AQ28)
+
+Author appearance panel + i18n (HTMX form unchanged)
+  → appearance.fediverseIntro / OptInDesc / fallback HTML → all blogs
+```
+
+### Create activity shape (target)
+
+| Field | Main blog | Secondary blog |
+|-------|-----------|----------------|
+| `type` | `Create` | `Create` |
+| `actor` / object `attributedTo` | Same Person | Same Person |
+| activity `published` | `Post.publishedAt` | same |
+| object `id` / `url` / content `<a>` | `platformUrl(/{user}/post/{slug})` | `platformUrl(/{user}/{blogSlug}/post/{slug})` |
+| object `content` | title + link | title + **blog name** + link |
+| object `summary` | omit | omit |
+| object `published` / `updated` | keep as today | keep |
+
+### Routes / schema
+
+| Surface | Change |
+|---------|--------|
+| `GET …/outbox` | Behaviour only — same public/internal paths |
+| Inbox Accept → backfill | Behaviour only |
+| `POST /forms/writing/activitypub` | Same route; response toast/copy may mention all blogs |
+| Author appearance `panel.html` | Text + `data-i18n` keys (`en`/`es`/pt if present) |
+| Flyway | **None** — no new tables/columns |
+| `dev-import.sql` / `ActivityPubDevSeed` | Ensure alice (or persona) has **main + secondary** published posts spanning dates for interleaved outbox (**FCdev**) |
+
+### CDI events
+
+Unchanged producers. Observers must treat **all blogs** of the author (not main-only). Update [cdi-events.md](../docs/cdi-events.md) narrative if it still says main-blog ActivityPub delivery.
+
+### `docs/htmx-events.md` delta
+
+**No structural change** — no new custom events, auth allowlist rows, or JS modules. Appearance save remains **priority 2**: `hx-post` → `hx-target="#activitypubMessage"` `innerHTML`. Follow-request region unchanged. Phase 5 only updates i18n/markup strings inside the existing form (FQ25).
+
+### HTMX component model (FQ25 appearance copy)
+
+| Component id | Fragment route | Activator | Request | Swap scope | Events out | Events in | JS | Auth allowlist |
+|--------------|----------------|-----------|---------|------------|------------|-----------|-----|----------------|
+| Fediverse fieldset (intro + opt-in card) | Inline `AuthorAppearanceEndpoint/panel.html` | Page load | — | Full panel render | none | none | none | No |
+| `#activitypubMessage` | Form response from `ActivityPubFederationSettingsEndpoint` | Save Fediverse settings | `POST /forms/writing/activitypub` | `hx-target="#activitypubMessage"` `innerHTML` | none (toast headers if any) | none | none | No |
+| `#activitypubFollowRequests` | Accept/reject (unchanged) | Accept / Reject | `POST /forms/writing/activitypub/follows/{id}/accept\|reject` | `hx-target="#activitypubFollowRequests"` `innerHTML` | none | none | none | No |
+
+**Mechanism choice:** copy change is static page + existing form target (priority 2). No OOB, no body broadcast.
+
+### HTMX interaction diagram
+
+N/A — single region string update; no multi-component Fediverse chrome flow for v1.4.
+
+### Tests (phase 5 mapping hint — not task break)
+
+| Area | Expectation |
+|------|-------------|
+| Outbox | Multi-blog membership; interleaved `publishedAt`; secondary ids/content; activity `published` |
+| Backfill | Same membership/ids/`published`/order rule as outbox (ASC enqueue) |
+| Live publish | Secondary Create enqueued; Secondary Delete on unpublish |
+| Activity GET | Secondary Create JSON reachable |
+| Mapper unit | Main vs secondary `content`; no description in content; activity `published` |
+| Web | Appearance intro/opt-in strings mention **all blogs** |
+| Arch | No new context deps |
+
+### Ops
+
+Document (feature FC31 / feedverse ops guide): after deploy, re-queue **FAILED** Creates so remotes receive corrected archive; full-history Accept volume rises with secondary posts.
+
+#### Tasks (v1.4 — awaiting development approval)
+
+| ID | Layer | Depends | Expected outcome | Tests | Done |
+|----|-------|---------|------------------|-------|------|
+| T24-java | java | — | `PostRepository` shared all-blog archive: paged published posts by author (`publishedAt` DESC, page size 20 for outbox) and full oldest-first list (`publishedAt` ASC NULLS LAST, id ASC for backfill); drop main-only ActivityPub call sites (**AQ28**, **FQ14**, **FQ17**, **FQ23**) | TC21 | ☑ |
+| T25-java | java | T24 | `ActivityPubPostObjectMapper`: Create activity top-level `published` = `Post.publishedAt`; main `content` = title + canonical link (**FQ3**); secondary `content` = title + blog name + canonical post link (**FQ20**); omit object `summary`; `attributedTo` remains same Person; secondary `id`/`url`/link = platform `/{username}/{blogSlug}/post/{slug}` (**FQ15**, **FQ21**, **FQ22**, **AQ29**) | TC22 | ☑ |
+| T26-java | java | T24, T25 | `ActivityPubOutboxService` lists **all** blogs interleaved by `publishedAt` DESC (page 20); each Create matches mapper shape (ids, `published`, content) (**FQ16**, **FQ23**) | TC23 | ☑ |
+| T27-java | java | T24, T25 | Accept / re-Follow backfill via `enqueueHistoricalPostsForAcceptedFollow` uses all-blog ASC archive; membership, ids, `published`, and order match outbox rule (**FQ16**, **FQ23**); re-Follow after Undo still backfills full interleaved archive (**FC24** regression) | TC24 | ☑ |
+| T28-java | java | T25 | Live fan-out: drop `blog.isMain()` on Create/Delete observer and delivery enqueue; secondary publish enqueues Create immediately when Fediverse opt-in on; secondary unpublish enqueues Delete (**FQ24**) | TC25 | ☑ |
+| T29-java | java | T25 | `ActivityPubActivityService` activity GET admits any owned-blog post (main or secondary), not main-only; secondary Create JSON reachable | TC26 | ☑ |
+| T30-htmx | htmx | — | Author appearance Fediverse opt-in intro/desc/fallback markup + i18n (`en`/`es`/pt) say **all blogs** (main and secondary); single control unchanged (**FQ25**, **FC33**); form route/HX targets unchanged | TC27 | ☑ |
+| Tdev | dev | T24, T28, T30 | `dev-import.sql` / `ActivityPubDevSeed`: alice (or persona) has published **main + secondary** posts with interleaved `publishedAt` enough for multi-page outbox; feature-catalog § Dev personas / appearance copy if needed; ops note for **FC31** (re-queue FAILED Creates after deploy) (**FCdev**) | TC28 | ☑ |
+
+**Development approval:** approved 2026-07-08 — tasks: T24-java, T25-java, T26-java, T27-java, T28-java, T29-java, T30-htmx, Tdev
+
+#### Test coverage (v1.4)
+
+| ID | Kind | Covers | Scenario | Done |
+|----|------|--------|----------|------|
+| TC21 | unit | T24 | All-blog archive query: main + secondary published posts interleaved by `publishedAt`; drafts/unlisted excluded; DESC page and ASC full list | ☑ |
+| TC22 | unit | T25 | Mapper: main vs secondary `content`; no description in `content`; no `summary`; activity `published` = publication date; secondary object URL path | ☑ |
+| TC23 | rest | T26 | Outbox page: multi-blog membership; interleaved order; secondary ids/content; activity `published` on Creates | ☑ |
+| TC24 | quarkus | T27 | Accept / re-Follow backfill enqueues same membership/ids/`published`/order rule as outbox (ASC); re-Follow after Undo still backfills | ☑ |
+| TC25 | unit / quarkus | T28 | Secondary publish → Create enqueued; secondary unpublish → Delete; main-blog path unchanged when opted in | ☑ |
+| TC26 | rest | T29 | GET Create activity JSON for secondary-blog post succeeds (owned blog, not main-only) | ☑ |
+| TC27 | web | T30 | Appearance Fediverse intro/opt-in strings mention **all blogs** (not main-only) | ☑ |
+| TC28 | quarkus / smoke | Tdev | `%dev` seed: alice multi-blog published posts; outbox first page shows interleaved main+secondary; live secondary path exercisable | ☑ |
+| TC29 | arch | T24–T29 | `BoundedContextRulesTest` green — no new ActivityPub context dependencies | ☑ |
+
+---
+
 ### Protocol ingress, actor HEAD, delivery diagnostics — 2026-07-08
 
 **Version:** 1.3  
@@ -61,6 +336,8 @@
 ## Summary
 
 Enable **authors** to participate in the **Fediverse** via [ActivityPub](https://www.w3.org/TR/activitypub/) **server-to-server** federation: Mastodon (and compatible apps) users can **Follow** an author; **published posts** on the author's **main blog** appear as **Note/Article** activities in followers' timelines. Contraponto implements **actor**, **WebFinger**, **inbox**, **outbox**, and signed **delivery** — not a full Mastodon clone.
+
+**v1.4 (`tasks-ready`):** when others open the author's **remote profile / statuses** (and after Follow, follower **home**), they should see the author's **full published archive** dated/ordered by real **publication date** (main + secondary interleaved), one Person for all blogs, live secondary Creates, all-blogs opt-in; secondary content = title + blog name + post link; secondary URLs = platform `/{username}/{blogSlug}/post/{slug}`; **ADR-0008** amended and **re-Accepted** 2026-07-08 — see changelog *Mastodon-like author timeline*.
 
 **Depends on (Accepted ADRs):**
 

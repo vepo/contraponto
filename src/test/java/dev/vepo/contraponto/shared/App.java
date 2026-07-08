@@ -1804,6 +1804,12 @@ public class App {
             return this;
         }
 
+        public ProfilePage assertFediverseIntroMentionsAllBlogs() {
+            var intro = wait.until(visibilityOfElementLocated(cssSelector(".fediverse__intro")));
+            assertThat(intro.getText()).containsIgnoringCase("all your blogs");
+            return this;
+        }
+
         public ProfilePage assertFediverseOptInChecked(boolean checked) {
             var checkbox = wait.until(presenceOfElementLocated(cssSelector(".fediverse__enable-input")));
             assertThat(checkbox.isSelected()).isEqualTo(checked);

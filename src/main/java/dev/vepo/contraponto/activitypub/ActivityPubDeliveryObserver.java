@@ -33,7 +33,7 @@ public class ActivityPubDeliveryObserver {
             return;
         }
         var blog = blogRepository.findById(event.blogId()).orElse(null);
-        if (blog == null || !blog.isMain()) {
+        if (blog == null || !blog.isActive()) {
             return;
         }
         actorRepository.findByUserId(event.authorUserId())
@@ -46,7 +46,7 @@ public class ActivityPubDeliveryObserver {
             return;
         }
         var blog = blogRepository.findById(event.blogId()).orElse(null);
-        if (blog == null || !blog.isMain()) {
+        if (blog == null || !blog.isActive()) {
             return;
         }
         actorRepository.findByUserId(event.authorUserId())

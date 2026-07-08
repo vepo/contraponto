@@ -20,6 +20,7 @@ class ActivityPubWebTest {
         app.login(testUser)
            .writingAppearance()
            .assertFediverseSectionVisible()
+           .assertFediverseIntroMentionsAllBlogs()
            .assertFediverseOptInChecked(false)
            .toggleFediverseOptIn(true)
            .submitFediverseSettings()

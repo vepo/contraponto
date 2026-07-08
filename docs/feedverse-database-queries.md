@@ -88,6 +88,8 @@ tb_users
 
 `CREATE` · `UPDATE` · `DELETE` · `ACCEPT` · `REJECT`
 
+**Create backfill volume (v1.4+):** Accept / re-Follow historical **Create** backfill and the author outbox include published posts from **all** of the author’s **active** blogs (main and secondary), ordered by `published_at`. After deploy, expect higher delivery counts than the former main-blog-only MVP when authors have secondary-blog archives; re-queue FAILED Creates (section 4) if remotes still lack history.
+
 ---
 
 ## 1. Quick health check

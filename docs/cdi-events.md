@@ -8,8 +8,8 @@ Cross-context side effects in Contraponto use Jakarta CDI `Event` + `@Observes`.
 
 | Event | Payload | Producer | Observers | Notes |
 |-------|---------|----------|-----------|-------|
-| `PostPublishedEvent` | `postId`, `publicationId`, `blogId`, `authorUserId` | `PostPublicationService.publish` | `PostPublishedNotificationObserver`, `RssFeedCacheInvalidator`, `SitemapCacheInvalidator`, `ActivityPubDeliveryObserver` | Also triggers audience email/in-app notifications; ActivityPub **Create** when Fediverse opt-in |
-| `PostUnpublishedEvent` | `postId`, `blogId`, `authorUserId` | `PostManagementService.unpublish` | `RssFeedCacheInvalidator`, `SitemapCacheInvalidator`, `ActivityPubDeliveryObserver` | Public URL 404; snapshots retained; ActivityPub **Delete** when Fediverse opt-in |
+| `PostPublishedEvent` | `postId`, `publicationId`, `blogId`, `authorUserId` | `PostPublicationService.publish` | `PostPublishedNotificationObserver`, `RssFeedCacheInvalidator`, `SitemapCacheInvalidator`, `ActivityPubDeliveryObserver` | Also triggers audience email/in-app notifications; ActivityPub **Create** when Fediverse opt-in for **any owned active blog** (main and secondary; v1.4) |
+| `PostUnpublishedEvent` | `postId`, `blogId`, `authorUserId` | `PostManagementService.unpublish` | `RssFeedCacheInvalidator`, `SitemapCacheInvalidator`, `ActivityPubDeliveryObserver` | Public URL 404; snapshots retained; ActivityPub **Delete** when Fediverse opt-in for **any owned active blog** (main and secondary; v1.4) |
 | `PostGitSyncRequestedEvent` | `postId`, `GitSyncTrigger` | `PublishEndpoint`, `SaveDraftEndpoint`, `PostManagementService` | `GitPostCommittedObserver` (`AFTER_SUCCESS`) | Git export when blog has `gitEnabled` |
 | `CustomPageChangedEvent` | `pageId` | `CustomPageSaveEndpoint` (create/update/delete) | `CustomPageCacheRefreshObserver`, `SitemapCacheInvalidator` | In-memory custom page cache |
 

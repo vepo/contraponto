@@ -99,6 +99,47 @@ class ActivityPubInboxFollowTest {
         assertThat(createDeliveries.get(1).getPayloadJson()).contains("Historical Two");
     }
 
+    @Test
+    void acceptFollowBackfillsHistoricalSecondaryBlogPosts() {
+        var secondary = Given.blog()
+                             .withUser(user)
+                             .withSlug("lab-notes")
+                             .withName("Lab Notes")
+                             .withDescription("Secondary archive for follow backfill")
+                             .persist();
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Main Historical")
+             .withSlug("main-historical")
+             .withDescription("Summary")
+             .withContent("Body")
+             .persist();
+        Given.post()
+             .withAuthor(user)
+             .withBlog(secondary)
+             .withTitle("Secondary Historical")
+             .withSlug("secondary-historical")
+             .withDescription("Ignored description")
+             .withContent("Body")
+             .persist();
+
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        postSignedFollow("https://remote.example/users/reader",
+                         "https://remote.example/follow/secondary-backfill",
+                         actorId);
+
+        var createDeliveries = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1))
+                                                 .stream()
+                                                 .filter(d -> d.getActivityType() == ActivityPubActivityType.CREATE)
+                                                 .toList();
+        assertThat(createDeliveries).hasSize(2);
+        assertThat(createDeliveries.get(0).getPayloadJson()).contains("Main Historical");
+        assertThat(createDeliveries.get(1).getPayloadJson()).contains("Secondary Historical")
+                                                            .contains("Lab Notes")
+                                                            .contains("/followuser/lab-notes/post/secondary-historical")
+                                                            .contains("\"published\"");
+    }
+
     private URI inboxUri() {
         return URI.create("%s://%s:%d/followuser/inbox".formatted(baseUrl.getProtocol(),
                                                                   baseUrl.getHost(),
