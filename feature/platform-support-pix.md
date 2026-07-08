@@ -20,7 +20,7 @@
 | Feature / area | Impact |
 |----------------|--------|
 | [custom-pages.md](custom-pages.md) | **Dedicated route** preferred over editable custom page — PIX QR must stay operator-controlled (FQ1). Footer link added alongside migration pages (`/sobre`, `/contato`, …). |
-| [newsletter-gated-content.md](newsletter-gated-content.md) | Optional: PIX payment on support page grants **platform newsletter** or **blog assinatura** (FQ8). |
+| [newsletter-gated-content.md](newsletter-gated-content.md) | **Paid assinatura** on newsletter blogs (FQ2) — PIX payment grants paid tier; webhook per newsletter FQ12 |
 | [authentication.md](authentication.md) | Payment confirmation may require signed-in user to attach assinatura (FQ5). |
 | [user-administration.md](user-administration.md) | Admin view of PIX confirmations / manual reconcile if no webhook (FQ4). |
 | [seo.md](seo.md) | Public indexable support page; noindex on webhook/callback routes. |
@@ -217,7 +217,7 @@ _To be filled by Task Modeller._
 | Capability | Relationship |
 |------------|--------------|
 | [custom-pages.md](custom-pages.md) | Footer sibling links; support page is not editor-managed if FQ1 = dedicated |
-| [newsletter-gated-content.md](newsletter-gated-content.md) | Optional paid assinatura unlock via PIX confirm |
+| [newsletter-gated-content.md](newsletter-gated-content.md) | **Paid assinatura** on newsletter blogs unlocks paid posts + edition bodies (FQ2 answered); PIX webhook per FQ12 |
 | [dashboard-analytics.md](dashboard-analytics.md) | Future: support revenue metrics (out of v1) |
 
 ## Operator notes
