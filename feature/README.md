@@ -35,6 +35,8 @@ See [change-request-analysis.mdc](../.cursor/rules/change-request-analysis.mdc) 
 | Dashboard analytics | `dashboard-analytics` |
 | ActivityPub / Fediverse | `activitypub-integration` |
 | Bluesky platform syndication | `bluesky-platform-syndication` |
+| Newsletter with subscription-gated content | `newsletter-gated-content` |
+| Platform support page (PIX) | `platform-support-pix` |
 | User-to-user messaging | `user-messaging` |
 | In-app notification retention | `notification-retention` |
 
@@ -161,6 +163,8 @@ Shipped capabilities use a **single Production baseline** changelog entry contai
 | Dashboard & platform analytics | [dashboard-analytics.md](dashboard-analytics.md) | done |
 | ActivityPub Fediverse integration | [activitypub-integration.md](activitypub-integration.md) | done |
 | Bluesky platform syndication | [bluesky-platform-syndication.md](bluesky-platform-syndication.md) | planned |
+| Newsletter with subscription-gated content | [newsletter-gated-content.md](newsletter-gated-content.md) | planned |
+| Platform support page (PIX) | [platform-support-pix.md](platform-support-pix.md) | planned |
 | Notification retention | [notification-retention.md](notification-retention.md) | done |
 | User messaging | [user-messaging.md](user-messaging.md) | done |
 
