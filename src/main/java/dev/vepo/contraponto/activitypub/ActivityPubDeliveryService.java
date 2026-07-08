@@ -7,7 +7,9 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,24 @@ public class ActivityPubDeliveryService {
 
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(30);
 
+    /**
+     * {@link HttpClient} sets these from the request URI; including them in
+     * {@link HttpRequest.Builder#header} throws {@link IllegalArgumentException}.
+     */
+    private static final Set<String> HTTP_CLIENT_RESTRICTED_HEADERS = Set.of("connection",
+                                                                             "content-length",
+                                                                             "expect",
+                                                                             "host",
+                                                                             "upgrade");
+
+    static void applySignedHeaders(HttpRequest.Builder requestBuilder, Map<String, String> signedHeaders) {
+        signedHeaders.forEach((name, value) -> {
+            if (!HTTP_CLIENT_RESTRICTED_HEADERS.contains(name.toLowerCase(Locale.ROOT))) {
+                requestBuilder.header(name, value);
+            }
+        });
+    }
+
     private final ActivityPubSettings settings;
     private final ActivityPubDeliveryRepository deliveryRepository;
     private final ActivityPubFollowRepository followRepository;
@@ -39,6 +59,7 @@ public class ActivityPubDeliveryService {
     private final ActivityPubPostObjectMapper postObjectMapper;
     private final PostRepository postRepository;
     private final BlogSubdomainConfig subdomainConfig;
+
     private final HttpClient httpClient;
 
     @Inject
@@ -96,7 +117,7 @@ public class ActivityPubDeliveryService {
                                             .timeout(HTTP_TIMEOUT)
                                             .header("Content-Type", ActivityPubPaths.ACTIVITY_JSON)
                                             .POST(HttpRequest.BodyPublishers.ofString(body));
-            signedHeaders.forEach(requestBuilder::header);
+            applySignedHeaders(requestBuilder, signedHeaders);
             var response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.discarding());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 delivery.markDelivered();
