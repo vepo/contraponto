@@ -8,12 +8,14 @@ import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.blog.BlogSubdomainTestProfile;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import dev.vepo.contraponto.user.User;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.TestProfile;
+import jakarta.inject.Inject;
 
 @QuarkusIntegrationTest
 @TestProfile(BlogSubdomainTestProfile.class)
@@ -31,6 +33,9 @@ class ActivityPubWebFingerSubdomainTest {
 
     @TestHTTPResource("/")
     URL baseUrl;
+
+    @Inject
+    BlogSubdomainConfig subdomainConfig;
 
     private User user;
 
@@ -62,5 +67,17 @@ class ActivityPubWebFingerSubdomainTest {
         assertThat(json).contains("\"subject\":\"" + actorHostAcct + "\"")
                         .contains("https://subwf.localhost/")
                         .contains("http://ostatus.org/schema/1.0/subscribe");
+    }
+
+    @Test
+    void webfingerResolvesAuthorSubdomainRootHttpsResource() {
+        var resource = "%s/".formatted(subdomainConfig.subdomainOrigin(user.getUsername()));
+        given().queryParam("resource", resource)
+               .accept("application/jrd+json")
+               .get("/.well-known/webfinger")
+               .then()
+               .statusCode(200)
+               .contentType("application/jrd+json")
+               .body("subject", org.hamcrest.Matchers.equalTo(resource));
     }
 }

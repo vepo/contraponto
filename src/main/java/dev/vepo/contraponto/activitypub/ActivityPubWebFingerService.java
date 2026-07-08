@@ -1,10 +1,12 @@
 package dev.vepo.contraponto.activitypub;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
+import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,8 +21,30 @@ public class ActivityPubWebFingerService {
 
     static final String SUBSCRIBE_REL = "http://ostatus.org/schema/1.0/subscribe";
 
+    static String canonicalHttpsResource(String resource) {
+        var uri = URI.create(resource.trim());
+        var scheme = uri.getScheme();
+        if (scheme == null || scheme.isBlank()) {
+            throw new IllegalArgumentException("Missing scheme");
+        }
+        var host = uri.getHost();
+        if (host == null || host.isBlank()) {
+            throw new IllegalArgumentException("Missing host");
+        }
+        var port = uri.getPort();
+        var authority = port > 0 && port != 443 && port != 80 ? "%s:%d".formatted(host.toLowerCase(), port) : host.toLowerCase();
+        var path = uri.getPath();
+        if (path == null || path.isBlank()) {
+            path = "/";
+        } else if (path.length() > 1 && path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return "%s://%s%s".formatted(scheme.toLowerCase(), authority, path);
+    }
+
     private final ActivityPubSettings settings;
     private final ActivityPubActorService actorService;
+
     private final UserRepository userRepository;
 
     private final BlogSubdomainConfig subdomainConfig;
@@ -36,12 +60,44 @@ public class ActivityPubWebFingerService {
         this.subdomainConfig = subdomainConfig;
     }
 
+    private Optional<WebFingerJrd> buildJrdForUser(User user, String subject) {
+        var actor = actorService.findEnabledByUserId(user.getId());
+        if (actor.isEmpty()) {
+            return Optional.empty();
+        }
+        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
+        var profilePage = ActivityPubPaths.profilePageUrl(user, subdomainConfig);
+        return Optional.of(new WebFingerJrd(subject,
+                                            List.of(actorId, profilePage),
+                                            List.of(WebFingerLink.hrefLink("self",
+                                                                           ActivityPubPaths.ACTIVITY_JSON,
+                                                                           actorId),
+                                                    WebFingerLink.hrefLink(PROFILE_PAGE_REL,
+                                                                           "text/html",
+                                                                           profilePage),
+                                                    WebFingerLink.templateLink(SUBSCRIBE_REL,
+                                                                               ActivityPubPaths.remoteFollowSubscribeTemplate(user,
+                                                                                                                              subdomainConfig)))));
+    }
+
     public Map<String, Object> hostMetaLinks() {
         var template = subdomainConfig.enabled() && !subdomainConfig.baseDomain().isBlank()
                                                                                             ? "https://%s/.well-known/webfinger?resource={uri}".formatted(subdomainConfig.baseDomain())
                                                                                             : "%s/.well-known/webfinger?resource={uri}".formatted(subdomainConfig.platformUrl("/"));
         return Map.of("links", List.of(Map.of("rel", "lrdd",
                                               "template", template)));
+    }
+
+    private boolean matchesHttpsProfile(User user, String resource) {
+        try {
+            var canonical = canonicalHttpsResource(resource);
+            var profile = canonicalHttpsResource(ActivityPubPaths.profilePageUrl(user, subdomainConfig));
+            var actor = canonicalHttpsResource(ActivityPubPaths.actorId(user, subdomainConfig));
+            var subdomainRoot = canonicalHttpsResource("%s/".formatted(subdomainConfig.subdomainOrigin(user.getUsername())));
+            return canonical.equals(profile) || canonical.equals(actor) || canonical.equals(subdomainRoot);
+        } catch (IllegalArgumentException _) {
+            return false;
+        }
     }
 
     private Optional<AcctResource> parseAcctResource(String resource) {
@@ -61,33 +117,83 @@ public class ActivityPubWebFingerService {
             return Optional.empty();
         }
         var acct = parseAcctResource(resource);
-        if (acct.isEmpty()) {
-            return Optional.empty();
+        if (acct.isPresent()) {
+            return resolveAcct(acct.get(), resource);
         }
-        var username = acct.get().username();
+        return resolveHttpsProfile(resource);
+    }
+
+    private Optional<WebFingerJrd> resolveAcct(AcctResource acct, String subject) {
+        var username = acct.username();
         var user = userRepository.findByUsernameIgnoreCase(username).orElse(null);
         if (user == null) {
             return Optional.empty();
         }
-        var actor = actorService.findEnabledByUserId(user.getId());
-        if (actor.isEmpty()) {
+        if (!ActivityPubPaths.matchesFederationAcct(user, subdomainConfig, subject)) {
             return Optional.empty();
         }
-        if (!ActivityPubPaths.matchesFederationAcct(user, subdomainConfig, resource)) {
+        return buildJrdForUser(user, subject);
+    }
+
+    private Optional<String> resolveAuthorSubdomainUsername(URI uri) {
+        var host = uri.getHost();
+        if (host == null) {
             return Optional.empty();
         }
-        var actorId = ActivityPubPaths.actorId(user, subdomainConfig);
-        var profilePage = ActivityPubPaths.profilePageUrl(user, subdomainConfig);
-        return Optional.of(new WebFingerJrd(resource,
-                                            List.of(actorId, profilePage),
-                                            List.of(WebFingerLink.hrefLink("self",
-                                                                           ActivityPubPaths.ACTIVITY_JSON,
-                                                                           actorId),
-                                                    WebFingerLink.hrefLink(PROFILE_PAGE_REL,
-                                                                           "text/html",
-                                                                           profilePage),
-                                                    WebFingerLink.templateLink(SUBSCRIBE_REL,
-                                                                               ActivityPubPaths.remoteFollowSubscribeTemplate(user,
-                                                                                                                              subdomainConfig)))));
+        var subdomainUser = subdomainConfig.parseUserSubdomain(host);
+        if (subdomainUser.isEmpty()) {
+            return Optional.empty();
+        }
+        var path = uri.getPath();
+        if (path == null || path.isBlank() || "/".equals(path)) {
+            return subdomainUser;
+        }
+        return Optional.empty();
+    }
+
+    private Optional<WebFingerJrd> resolveHttpsProfile(String resource) {
+        URI uri;
+        try {
+            uri = URI.create(resource.trim());
+        } catch (IllegalArgumentException _) {
+            return Optional.empty();
+        }
+        var scheme = uri.getScheme();
+        if (scheme == null || (!scheme.equalsIgnoreCase("https") && !scheme.equalsIgnoreCase("http"))) {
+            return Optional.empty();
+        }
+        var username = resolveAuthorSubdomainUsername(uri).or(() -> resolvePlatformAuthorUsername(uri));
+        if (username.isEmpty()) {
+            return Optional.empty();
+        }
+        var user = userRepository.findByUsernameIgnoreCase(username.get()).orElse(null);
+        if (user == null) {
+            return Optional.empty();
+        }
+        if (!matchesHttpsProfile(user, resource)) {
+            return Optional.empty();
+        }
+        return buildJrdForUser(user, resource.trim());
+    }
+
+    private Optional<String> resolvePlatformAuthorUsername(URI uri) {
+        var host = uri.getHost();
+        if (host == null || !host.equalsIgnoreCase(subdomainConfig.platformHost())) {
+            return Optional.empty();
+        }
+        var path = uri.getPath();
+        if (path == null || path.isBlank()) {
+            return Optional.empty();
+        }
+        var normalized = path.endsWith("/") && path.length() > 1 ? path.substring(0, path.length() - 1) : path;
+        var prefix = "/authors/";
+        if (!normalized.startsWith(prefix)) {
+            return Optional.empty();
+        }
+        var username = normalized.substring(prefix.length());
+        if (username.isBlank() || username.contains("/")) {
+            return Optional.empty();
+        }
+        return Optional.of(username);
     }
 }

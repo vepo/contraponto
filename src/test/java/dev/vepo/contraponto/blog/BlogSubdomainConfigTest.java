@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.contraponto.activitypub.ActivityPubPaths;
+import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.UnitTest;
 import dev.vepo.contraponto.user.User;
 
@@ -79,6 +81,21 @@ class BlogSubdomainConfigTest {
                                              true);
 
         assertThat(config.platformUrl("/authors")).isEqualTo("http://blogs.commit-mestre.test:8080/authors");
+    }
+
+    @Test
+    void postObjectId_usesPlatformUsernamePrefixWhenSubdomainEnabled() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+        var user = new User();
+        user.setUsername("vepo");
+        var blog = new Blog();
+        blog.setOwner(user);
+        blog.setMain(true);
+        var post = new Post();
+        post.setBlog(blog);
+        post.setSlug("uma-conversa-sobre-padroes");
+
+        assertThat(ActivityPubPaths.postObjectId(post, config)).isEqualTo("https://blogs.commit-mestre.dev/vepo/post/uma-conversa-sobre-padroes");
     }
 
     @Test
