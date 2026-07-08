@@ -100,7 +100,15 @@ public class ActivityPubJsonResponder {
     }
 
     public boolean shouldHandle(ContainerRequestContext requestContext) {
-        if (!settings.enabled() || !"GET".equalsIgnoreCase(requestContext.getMethod())) {
+        if (!settings.enabled()) {
+            return false;
+        }
+        var method = requestContext.getMethod();
+        // HEAD must succeed for ActivityPub clients (e.g. Mastodon keyId probes);
+        // without
+        // this, JAX-RS returns 406 Not Acceptable for Accept:
+        // application/activity+json.
+        if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
             return false;
         }
         if (!acceptsActivityJson(requestContext.getHeaderString(HttpHeaders.ACCEPT))) {
