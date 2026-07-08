@@ -136,8 +136,10 @@ class ActivityPubInboxFollowFetchTest {
         }
 
         var pending = followRepository.listPendingByLocalActor(actor.getId());
-        assertThat(pending).hasSize(1);
-        var remote = remoteActorRepository.findByActorId(pending.get(0).getRemoteActor().getActorId());
+        assertThat(pending).isEmpty();
+        var accepted = followRepository.listAcceptedByLocalActor(actor.getId());
+        assertThat(accepted).hasSize(1);
+        var remote = remoteActorRepository.findByActorId(accepted.get(0).getRemoteActor().getActorId());
         assertThat(remote).isPresent();
         assertThat(remote.get().getInboxUrl()).contains("/inbox");
         assertThat(remote.get().getPublicKeyPem()).isNotBlank();
