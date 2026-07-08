@@ -34,6 +34,7 @@ public class ActivityPubInboxService {
     private final ActivityPubRemoteActorRepository remoteActorRepository;
     private final ActivityPubHttpSignatureService signatureService;
     private final ActivityPubDeliveryService deliveryService;
+    private final ActivityPubFavouriteService favouriteService;
     private final BlogSubdomainConfig subdomainConfig;
 
     @Inject
@@ -43,6 +44,7 @@ public class ActivityPubInboxService {
                                    ActivityPubRemoteActorRepository remoteActorRepository,
                                    ActivityPubHttpSignatureService signatureService,
                                    ActivityPubDeliveryService deliveryService,
+                                   ActivityPubFavouriteService favouriteService,
                                    BlogSubdomainConfig subdomainConfig) {
         this.settings = settings;
         this.actorService = actorService;
@@ -50,6 +52,7 @@ public class ActivityPubInboxService {
         this.remoteActorRepository = remoteActorRepository;
         this.signatureService = signatureService;
         this.deliveryService = deliveryService;
+        this.favouriteService = favouriteService;
         this.subdomainConfig = subdomainConfig;
     }
 
@@ -166,9 +169,34 @@ public class ActivityPubInboxService {
             handleFollow(actor, root);
             return;
         }
-        if ("Undo".equals(type)) {
-            handleUndo(actor, root);
+        if ("Like".equals(type)) {
+            handleLike(actor, root);
+            return;
         }
+        if ("Undo".equals(type)) {
+            if (undoLikeObject(root) != null) {
+                handleUndoLike(actor, root);
+            } else {
+                handleUndo(actor, root);
+            }
+            return;
+        }
+    }
+
+    private void handleLike(ActivityPubActor localActor, JsonNode root) {
+        var actorUrl = textValue(root, "actor");
+        var objectUrl = objectUri(root);
+        var likeActivityId = textValue(root, "id");
+        if (actorUrl == null || objectUrl == null) {
+            return;
+        }
+        var remote = remoteActorRepository.findByActorId(ActivityPubActorUrls.normalizeActorUri(actorUrl))
+                                          .orElse(null);
+        if (remote == null) {
+            logger.warn("Remote actor row missing after verify for Like actor={}", actorUrl);
+            return;
+        }
+        favouriteService.recordLike(localActor, remote, objectUrl, likeActivityId);
     }
 
     private void handleUndo(ActivityPubActor localActor, JsonNode root) {
@@ -195,6 +223,24 @@ public class ActivityPubInboxService {
                         });
     }
 
+    private void handleUndoLike(ActivityPubActor localActor, JsonNode root) {
+        var likeObject = undoLikeObject(root);
+        if (likeObject == null) {
+            return;
+        }
+        var remoteActorUrl = textValue(likeObject, "actor");
+        var objectUrl = objectUri(likeObject);
+        if (remoteActorUrl == null || objectUrl == null) {
+            return;
+        }
+        var remote = remoteActorRepository.findByActorId(ActivityPubActorUrls.normalizeActorUri(remoteActorUrl))
+                                          .orElse(null);
+        if (remote == null) {
+            return;
+        }
+        favouriteService.removeLike(localActor, remote, objectUrl);
+    }
+
     private String headerValue(Map<String, String> headers, String name) {
         for (var entry : headers.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(name)) {
@@ -215,9 +261,24 @@ public class ActivityPubInboxService {
             return true;
         }
         if ("Undo".equals(type)) {
-            return !wouldUndoFollowChangeLocalState(localActor, root);
+            return !wouldUndoFollowChangeLocalState(localActor, root)
+                    && !wouldUndoLikeChangeLocalState(localActor, root);
         }
         return false;
+    }
+
+    private String objectUri(JsonNode activity) {
+        var objectNode = activity.get("object");
+        if (objectNode == null) {
+            return null;
+        }
+        if (objectNode.isTextual()) {
+            return objectNode.asText();
+        }
+        if (objectNode.isObject()) {
+            return textValue(objectNode, "id");
+        }
+        return null;
     }
 
     public void rejectPendingFollow(long followId) {
@@ -233,6 +294,17 @@ public class ActivityPubInboxService {
     private String textValue(JsonNode node, String field) {
         var value = node.get(field);
         return value != null && value.isTextual() ? value.asText() : null;
+    }
+
+    private JsonNode undoLikeObject(JsonNode root) {
+        var objectNode = root.get("object");
+        if (objectNode == null || !objectNode.isObject()) {
+            return null;
+        }
+        if (!"Like".equals(textValue(objectNode, "type"))) {
+            return null;
+        }
+        return objectNode;
     }
 
     private void verifySignature(String body, Map<String, String> headers, URI requestUri) {
@@ -264,5 +336,23 @@ public class ActivityPubInboxService {
         return followRepository.findByLocalAndRemote(localActor.getId(), remote.getId())
                                .map(follow -> follow.getStatus() != ActivityPubFollowStatus.REJECTED)
                                .orElse(false);
+    }
+
+    private boolean wouldUndoLikeChangeLocalState(ActivityPubActor localActor, JsonNode root) {
+        var likeObject = undoLikeObject(root);
+        if (likeObject == null) {
+            return false;
+        }
+        var remoteActorUrl = textValue(likeObject, "actor");
+        var objectUrl = objectUri(likeObject);
+        if (remoteActorUrl == null || objectUrl == null) {
+            return false;
+        }
+        var remote = remoteActorRepository.findByActorId(ActivityPubActorUrls.normalizeActorUri(remoteActorUrl))
+                                          .orElse(null);
+        if (remote == null) {
+            return false;
+        }
+        return favouriteService.wouldRemoveFavourite(localActor, remote, objectUrl);
     }
 }

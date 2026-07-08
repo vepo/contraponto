@@ -71,6 +71,23 @@
                             <div>Updated: {view.livePublishedAt.formatDate}</div>
                             {/if}
                             <div>👁️ {viewCount} views</div>
+                            {#if fediverseFavourites.visible && fediverseFavourites.count > 0}
+                            <div data-i18n="post.fediverseFavouriteCount">♥ {fediverseFavourites.count} Fediverse favourites</div>
+                            {/if}
+                            {#if fediverseFavourites.visible && user.isAuthenticated && user.id == view.post.author.id}
+                            <section class="article-page__fediverse-favourites" aria-label="Fediverse favourites">
+                                <h2 class="article-page__fediverse-favourites-title" data-i18n="post.fediverseFavouriteListTitle">Fediverse favourites</h2>
+                                {#if fediverseFavourites.remoteHandles.isEmpty}
+                                <p class="article-page__fediverse-favourites-empty" data-i18n="post.fediverseFavouriteListEmpty">No Fediverse favourites yet.</p>
+                                {#else}
+                                <ul class="article-page__fediverse-favourites-list">
+                                    {#for handle in fediverseFavourites.remoteHandles}
+                                    <li>{handle}</li>
+                                    {/for}
+                                </ul>
+                                {/if}
+                            </section>
+                            {/if}
                             {#if averageReadingSeconds > 0}
                             <div>Avg reading time: {averageReadingSeconds.formatReadingDuration}</div>
                             {/if}

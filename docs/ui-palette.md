@@ -12,20 +12,20 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 
 | Token | Hex | Usage |
 |-------|-----|--------|
-| `--color-bg` | `#f6f5f2` | Page background (warm paper) |
-| `--color-bg-offset` | `#ebeae6` | Footer, subtle panels, hover fills |
-| `--color-bg-elevated` | `#fdfcfa` | Cards, modals, dropdowns |
+| `--color-bg` | `#ffffff` | Page background |
+| `--color-bg-offset` | `#f0eeea` | Footer, subtle panels, hover fills |
+| `--color-bg-elevated` | `#f8f7f4` | Cards, modals, dropdowns (lift on white page) |
 | `--color-bg-subtle` | `var(--color-bg-offset)` | Alias for offset surfaces |
-| `--color-surface-muted` | `#f0efeb` | Inset panels (serie nav, code areas) |
-| `--header-bg` | `rgba(246, 245, 242, 0.96)` | Sticky site header |
+| `--color-surface-muted` | `#f3f2ee` | Inset panels (serie nav, code areas) |
+| `--header-bg` | `rgba(255, 255, 255, 0.96)` | Sticky site header |
 
 ## Text
 
 | Token | Hex | Usage |
 |-------|-----|--------|
-| `--color-text` | `#1a1a18` | Primary body and headings |
-| `--color-text-light` | `#3a3a37` | Secondary copy |
-| `--color-text-muted` | `#5a5a56` | Metadata, hints, footer legal |
+| `--color-text` | `#0a0a0a` | Primary body and headings |
+| `--color-text-light` | `#1f1f1d` | Secondary copy |
+| `--color-text-muted` | `#3d3d3a` | Metadata, hints, footer legal |
 | `--color-text-secondary` | `var(--color-text-light)` | Alias |
 
 ## Borders
@@ -39,13 +39,13 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 
 | Token | Hex | Usage |
 |-------|-----|--------|
-| `--color-primary` | `#3a6b3e` | Links, primary buttons, focus accents |
-| `--color-primary-dark` | `#2d5530` | Primary hover / pressed |
-| `--color-primary-hover` | `#325f36` | Primary hover (buttons) |
+| `--color-primary` | `#2f5c33` | Links, primary buttons, focus accents |
+| `--color-primary-dark` | `#254a28` | Primary hover / pressed; in-article links |
+| `--color-primary-hover` | `#2a5530` | Primary hover (buttons) |
 | `--color-accent` | `#7a3344` | Drop caps, pull quotes, destructive emphasis |
 | `--color-secondary` | `var(--color-accent)` | Alias |
 | `--color-secondary-hover` | `#65303d` | Accent hover |
-| `--color-on-primary` | `#f6f5f2` | Text on filled primary buttons |
+| `--color-on-primary` | `#faf9f6` | Text on filled primary buttons |
 
 ## Semantic
 
@@ -68,9 +68,10 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 
 | Token | Value | Usage |
 |-------|-------|--------|
-| `--font-serif` | Cormorant Garamond stack | Article body (default `body`) |
+| `--font-serif` | Cormorant Garamond stack | Decorative serif (pull quotes, captions) |
 | `--font-serif-display` | Playfair Display stack | Titles, logo |
 | `--font-sans` | Inter stack | UI chrome, forms, header |
+| `--font-reading` | `var(--font-sans)` | Body copy and article text (screen contrast) |
 | `--font-mono` | ui-monospace stack | Code |
 | `body` font-size | `16px` | Global base (set in main.css) |
 | `--text-xs` | `0.7rem` | Badges, fine print |
@@ -124,7 +125,7 @@ Canonical reference for **design tokens** (`:root` in [main.css](../src/main/res
 | `--duration-normal` | `200ms` |
 | `--duration-slow` | `280ms` |
 | `--ease-out`, `--ease-in-out` | Cubic-bezier curves |
-| `--focus-ring-color` | `rgba(58, 107, 62, 0.35)` |
+| `--focus-ring-color` | `rgba(47, 92, 51, 0.35)` |
 
 ## Component mapping
 

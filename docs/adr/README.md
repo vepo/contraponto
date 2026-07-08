@@ -21,6 +21,7 @@ Decisões arquiteturais do **Contraponto** usam o template [GiG Cymru NHS Wales]
 | [0013](0013-cdi-events-cross-context.md) | Cross-context side effects via CDI events | Proposed |
 | [0014](0014-session-store.md) | Session store (in-memory vs Redis) | Proposed |
 | [0015](0015-federation-outbound-fetch-ssrf.md) | Federation outbound HTTPS fetch — SSRF controls | Accepted |
+| [0016](0016-account-deletion-audit-retention.md) | Account deletion — abuse audit retention (6 months) | Accepted |
 
 ## Quando criar um ADR
 

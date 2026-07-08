@@ -140,7 +140,7 @@
 
 .write-form__optional {
     font-weight: 400;
-    color: #6b6b6b;
+    color: var(--color-text-muted);
     font-size: 0.85em;
 }
 
@@ -148,22 +148,22 @@
     width: 100%;
     font-family: 'Inter', Helvetica, sans-serif;
     font-size: 14px;
-    color: #6b6b6b;
+    color: var(--color-text-muted);
     border: none;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--color-border);
     padding: 8px 0;
     outline: none;
     background: transparent;
 }
 
 .write-form__slug:focus {
-    border-bottom-color: #1a8917;
+    border-bottom-color: var(--color-primary);
 }
 
 .write-form__slug-preview {
     font-family: 'Inter', Helvetica, sans-serif;
     font-size: 12px;
-    color: #1a8917;
+    color: var(--color-primary);
     margin-top: 6px;
 }
 
@@ -171,21 +171,21 @@
     width: 100%;
     font-family: 'Inter', Helvetica, sans-serif;
     font-size: 16px;
-    color: #4a4a4a;
+    color: var(--color-text-light);
     border: none;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--color-border);
     padding: 8px 0;
     outline: none;
     background: transparent;
 }
 
 .write-form__description:focus {
-    border-bottom-color: #1a8917;
+    border-bottom-color: var(--color-primary);
 }
 
 /* Cover Image Area */
 .write-form__cover {
-    border: 2px dashed #e5e5e5;
+    border: 2px dashed var(--color-border);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -193,8 +193,8 @@
 }
 
 .write-form__cover:hover {
-    border-color: #1a8917;
-    background: #f9f9f9;
+    border-color: var(--color-primary);
+    background: var(--color-bg-offset);
 }
 
 .write-form__cover-placeholder {
@@ -204,7 +204,7 @@
     justify-content: center;
     gap: 12px;
     padding: 60px 24px;
-    color: #a0a0a0;
+    color: var(--color-text-muted);
 }
 
 .write-form__cover-placeholder svg {
@@ -224,7 +224,7 @@
 
 .write-form__cover-preview {
     position: relative;
-    background: #f5f5f5;
+    background: var(--color-bg-offset);
 }
 
 .write-form__cover-preview img {

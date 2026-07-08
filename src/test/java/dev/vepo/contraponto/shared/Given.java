@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import dev.vepo.contraponto.activitypub.ActivityPubActor;
 import dev.vepo.contraponto.activitypub.ActivityPubActorService;
 import dev.vepo.contraponto.activitypub.ActivityPubDelivery;
+import dev.vepo.contraponto.activitypub.ActivityPubFavourite;
 import dev.vepo.contraponto.activitypub.ActivityPubFollow;
 import dev.vepo.contraponto.activitypub.ActivityPubRemoteActor;
 import dev.vepo.contraponto.auth.PasswordService;
@@ -409,6 +410,7 @@ public interface Given {
                          .executeUpdate();
             Stream.of(ActivityPubDelivery.class,
                       ActivityPubFollow.class,
+                      ActivityPubFavourite.class,
                       ActivityPubActor.class,
                       ActivityPubRemoteActor.class,
                       Post.class,

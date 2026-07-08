@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import dev.vepo.contraponto.activitypub.ActivityPubFavouriteService;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.post.PostWriteService;
@@ -81,6 +82,7 @@ public class PublishEndpoint {
     private final SeoService seoService;
     private final ReadingListService readingListService;
     private final BlogPublicUrlService blogPublicUrlService;
+    private final ActivityPubFavouriteService activityPubFavouriteService;
 
     @Inject
     public PublishEndpoint(PostRepository postRepository,
@@ -98,7 +100,8 @@ public class PublishEndpoint {
                            PostResponseService postResponseService,
                            SeoService seoService,
                            ReadingListService readingListService,
-                           BlogPublicUrlService blogPublicUrlService) {
+                           BlogPublicUrlService blogPublicUrlService,
+                           ActivityPubFavouriteService activityPubFavouriteService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.postWriteService = postWriteService;
@@ -115,6 +118,7 @@ public class PublishEndpoint {
         this.seoService = seoService;
         this.readingListService = readingListService;
         this.blogPublicUrlService = blogPublicUrlService;
+        this.activityPubFavouriteService = activityPubFavouriteService;
     }
 
     // ============================== PUBLIC API ==============================
@@ -169,7 +173,8 @@ public class PublishEndpoint {
                                                       share,
                                                       readingListService.buildActionView(post, loggedUser.getId()),
                                                       breadcrumb,
-                                                      seoService.forPost(view, breadcrumb)))
+                                                      seoService.forPost(view, breadcrumb),
+                                                      activityPubFavouriteService.buildPostView(post, loggedUser.getId())))
                     .build();
     }
 

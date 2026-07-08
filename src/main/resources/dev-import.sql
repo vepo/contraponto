@@ -28,6 +28,7 @@ TRUNCATE TABLE tb_user_blocks CASCADE;
 TRUNCATE TABLE tb_git_sync_run_entries CASCADE;
 TRUNCATE TABLE tb_git_sync_runs CASCADE;
 TRUNCATE TABLE tb_activitypub_deliveries CASCADE;
+TRUNCATE TABLE tb_activitypub_favourites CASCADE;
 TRUNCATE TABLE tb_activitypub_follows CASCADE;
 TRUNCATE TABLE tb_activitypub_remote_actors CASCADE;
 TRUNCATE TABLE tb_activitypub_actors CASCADE;
@@ -928,6 +929,13 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
         'https://mastodon.social/activities/dev-seed-follow',
         NOW(), NOW()
     );
+
+    INSERT INTO tb_activitypub_favourites (post_id, remote_actor_id, like_activity_id, created_at)
+    SELECT p.id, v_remote_actor, 'https://mastodon.social/activities/dev-seed-like-intro', NOW()
+    FROM tb_posts p
+    JOIN tb_blogs b ON p.blog_id = b.id
+    JOIN tb_users u ON b.owner_id = u.id
+    WHERE u.username = 'alice' AND p.slug = 'introduction-to-distributed-systems-java';
 
     -- ============================================
     -- 11. Sample in-app notifications
