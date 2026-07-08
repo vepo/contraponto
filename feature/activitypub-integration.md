@@ -11,7 +11,7 @@
 **Version:** 1.3  
 **Status:** in-progress
 
-**Description:** Production interoperability hotspot: Friendica/Mastodon probes and outbound Create deliveries. Adds protocol ingress under `/__activity_pub__/`, NodeInfo discovery, PoCo explicit 404 sink, preserved subdomain signature path for inbox verify, ActivityPub **HEAD** on actor/post URLs (was **406**), delivery failure persistence/logging so `last_error` is never blank, outbound HTTP Signature **Date** formatting with zero-padded day (Mastodon `Time.httpdate` rejects `Wed, 8 Jul…` → **401**), and setting the signed **Host** header on outbound `HttpRequest` (`-Djdk.httpclient.allowRestrictedHeaders=host`).
+**Description:** Production interoperability hotspot: Friendica/Mastodon probes and outbound Create deliveries. Adds protocol ingress under `/__activity_pub__/`, NodeInfo discovery, PoCo explicit 404 sink, preserved subdomain signature path for inbox verify, ActivityPub **HEAD** on actor/post URLs (was **406**), delivery failure persistence/logging so `last_error` is never blank, outbound HTTP Signature **Date** formatting with zero-padded day (Mastodon `Time.httpdate` rejects `Wed, 8 Jul…` → **401**), setting the signed **Host** header on outbound `HttpRequest` (`-Djdk.httpclient.allowRestrictedHeaders=host`), and **re-Follow after Undo**: rejected follow edges reopen to PENDING then auto-accept (Accept + historical Create backfill) instead of no-op.
 
 **Impact on other features:**
 
@@ -20,6 +20,7 @@
 | Custom pages | Shared `InternalRoutePrefixes` pattern (`/__custom_page__`) aligned with ActivityPub ingress |
 | Blog subdomain | `BlogSubdomainContext.signatureRequestPath` preserved across ingress rewrite |
 | Ops / diagnostics | [feedverse-database-queries.md](../docs/feedverse-database-queries.md) covers re-queue after HEAD fix |
+| Fediverse follow | Unfollow (`Undo`) → `REJECTED`; later Follow reactivates the same unique `(local, remote)` row |
 
 **Feature checklist**
 
@@ -30,9 +31,10 @@
 | FC21 | Protocol routes rewritten via `ActivityPubIngressFilter` to `/__activity_pub__/…`; public URLs unchanged | ☑ |
 | FC22 | Outbound `Date` header is HTTP-date with zero-padded day (`dd`), accepted by Mastodon | ☑ |
 | FC23 | Outbound delivery `HttpRequest` includes the same `Host` value that is signed (`allowRestrictedHeaders=host`) | ☑ |
+| FC24 | Undo Follow then Follow again → edge becomes ACCEPTED; Accept + Create backfill enqueued | ☑ |
 | FCdev | Ops guide documents post-deploy re-queue SQL | ☑ |
 
-**Implementation notes:** Actor HEAD serializes the Person document for Content-Length but returns an empty body. Outbound signatures must not use Java `DateTimeFormatter.RFC_1123_DATE_TIME` (single-digit day). JVM/image must start with `-Djdk.httpclient.allowRestrictedHeaders=host` so signed `Host` can be set on `HttpRequest`. Re-queue PENDING/FAILED deliveries after deploy.
+**Implementation notes:** Actor HEAD serializes the Person document for Content-Length but returns an empty body. Outbound signatures must not use Java `DateTimeFormatter.RFC_1123_DATE_TIME` (single-digit day). JVM/image must start with `-Djdk.httpclient.allowRestrictedHeaders=host` so signed `Host` can be set on `HttpRequest`. Re-queue PENDING/FAILED deliveries after deploy. Idempotent Follow while already ACCEPTED/PENDING remains a no-op.
 
 ---
 
