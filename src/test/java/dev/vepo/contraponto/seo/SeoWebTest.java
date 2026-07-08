@@ -61,7 +61,7 @@ class SeoWebTest {
 
     @Test
     void notFoundPageHasMetaDescriptionAndCrawlableHomeLink(App app) {
-        app.goToPath("/no-such-page-for-seo-test");
+        app.goToPath("/nosuchuser999");
 
         app.assertPageSourceContains("<meta name=\"description\"")
            .assertPageSourceContains("href=\"/\"")
