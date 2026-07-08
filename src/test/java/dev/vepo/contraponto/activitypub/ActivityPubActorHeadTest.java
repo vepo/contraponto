@@ -1,7 +1,11 @@
 package dev.vepo.contraponto.activitypub;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.net.URL;
 
@@ -53,7 +57,9 @@ class ActivityPubActorHeadTest {
                .head("/")
                .then()
                .statusCode(200)
-               .header("Content-Type", containsString(ActivityPubPaths.ACTIVITY_JSON));
+               .header("Content-Type", containsString(ActivityPubPaths.ACTIVITY_JSON))
+               .header("Content-Length", notNullValue())
+               .body(anyOf(emptyOrNullString(), equalTo("")));
     }
 
     @BeforeEach

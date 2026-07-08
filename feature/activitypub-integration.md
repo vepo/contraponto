@@ -6,6 +6,35 @@
 
 ## Changelog
 
+### Protocol ingress, actor HEAD, delivery diagnostics — 2026-07-08
+
+**Version:** 1.3  
+**Status:** in-progress
+
+**Description:** Production interoperability hotspot: Friendica/Mastodon probes and outbound Create deliveries. Adds protocol ingress under `/__activity_pub__/`, NodeInfo discovery, PoCo explicit 404 sink, preserved subdomain signature path for inbox verify, ActivityPub **HEAD** on actor/post URLs (was **406**), delivery failure persistence/logging so `last_error` is never blank, and outbound HTTP Signature **Date** formatting with zero-padded day (Mastodon `Time.httpdate` rejects `Wed, 8 Jul…` → **401**).
+
+**Impact on other features:**
+
+| Feature / area | Impact |
+|----------------|--------|
+| Custom pages | Shared `InternalRoutePrefixes` pattern (`/__custom_page__`) aligned with ActivityPub ingress |
+| Blog subdomain | `BlogSubdomainContext.signatureRequestPath` preserved across ingress rewrite |
+| Ops / diagnostics | [feedverse-database-queries.md](../docs/feedverse-database-queries.md) covers re-queue after HEAD fix |
+
+**Feature checklist**
+
+| ID | Criterion | Status |
+|----|-----------|--------|
+| FC19 | `HEAD` + `Accept: application/activity+json` on author actor URL returns **200** + ActivityPub Content-Type (not 406) | ☑ |
+| FC20 | Outbound delivery failures store non-blank `last_error` and log once per attempt (no double attempt increment) | ☑ |
+| FC21 | Protocol routes rewritten via `ActivityPubIngressFilter` to `/__activity_pub__/…`; public URLs unchanged | ☑ |
+| FC22 | Outbound `Date` header is HTTP-date with zero-padded day (`dd`), accepted by Mastodon | ☑ |
+| FCdev | Ops guide documents post-deploy re-queue SQL | ☑ |
+
+**Implementation notes:** Actor HEAD serializes the Person document for Content-Length but returns an empty body. Outbound signatures must not use Java `DateTimeFormatter.RFC_1123_DATE_TIME` (single-digit day). Re-queue PENDING/FAILED deliveries after deploy.
+
+---
+
 ### Production baseline — Fediverse integration — 2026-07-06
 
 **Version:** 1  
