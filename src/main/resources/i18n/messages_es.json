@@ -414,6 +414,7 @@
   "customPage.form.placementNone": "Ninguna (solo URL directa)",
   "customPage.form.placementSidebar": "Barra lateral",
   "customPage.form.published": "Publicado",
+  "customPage.form.publishedDesc": "Cuando está marcado, los visitantes pueden abrir esta página en su URL pública.",
   "customPage.form.scope": "Ámbito",
   "customPage.form.scopeApplication": "Aplicación (inicio)",
   "customPage.form.scopeBlog": "Blog del usuario",

@@ -71,6 +71,7 @@ When adding styles, put them in the bundle that matches the primary surface. Sha
 | `.form-group` | Standard field wrapper; `.form-group--error`, `.form-group--checkbox` |
 | `.error-message` | Validation text (with parent `--error` when applicable) |
 | `.pages-form` | Manage CRUD forms (extends form-group inputs) |
+| `pages-form__published`, `pages-form__published-*` | `CustomPageManageEndpoint/form.html` | Card-style published toggle on custom page form |
 
 ### Utilities
 

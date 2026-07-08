@@ -115,10 +115,18 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-group--checkbox">
-                        <label>
-                            <input type="checkbox" name="published" {#if formView.page.published}checked{/if}>
-                            <span data-i18n="customPage.form.published">Publicado</span>
+                    <div class="form-group pages-form__published-group">
+                        <label class="pages-form__published">
+                            <input type="checkbox"
+                                   class="pages-form__published-input"
+                                   name="published"
+                                   {#if formView.page.published}checked{/if}>
+                            <span class="pages-form__published-card">
+                                <span class="pages-form__published-title" data-i18n="customPage.form.published">Publicado</span>
+                                <span class="pages-form__published-desc" data-i18n="customPage.form.publishedDesc">
+                                    Quando marcado, visitantes podem abrir esta página na URL pública.
+                                </span>
+                            </span>
                         </label>
                     </div>
 
