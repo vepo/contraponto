@@ -88,10 +88,13 @@ public interface Given {
         public Blog persist() {
             return transaction(() -> {
                 var entityManager = inject(EntityManager.class);
+                var resolvedName = Objects.requireNonNull(name != null && !name.isBlank() ? name : slug,
+                                                          "'name' or 'slug' cannot be null");
+                var resolvedDescription = description != null && !description.isBlank() ? description : resolvedName;
                 var blog = new Blog(Objects.requireNonNull(user, "'user' cannot be null!"),
                                     Objects.requireNonNull(slug, "'slug' cannot be null"),
-                                    Objects.requireNonNull(name, "'name' cannot be null"),
-                                    Objects.requireNonNull(description, "'description' cannot be null"));
+                                    resolvedName,
+                                    resolvedDescription);
                 entityManager.persist(blog);
                 return blog;
             });
@@ -330,7 +333,7 @@ public interface Given {
         public User get() {
             var user = new User(Objects.requireNonNull(username, "'username' cannot be null"),
                                 Objects.requireNonNull(email, "'email' cannot be null"),
-                                Objects.requireNonNull(name, "'name' cannot be null"),
+                                resolvedName(),
                                 Objects.requireNonNull(roles, "'roles' cannot be null"),
                                 inject(PasswordService.class).hashPassword(Objects.requireNonNull(password, "'password' cannot be null")));
             user.setBlogs(Set.of(new Blog(user)));
@@ -342,7 +345,7 @@ public interface Given {
                 var entityManager = inject(EntityManager.class);
                 var user = new User(Objects.requireNonNull(username, "'username' cannot be null"),
                                     Objects.requireNonNull(email, "'email' cannot be null"),
-                                    Objects.requireNonNull(name, "'name' cannot be null"),
+                                    resolvedName(),
                                     Objects.requireNonNull(roles, "'roles' cannot be null"),
                                     inject(PasswordService.class).hashPassword(Objects.requireNonNull(password, "'password' cannot be null")));
                 entityManager.persist(user);
@@ -357,6 +360,13 @@ public interface Given {
                                                            """, User.class)
                                               .setParameter("userId", createdUser.getId())
                                               .getSingleResultOrNull();
+        }
+
+        private String resolvedName() {
+            if (name != null && !name.isBlank()) {
+                return name;
+            }
+            return Objects.requireNonNull(username, "'username' cannot be null");
         }
 
         public UserBuilder withEmail(String email) {
