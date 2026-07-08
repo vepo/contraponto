@@ -6,7 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -57,6 +60,15 @@ class CustomPagePathsTest {
         Blog blog = new Blog(owner, slug, slug, slug);
         blog.setMain(mainBlog);
         return blog;
+    }
+
+    @Test
+    void blogSlugPathSegmentRejectsReservedSegments() {
+        var pattern = Pattern.compile("^" + CustomPagePaths.BLOG_SLUG_PATH_SEGMENT + "$");
+        for (String reserved : CustomPagePaths.reservedSegments()) {
+            assertThat(pattern.matcher(reserved).matches()).as("reserved segment %s", reserved).isFalse();
+        }
+        assertThat(pattern.matcher("sideblog").matches()).isTrue();
     }
 
     @Test
@@ -141,6 +153,13 @@ class CustomPagePathsTest {
 
         assertThat(CustomPagePaths.isMainBlogPage(page("x", vacation))).isFalse();
         assertThat(CustomPagePaths.isMainBlogPage(inbox)).isTrue();
+    }
+
+    @Test
+    void reservedSegmentAlternationMatchesReservedSet() {
+        var fromAlternation = Arrays.stream(CustomPagePaths.RESERVED_SEGMENT_ALTERNATION.split("\\|"))
+                                    .collect(Collectors.toSet());
+        assertThat(fromAlternation).isEqualTo(CustomPagePaths.reservedSegments());
     }
 
     @Test

@@ -3,6 +3,7 @@ package dev.vepo.contraponto.blog;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import dev.vepo.contraponto.custompage.CustomPageRepository;
+import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
 import dev.vepo.contraponto.notification.BlogAudienceComponentEndpoint;
@@ -137,7 +138,7 @@ public class BlogEndpoint {
     }
 
     @GET
-    @Path("{blogSlug}")
+    @Path(CustomPagePaths.BLOG_SLUG_PATH_PARAM)
     @Produces(MediaType.TEXT_HTML)
     public Response secondaryBlog(@PathParam("username") String username,
                                   @PathParam("blogSlug") String blogSlug,
@@ -155,7 +156,7 @@ public class BlogEndpoint {
     }
 
     @GET
-    @Path("{blogSlug}/components/grid")
+    @Path(CustomPagePaths.BLOG_SLUG_PATH_PARAM + "/components/grid")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance secondaryBlogMorePosts(@PathParam("username") String username,
