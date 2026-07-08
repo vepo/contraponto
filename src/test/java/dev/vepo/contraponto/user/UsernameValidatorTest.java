@@ -19,6 +19,12 @@ class UsernameValidatorTest {
     }
 
     @Test
+    void pathSegmentPatternRejectsWellKnown() {
+        assertThat(usernameValidator.validate(".well-known"))
+                                                             .hasValue("Username must start with a letter or number and contain only letters, numbers, hyphens and underscores.");
+    }
+
+    @Test
     void rejects_feed_username() {
         assertThat(usernameValidator.validate("feed")).hasValue("This username is reserved and cannot be used.");
     }

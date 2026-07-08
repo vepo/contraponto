@@ -18,6 +18,7 @@ import dev.vepo.contraponto.shared.share.ShareLinks;
 import dev.vepo.contraponto.shared.share.ShareView;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.user.UserRepository;
+import dev.vepo.contraponto.user.UsernameValidator;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,7 +34,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 
-@Path("/{username}")
+@Path("/" + UsernameValidator.USERNAME_PATH_PARAM)
 @ApplicationScoped
 public class BlogEndpoint {
 
