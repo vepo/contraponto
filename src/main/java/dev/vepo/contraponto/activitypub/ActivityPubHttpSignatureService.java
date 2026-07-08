@@ -31,15 +31,28 @@ public class ActivityPubHttpSignatureService {
 
     private static final Logger logger = LoggerFactory.getLogger(ActivityPubHttpSignatureService.class);
 
-    private static final DateTimeFormatter HTTP_DATE = DateTimeFormatter.RFC_1123_DATE_TIME.withLocale(Locale.US);
+    /**
+     * HTTP-date (RFC 7231 / RFC 1123). Must zero-pad the day-of-month: Mastodon
+     * parses {@code Date} with Ruby {@code Time.httpdate}, which rejects
+     * {@code Wed, 8 Jul …} (Java {@link DateTimeFormatter#RFC_1123_DATE_TIME} emits
+     * a single digit) and returns HTTP 401 on signature verify.
+     */
+    private static final DateTimeFormatter HTTP_DATE = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+                                                                        .withLocale(Locale.US)
+                                                                        .withZone(ZoneOffset.UTC);
 
     private static final Pattern SIGNATURE_PARAM = Pattern.compile("(\\w+)=\"([^\"]*)\"");
+
+    static String formatHttpDate(ZonedDateTime instant) {
+        return HTTP_DATE.format(instant);
+    }
 
     private final ActivityPubKeyPairService keyPairService;
     private final ActivityPubActorRepository actorRepository;
     private final ActivityPubRemoteActorRepository remoteActorRepository;
     private final ActivityPubRemoteActorService remoteActorService;
     private final ActivityPubFetchSettings fetchSettings;
+
     private final BlogSubdomainContext subdomainContext;
 
     @Inject
@@ -230,7 +243,7 @@ public class ActivityPubHttpSignatureService {
                                            String method,
                                            URI targetUri,
                                            String body) {
-        var date = HTTP_DATE.format(ZonedDateTime.now(ZoneOffset.UTC));
+        var date = formatHttpDate(ZonedDateTime.now(ZoneOffset.UTC));
         var digest = computeDigest(body);
         var host = targetUri.getHost();
         if (targetUri.getPort() > 0 && targetUri.getPort() != 443 && targetUri.getPort() != 80) {

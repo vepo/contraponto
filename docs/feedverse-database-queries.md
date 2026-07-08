@@ -395,6 +395,7 @@ Inbound POSTs from deleted remotes will still get **401** (no fetchable public k
 | `Remote actor fetch HTTP 410` + `no public key` | Remote deleted or moved actor | Remote `actor_id` row; optional [§4.5](#45-clear-a-dead-remote-eg-http-410-on-actor-fetch) |
 | Follows stay `PENDING` forever | Pre-auto-accept leftovers | [§2.3](#23-follows-stuck-in-pending); ask remote to re-follow |
 | Many `FAILED` deliveries | Network, remote inbox, bad URL, or signature reject (`HTTP 401`) | `last_error`, `attempts`, `target_inbox_url` — then [§4.2](#42-re-queue-failed--pending) |
+| Outbound CREATE → Mastodon `HTTP 401` while actor GET/HEAD is 200 | Signed `Date` used Java RFC-1123 **without** zero-padded day (`Wed, 8 Jul…`); Ruby `Time.httpdate` rejects → 401. Fixed formatter: `EEE, dd MMM yyyy HH:mm:ss GMT` | Deploy fix; [§4.2](#42-re-queue-failed--pending) |
 | `FAILED` with empty `last_error` | Older bug: null exception message; or need newer logging | Re-queue after deploy; watch app logs for `ActivityPub delivery` |
 | `federation_enabled = false` | User opted out or platform kill-switch | [§1.1](#11-platform--local-actor) |
 | Object IDs use IP / bare `/posts/...` | Wrong public URL configuration | Payload peek [§3.4](#34-peek-at-a-payload-title--object-url); fix app config, then re-queue Creates |

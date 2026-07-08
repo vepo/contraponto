@@ -3,6 +3,8 @@ package dev.vepo.contraponto.activitypub;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,12 @@ class ActivityPubSignatureTest {
         assertThat(signatureService.computeDigest("hello"))
                                                            .isEqualTo(signatureService.computeDigest("hello"))
                                                            .startsWith("SHA-256=");
+    }
+
+    @Test
+    void httpDateZeroPadsSingleDigitDay() {
+        var date = ActivityPubHttpSignatureService.formatHttpDate(ZonedDateTime.of(2026, 7, 8, 12, 34, 56, 0, ZoneOffset.UTC));
+        assertThat(date).isEqualTo("Wed, 08 Jul 2026 12:34:56 GMT");
     }
 
     @BeforeEach
@@ -65,6 +73,17 @@ class ActivityPubSignatureTest {
         var signed = signatureService.signRequest(privateKey, actor.getPublicKeyId(), "POST", target, body);
         assertThat(signatureService.verifyRequest("POST", target, body, signed, publicKey)).isTrue();
         assertThat(signatureService.verifyRequest("POST", target, body, signed)).isTrue();
+    }
+
+    @Test
+    void signRequestDateUsesZeroPaddedHttpDate() {
+        var privateKey = keyPairService.decryptPrivateKey(actor.getPrivateKeyEncrypted());
+        var signed = signatureService.signRequest(privateKey,
+                                                  actor.getPublicKeyId(),
+                                                  "POST",
+                                                  URI.create("https://remote.example/inbox"),
+                                                  "{\"type\":\"Create\"}");
+        assertThat(signed.get("Date")).matches("^[A-Za-z]{3}, \\d{2} [A-Za-z]{3} \\d{4} \\d{2}:\\d{2}:\\d{2} GMT$");
     }
 
     @Test
