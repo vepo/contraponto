@@ -97,10 +97,13 @@ class ActivityPubDeliveryServiceTest {
 
             deliveryService.enqueueHistoricalPostsForAcceptedFollow(follow);
 
-            var pending = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
-            var creates = pending.stream()
-                                 .filter(delivery -> delivery.getActivityType() == ActivityPubActivityType.CREATE)
-                                 .toList();
+            // Secondary persist already fan-out Create to the setUp follower; assert only
+            // this follow's inbox.
+            var creates = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1))
+                                            .stream()
+                                            .filter(delivery -> delivery.getActivityType() == ActivityPubActivityType.CREATE)
+                                            .filter(delivery -> "https://remote.example/inbox-multi-blog".equals(delivery.getTargetInboxUrl()))
+                                            .toList();
             assertThat(creates).hasSize(2);
             assertThat(creates.get(0).getPayloadJson()).contains("Fediverse Post");
             assertThat(creates.get(1).getPayloadJson()).contains("Secondary Archive Note")
@@ -129,6 +132,8 @@ class ActivityPubDeliveryServiceTest {
                              .withName("Notes")
                              .withDescription("Secondary live fan-out")
                              .persist();
+        // Persist publishes and AFTER_SUCCESS already enqueues Create to the setUp
+        // follower.
         var secondaryPost = Given.post()
                                  .withAuthor(user)
                                  .withBlog(secondary)
@@ -138,19 +143,14 @@ class ActivityPubDeliveryServiceTest {
                                  .withContent("Body")
                                  .persist();
 
-        Given.transaction(() -> {
-            deliveryObserver.afterPublish(new PostPublishedEvent(secondaryPost.getId(),
-                                                                 secondaryPost.getLivePublication().getId(),
-                                                                 secondary.getId(),
-                                                                 user.getId()));
-            assertThat(deliveryRepository.countPendingForActor(actor.getId())).isEqualTo(1);
-            var pending = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
-            assertThat(pending).hasSize(1);
-            assertThat(pending.get(0).getActivityType()).isEqualTo(ActivityPubActivityType.CREATE);
-            assertThat(pending.get(0).getPayloadJson()).contains("Live Secondary Create")
-                                                       .contains("Notes")
-                                                       .contains("/deluser/notes/post/live-secondary-create");
-        });
+        assertThat(deliveryRepository.countPendingForActor(actor.getId())).isEqualTo(1);
+        var pending = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        assertThat(pending).hasSize(1);
+        assertThat(pending.get(0).getActivityType()).isEqualTo(ActivityPubActivityType.CREATE);
+        assertThat(pending.get(0).getPayloadJson()).contains("Live Secondary Create")
+                                                   .contains("Notes")
+                                                   .contains("/deluser/notes/post/live-secondary-create");
+        assertThat(secondaryPost.getLivePublication()).isNotNull();
     }
 
     @Test
