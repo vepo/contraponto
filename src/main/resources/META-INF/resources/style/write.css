@@ -571,8 +571,88 @@
     font-style: italic;
 }
 
-.write-preview ul, .write-preview ol {
-    margin: 0.75rem 0 0.75rem 1.5rem;
+/* AsciiDoc / Markdown lists — mirrors .article-page__content .ulist / .olist */
+.write-preview .ulist,
+.write-preview .olist,
+.write-preview > ul,
+.write-preview > ol {
+    margin: 1.125rem 0 1.5rem;
+}
+
+.write-preview .ulist ul,
+.write-preview .olist ol,
+.write-preview > ul,
+.write-preview > ol {
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.write-preview .ulist ul > li,
+.write-preview .olist ol > li,
+.write-preview > ul > li,
+.write-preview > ol > li {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.write-preview .ulist ul > li::before,
+.write-preview > ul > li::before {
+    content: "";
+    position: absolute;
+    top: 0.7em;
+    left: 0.55rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+}
+
+.write-preview .olist,
+.write-preview > ol {
+    counter-reset: article-olist;
+}
+
+.write-preview .olist ol > li,
+.write-preview > ol > li {
+    counter-increment: article-olist;
+}
+
+.write-preview .olist ol > li::before,
+.write-preview > ol > li::before {
+    content: counter(article-olist);
+    position: absolute;
+    top: 0.1em;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-muted);
+    color: var(--color-accent);
+    font-family: var(--font-serif-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.write-preview .ulist ul > li > p,
+.write-preview .olist ol > li > p,
+.write-preview > ul > li > p,
+.write-preview > ol > li > p {
+    margin-bottom: 0.4rem;
+}
+
+.write-preview .ulist ul > li > p:last-child,
+.write-preview .olist ol > li > p:last-child,
+.write-preview > ul > li > p:last-child,
+.write-preview > ol > li > p:last-child {
+    margin-bottom: 0;
 }
 
 .write-preview code {

@@ -2004,14 +2004,97 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   text-align: justify;
 }
 
-.article-page__content .ulist ul,
-.article-page__content .ulist ol {
-  margin-left: 2rem;
+/* AsciiDoc / Markdown lists (Asciidoctor .ulist / .olist; reset clears default markers) */
+.article-page__content .ulist,
+.article-page__content .olist,
+.article-page__content > ul,
+.article-page__content > ol {
+  margin: var(--spacing-md) 0 var(--spacing-lg);
 }
 
-.article-page__content .ulist ul p,
-.article-page__content .ulist ol p {
-  margin-bottom: 0.5rem;
+.article-page__content .ulist ul,
+.article-page__content .olist ol,
+.article-page__content > ul,
+.article-page__content > ol {
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.article-page__content .ulist ul > li,
+.article-page__content .olist ol > li,
+.article-page__content > ul > li,
+.article-page__content > ol > li {
+  position: relative;
+  padding-left: 2rem;
+  text-align: justify;
+}
+
+.article-page__content .ulist ul > li::before,
+.article-page__content > ul > li::before {
+  content: "";
+  position: absolute;
+  top: 0.7em;
+  left: 0.55rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.article-page__content .olist,
+.article-page__content > ol {
+  counter-reset: article-olist;
+}
+
+.article-page__content .olist ol > li,
+.article-page__content > ol > li {
+  counter-increment: article-olist;
+}
+
+.article-page__content .olist ol > li::before,
+.article-page__content > ol > li::before {
+  content: counter(article-olist);
+  position: absolute;
+  top: 0.1em;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  color: var(--color-accent);
+  font-family: var(--font-serif-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.article-page__content .ulist ul > li > p,
+.article-page__content .olist ol > li > p,
+.article-page__content > ul > li > p,
+.article-page__content > ol > li > p {
+  margin-bottom: 0.4rem;
+  text-align: justify;
+}
+
+.article-page__content .ulist ul > li > p:last-child,
+.article-page__content .olist ol > li > p:last-child,
+.article-page__content > ul > li > p:last-child,
+.article-page__content > ol > li > p:last-child {
+  margin-bottom: 0;
+}
+
+.article-page__content .ulist .ulist,
+.article-page__content .olist .ulist,
+.article-page__content .ulist .olist,
+.article-page__content .olist .olist {
+  margin: var(--spacing-sm) 0 0;
 }
 
 .article-page__content > p:first-of-type,
