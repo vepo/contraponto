@@ -5,6 +5,8 @@ import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+
 import dev.vepo.contraponto.activitypub.ActivityPubSettings;
 import dev.vepo.contraponto.activitypub.actor.ActivityPubActor;
 import dev.vepo.contraponto.activitypub.actor.ActivityPubActorRepository;
@@ -12,6 +14,12 @@ import dev.vepo.contraponto.blog.BlogRepository;
 import dev.vepo.contraponto.notification.PostPublishedEvent;
 import dev.vepo.contraponto.notification.PostUnpublishedEvent;
 
+/**
+ * Enqueues ActivityPub deliveries after publish/unpublish commits. Uses
+ * {@link TxType#REQUIRES_NEW} because {@link TransactionPhase#AFTER_SUCCESS}
+ * runs after the publisher transaction is no longer active (e.g. Git import on
+ * a worker thread).
+ */
 @ApplicationScoped
 public class ActivityPubDeliveryObserver {
 
@@ -31,7 +39,7 @@ public class ActivityPubDeliveryObserver {
         this.deliveryService = deliveryService;
     }
 
-    @Transactional
+    @Transactional(TxType.REQUIRES_NEW)
     void afterPublish(@Observes(during = TransactionPhase.AFTER_SUCCESS) PostPublishedEvent event) {
         if (!settings.enabled()) {
             return;
@@ -45,7 +53,7 @@ public class ActivityPubDeliveryObserver {
                        .ifPresent(actor -> deliveryService.enqueueCreateForPublishedPost(event.postId(), actor));
     }
 
-    @Transactional
+    @Transactional(TxType.REQUIRES_NEW)
     void afterUnpublish(@Observes(during = TransactionPhase.AFTER_SUCCESS) PostUnpublishedEvent event) {
         if (!settings.enabled()) {
             return;

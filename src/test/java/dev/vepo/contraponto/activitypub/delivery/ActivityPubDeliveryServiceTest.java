@@ -154,6 +154,16 @@ class ActivityPubDeliveryServiceTest {
     }
 
     @Test
+    void enqueueOnPublishEventWithoutOuterTransaction() {
+        // AFTER_SUCCESS observers run after the publisher TX is gone (e.g. Git import).
+        deliveryObserver.afterPublish(new PostPublishedEvent(post.getId(),
+                                                             post.getLivePublication().getId(),
+                                                             post.getBlog().getId(),
+                                                             user.getId()));
+        assertThat(deliveryRepository.countPendingForActor(actor.getId())).isEqualTo(1);
+    }
+
+    @Test
     void enqueueOnUnpublishEvent() {
         Given.transaction(() -> {
             deliveryObserver.afterUnpublish(new PostUnpublishedEvent(post.getId(), post.getBlog().getId(), user.getId()));
@@ -163,6 +173,15 @@ class ActivityPubDeliveryServiceTest {
             assertThat(pending.get(0).getActivityType()).isEqualTo(ActivityPubActivityType.DELETE);
             assertThat(pending.get(0).getPayloadJson()).contains("\"type\":\"Delete\"");
         });
+    }
+
+    @Test
+    void enqueueOnUnpublishEventWithoutOuterTransaction() {
+        deliveryObserver.afterUnpublish(new PostUnpublishedEvent(post.getId(), post.getBlog().getId(), user.getId()));
+        assertThat(deliveryRepository.countPendingForActor(actor.getId())).isEqualTo(1);
+        var pending = deliveryRepository.findPendingReady(java.time.LocalDateTime.now().plusMinutes(1));
+        assertThat(pending).hasSize(1);
+        assertThat(pending.get(0).getActivityType()).isEqualTo(ActivityPubActivityType.DELETE);
     }
 
     private void seedAcceptedFollower() {
