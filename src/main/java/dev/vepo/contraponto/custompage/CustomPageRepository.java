@@ -43,7 +43,7 @@ public class CustomPageRepository {
                                          .toList();
             sectionsByPlacement.put(placement, sections);
         }
-        logger.info("sections: {}", sectionsByPlacement);
+        logger.debug("sections: {}", sectionsByPlacement);
         return new Links(sectionsByPlacement);
     }
 
