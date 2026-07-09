@@ -4,7 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
 import dev.vepo.contraponto.activitypub.ActivityPubPaths;
+import dev.vepo.contraponto.activitypub.outbox.ActivityPubPostObjectMapper;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.UnitTest;
@@ -84,7 +88,21 @@ class BlogSubdomainConfigTest {
     }
 
     @Test
-    void postObjectId_usesPlatformUsernamePrefixWhenSubdomainEnabled() {
+    void postObjectId_secondaryUsesAuthorSubdomainShortPath() {
+        var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
+        var user = new User();
+        user.setUsername("vepo");
+        var blog = new Blog(user, "lab-notes", "Lab Notes", "Notes");
+        var post = new Post();
+        post.setBlog(blog);
+        post.setSlug("secondary-note");
+
+        assertThat(ActivityPubPaths.postObjectId(post, config)).isEqualTo("https://vepo.commit-mestre.dev/lab-notes/post/secondary-note");
+        assertThat(ActivityPubPaths.postObjectId(post, config)).startsWith(ActivityPubPaths.actorId(user, config));
+    }
+
+    @Test
+    void postObjectId_usesAuthorSubdomainHostWhenSubdomainEnabled() {
         var config = new BlogSubdomainConfig(true, "commit-mestre.dev", "blogs.commit-mestre.dev", "https://blogs.commit-mestre.dev", false);
         var user = new User();
         user.setUsername("vepo");
@@ -92,10 +110,23 @@ class BlogSubdomainConfigTest {
         blog.setOwner(user);
         blog.setMain(true);
         var post = new Post();
+        post.setId(42L);
         post.setBlog(blog);
         post.setSlug("uma-conversa-sobre-padroes");
+        post.setTitle("Title");
+        post.setPublishedAt(LocalDateTime.of(2024, 3, 15, 10, 30));
 
-        assertThat(ActivityPubPaths.postObjectId(post, config)).isEqualTo("https://blogs.commit-mestre.dev/vepo/post/uma-conversa-sobre-padroes");
+        var objectId = ActivityPubPaths.postObjectId(post, config);
+        var actorId = ActivityPubPaths.actorId(user, config);
+        assertThat(objectId).isEqualTo("https://vepo.commit-mestre.dev/post/uma-conversa-sobre-padroes");
+        assertThat(objectId).startsWith(actorId);
+
+        var create = new ActivityPubPostObjectMapper(config).toCreateActivity(post);
+        @SuppressWarnings("unchecked")
+        var object = (Map<String, Object>) create.get("object");
+        assertThat(create.get("actor")).isEqualTo(actorId);
+        assertThat(object.get("id")).isEqualTo(objectId);
+        assertThat(object.get("attributedTo")).isEqualTo(actorId);
     }
 
     @Test

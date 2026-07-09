@@ -76,7 +76,23 @@ public final class ActivityPubPaths {
         return "%soutbox?page=%d".formatted(actorId(user, config), page);
     }
 
+    /**
+     * Stable ActivityStreams object {@code id} for a published post.
+     * <p>
+     * When blog subdomains are enabled, the id uses the <strong>author actor
+     * host</strong> ({@code https://{username}.{base}/post/…}) so Mastodon’s
+     * same-origin check ({@code actor} host == object URI host) accepts the Create.
+     * Platform-host paths remain the HTML/SEO form via {@link PostPaths}; they must
+     * not be used as the AS2 object id.
+     */
     public static String postObjectId(Post post, BlogSubdomainConfig config) {
+        var blog = post.getBlog();
+        var owner = blog.getOwner();
+        if (config.enabled()) {
+            var path = blog.isMain() ? "/post/%s".formatted(post.getSlug())
+                                     : "/%s/post/%s".formatted(blog.getSlug(), post.getSlug());
+            return "%s%s".formatted(config.subdomainOrigin(owner.getUsername()), path);
+        }
         return config.platformUrl(PostPaths.extractUrl(post));
     }
 

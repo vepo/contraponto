@@ -95,7 +95,7 @@ class ActivityPubPostObjectMapperTest {
         var activity = mapper.toCreateActivity(post);
         var object = castMap(activity.get("object"));
 
-        assertThat(expectedUrl).contains("/alice/lab-notes/post/secondary-note");
+        assertThat(expectedUrl).contains("/lab-notes/post/secondary-note");
         assertThat(activity.get("published")).isEqualTo("2024-03-15T10:30:00Z");
         assertThat(object.get("id")).isEqualTo(expectedUrl);
         assertThat(object.get("url")).isEqualTo(expectedUrl);
@@ -106,4 +106,5 @@ class ActivityPubPostObjectMapperTest {
         assertThat(object).doesNotContainKey("summary");
         assertThat(object.get("attributedTo")).isEqualTo(activity.get("actor"));
     }
+
 }

@@ -6,6 +6,22 @@
 
 ## Changelog
 
+### Mastodon same-origin post object ids — 2026-07-09
+
+**Version:** 1.7  
+**Status:** done
+
+**Description:** Mastodon rejects inbound `Create` when the Note/Article object URI host differs from the actor URI host (`non_matching_uri_hosts?`). Production outbox had `actor`/`attributedTo` on `https://{user}.{base}/` but `object.id` on `https://blogs.{base}/…`, so Follow worked and remote timelines stayed empty. **`ActivityPubPaths.postObjectId`** now uses the author subdomain short path when blog subdomains are enabled (`/post/{slug}`, `/{blogSlug}/post/{slug}`). Inbound Like resolution still accepts legacy platform-host object URIs. `ActivityPubJsonResponder` serves secondary-blog AS2 objects.
+
+**Impact on other features:** Domain **Fediverse post object URL**; Like resolver; outbox/delivery payloads; Mastodon interop doc.
+
+#### Feature checklist
+
+| ID | Criterion | Done |
+|----|-----------|------|
+| FC40 | Outbox Create `object.id` host matches actor host when subdomains enabled | ☑ |
+| FC41 | Inbound Like resolves both actor-host and legacy platform-host object URIs | ☑ |
+
 ### ActivityPub subpackage refactor — 2026-07-08
 
 **Version:** 1.6 (internal)  
@@ -272,7 +288,7 @@ N/A — server-rendered count and manage section only.
 | Main | **title + link** (FQ3) — title + canonical main post link |
 | Secondary | **title + blog name + canonical post link** (**FQ20**) — includes secondary blog name so the status is distinct under one Person |
 
-**Object `id` / `url` / content link (**FQ21**):** platform secondary path `/{username}/{blogSlug}/post/{slug}` (same stable platform-URL rules as main via `PostPaths` / `ActivityPubPaths.postObjectId`) — not blog-home-only, not subdomain-only as the object id.
+**Object `id` / `url` / content link:** when blog subdomains are enabled, author-host short paths (`/post/{slug}`, `/{blogSlug}/post/{slug}`) so Mastodon same-origin accepts Creates; when subdomains are off, platform `PostPaths` forms. (FQ21 originally locked platform paths; 2026-07-09 interop fix prefers actor-host ids under subdomain mode.)
 
 Local appearance (opt-in copy locked by **FQ25**; optional extra help still **FQ19**):
 

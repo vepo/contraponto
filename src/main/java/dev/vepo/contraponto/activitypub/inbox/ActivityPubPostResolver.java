@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import dev.vepo.contraponto.activitypub.ActivityPubPaths;
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.post.Post;
+import dev.vepo.contraponto.post.PostPaths;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.user.User;
 
@@ -20,9 +21,15 @@ public class ActivityPubPostResolver {
 
     private static final Pattern CREATE_ACTIVITY_SUFFIX = Pattern.compile("/activities/create/(\\d+)$");
 
-    private static final Pattern MAIN_POST_PATH = Pattern.compile("^/([^/]+)/post/([^/]+)$");
+    /**
+     * Platform main {@code /{username}/post/{slug}} or subdomain secondary
+     * {@code /{blogSlug}/post/{slug}}.
+     */
+    private static final Pattern TWO_SEGMENT_POST = Pattern.compile("^/([^/]+)/post/([^/]+)$");
 
-    private static final Pattern SECONDARY_POST_PATH = Pattern.compile("^/([^/]+)/([^/]+)/post/([^/]+)$");
+    private static final Pattern PLATFORM_SECONDARY_POST = Pattern.compile("^/([^/]+)/([^/]+)/post/([^/]+)$");
+
+    private static final Pattern SUBDOMAIN_MAIN_POST = Pattern.compile("^/post/([^/]+)$");
 
     static String normalizeObjectUri(String uri) {
         if (uri == null || uri.isBlank()) {
@@ -50,25 +57,30 @@ public class ActivityPubPostResolver {
     }
 
     private boolean objectUriMatches(Post post, String normalizedUri) {
-        return normalizedUri.equals(normalizeObjectUri(ActivityPubPaths.postObjectId(post, subdomainConfig)));
+        if (normalizedUri.equals(normalizeObjectUri(ActivityPubPaths.postObjectId(post, subdomainConfig)))) {
+            return true;
+        }
+        // Legacy Creates used the platform host as object id before the Mastodon
+        // same-origin fix.
+        return normalizedUri.equals(normalizeObjectUri(subdomainConfig.platformUrl(PostPaths.extractUrl(post))));
     }
 
     private Optional<Post> resolveByCanonicalPostUrl(String normalizedUri, User owner) {
         URI uri;
         try {
             uri = URI.create(normalizedUri);
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             return Optional.empty();
         }
         var path = uri.getPath();
         if (path == null || path.isBlank()) {
             return Optional.empty();
         }
-        var secondary = SECONDARY_POST_PATH.matcher(path);
-        if (secondary.matches()) {
-            var username = secondary.group(1);
-            var blogSlug = secondary.group(2);
-            var slug = secondary.group(3);
+        var platformSecondary = PLATFORM_SECONDARY_POST.matcher(path);
+        if (platformSecondary.matches()) {
+            var username = platformSecondary.group(1);
+            var blogSlug = platformSecondary.group(2);
+            var slug = platformSecondary.group(3);
             if (!owner.getUsername().equals(username)) {
                 return Optional.empty();
             }
@@ -76,14 +88,23 @@ public class ActivityPubPostResolver {
                                  .filter(Post::isPublished)
                                  .filter(post -> objectUriMatches(post, normalizedUri));
         }
-        var main = MAIN_POST_PATH.matcher(path);
-        if (main.matches()) {
-            var username = main.group(1);
-            var slug = main.group(2);
-            if (!owner.getUsername().equals(username)) {
-                return Optional.empty();
+        var twoSegment = TWO_SEGMENT_POST.matcher(path);
+        if (twoSegment.matches()) {
+            var first = twoSegment.group(1);
+            var slug = twoSegment.group(2);
+            if (owner.getUsername().equals(first)) {
+                return postRepository.findMainBlogPost(first, slug)
+                                     .filter(Post::isPublished)
+                                     .filter(post -> objectUriMatches(post, normalizedUri));
             }
-            return postRepository.findMainBlogPost(username, slug)
+            return postRepository.findBlogPost(owner.getUsername(), first, slug)
+                                 .filter(Post::isPublished)
+                                 .filter(post -> objectUriMatches(post, normalizedUri));
+        }
+        var subdomainMain = SUBDOMAIN_MAIN_POST.matcher(path);
+        if (subdomainMain.matches()) {
+            var slug = subdomainMain.group(1);
+            return postRepository.findMainBlogPost(owner.getUsername(), slug)
                                  .filter(Post::isPublished)
                                  .filter(post -> objectUriMatches(post, normalizedUri));
         }
@@ -98,7 +119,7 @@ public class ActivityPubPostResolver {
         long postId;
         try {
             postId = Long.parseLong(matcher.group(1));
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException _) {
             return Optional.empty();
         }
         return postRepository.findByIdWithBlog(postId)

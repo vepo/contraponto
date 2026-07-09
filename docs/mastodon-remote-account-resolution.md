@@ -234,6 +234,7 @@ All returned **200** with correct types. Loopback invariant holds: `self` href `
 |------|--------|--------|
 | Double slash in activity IDs | ✅ Fixed | `ActivityPubPaths.activityId` |
 | Outbox activity ID construction | Fixed via `ActivityPubPaths.activityId` | |
+| Note/Article `id` on platform host while actor on author subdomain | ✅ Fixed 2026-07-09 | Mastodon `non_matching_uri_hosts?` rejected Creates → empty remote timeline. Object id now uses author subdomain short paths (`/post/{slug}`, `/{blogSlug}/post/{slug}`) |
 
 ### 5.4 Operational / Mastodon-side causes of “0 accounts”
 

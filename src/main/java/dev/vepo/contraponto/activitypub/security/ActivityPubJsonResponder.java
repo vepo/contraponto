@@ -31,6 +31,8 @@ public class ActivityPubJsonResponder {
 
     private static final Pattern MAIN_POST = Pattern.compile("^/?([^/]+)/post/([^/]+)/?$");
 
+    private static final Pattern SECONDARY_POST = Pattern.compile("^/?([^/]+)/([^/]+)/post/([^/]+)/?$");
+
     private static final Pattern USER_ROOT = Pattern.compile("^/?([^/]+)/?$");
 
     private static boolean acceptsActivityJson(String acceptHeader) {
@@ -93,9 +95,16 @@ public class ActivityPubJsonResponder {
     public Response respond(ContainerRequestContext requestContext) {
         var path = normalizePath(requestContext.getUriInfo().getPath());
         var headOnly = isHead(requestContext);
+        var secondaryMatch = SECONDARY_POST.matcher(path);
+        if (secondaryMatch.matches()) {
+            return respondWithSecondaryPostObject(secondaryMatch.group(1),
+                                                  secondaryMatch.group(2),
+                                                  secondaryMatch.group(3),
+                                                  headOnly);
+        }
         var postMatch = MAIN_POST.matcher(path);
         if (postMatch.matches()) {
-            return respondWithPostObject(postMatch.group(1), postMatch.group(2), headOnly);
+            return respondWithMainPostObject(postMatch.group(1), postMatch.group(2), headOnly);
         }
         var userMatch = USER_ROOT.matcher(path);
         if (userMatch.matches()) {
@@ -112,7 +121,7 @@ public class ActivityPubJsonResponder {
         return jsonResponse(actorService.buildActorDocument(actor.getUser(), actor), headOnly);
     }
 
-    private Response respondWithPostObject(String username, String slug, boolean headOnly) {
+    private Response respondWithMainPostObject(String username, String slug, boolean headOnly) {
         if (actorService.findEnabledByUsername(username).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -125,9 +134,22 @@ public class ActivityPubJsonResponder {
         return jsonResponse(outboxService.buildPostObject(post), headOnly);
     }
 
+    private Response respondWithSecondaryPostObject(String username, String blogSlug, String slug, boolean headOnly) {
+        if (actorService.findEnabledByUsername(username).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        var post = postRepository.findBlogPost(username, blogSlug, slug)
+                                 .filter(Post::isPublished)
+                                 .orElse(null);
+        if (post == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return jsonResponse(outboxService.buildPostObject(post), headOnly);
+    }
+
     /**
      * Whether this filter should short-circuit the request with ActivityPub JSON
-     * (GET/HEAD + activity+json Accept on actor or main-post paths).
+     * (GET/HEAD + activity+json Accept on actor or post object paths).
      */
     public boolean shouldHandle(ContainerRequestContext requestContext) {
         if (!settings.enabled()) {
@@ -144,6 +166,8 @@ public class ActivityPubJsonResponder {
             return false;
         }
         var path = normalizePath(requestContext.getUriInfo().getPath());
-        return MAIN_POST.matcher(path).matches() || USER_ROOT.matcher(path).matches();
+        return SECONDARY_POST.matcher(path).matches()
+                || MAIN_POST.matcher(path).matches()
+                || USER_ROOT.matcher(path).matches();
     }
 }
