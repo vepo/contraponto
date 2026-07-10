@@ -72,21 +72,21 @@
                             {/if}
                             <div>👁️ {viewCount} views</div>
                             {#if fediverseFavourites.visible && fediverseFavourites.count > 0}
-                            <div data-i18n="post.fediverseFavouriteCount">♥ {fediverseFavourites.count} Fediverse favourites</div>
+                            {#if user.isAuthenticated && user.id == view.post.author.id}
+                            <button type="button"
+                                    class="article-page__fediverse-favourites-trigger"
+                                    aria-label="Quem favoritou no Fediverso"
+                                    hx-get="{view.post.url}/components/fediverse-favourites/modal"
+                                    hx-target="#modal-container"
+                                    hx-swap="innerHTML"
+                                    data-i18n="post.fediverseFavouriteCount"
+                                    data-i18n-params='{"count": {fediverseFavourites.count}}'>
+                                ♥ {fediverseFavourites.count} favoritos no Fediverso
+                            </button>
+                            {#else}
+                            <div data-i18n="post.fediverseFavouriteCount"
+                                 data-i18n-params='{"count": {fediverseFavourites.count}}'>♥ {fediverseFavourites.count} favoritos no Fediverso</div>
                             {/if}
-                            {#if fediverseFavourites.visible && user.isAuthenticated && user.id == view.post.author.id}
-                            <section class="article-page__fediverse-favourites" aria-label="Fediverse favourites">
-                                <h2 class="article-page__fediverse-favourites-title" data-i18n="post.fediverseFavouriteListTitle">Fediverse favourites</h2>
-                                {#if fediverseFavourites.remoteHandles.isEmpty}
-                                <p class="article-page__fediverse-favourites-empty" data-i18n="post.fediverseFavouriteListEmpty">No Fediverse favourites yet.</p>
-                                {#else}
-                                <ul class="article-page__fediverse-favourites-list">
-                                    {#for handle in fediverseFavourites.remoteHandles}
-                                    <li>{handle}</li>
-                                    {/for}
-                                </ul>
-                                {/if}
-                            </section>
                             {/if}
                             {#if averageReadingSeconds > 0}
                             <div>Avg reading time: {averageReadingSeconds.formatReadingDuration}</div>

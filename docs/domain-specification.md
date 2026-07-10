@@ -270,7 +270,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 |------|---------|--------------|
 | **Git integration** | Per-blog export/import to a remote Git repo over **HTTPS or SSH** (any allowed host; Jekyll layout). Available on the **main blog** and **secondary blogs**; configured on blog **Edit** (default blog) or **Settings** (`GET /blogs/{id}/settings`). | `Blog.gitEnabled`, etc. |
 | **Git transport** | How Contraponto reaches the remote: **HTTPS** or **SSH**, derived from the **Git remote URL**. | `GitRemoteUrlValidator` |
-| **Git credentials** | Per-blog secrets used only for that blog’s remote: HTTPS username + password/PAT, or SSH private key (+ optional passphrase). Stored **encrypted at rest**; never re-displayed. No server-wide credential fallback. | Encrypted columns on `Blog` |
+| **Git credentials** | Per-blog secrets used only for that blog’s remote: HTTPS username (plaintext) + **password/PAT (encrypted)**, or SSH private key (+ optional passphrase), both **encrypted at rest**. Never re-displayed. No server-wide credential fallback. | Encrypted columns on `Blog` |
 | **Git credential present** | Whether the blog has stored encrypted credentials (boolean for UI: “configured” vs empty). | Flag / derived from ciphertext |
 | **Automatic sync** | Per-blog flag: when **on**, export may run after draft save/publish/warmup and the blog may be included in **remote poll**; when **off**, the blog stays idle until **Sync now**. | `Blog.gitAutoSync` |
 | **Sync now** | Blog-owner action that starts a **manual** Git sync run (import + export of pending local changes if any). | `POST /forms/blogs/{id}/git-sync` |
@@ -312,7 +312,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Fediverse post object URL** | Stable ActivityStreams `id` / `url` on delivered **Note** / **Article** objects. When blog subdomains are enabled, the object id uses the **author actor host** (`https://{username}.{base}/post/{slug}` main; `https://{username}.{base}/{blogSlug}/post/{slug}` secondary) so Mastodon’s same-origin check (`actor` host == object URI host) accepts Creates. When subdomains are off, the id uses the platform host with `PostPaths` (`/{username}/post/{slug}` / `/{username}/{blogSlug}/post/{slug}`). Content link uses the same object id. Inbound **`Like`** may target this URI or a legacy platform-host object id. | `ActivityPubPaths.postObjectId`, `PostPaths` |
 | **Fediverse favourite** | A remote user's **`Like`** activity targeting a published post's **Fediverse post object URL**; stored when inbox verifies the signature and the author has **Fediverse opt-in** on. **`Undo`** of **`Like`** removes the favourite. One row per `(post, remote actor)`; idempotent on duplicate Like. | `ActivityPubFavourite` |
 | **Fediverse favourite count** | Number of stored **Fediverse favourites** on a post — shown on the **public post page** (count only; no public who-liked list). | Post template |
-| **Fediverse favourite list** | Author-only list of remote **`@handle`** rows who favourited a post — not shown to guests. | Post manage / author surface |
+| **Fediverse favourite list** | Author-only list of remote **`@handle`** rows who favourited a post — shown in a **popup** opened from the favourite count on the post page; not shown inline to guests. | Post page modal |
 | **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `GET /administration/activitypub`, `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
 
 ### Discovery & feeds
@@ -514,8 +514,8 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Fediverse follow requests — Reject | Reject | Follow-request review |
 | Fediverse follow request row — display name | Remote follower display name (from fetched actor) | Follow-request review |
 | Fediverse follow request row — remote handle | `@user@domain` derived from remote actor | Follow-request review |
-| Post page — Fediverse favourite count | ♥ {n} Fediverse favourites | Public post page — count only (FQ29) |
-| Post manage — Fediverse favourite list | Fediverse favourites | Author-only — remote handles who liked |
+| Post page — Fediverse favourite count | ♥ {n} favoritos no Fediverso | Public post page — count only for guests; author clicks to open list popup (FQ29) |
+| Post page — Fediverse favourite list (popup) | Favoritos no Fediverso | Author-only modal — remote handles who liked |
 | Platform insights — ActivityPub global switch | Enable ActivityPub federation globally | Administration → Fediverse |
 | Author appearance — social GitHub field | GitHub | Author appearance |
 | Author appearance — social LinkedIn field | LinkedIn | Author appearance |
@@ -578,28 +578,30 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 15. **Rejected** comments are hidden from everyone except moderation flows.
 16. **Featured** posts appear on the **home page**; toggling is immediate (no confirmation).
 17. Only the **blog owner** may change blog settings (name, slug, description, Git, **blog banner**, active flag on the edit form). **Editors** and **administrators** may **deactivate** another user's **secondary** blog but cannot edit blog fields.
-18. **Effective blog banner** is resolved at display time; new secondary blogs copy the owner's **default blog banner** FK at creation when set (same `Image` row, not a duplicate file).
-19. **Blog public title** is always `Blog.name` for main and secondary blogs. The main blog defaults to the author's **display name** at registration; when the author renames their display name and the main blog name still matches the previous display name, the main blog name is updated to stay in sync until the author sets a custom blog name.
-20. **Author byline** (`por {display name}`) appears on blog home and blog directory cards when the blog name differs from the author's display name.
-21. **Custom pages** served publicly must be **published** and present in cache after changes.
-22. Public URLs for posts and custom pages must use `PostPaths.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building or endpoint pass-through wrappers.
-23. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
-24. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
-25. **Inactive users** cannot complete password recovery or sign in with password until activated.
-26. **Self-service signup** creates an **inactive** user, sends an **account activation token** by email, and does not start a session; the user becomes **active** only via a valid **activation link**, which also logs them in.
-27. **Admin-created users** are **active** immediately (no activation email).
-28. **Account activation tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
-28a. An **unauthorized signup report** consumes the activation token (the account cannot be activated via that link afterward), notifies configured administrator email address(es) or active **user administrators** / **administrators**, and leaves the inactive user row for review in user management.
-29. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
-30. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
-31. After a successful password reset, all **sessions** for that user are invalidated.
-32. **Fediverse actor** is **one Person per User**; Creates for every blog the author owns use the **same** `attributedTo` (no per-blog actor).
-33. When **Fediverse opt-in** is on, federation covers **all blogs** of that author under **one** appearance control; outbox, Accept/re-Follow **backfill**, and live publish Create/Update/Delete include **main and secondary** published posts (drafts/unlisted excluded as for public reading).
-34. **Fediverse outbox** and **Fediverse follow backfill** list the same archive membership and order primarily by **`publishedAt`** (interleave across blogs); Create activities set top-level **`published`** to that publication date.
-35. **Undo** of a **Fediverse follow** sets the edge to **REJECTED**; a later **Follow** from the same remote **reopens** the edge (Accept + backfill again).
-36. Inbound **`Like`** / **`Undo` Like** on a post are processed only when the post owner has **Fediverse opt-in** on and federation is globally enabled; unsigned activities are rejected (ADR-0007).
-37. A **Fediverse favourite** is unique per **(post, remote actor)**; duplicate **`Like`** from the same remote is idempotent; **`Undo` Like** removes the row.
-38. **Fediverse favourite count** is public on the post page; the **Fediverse favourite list** (who liked) is visible only to the post author.
+18. **Git credentials** are per blog, owned by the blog owner, stored encrypted, and never shown again after save. Sync uses only those credentials (no server-wide Git username/password fallback). Missing or invalid credentials fail the **Git sync run** with a clear error.
+19. When **Automatic sync** is off, Contraponto must not poll or export for that blog until the owner runs **Sync now**.
+20. **Effective blog banner** is resolved at display time; new secondary blogs copy the owner's **default blog banner** FK at creation when set (same `Image` row, not a duplicate file).
+21. **Blog public title** is always `Blog.name` for main and secondary blogs. The main blog defaults to the author's **display name** at registration; when the author renames their display name and the main blog name still matches the previous display name, the main blog name is updated to stay in sync until the author sets a custom blog name.
+22. **Author byline** (`por {display name}`) appears on blog home and blog directory cards when the blog name differs from the author's display name.
+23. **Custom pages** served publicly must be **published** and present in cache after changes.
+24. Public URLs for posts and custom pages must use `PostPaths.extractUrl` and `CustomPagePaths.publicUrl` — never ad-hoc path building or endpoint pass-through wrappers.
+25. **Password recovery** always responds with the same success message whether or not the email is registered (no email enumeration).
+26. **Password reset tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
+27. **Inactive users** cannot complete password recovery or sign in with password until activated.
+28. **Self-service signup** creates an **inactive** user, sends an **account activation token** by email, and does not start a session; the user becomes **active** only via a valid **activation link**, which also logs them in.
+29. **Admin-created users** are **active** immediately (no activation email).
+30. **Account activation tokens** are single-use, expire after a configured interval, and are invalidated when a new token of the same type is issued for the same user.
+30a. An **unauthorized signup report** consumes the activation token (the account cannot be activated via that link afterward), notifies configured administrator email address(es) or active **user administrators** / **administrators**, and leaves the inactive user row for review in user management.
+31. **Email change** keeps the confirmed email until the user verifies the **pending email**; another account cannot claim an email already used or pending elsewhere.
+32. Changing a password (self-service reset, profile, or **user administrator**) sends a **password changed** **account email** to the user's current confirmed email; the email never contains the new password.
+33. After a successful password reset, all **sessions** for that user are invalidated.
+34. **Fediverse actor** is **one Person per User**; Creates for every blog the author owns use the **same** `attributedTo` (no per-blog actor).
+35. When **Fediverse opt-in** is on, federation covers **all blogs** of that author under **one** appearance control; outbox, Accept/re-Follow **backfill**, and live publish Create/Update/Delete include **main and secondary** published posts (drafts/unlisted excluded as for public reading).
+36. **Fediverse outbox** and **Fediverse follow backfill** list the same archive membership and order primarily by **`publishedAt`** (interleave across blogs); Create activities set top-level **`published`** to that publication date.
+37. **Undo** of a **Fediverse follow** sets the edge to **REJECTED**; a later **Follow** from the same remote **reopens** the edge (Accept + backfill again).
+38. Inbound **`Like`** / **`Undo` Like** on a post are processed only when the post owner has **Fediverse opt-in** on and federation is globally enabled; unsigned activities are rejected (ADR-0007).
+39. A **Fediverse favourite** is unique per **(post, remote actor)**; duplicate **`Like`** from the same remote is idempotent; **`Undo` Like** removes the row.
+40. **Fediverse favourite count** is public on the post page; the **Fediverse favourite list** (who liked) is visible only to the post author.
 
 ---
 

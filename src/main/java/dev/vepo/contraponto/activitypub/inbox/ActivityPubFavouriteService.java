@@ -4,6 +4,8 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import dev.vepo.contraponto.activitypub.ActivityPubSettings;
 import dev.vepo.contraponto.activitypub.actor.ActivityPubActor;
 import dev.vepo.contraponto.activitypub.actor.ActivityPubActorRepository;
@@ -30,7 +32,7 @@ public class ActivityPubFavouriteService {
         this.actorRepository = actorRepository;
     }
 
-    public FediverseFavouritePostView buildPostView(Post post, Long viewerUserId) {
+    public FediverseFavouritePostView buildPostView(Post post) {
         if (!settings.enabled()) {
             return FediverseFavouritePostView.hidden();
         }
@@ -39,19 +41,33 @@ public class ActivityPubFavouriteService {
         if (actor.isEmpty() || !actor.get().isFederationEnabled()) {
             return FediverseFavouritePostView.hidden();
         }
-        var count = favouriteRepository.countByPostId(post.getId());
-        var handles = List.<String>of();
-        if (viewerUserId != null && viewerUserId.equals(authorUserId)) {
-            handles = favouriteRepository.listByPostIdWithRemoteActor(post.getId())
-                                         .stream()
-                                         .map(f -> ActivityPubRemoteHandle.derivedHandle(f.getRemoteActor()))
-                                         .toList();
-        }
-        return new FediverseFavouritePostView(true, count, handles);
+        return new FediverseFavouritePostView(true, favouriteRepository.countByPostId(post.getId()));
     }
 
     public long countByPostId(long postId) {
         return favouriteRepository.countByPostId(postId);
+    }
+
+    /**
+     * Author-only remote handles who favourited the post (Fediverse favourite
+     * list).
+     */
+    public List<String> listRemoteHandlesForAuthor(Post post, Long viewerUserId) {
+        if (!settings.enabled()) {
+            throw new NotFoundException("Fediverse favourites not available");
+        }
+        var authorUserId = post.getBlog().getOwner().getId();
+        var actor = actorRepository.findByUserId(authorUserId);
+        if (actor.isEmpty() || !actor.get().isFederationEnabled()) {
+            throw new NotFoundException("Fediverse favourites not available");
+        }
+        if (viewerUserId == null || !viewerUserId.equals(authorUserId)) {
+            throw new ForbiddenException("Only the post author can see who favourited on the Fediverse.");
+        }
+        return favouriteRepository.listByPostIdWithRemoteActor(post.getId())
+                                  .stream()
+                                  .map(f -> ActivityPubRemoteHandle.derivedHandle(f.getRemoteActor()))
+                                  .toList();
     }
 
     @Transactional

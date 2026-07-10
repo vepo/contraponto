@@ -25,20 +25,22 @@ class ActivityPubFavouriteWebTest {
     private Post post;
 
     @Test
-    void authorSeesFediverseFavouriteList(App app) {
+    void authorOpensFediverseFavouriteListInModal(App app) {
         app.login(author)
-           .goTo(post);
-        app.assertPageSourceContains("Fediverse favourites");
-        app.assertPageSourceContains("@liker@remote.example");
-        app.assertPageSourceContains("@reader@remote.example");
+           .goTo(post)
+           .assertFediverseFavouriteCount(2)
+           .assertFediverseFavouritesNotListedOnPage("@liker@remote.example")
+           .openFediverseFavouritesModal()
+           .assertFediverseFavouritesModalContains("@liker@remote.example")
+           .assertFediverseFavouritesModalContains("@reader@remote.example");
     }
 
     @Test
-    void guestSeesFediverseFavouriteCount(App app) {
+    void guestSeesFediverseFavouriteCountOnly(App app) {
         app.access()
-           .goTo(post);
-        app.assertPageSourceContains("2 Fediverse favourites");
-        app.assertPageSourceDoesNotContain("@liker@remote.example");
+           .goTo(post)
+           .assertFediverseFavouriteCount(2)
+           .assertFediverseFavouritesNotListedOnPage("@liker@remote.example");
     }
 
     @BeforeEach

@@ -1,7 +1,7 @@
 # Git ↔ Jekyll sync
 
 **Feature version:** 2  
-**Status:** planned  
+**Status:** architecture-ready  
 **Production:** live (v1); v2 not shipped
 
 ## Changelog
@@ -9,11 +9,11 @@
 ### Per-blog credentials, auto-sync toggle, manual Sync — 2026-07-10
 
 **Version:** 2  
-**Status:** planned
+**Status:** architecture-ready
 
 **Description:** Authors configure **Git credentials on the blog only**: **HTTPS** username + password/PAT, or **SSH** private key (+ optional passphrase). Remotes may be HTTPS or SSH. **No server-wide credential fallback** — if the owner’s credentials are missing or wrong, the sync run **fails with a clear error** in history. A per-blog **Automatic sync** toggle: when off, the blog does **nothing** until **Sync now**. **Sync now** runs **import** plus **export of pending** local changes if any. Secrets are stored **encrypted at rest**, never re-displayed; UI warns authors to use a **dedicated** deploy key / PAT.
 
-**Domain model:** pending (phase 1b) — Git credentials, Git transport, auto sync, manual sync
+**Domain model:** updated 2026-07-10 — see [domain-specification.md](../docs/domain-specification.md) § Git sync (credentials, transport, automatic sync, Sync now; invariants 18–19)
 
 **Impact on other features:**
 
@@ -172,63 +172,131 @@ Per-blog **Git integration** exports posts to a remote **Jekyll-compatible** rep
 
 ## Architecture
 
-> Phase 2 (Architect) will replace this section for v2. Below is the **v1** baseline plus **v2 design notes** (not architecture-ready).
-
 ### ADRs aplicáveis
 
-| ADR | Relevância |
-|-----|------------|
-| [0013](../docs/adr/0013-cdi-events-cross-context.md) | `PostGitSyncRequestedEvent` |
-| *(Proposed in phase 2)* | Per-blog Git credentials + SSH transport (security/ops; no server fallback) |
+| ADR | Status | Relevância |
+|-----|--------|------------|
+| [0002](../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Accepted | Quarkus / Jakarta |
+| [0003](../docs/adr/0003-frontend-qute-htmx.md) | Accepted | Settings form + Sync now via HTMX |
+| [0005](../docs/adr/0005-postgresql-database.md) | Accepted | Flyway columns on `tb_blogs` |
+| [0013](../docs/adr/0013-cdi-events-cross-context.md) | Proposed | `PostGitSyncRequestedEvent` (gated by automatic sync) |
+| [0015](../docs/adr/0015-federation-outbound-fetch-ssrf.md) | Accepted | Outbound host blocking pattern for remotes |
+| [0017](../docs/adr/0017-per-blog-git-credentials-ssh.md) | **Proposed** | Per-blog encrypted credentials + SSH; no server auth fallback |
 
-### Design específico da feature (v1)
+**Stop:** accept **ADR-0017** (and confirm open AQs below) before task break.
+
+### Bounded contexts
+
+| Context | Role |
+|---------|------|
+| `git` | Credentials crypto, transport, sync orchestration, Sync now endpoint, classifier |
+| `blog` | Persist Git fields on `Blog`; settings form save |
+| `shared.security` | Extend outbound host validation for SSH remotes (or git-local SSH host validator reusing same blocklists) |
+| `notification` | Existing failure/success notifications unchanged |
+
+### Packages / layers
+
+| Layer | Types |
+|-------|-------|
+| Endpoint | `BlogSaveEndpoint` (credentials + auto sync fields); new `GitSyncTriggerEndpoint` `@Path("/forms/blogs/{id}/git-sync")` |
+| Service | `BlogGitCredentialsService` (encrypt/decrypt/clear); `BlogGitIntegrationService` (use blog credentials only; honour auto sync; manual import+export); `GitSyncErrorClassifier` (auth/network for upload-pack) |
+| Repository | `BlogRepository.findActiveBlogIdsForGitPoll` filters `gitAutoSync` |
+| Config | `ContrapontoGitConfig` / `ContrapontoGitSettings`: add `credentialEncryptionSecret`; **stop reading username/password for auth** |
+| Transport | HTTPS: `UsernamePasswordCredentialsProvider` from blog; SSH: JGit Apache SSH + decrypted key |
+
+### Schema (Flyway)
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `git_auto_sync` | `BOOLEAN NOT NULL DEFAULT TRUE` | Automatic sync |
+| `git_auth_username` | `VARCHAR(255)` nullable | HTTPS username only (plaintext; not a secret) |
+| `git_auth_secret_encrypted` | `TEXT` nullable | **Encrypted** HTTPS password/PAT **or** SSH private key (same column; transport selects meaning) |
+| `git_auth_passphrase_encrypted` | `TEXT` nullable | **Encrypted** SSH key passphrase (optional) |
+| `git_credentials_configured` | `BOOLEAN NOT NULL DEFAULT FALSE` | UI “configured” without decrypting |
+
+**Invariant:** HTTPS password/PAT is never stored in plaintext — only ciphertext in `git_auth_secret_encrypted` (same rule as SSH private key). Clear credentials → null ciphertext + `git_credentials_configured = false`. Blank secret on save → keep existing.
+
+### Routes / templates
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/blogs/{id}/settings` (and edit) | Extended `gitSyncSection.html` |
+| POST | existing blog save form | Persist Git fields + credentials |
+| POST | `/forms/blogs/{id}/git-sync` | Sync now — owner only; Toast |
+| GET | `/blogs/{id}/git-sync` | History + Sync now button |
+
+### Cross-context
+
+| Mechanism | Change |
+|-----------|--------|
+| `PostGitSyncRequestedEvent` | Fire / handle only when `gitEnabled && gitAutoSync` |
+| `BLOG_SAVE_WARMUP` | Only when auto sync on |
+| `GitRemotePollScheduler` | Only blogs with auto sync on |
+| `MANUAL` trigger | New; schedules import then export-pending |
+
+### Design específico da feature (v2)
 
 | Area | Design |
 |------|--------|
-| Orchestration | `BlogGitIntegrationService`, `BlogGitImportService` |
-| Runs | `GitSyncRunService`, `GitSyncRunTransaction` + notification policy |
-| Triggers | `PUBLISH`, `DRAFT_SAVE`, `REMOTE_POLL`, `BLOG_SAVE_WARMUP` |
-| Credentials | Server `contraponto.git.username` / `password` only |
-| Remotes | HTTPS only (`GitRemoteUrlValidator`) |
-| Convention | Jekyll front matter — `docs/git-jekyll-convention.md` |
+| Credentials | Per blog only ([ADR-0017](../docs/adr/0017-per-blog-git-credentials-ssh.md)); AES-GCM; never in snapshots/logs |
+| Transport | HTTPS or SSH from URL; SSH via `org.eclipse.jgit.ssh.apache` |
+| Host keys | `known_hosts` under blog workspace; accept-and-pin first success (AQ2) |
+| Auto sync | Off → idle until Sync now |
+| Sync now | Import + export pending; one active run per blog → toast skip (FQ8 proposed) |
+| Failures | Clear auth/network remediation; no silent server fallback |
+| Server config | `contraponto.git.credential-encryption-secret` required to store secrets; deprecate username/password for auth |
 
-### Design notes (v2 — pending Architect)
+### HTMX component model
 
-| Area | Direction |
-|------|-----------|
-| Credentials | **Per blog only** (FQ3); encrypted columns; replace/clear; no server fallback (FQ5) |
-| Transport | Detect HTTPS vs SSH from URL; JGit HTTPS provider or SSH session factory |
-| Auto sync | When off: idle — no poll, no publish/draft/warmup export (FQ4) |
-| Manual | `POST /forms/blogs/{id}/git-sync`; `MANUAL`; import + export pending (FQ7) |
-| Encryption | Dedicated `contraponto.git.credential-encryption-secret`; AES-GCM at rest (FQ10) |
-| Failures | Missing/invalid credentials → failed run with clear technical + remediation (FQ5) |
-| Snapshots | Strip secrets from `settingsSnapshot` / logs |
-| Server config | Deprecate `contraponto.git.username`/`password` for auth in v2 |
+| Component id | Fragment / route | Activator | Request | Swap scope | Events out | Events in | JS companion | Auth allowlist |
+|--------------|------------------|-----------|---------|------------|------------|-----------|--------------|----------------|
+| `#git-sync` fieldset | Part of blog settings page | Form submit (existing save) | `POST` blog save | Full page / hub redirect as today | Toast on validation error | — | `none` | No |
+| Sync now (settings) | `/forms/blogs/{id}/git-sync` | Button click | `hx-post` | None (toast only) or stay on page | `Toast` | — | `none` | No |
+| Sync now (history) | same | Button in list header | `hx-post` | same | `Toast` | — | `none` | No |
+| History list/detail | existing | Nav links | `hx-get` | `main` + `hx-select="main"` | — | — | `none` | No |
 
-### HTMX component model (v1)
+**Mechanism choice:** Sync now → Toast only (priority 1 inline headers via `Toast`); no OOB list refresh required (async run appears on next history load). Credential fieldsets: **static** form (AQ5) — show HTTPS or SSH blocks based on saved URL / server-side after save; no JS companion.
 
-| Component | Pattern |
-|-----------|---------|
-| History list/detail | Full pages; `data-hx-get` nav with `hx-select="main"` |
-| Blog Git fields | Static form in `BlogManageEndpoint` |
-| Notifications | Link to run detail via `NotificationType` git sync link |
+### HTMX interaction diagram
 
-### HTMX notes (v2 — pending Architect)
+```mermaid
+sequenceDiagram
+  participant Owner
+  participant Settings as Blog settings
+  participant Form as POST /forms/blogs/id/git-sync
+  participant Svc as BlogGitIntegrationService
+  participant Hist as Git sync history
 
-| Component | Pattern |
-|-----------|---------|
-| Sync now | `hx-post` → toast; JS companion `none` |
-| Credential fieldsets | Prefer full form save; optional fragment when URL transport changes |
-| Auto sync / credentials | Same blog settings form POST as today |
+  Owner->>Settings: Sync now
+  Settings->>Form: hx-post
+  Form->>Svc: schedule MANUAL run
+  Form-->>Owner: Toast Sync started
+  Svc->>Svc: import then export pending
+  Owner->>Hist: View sync history
+  Hist-->>Owner: Run + log entries / errors
+```
+
+### `htmx-events.md` delta
+
+- §4 **Git Sync now (v2)** — Toast-only mutation; no new custom events; no auth allowlist row.
+
+### Tests
+
+| Kind | Coverage |
+|------|----------|
+| Unit | Credentials encrypt/decrypt/clear/keep; auto sync gates; classifier for upload-pack → auth/network |
+| Quarkus | Sync now schedules run; poll query excludes auto-off; no server username/password used |
+| Web | Settings: warnings, Sync now toast; history shows MANUAL / auth error |
+| Arch | git package size; no secrets logged |
 
 ### Architecture questions (AQ*n*)
 
 | # | Question | Status | Answer |
 |---|----------|--------|--------|
 | AQ1 | Async export after publish? | answered | **Yes** — observer `AFTER_SUCCESS` |
-| AQ2 | SSH host key verification policy? | open | **Proposed:** pin after first success under workspace known_hosts |
-| AQ3 | Shared encryption secret with ActivityPub or separate? | open | **Proposed:** separate `contraponto.git.credential-encryption-secret` |
-| AQ4 | JGit SSH library? | open | **Proposed:** `org.eclipse.jgit.ssh.apache` |
-| AQ5 | Credential fieldset: static both + hints vs HTMX swap on URL blur? | open | **Proposed:** static form with server-side validation; optional HTMX later |
+| AQ2 | SSH host key verification policy? | open | **Proposed (in ADR-0017):** accept-and-pin under blog workspace `known_hosts` |
+| AQ3 | Encryption secret shared with ActivityPub? | open | **Proposed (in ADR-0017):** separate `contraponto.git.credential-encryption-secret` |
+| AQ4 | JGit SSH library? | open | **Proposed (in ADR-0017):** `org.eclipse.jgit.ssh.apache` |
+| AQ5 | Credential fieldset: static vs HTMX swap? | open | **Proposed:** static form; transport from URL validated on save |
 
-**Blocking for tasks:** AQ2–AQ4 (and AQ5 if UI mechanism matters).
+**Blocking for task break:** accept **ADR-0017**; confirm **AQ2–AQ5** (or accept proposed). FQ8–FQ9 remain informational (architecture assumes proposed: skip concurrent + no confirm modal).

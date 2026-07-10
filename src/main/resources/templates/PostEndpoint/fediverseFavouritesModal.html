@@ -1,0 +1,19 @@
+<div id="fediverseFavouritesModal" class="modal modal--open">
+    <div class="modal__container modal__container--fediverse-favourites">
+        <div class="modal__header">
+            <h2 class="modal__title" data-i18n="post.fediverseFavouriteListTitle">Favoritos no Fediverso</h2>
+            <button type="button" class="modal__close" onclick="this.closest('.modal').remove()" aria-label="Close">✕</button>
+        </div>
+        <div class="modal__body">
+            {#if remoteHandles.isEmpty}
+            <p class="article-page__fediverse-favourites-empty" data-i18n="post.fediverseFavouriteListEmpty">Ainda não há favoritos no Fediverso.</p>
+            {#else}
+            <ul class="article-page__fediverse-favourites-list">
+                {#for handle in remoteHandles}
+                <li>{handle}</li>
+                {/for}
+            </ul>
+            {/if}
+        </div>
+    </div>
+</div>

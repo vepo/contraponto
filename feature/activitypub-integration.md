@@ -94,18 +94,21 @@ Public post page (guest + logged-in reader):
 
 ```
 ┌─ Published post ────────────────────────────────────────┐
-│ … post body …                                           │
-│                                                         │
-│ ♥ 3 Fediverse favourites                                │
+│ … metadata …                                            │
+│ ♥ 3 favoritos no Fediverso                              │
 │   (count only — no public who-liked list)               │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Author manage / post detail (owner only):
+Author on post page (owner only — click count → popup):
 
 ```
-┌─ Post — Fediverse favourites ───────────────────────────┐
-│ Total: 3                                                │
+┌─ Post metadata ─────────────────────────────────────────┐
+│ ♥ 3 favoritos no Fediverso  ← clickable                 │
+└─────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─ Modal: Favoritos no Fediverso ─────────────────────────┐
 │   @reader@mastodon.social                               │
 │   @bot@pleroma.example                                  │
 │   @alice@ursal.zone                                     │

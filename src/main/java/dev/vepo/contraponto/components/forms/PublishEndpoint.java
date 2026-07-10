@@ -173,7 +173,7 @@ public class PublishEndpoint {
                                                       readingListService.buildActionView(post, loggedUser.getId()),
                                                       breadcrumb,
                                                       seoService.forPost(view, breadcrumb),
-                                                      activityPubFavouriteService.buildPostView(post, loggedUser.getId())))
+                                                      activityPubFavouriteService.buildPostView(post)))
                     .build();
     }
 

@@ -155,6 +155,15 @@ Always use `Toast.ok()...message()` for toasts — not raw `X-Toast-Message` in 
 | Routes | `/forms/*` mutations, `/components/*` fragments |
 | Never | Full page from `/forms/*`; unscoped `HX-Refresh` |
 
+### Git Sync now (v2)
+
+| Concern | Rule |
+|---------|------|
+| Mutation | `POST /forms/blogs/{id}/git-sync` — blog owner only |
+| Response | Empty/204-style fragment or redirect-safe empty body + **`Toast`** (“Sync started” / “already running”) — **not** a full page |
+| History UI | Optional: stay on settings or history page; no custom `HX-Trigger` event required |
+| Auth allowlist | No — not auth-sensitive chrome |
+
 ---
 
 ## 5. Frontend rules

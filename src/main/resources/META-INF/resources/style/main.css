@@ -1954,6 +1954,55 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   color: var(--color-primary);
 }
 
+.article-page__fediverse-favourites-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.article-page__fediverse-favourites-trigger:hover {
+  color: var(--color-primary);
+}
+
+.article-page__fediverse-favourites-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text);
+}
+
+.article-page__fediverse-favourites-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.article-page__fediverse-favourites-list li:last-child {
+  border-bottom: none;
+}
+
+.article-page__fediverse-favourites-empty {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
 .article-page__version-icon {
   flex-shrink: 0;
   opacity: 0.85;
@@ -3150,6 +3199,10 @@ hr:after {
 
 .modal__container--history {
   max-width: 680px;
+}
+
+.modal__container--fediverse-favourites {
+  max-width: 28rem;
 }
 
 .modal__container--image-picker {

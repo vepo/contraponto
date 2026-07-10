@@ -52,6 +52,8 @@ public class PostEndpoint {
 
     @CheckedTemplate
     public static class Templates {
+        public static native TemplateInstance fediverseFavouritesModal(List<String> remoteHandles);
+
         public static native TemplateInstance history(List<PostChangeDiffService.VersionDiff> versions);
 
         public static native TemplateInstance historyModal(List<PostChangeDiffService.VersionDiff> versions);
@@ -147,6 +149,16 @@ public class PostEndpoint {
     }
 
     @GET
+    @Path("{blogSlug}/post/{slug}/components/fediverse-favourites/modal")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance blogPostFediverseFavouritesModal(@PathParam("username") String username,
+                                                             @PathParam("blogSlug") String blogSlug,
+                                                             @PathParam("slug") String slug) {
+        return fediverseFavouritesModalFor(postRepository.findBlogPost(username, blogSlug, slug));
+    }
+
+    @GET
     @Path("{blogSlug}/post/{slug}/components/history")
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
@@ -164,6 +176,12 @@ public class PostEndpoint {
                                                  @PathParam("blogSlug") String blogSlug,
                                                  @PathParam("slug") String slug) {
         return historyModalFor(postRepository.findBlogPost(username, blogSlug, slug));
+    }
+
+    private TemplateInstance fediverseFavouritesModalFor(Optional<Post> maybePost) {
+        Post post = maybePost.orElseThrow(() -> new NotFoundException("Post not found"));
+        Long viewerUserId = loggedUser.isAuthenticated() ? loggedUser.getId() : null;
+        return Templates.fediverseFavouritesModal(activityPubFavouriteService.listRemoteHandlesForAuthor(post, viewerUserId));
     }
 
     private TemplateInstance historyFor(Optional<Post> maybePost) {
@@ -192,6 +210,15 @@ public class PostEndpoint {
                                  @PathParam("slug") String slug,
                                  @Context HttpHeaders headers) {
         return resolveMainBlogPost(username, slug, headers);
+    }
+
+    @GET
+    @Path("post/{slug}/components/fediverse-favourites/modal")
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance mainBlogPostFediverseFavouritesModal(@PathParam("username") String username,
+                                                                 @PathParam("slug") String slug) {
+        return fediverseFavouritesModalFor(postRepository.findMainBlogPost(username, slug));
     }
 
     @GET
@@ -245,7 +272,7 @@ public class PostEndpoint {
         BreadcrumbTrail breadcrumb = breadcrumbService.forPost(view);
         ShareView share = ShareLinks.from(PostTemplateExtensions.liveTitle(view),
                                           blogPublicUrlService.canonicalOrPlatformAbsolute(post));
-        var fediverseFavourites = activityPubFavouriteService.buildPostView(post, viewerUserId);
+        var fediverseFavourites = activityPubFavouriteService.buildPostView(post);
         TemplateInstance template = Templates.post(view,
                                                    seriePostsFor(post),
                                                    relatedPostsFor(post),

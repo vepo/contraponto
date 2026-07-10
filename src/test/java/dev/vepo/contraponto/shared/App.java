@@ -1305,6 +1305,24 @@ public class App {
             return this;
         }
 
+        public PostPage assertFediverseFavouriteCount(long count) {
+            var trigger = wait.until(visibilityOfElementLocated(cssSelector(".article-page__metadata")));
+            assertThat(trigger.getText()).containsIgnoringCase(count + " Fediverse favourites");
+            return this;
+        }
+
+        public PostPage assertFediverseFavouritesModalContains(String handle) {
+            var modal = wait.until(visibilityOfElementLocated(By.id("fediverseFavouritesModal")));
+            assertThat(modal.getText()).contains(handle);
+            return this;
+        }
+
+        public PostPage assertFediverseFavouritesNotListedOnPage(String handle) {
+            assertThat(driver.findElements(By.id("fediverseFavouritesModal"))).isEmpty();
+            assertThat(driver.getPageSource()).doesNotContain(handle);
+            return this;
+        }
+
         public PostPage assertFollowButtonIsAuthenticated() {
             await().atMost(Duration.ofSeconds(15)).until(() -> {
                 var buttons = driver.findElements(cssSelector(FOLLOW_BUTTON_SELECTOR));
@@ -1683,6 +1701,13 @@ public class App {
             var trigger = wait.until(elementToBeClickable(cssSelector(".article-page__version")));
             reliableClick(trigger);
             wait.until(visibilityOfElementLocated(By.id("postHistoryModal")));
+            return this;
+        }
+
+        public PostPage openFediverseFavouritesModal() {
+            var trigger = wait.until(elementToBeClickable(cssSelector(".article-page__fediverse-favourites-trigger")));
+            reliableClick(trigger);
+            wait.until(visibilityOfElementLocated(By.id("fediverseFavouritesModal")));
             return this;
         }
 

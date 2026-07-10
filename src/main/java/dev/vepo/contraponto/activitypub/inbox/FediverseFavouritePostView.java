@@ -1,10 +1,8 @@
 package dev.vepo.contraponto.activitypub.inbox;
 
-import java.util.List;
-
-public record FediverseFavouritePostView(boolean visible, long count, List<String> remoteHandles) {
+public record FediverseFavouritePostView(boolean visible, long count) {
 
     public static FediverseFavouritePostView hidden() {
-        return new FediverseFavouritePostView(false, 0, List.of());
+        return new FediverseFavouritePostView(false, 0);
     }
 }
