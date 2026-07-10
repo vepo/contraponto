@@ -6,6 +6,22 @@
 
 ## Changelog
 
+### Fediverse Create card (cover attachment) — 2026-07-10
+
+**Version:** 1.8  
+**Status:** done
+
+**Description:** Federated Creates now include a Mastodon-compatible media **card**: ActivityStreams `name` (title), `content` (title + link, secondary still adds blog name), and when the post has a cover, an `attachment` `Image` with absolute HTTPS URL (`?w=560` for `/api/images/…`) and `mediaType`. Outbox / live delivery / Accept backfill load `cover` (and live publication cover when present).
+
+**Impact on other features:** Domain **Fediverse Create content**; outbox/delivery payloads; remotes show cover media after re-delivery or re-Follow.
+
+#### Feature checklist
+
+| ID | Criterion | Done |
+|----|-----------|------|
+| FC42 | Create/Note with cover includes `attachment` Image + absolute URL | ☑ |
+| FC43 | Create without cover omits `attachment`; title + link content unchanged | ☑ |
+
 ### Mastodon same-origin post object ids — 2026-07-09
 
 **Version:** 1.7  

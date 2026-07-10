@@ -100,6 +100,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
         var method = requestContext.getMethod();
         var uri = requestContext.getUriInfo().getRequestUri();
+        var path = requestContext.getUriInfo().getPath();
         var clientIp = clientIp(requestContext);
         var userAgent = requestContext.getHeaderString("User-Agent");
         var referer = requestContext.getHeaderString("Referer");
@@ -107,9 +108,10 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         var htmx = requestContext.getHeaderString("HX-Request");
 
         if (status >= 500) {
-            logger.error("Internal server error method={} uri={} clientIp={} host={} userAgent={} referer={} htmx={}",
+            logger.error("Internal server error method={} uri={} path={} clientIp={} host={} userAgent={} referer={} htmx={}",
                          method,
                          uri,
+                         path,
                          clientIp,
                          host,
                          userAgent,
@@ -117,16 +119,16 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                          htmx,
                          exception);
         } else {
-            logger.warn("Client error status={} method={} uri={} clientIp={} host={} userAgent={} referer={} htmx={} exception={}",
+            logger.warn("Client error status={} method={} uri={} path={} clientIp={} host={} userAgent={} referer={} htmx={}",
                         status,
                         method,
                         uri,
+                        path,
                         clientIp,
                         host,
                         userAgent,
                         referer,
-                        htmx,
-                        exception);
+                        htmx);
         }
 
         String html = error.data("user", loggedUser)

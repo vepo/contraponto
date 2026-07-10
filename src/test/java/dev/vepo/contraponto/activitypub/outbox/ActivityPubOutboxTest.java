@@ -102,6 +102,31 @@ class ActivityPubOutboxTest {
     }
 
     @Test
+    void outboxCreateIncludesCoverAttachmentWhenPostHasCover() {
+        var cover = Given.randomCover(post.getBlog());
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Covered Outbox Post")
+             .withSlug("covered-outbox-post")
+             .withContent("Body")
+             .withCover(cover)
+             .persist();
+
+        var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                          .get("/outboxuser/outbox")
+                          .then()
+                          .statusCode(200)
+                          .extract()
+                          .body()
+                          .asString();
+        assertThat(json).contains("Covered Outbox Post")
+                        .contains("\"attachment\"")
+                        .contains("\"type\":\"Image\"")
+                        .contains(cover.getUrl())
+                        .contains("\"mediaType\"");
+    }
+
+    @Test
     void outboxExposesPaginationLinksAcrossPages() {
         for (var index = 2; index <= 21; index++) {
             Given.post()

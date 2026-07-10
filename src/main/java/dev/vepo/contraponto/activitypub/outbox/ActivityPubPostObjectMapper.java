@@ -5,12 +5,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import dev.vepo.contraponto.activitypub.ActivityPubPaths;
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
+import dev.vepo.contraponto.image.Image;
+import dev.vepo.contraponto.image.ImageDisplayWidth;
 import dev.vepo.contraponto.post.Post;
 
+/**
+ * Maps published posts to ActivityStreams Create / Delete / Note / Article
+ * documents for outbox and outbound delivery.
+ */
 @ApplicationScoped
 public class ActivityPubPostObjectMapper {
 
@@ -18,11 +25,30 @@ public class ActivityPubPostObjectMapper {
 
     private static final DateTimeFormatter ISO_INSTANT = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
+    private static String coverMediaType(Image cover) {
+        var contentType = cover.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            return "image/jpeg";
+        }
+        return contentType;
+    }
+
     private final BlogSubdomainConfig subdomainConfig;
 
     @Inject
     public ActivityPubPostObjectMapper(BlogSubdomainConfig subdomainConfig) {
         this.subdomainConfig = subdomainConfig;
+    }
+
+    private String absoluteCoverUrl(String path) {
+        var normalized = path.startsWith("/") ? path : "/%s".formatted(path);
+        if (normalized.startsWith("/api/images/")) {
+            normalized = "%s?w=%d".formatted(normalized, ImageDisplayWidth.CARD.pixels());
+        }
+        if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+            return normalized;
+        }
+        return subdomainConfig.platformUrl(normalized);
     }
 
     private String buildContent(Post post, String canonicalUrl) {
@@ -38,6 +64,27 @@ public class ActivityPubPostObjectMapper {
         return "<p><strong>%s</strong></p><p><a href=\"%s\">%s</a></p>".formatted(title, canonicalUrl, canonicalUrl);
     }
 
+    private Optional<Map<String, Object>> buildCoverAttachment(Post post) {
+        return resolveCover(post).flatMap(cover -> {
+            var path = cover.getUrl();
+            if (path == null || path.isBlank()) {
+                return Optional.empty();
+            }
+            var mediaUrl = absoluteCoverUrl(path);
+            var attachment = new LinkedHashMap<String, Object>();
+            attachment.put("type", "Image");
+            attachment.put("mediaType", coverMediaType(cover));
+            attachment.put("url", mediaUrl);
+            var alt = cover.getAltText();
+            if (alt != null && !alt.isBlank()) {
+                attachment.put("name", alt.trim());
+            } else if (post.getTitle() != null && !post.getTitle().isBlank()) {
+                attachment.put("name", post.getTitle().trim());
+            }
+            return Optional.of(attachment);
+        });
+    }
+
     private boolean isArticle(Post post) {
         var content = post.getContent();
         return content != null && content.length() > 500;
@@ -50,6 +97,20 @@ public class ActivityPubPostObjectMapper {
         return post.getPublishedAt().atZone(ZoneOffset.UTC).format(ISO_INSTANT);
     }
 
+    private Optional<Image> resolveCover(Post post) {
+        var live = post.getLivePublication();
+        if (live != null && live.getCover() != null) {
+            return Optional.of(live.getCover());
+        }
+        if (post.getCover() != null) {
+            return Optional.of(post.getCover());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Builds a public {@code Create} activity wrapping the post object.
+     */
     public Map<String, Object> toCreateActivity(Post post) {
         var object = toObject(post);
         var activity = new LinkedHashMap<String, Object>();
@@ -67,6 +128,9 @@ public class ActivityPubPostObjectMapper {
         return activity;
     }
 
+    /**
+     * Builds a public {@code Delete} activity for an unpublished post object.
+     */
     public Map<String, Object> toDeleteActivity(Post post) {
         var activity = new LinkedHashMap<String, Object>();
         activity.put("@context", CONTEXT);
@@ -78,6 +142,10 @@ public class ActivityPubPostObjectMapper {
         return activity;
     }
 
+    /**
+     * Builds the ActivityStreams {@code Note} / {@code Article} for a published
+     * post: title + link content, optional cover {@code attachment}.
+     */
     public Map<String, Object> toObject(Post post) {
         var objectId = ActivityPubPaths.postObjectId(post, subdomainConfig);
         var canonicalUrl = objectId;
@@ -98,6 +166,7 @@ public class ActivityPubPostObjectMapper {
         if (post.getUpdatedAt() != null) {
             document.put("updated", post.getUpdatedAt().atZone(ZoneOffset.UTC).format(ISO_INSTANT));
         }
+        buildCoverAttachment(post).ifPresent(attachment -> document.put("attachment", List.of(attachment)));
         document.put("to", List.of("https://www.w3.org/ns/activitystreams#Public"));
         document.put("cc", List.of(ActivityPubPaths.followers(post.getBlog().getOwner(), subdomainConfig)));
         return document;

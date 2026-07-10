@@ -3,6 +3,7 @@ package dev.vepo.contraponto.activitypub.outbox;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import dev.vepo.contraponto.activitypub.ActivityPubPaths;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
+import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import dev.vepo.contraponto.user.User;
@@ -104,7 +106,34 @@ class ActivityPubPostObjectMapperTest {
                                                                                                                                                    expectedUrl));
         assertThat((String) object.get("content")).doesNotContain("Secondary description ignored");
         assertThat(object).doesNotContainKey("summary");
+        assertThat(object).doesNotContainKey("attachment");
         assertThat(object.get("attributedTo")).isEqualTo(activity.get("actor"));
+    }
+
+    @Test
+    void createActivityIncludesCoverAsImageAttachment() {
+        var post = mainBlogPost();
+        var cover = new Image();
+        cover.setUrl("/api/images/cover-uuid.png");
+        cover.setContentType("image/png");
+        cover.setAltText("Cover alt");
+        post.setCover(cover);
+
+        var activity = mapper.toCreateActivity(post);
+        var object = castMap(activity.get("object"));
+        @SuppressWarnings("unchecked")
+        var attachments = (List<Map<String, Object>>) object.get("attachment");
+
+        assertThat(attachments).hasSize(1);
+        var attachment = attachments.get(0);
+        assertThat(attachment.get("type")).isEqualTo("Image");
+        assertThat(attachment.get("mediaType")).isEqualTo("image/png");
+        assertThat(attachment.get("name")).isEqualTo("Cover alt");
+        assertThat((String) attachment.get("url")).endsWith("/api/images/cover-uuid.png?w=560")
+                                                  .startsWith("http");
+        assertThat(object.get("name")).isEqualTo("Main Note");
+        assertThat((String) object.get("content")).contains("<strong>Main Note</strong>")
+                                                  .contains((String) object.get("url"));
     }
 
 }

@@ -272,11 +272,16 @@ public class PostRepository {
                                          SELECT DISTINCT p FROM Post p
                                          JOIN FETCH p.blog b
                                          JOIN FETCH b.owner
+                                         LEFT JOIN FETCH p.cover
                                          WHERE p.id = :id
                                          """, Post.class)
                             .setParameter("id", id)
                             .getResultStream()
-                            .findFirst();
+                            .findFirst()
+                            .map(post -> {
+                                attachLatestPublication(post);
+                                return post;
+                            });
     }
 
     public Optional<Post> findByIdWithTags(Long id) {
@@ -373,6 +378,7 @@ public class PostRepository {
                                                                              JOIN FETCH p.blog b
                                                                              JOIN FETCH b.owner o
                                                                              LEFT JOIN FETCH p.tags
+                                                                             LEFT JOIN FETCH p.cover
                                                                              WHERE b.owner.id = :authorId AND
                                                                                    b.active = true AND
                                                                                    p.published = true
@@ -397,6 +403,7 @@ public class PostRepository {
                                                                   JOIN FETCH p.blog b
                                                                   JOIN FETCH b.owner o
                                                                   LEFT JOIN FETCH p.tags
+                                                                  LEFT JOIN FETCH p.cover
                                                                   WHERE b.owner.id = :authorId AND
                                                                         b.active = true AND
                                                                         p.published = true

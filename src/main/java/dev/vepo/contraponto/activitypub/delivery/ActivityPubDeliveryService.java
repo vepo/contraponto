@@ -168,7 +168,7 @@ public class ActivityPubDeliveryService {
         if (!settings.enabled() || !localActor.isFederationEnabled()) {
             return;
         }
-        var post = postRepository.findById(postId).orElse(null);
+        var post = postRepository.findByIdWithBlog(postId).orElse(null);
         if (post == null || !post.isPublished() || post.getBlog() == null || !post.getBlog().isActive()) {
             return;
         }
@@ -180,7 +180,7 @@ public class ActivityPubDeliveryService {
         if (!settings.enabled() || !localActor.isFederationEnabled()) {
             return;
         }
-        var post = postRepository.findById(postId).orElse(null);
+        var post = postRepository.findByIdWithBlog(postId).orElse(null);
         if (post == null || post.getBlog() == null || !post.getBlog().isActive()) {
             return;
         }
