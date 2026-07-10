@@ -268,12 +268,17 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 
 | Term | Meaning | Code / notes |
 |------|---------|--------------|
-| **Git integration** | Per-blog export/import to a remote Git repo over HTTPS (any host; Jekyll layout). Available on the **main blog** and **secondary blogs**; configured on blog **Edit** (default blog) or **Settings** (`GET /blogs/{id}/settings`). | `Blog.gitEnabled`, etc. |
-| **Git sync request** | Event after draft save or publish to export post to Git when enabled. | `PostGitSyncRequestedEvent` |
-| **Remote poll** | Scheduled pull of remote changes when poll enabled. | `GitRemotePollScheduler` |
-| **Git sync run** | One execution of Git export (push) or import (pull) for a blog. | `GitSyncRun` |
-| **Git sync trigger** | What started the run: draft save, publish, remote poll, or blog save warmup. | `GitSyncTrigger` |
-| **Git sync operation** | `EXPORT` (Contraponto → remote) or `IMPORT` (remote → Contraponto). | `GitSyncOperation` |
+| **Git integration** | Per-blog export/import to a remote Git repo over **HTTPS or SSH** (any allowed host; Jekyll layout). Available on the **main blog** and **secondary blogs**; configured on blog **Edit** (default blog) or **Settings** (`GET /blogs/{id}/settings`). | `Blog.gitEnabled`, etc. |
+| **Git transport** | How Contraponto reaches the remote: **HTTPS** or **SSH**, derived from the **Git remote URL**. | `GitRemoteUrlValidator` |
+| **Git credentials** | Per-blog secrets used only for that blog’s remote: HTTPS username + password/PAT, or SSH private key (+ optional passphrase). Stored **encrypted at rest**; never re-displayed. No server-wide credential fallback. | Encrypted columns on `Blog` |
+| **Git credential present** | Whether the blog has stored encrypted credentials (boolean for UI: “configured” vs empty). | Flag / derived from ciphertext |
+| **Automatic sync** | Per-blog flag: when **on**, export may run after draft save/publish/warmup and the blog may be included in **remote poll**; when **off**, the blog stays idle until **Sync now**. | `Blog.gitAutoSync` |
+| **Sync now** | Blog-owner action that starts a **manual** Git sync run (import + export of pending local changes if any). | `POST /forms/blogs/{id}/git-sync` |
+| **Git sync request** | Event after draft save or publish to export a post when **Git integration** is on **and** **Automatic sync** is on. | `PostGitSyncRequestedEvent` |
+| **Remote poll** | Scheduled pull of remote changes when server poll is enabled **and** the blog has Git integration + automatic sync on. | `GitRemotePollScheduler` |
+| **Git sync run** | One execution of Git export (push) or import (pull) for a blog — or a combined manual run. | `GitSyncRun` |
+| **Git sync trigger** | What started the run: draft save, publish, remote poll, blog save warmup, or **manual** (Sync now). | `GitSyncTrigger` |
+| **Git sync operation** | `EXPORT` (Contraponto → remote) or `IMPORT` (remote → Contraponto). Manual Sync now may perform both. | `GitSyncOperation` |
 | **Git sync outcome** | `SUCCESS`, `PARTIAL`, `FAILED`, or `SKIPPED`. | `GitSyncOutcome` |
 | **Git error kind** | Classification of failure: `NONE`, `AUTHENTICATION`, `NETWORK`, `REPOSITORY`, `WORKSPACE`, `CONVENTION`, `POST`, `UNKNOWN`. | `GitErrorKind` |
 | **Repository readable** | Contraponto prepared the workspace and resolved layout (`_contraponto.yml` or defaults). | Flag on `GitSyncRun` |
@@ -299,7 +304,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Remote actor profile fetch** | On-demand HTTPS GET of a remote actor JSON document to resolve `publicKey` and `inbox` when verifying an inbound signed inbox POST (ADR-0007). | `ActivityPubRemoteActorService` |
 | **Fediverse remote handle** | `@user@domain` derived from remote actor `preferredUsername` and actor host — shown in follow-request review. | Follow-request UI |
 | **ActivityPub delivery** | Outbound signed POST of an activity to a remote instance's **inbox** after publish/unpublish on any opted-in author's blog (async queue with retry). | `ActivityPubDeliveryService` |
-| **Fediverse Create content** | Plain-text (or sanitized) body of a federated **Create** object's status text. **Main blog:** **title + canonical post link** (FQ3). **Secondary blog:** **title + blog name + canonical post link** (FQ20) — blog name distinguishes secondary posts under one Person. When the post has a **cover**, the object also includes an ActivityStreams **`attachment`** (`Image` with absolute HTTPS media URL and `mediaType`) so remotes can show a media card alongside the title/link. | Create / Note / Article content, `attachment` |
+| **Fediverse Create content** | Plain-text (or sanitized) body of a federated **Create** object's status text. **Main blog:** **title + canonical post link** (FQ3). **Secondary blog:** **title + blog name + canonical post link** (FQ20). When the post has **tags**, content also includes `#slug` hashtag links and the object carries an ActivityStreams **`tag`** array of **`Hashtag`** entries (`name` = `#slug`, `href` = platform `/tags/{slug}`) so Mastodon indexes them. When the post has a **cover**, the object also includes an **`attachment`** (`Image` with absolute HTTPS media URL and `mediaType`). | Create / Note / Article content, `tag`, `attachment` |
 | **Create activity published** | Top-level ActivityStreams `published` on the **Create** activity equals the post's **publication date** (`publishedAt` / live publication timestamp), matching object-level dating so remotes show correct status dates. | FQ15 |
 | **Fediverse follow backfill** | When a **Fediverse follow** is **auto-accepted** (or **reopened** after **REJECTED**), Contraponto enqueues **Create** deliveries for **every** published post on **all** of the author's blogs (no recent-N cap), ordered primarily by **`publishedAt`** (oldest first; **interleaved** across main and secondary blogs). Membership, ids, `published`, and order must match the **Fediverse outbox**. | `ActivityPubDeliveryService.enqueueHistoricalPostsForAcceptedFollow` |
 | **Fediverse outbox** | Paged **OrderedCollection** of **Create** activities for all published posts on the author's **main and secondary** blogs; ordered primarily by **`publishedAt`** (blogs interleaved); exposes `first` / `last` / `next` / `prev` when the archive spans multiple pages. | `GET /{username}/outbox` |
@@ -520,6 +525,13 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Profile/blog — remove image | Remove | Image upload areas |
 | Git sync — history page title | Git sync history | `/blogs/{id}/git-sync` |
 | Git sync — view history link | View sync history | Blog manage Git section |
+| Git sync — Sync now | Sync now | Blog settings Git section; sync history header |
+| Git sync — Automatic sync | Automatic sync | Blog settings Git checkbox |
+| Git sync — dedicated PAT warning | Create a dedicated personal access token for this blog. It is stored encrypted and will never be shown again. | HTTPS credentials hint |
+| Git sync — dedicated deploy key warning | Create a dedicated deploy key for this blog. It is stored encrypted and will never be shown again. | SSH credentials hint |
+| Git sync — clear credentials | Clear stored credentials | HTTPS clear control |
+| Git sync — clear key | Clear stored key | SSH clear control |
+| Git sync — auto sync off hint | When off: this blog does nothing until you press Sync now. | Automatic sync hint |
 | Git sync — succeeded | Sync succeeded | Run list/detail badge |
 | Git sync — failed | Sync failed | Run list/detail badge |
 | Git sync — partial | Sync partially completed | Run list/detail badge |
@@ -529,6 +541,8 @@ Further interface labels use the same four-column shape; canonical keys and EN/E
 | Git sync — repository readable | Repository readable | Detail summary |
 | Git sync — notification success | Git sync succeeded for {blog} | In-app notification |
 | Git sync — notification failure | Git sync failed for {blog} | In-app notification |
+| Git sync — started toast | Sync started | After Sync now |
+| Git sync — already running toast | A sync is already running for this blog | Concurrent Sync now (FQ8) |
 
 Toast messages and validation errors should describe the domain action (e.g. "Cannot follow or subscribe to your own blog") in plain language consistent with the terms above.
 
@@ -539,7 +553,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | Event | When fired | Typical reaction |
 |-------|------------|------------------|
 | `PostPublishedEvent` | After a new or changed publication snapshot is committed | Notify followers; email subscribers |
-| `PostGitSyncRequestedEvent` | After draft save or publish when blog has Git enabled | Export post to remote; record **Git sync run** |
+| `PostGitSyncRequestedEvent` | After draft save or publish when blog has **Git integration** and **Automatic sync** on | Export post to remote; record **Git sync run** |
 | `CustomPageChangedEvent` | After custom page create/update/delete | Refresh `CustomPageCache` |
 | `notificationsChanged` (HTMX) | After dismiss notification or mark all read | Refresh notification bell badge; reload open overlay |
 

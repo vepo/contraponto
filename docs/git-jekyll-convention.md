@@ -94,10 +94,12 @@ Changes apply immediately on the next import or export after a `git pull` / sche
 | `contraponto.git.workspace-root` | Where clones live; blank → `${java.io.tmpdir}/contraponto-git` |
 | `contraponto.git.poll-enabled` | When `true`, the scheduler pulls + imports periodically |
 | `contraponto.git.poll-interval` | Quarkus Scheduler duration (`2m`, `120s`, …) |
-| `contraponto.git.username` / `contraponto.git.password` | Optional HTTPS credentials (often a PAT) |
+| `contraponto.git.username` / `contraponto.git.password` | **v1 only** — optional HTTPS credentials. **v2 (FQ5):** not used for auth; blog-owner credentials only |
 | `contraponto.git.clone-depth` | Shallow clone/fetch depth (`1` = latest commit only; `0` = full history) |
 
-SSH remotes instead of HTTPS typically rely on OS-level SSH configuration (outside this app).
+SSH remotes instead of HTTPS typically rely on OS-level SSH configuration (outside this app) in **v1**.
+
+**Planned (v2):** per-blog HTTPS password/PAT or SSH private key (encrypted at rest; dedicated-key warning), automatic-sync toggle (off = idle until Sync now), Sync now = import + export pending — see [feature/git-sync.md](../feature/git-sync.md). No server credential fallback.
 
 ## Flow summary
 

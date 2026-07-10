@@ -127,6 +127,31 @@ class ActivityPubOutboxTest {
     }
 
     @Test
+    void outboxCreateIncludesHashtagsWhenPostHasTags() {
+        Given.post()
+             .withAuthor(user)
+             .withTitle("Tagged Outbox Post")
+             .withSlug("tagged-outbox-post")
+             .withContent("Body")
+             .withTags("java", "activitypub")
+             .persist();
+
+        var json = given().accept(ActivityPubPaths.ACTIVITY_JSON)
+                          .get("/outboxuser/outbox")
+                          .then()
+                          .statusCode(200)
+                          .extract()
+                          .body()
+                          .asString();
+        assertThat(json).contains("Tagged Outbox Post")
+                        .contains("#java")
+                        .contains("#activitypub")
+                        .contains("\"type\":\"Hashtag\"")
+                        .contains("/tags/java")
+                        .contains("/tags/activitypub");
+    }
+
+    @Test
     void outboxExposesPaginationLinksAcrossPages() {
         for (var index = 2; index <= 21; index++) {
             Given.post()

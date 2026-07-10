@@ -104,11 +104,13 @@ After the app is reachable on the public HTTPS origin:
 
 ## 6. Optional: Git / Jekyll sync
 
-Disabled by default in prod (`%prod.contraponto.git.poll-enabled=false`). To enable:
+Disabled by default in prod (`%prod.contraponto.git.poll-enabled=false`). To enable (**v1**):
 
 1. Set `contraponto.git.poll-enabled=true` (or override in env)
 2. Mount a **persistent volume** at `contraponto.git.workspace-root` (default is ephemeral under `java.io.tmpdir`)
 3. Set `contraponto.git.username` / `contraponto.git.password` (or PAT in remote URL) for HTTPS remotes
+
+**Planned (v2):** authors set HTTPS/SSH credentials on the blog; no server credential fallback; encryption secret for at-rest storage — see [feature/git-sync.md](../feature/git-sync.md).
 
 See [git-jekyll-convention.md](git-jekyll-convention.md).
 

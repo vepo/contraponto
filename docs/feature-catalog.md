@@ -2,7 +2,7 @@
 
 Living index of **user-facing features reachable through the UI** (header, user menu, modals, in-page links, footer/sidebar). For technical routes, RSS, and APIs see [ARCHITECTURE.md](../ARCHITECTURE.md). For UX narrative see [application-guidelines.md](application-guidelines.md).
 
-**Last verified:** 2026-07-08 · ActivityPub v1.4 multi-blog Fediverse timeline + appearance copy
+**Last verified:** 2026-07-10 · Git sync v2 planned rows (credentials, auto sync, Sync now) — see [feature/git-sync.md](../feature/git-sync.md)
 
 ---
 
@@ -120,8 +120,10 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Edit blog (core) | `USER` | `GET /blogs/{id}/edit?hub=writing` | 4 | **Writing** → **Blogs** → **Edit** on row. |
 | Blog settings (extended) | `USER` | `GET /blogs/{id}/settings` | 4 | **Writing** → **Blogs** → **Settings** on row. |
 | Blog image library (legacy redirect) | `USER` | `GET /blogs/{blogId}/images` → `/writing/images` | 2 | Bookmarked blog URL redirects to Writing hub **Images**. |
-| Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 5 | **Blogs** → **Edit** → **View sync history**. |
+| Git sync history | `USER` | `GET /blogs/{blogId}/git-sync` | 5 | **Blogs** → **Edit** / **Settings** → **View sync history**. |
 | Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 6 | Sync history → run link. |
+| Git Sync now *(planned v2)* | `USER` | `POST /forms/blogs/{id}/git-sync` | 5 | Blog **Settings** Git section → **Sync now** (or history header). |
+| Git credentials / auto sync *(planned v2)* | `USER` | blog settings form | 4 | **Writing** → **Blogs** → **Settings** → HTTPS/SSH credentials + **Automatic sync**. |
 | Custom pages list | `USER` | `GET /manage/pages` | 2 | Open user menu → **Manage** → **Custom Pages** in left nav. |
 | New custom page | `USER` | `GET /pages/new` | 4 | **Custom Pages** → **New Page**. |
 | Edit custom page | `USER` | `GET /pages/{id}/edit` | 4 | **Custom Pages** → **Edit** on row. |

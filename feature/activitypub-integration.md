@@ -6,6 +6,20 @@
 
 ## Changelog
 
+### Fediverse Create hashtags — 2026-07-10
+
+**Version:** 1.9  
+**Status:** done
+
+**Description:** Published post **tags** are federated as Mastodon hashtags: Create/Note `content` appends linked `#slug` hashtags, and the object includes a `tag` array of ActivityStreams `Hashtag` entries (`name` = `#slug`, `href` = platform `/tags/{slug}`). Prefers live publication tags when present.
+
+#### Feature checklist
+
+| ID | Criterion | Done |
+|----|-----------|------|
+| FC44 | Create with tags includes `#slug` in content and `tag` Hashtag array | ☑ |
+| FC45 | Create without tags omits hashtag paragraph and `tag` property | ☑ |
+
 ### Fediverse Create card (cover attachment) — 2026-07-10
 
 **Version:** 1.8  

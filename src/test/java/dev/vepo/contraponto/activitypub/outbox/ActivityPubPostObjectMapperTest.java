@@ -14,6 +14,7 @@ import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.image.Image;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
+import dev.vepo.contraponto.tag.Tag;
 import dev.vepo.contraponto.user.User;
 import jakarta.inject.Inject;
 
@@ -134,6 +135,35 @@ class ActivityPubPostObjectMapperTest {
         assertThat(object.get("name")).isEqualTo("Main Note");
         assertThat((String) object.get("content")).contains("<strong>Main Note</strong>")
                                                   .contains((String) object.get("url"));
+    }
+
+    @Test
+    void createActivityIncludesHashtagsInContentAndTagArray() {
+        var post = mainBlogPost();
+        var java = new Tag();
+        java.setSlug("java");
+        java.setName("Java");
+        var distributed = new Tag();
+        distributed.setSlug("distributed-systems");
+        distributed.setName("Distributed Systems");
+        post.setTags(List.of(java, distributed));
+
+        var activity = mapper.toCreateActivity(post);
+        var object = castMap(activity.get("object"));
+        var content = (String) object.get("content");
+        @SuppressWarnings("unchecked")
+        var tags = (List<Map<String, Object>>) object.get("tag");
+
+        assertThat(content).contains("#java")
+                           .contains("#distributed-systems")
+                           .contains("/tags/java")
+                           .contains("/tags/distributed-systems");
+        assertThat(tags).hasSize(2);
+        assertThat(tags.get(0).get("type")).isEqualTo("Hashtag");
+        assertThat(tags.get(0).get("name")).isEqualTo("#java");
+        assertThat((String) tags.get(0).get("href")).endsWith("/tags/java");
+        assertThat(tags.get(1).get("name")).isEqualTo("#distributed-systems");
+        assertThat((String) tags.get(1).get("href")).endsWith("/tags/distributed-systems");
     }
 
 }

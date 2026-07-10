@@ -43,7 +43,7 @@ Rastreie FQ/AQ nos respectivos `feature/<slug>.md`. Índice completo: [feature/R
 | Authentication | [authentication.md](../feature/authentication.md) | done | FQ3, FQ4 |
 | Multi-blog | [multi-blog.md](../feature/multi-blog.md) | done | FQ3 |
 | Blog audience | [blog-audience.md](../feature/blog-audience.md) | done | FQ2 (auto-follow after login) |
-| Git sync | [git-sync.md](../feature/git-sync.md) | done | FQ1 (manual sync button) |
+| Git sync | [git-sync.md](../feature/git-sync.md) | planned (v2) | AQ2–AQ4 (phase 2); FQ8–FQ9 informational |
 | User administration | [user-administration.md](../feature/user-administration.md) | done | FQ1 (`/administration` naming) |
 | ActivityPub | [activitypub-integration.md](../feature/activitypub-integration.md) | done | AQ5 (NodeInfo) optional |
 | Bluesky platform syndication | [bluesky-platform-syndication.md](../feature/bluesky-platform-syndication.md) | planned | AQ1, AQ2, AQ4, AQ6; ADR-0016 draft |
