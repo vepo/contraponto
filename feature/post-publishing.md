@@ -1,7 +1,7 @@
 # Post publishing & version history
 
 **Feature version:** 2  
-**Status:** architecture-ready  
+**Status:** tasks-ready  
 **Production:** live (v1 — draft/publish/republish/unpublish); v2 (scheduled publishing) not shipped
 
 ## Changelog
@@ -9,7 +9,7 @@
 ### Scheduled publishing — 2026-07-20
 
 **Version:** 2  
-**Status:** architecture-ready
+**Status:** tasks-ready
 
 **Description:** Authors set a future date/time on a draft so it **publishes automatically** without a manual click — same publish semantics as today (immutable snapshot per [ADR-0012](../docs/adr/0012-post-publication-versioning.md), `PostPublishedEvent`, notifications, Git export, ActivityPub delivery). A background poller (same pattern as `ActivityPubDeliveryScheduler` / `GitRemotePollScheduler`) publishes due posts. Authors can reschedule, cancel (revert to draft), or publish immediately before it fires. Until it fires, a scheduled post stays invisible to readers, search, RSS, sitemap, and ActivityPub — identical visibility to an ordinary draft.
 
@@ -65,6 +65,52 @@
 | Region | Elements | Notes |
 |--------|----------|-------|
 | Upcoming scheduled posts | List/widget of the author's own pending scheduled posts with target date/time | Links into Write editor or Writing library's Scheduled tab; needs dashboard-analytics' own review (cross-feature impact) |
+
+**Feature checklist reviewed (phase 3):** FC5–FC12 and FCdev already cover the full v2 scope; no new criteria surfaced during task modeling.
+
+#### Tasks (phase 3)
+
+| ID | Layer | Depends | Expected outcome | Tests | Done |
+|----|-------|---------|-------------------|-------|------|
+| T1-java | java | — | Flyway `V0.0.15__post_scheduled_publish.sql`: `tb_posts.scheduled_at TIMESTAMP NULL` + partial index `idx_posts_scheduled_due`; `Post.scheduledAt` field; `PostRepository.findDueScheduled(now)` and `findPageByAuthorAndScheduled` queries | TC1 | ☐ |
+| T2-java | java | T1-java | `PostScheduleService.schedule/reschedule` — reject a target closer than the poll interval; `PostScheduleService.cancel` — clear `scheduledAt`, revert to plain draft | TC2, TC3 | ☐ |
+| T3-java | java | T2-java | `ScheduleEndpoint` `POST /forms/write/schedule` (schedule/reschedule) + `POST /forms/write/schedule/cancel`; `BlogAccess.canEdit` gate; `Toast` response | TC4, TC5 | ☐ |
+| T4-java | java | T1-java | `PostPublicationService.publish` always nulls `scheduledAt` on transition to published — covers manual publish, "Publish now", and the scheduler uniformly | TC6 | ☐ |
+| T5-java | java | T2-java, T4-java | `PostScheduleScheduler` — `@Scheduled(every = "${contraponto.post.schedule.poll-interval}")`, `ConcurrentExecution.SKIP`; iterate `findDueScheduled(now)`; call `publish(post)` per post in its own `@Transactional` unit; catch per-post failures; `application.properties` default `contraponto.post.schedule.poll-interval=2m` | TC7, TC8 | ☐ |
+| T6-java | java | T5-java | `NotificationType.SCHEDULE_PUBLISH_SUCCEEDED`/`FAILED` constants + `linkUrl` case (reuse `postLink`); `PostScheduleScheduler` notifies the author on each attempt | TC9 | ☐ |
+| T7-java | java | T1-java | `LibraryEndpoint.tab` — extend the `switch` with `case "scheduled"` using `findPageByAuthorAndScheduled` | TC10 | ☐ |
+| T8-java | java | T1-java | Dashboard: `DashboardAnalyticsService` upcoming-scheduled query; new fragment endpoint `GET /manage/dashboard/components/scheduled` (mirrors existing `.../components/analytics`); extend `DashboardPage` | TC11 | ☐ |
+| T9-htmx | htmx | T3-java | Write editor: **Schedule** toolbar button + inline date/time picker; **Scheduled banner** (Reschedule form, Cancel → confirm modal, Publish now button) | TC12 | ☐ |
+| T10-js | js | T9-htmx | `write.js` — convert the `datetime-local` picker value to a UTC instant before `hx-post`; extend existing dirty-state guard to cover the schedule form | TC13 | ☐ |
+| T11-htmx | htmx | T7-java | Writing library: **Scheduled** tab (nav + row template — date/time, Reschedule/Cancel/Publish now); Cancel wired to existing `confirm-modal.js` component | TC14, TC15 | ☐ |
+| T12-htmx | htmx | T8-java | Dashboard: upcoming-scheduled widget fragment template, loaded like the existing analytics fragment | TC16 | ☐ |
+| Tdev | dev | T3-java, T7-java, T8-java | `dev-import.sql`: one scheduled-but-not-due post on an existing seed blog; [feature-catalog.md](../docs/feature-catalog.md) § Dev personas if the click path is new | TC17 | ☐ |
+
+**Stop for Development approval (phase 4)** — approve task IDs before implementation.
+
+#### Test coverage (phase 3)
+
+| ID | Kind | Covers | Scenario | Done |
+|----|------|--------|----------|------|
+| TC1 | unit/migration | T1-java | Flyway applies; `Post.scheduledAt` maps; partial index exists | ☐ |
+| TC2 | unit | T2-java | Schedule rejects a target closer than the poll interval; accepts a valid future UTC instant | ☐ |
+| TC3 | unit | T2-java | Cancel clears `scheduledAt` and the post behaves as a plain draft | ☐ |
+| TC4 | quarkus | T3-java | `POST /forms/write/schedule` sets `scheduledAt`; non-owner → 403 | ☐ |
+| TC5 | quarkus | T3-java | `POST /forms/write/schedule/cancel` clears `scheduledAt` | ☐ |
+| TC6 | unit | T4-java | `publish()` always nulls `scheduledAt`, whether called manually or by the scheduler | ☐ |
+| TC7 | quarkus | T5-java | Scheduler publishes exactly the due posts, fires `PostPublishedEvent` once each, skips not-yet-due posts | ☐ |
+| TC8 | quarkus | T5-java | Catch-up: a post whose `scheduledAt` is already in the past (simulated downtime) still publishes on the next tick (FQ4) | ☐ |
+| TC9 | quarkus | T6-java | Author receives `SCHEDULE_PUBLISH_SUCCEEDED`/`FAILED` on each scheduler attempt (FQ6) | ☐ |
+| TC10 | quarkus | T7-java | Library Scheduled tab lists only the author's `published = false, scheduledAt != null` posts | ☐ |
+| TC11 | quarkus | T8-java | Dashboard scheduled fragment lists only the logged-in author's own upcoming scheduled posts | ☐ |
+| TC12 | web | T9-htmx | Write editor shows the Schedule action and the Scheduled banner when a schedule is pending | ☐ |
+| TC13 | web | T10-js | Scheduling via the picker submits a UTC instant matching the displayed local time (FQ3) | ☐ |
+| TC14 | web | T11-htmx | Library Scheduled tab: Cancel opens the confirm modal; Reschedule does not (FQ8) | ☐ |
+| TC15 | web | T11-htmx | Publish now from a scheduled post publishes immediately and removes it from the Scheduled tab | ☐ |
+| TC16 | web | T12-htmx | Dashboard shows the upcoming-scheduled-posts widget | ☐ |
+| TC17 | quarkus | Tdev | Dev-seeded scheduled post is visible and exercisable in the Library Scheduled tab and Dashboard | ☐ |
+| TC18 | arch | T1-java, T6-java | `post`/`notification` package size stays within `PackageSizeRulesTest`'s cap (FC10-adjacent guardrail) | ☐ |
+| TC19 | quarkus | T1-java | A scheduled-not-due post stays excluded from search index, RSS feed, sitemap, and ActivityPub outbox (FC10) | ☐ |
 
 ### Production baseline — 2026-07-07
 

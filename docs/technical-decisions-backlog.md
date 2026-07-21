@@ -43,7 +43,7 @@ Rastreie FQ/AQ nos respectivos `feature/<slug>.md`. Índice completo: [feature/R
 | Multi-blog | [multi-blog.md](../feature/multi-blog.md) | done | FQ3 |
 | Blog audience | [blog-audience.md](../feature/blog-audience.md) | done | FQ2 (auto-follow after login) |
 | Git sync | [git-sync.md](../feature/git-sync.md) | architecture-ready (v2) | **ADR-0017** acceptance; AQ2–AQ5 confirm; FQ8–FQ9 informational |
-| Post publishing | [post-publishing.md](../feature/post-publishing.md) | architecture-ready (v2 — scheduled publishing) | None — AQ1–AQ5 answered; no ADR pending. Ready for phase 3 (task modeller) |
+| Post publishing | [post-publishing.md](../feature/post-publishing.md) | tasks-ready (v2 — scheduled publishing) | None — awaiting phase 4 development approval (task IDs T1-java–T12-htmx, T10-js, Tdev) |
 | User administration | [user-administration.md](../feature/user-administration.md) | done | FQ1 (`/administration` naming) |
 | ActivityPub | [activitypub-integration.md](../feature/activitypub-integration.md) | done | AQ5 (NodeInfo) optional |
 | Bluesky platform syndication | [bluesky-platform-syndication.md](../feature/bluesky-platform-syndication.md) | planned | AQ1, AQ2, AQ4, AQ6; ADR-0016 draft |
