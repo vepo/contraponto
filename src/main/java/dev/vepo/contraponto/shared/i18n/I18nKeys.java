@@ -118,6 +118,12 @@ public final class I18nKeys {
     public static final String TOAST_POST_ALREADY_DRAFT = "toast.post.alreadyDraft";
     public static final String TOAST_POST_FORBIDDEN = "toast.post.forbidden";
     public static final String TOAST_CANNOT_FEATURE_DRAFT = "toast.review.cannotFeatureDraft";
+    // Toasts — schedule
+    public static final String TOAST_POST_SCHEDULED = "toast.post.scheduled";
+    public static final String TOAST_POST_SCHEDULE_CANCELLED = "toast.post.scheduleCancelled";
+    public static final String TOAST_POST_SCHEDULE_INVALID_TIME = "toast.post.scheduleInvalidTime";
+    public static final String TOAST_POST_ALREADY_PUBLISHED = "toast.post.alreadyPublished";
+    public static final String TOAST_POST_NOT_SCHEDULED = "toast.post.notScheduled";
     // Toasts — comment
     public static final String TOAST_COMMENT_NOT_FOUND = "toast.comment.notFound";
 
@@ -166,6 +172,8 @@ public final class I18nKeys {
     public static final String LIBRARY_UNPUBLISH = "library.unpublish";
     public static final String LIBRARY_UNPUBLISH_CONFIRM = "library.unpublishConfirm";
     public static final String LIBRARY_DELETE_DRAFT_CONFIRM = "library.deleteDraftConfirm";
+    public static final String WRITE_SCHEDULE_CANCEL = "write.schedule.cancel";
+    public static final String WRITE_SCHEDULE_CANCEL_CONFIRM = "write.schedule.cancelConfirm";
 
     // Messaging
     public static final String MESSAGING_THREAD_SENT = "toast.messaging.threadSent";

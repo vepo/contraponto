@@ -56,6 +56,7 @@ public class LibraryEndpoint {
         return Templates.tab(switch (type) {
             case "published" -> postRepository.findPageByAuthorAndPublished(loggedUser.getId(), true, PageQuery.forGrid(20, page));
             case "drafts" -> postRepository.findPageByAuthorAndPublished(loggedUser.getId(), false, PageQuery.forGrid(20, page));
+            case "scheduled" -> postRepository.findPageByAuthorAndScheduled(loggedUser.getId(), PageQuery.forGrid(20, page));
             default -> throw new BadRequestException("Type not defined! type=%s".formatted(type));
         }, type);
     }

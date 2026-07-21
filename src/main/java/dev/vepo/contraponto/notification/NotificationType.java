@@ -15,7 +15,9 @@ public enum NotificationType {
     GIT_SYNC_SUCCEEDED,
     GIT_SYNC_FAILED,
     NEW_MESSAGE_THREAD,
-    NEW_THREAD_MESSAGE;
+    NEW_THREAD_MESSAGE,
+    SCHEDULE_PUBLISH_SUCCEEDED,
+    SCHEDULE_PUBLISH_FAILED;
 
     private static String commentLink(Notification notification) {
         if (notification.getPost() != null) {
@@ -58,6 +60,7 @@ public enum NotificationType {
             case COMMON_HIGHLIGHT_PROPOSAL, PUBLIC_HIGHLIGHT_NOTE, POST_RESPONSE -> "/writing/highlights";
             case NEW_FOLLOW, NEW_SUBSCRIBE -> BlogPaths.extractUrl(notification.getBlog());
             case NEW_MESSAGE_THREAD, NEW_THREAD_MESSAGE -> messageThreadLink(notification);
+            case SCHEDULE_PUBLISH_SUCCEEDED, SCHEDULE_PUBLISH_FAILED -> postLink(notification);
         };
     }
 }

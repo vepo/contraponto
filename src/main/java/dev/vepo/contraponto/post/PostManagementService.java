@@ -17,6 +17,7 @@ public class PostManagementService {
 
     private final PostRepository postRepository;
     private final PostAccess postAccess;
+    private final PostPublicationService postPublicationService;
     private final BlogGitIntegrationTransaction gitIntegrationTransaction;
     private final Event<PostUnpublishedEvent> postUnpublishedEvents;
     private final Event<PostGitSyncRequestedEvent> postGitSyncEvents;
@@ -24,11 +25,13 @@ public class PostManagementService {
     @Inject
     public PostManagementService(PostRepository postRepository,
                                  PostAccess postAccess,
+                                 PostPublicationService postPublicationService,
                                  BlogGitIntegrationTransaction gitIntegrationTransaction,
                                  Event<PostUnpublishedEvent> postUnpublishedEvents,
                                  Event<PostGitSyncRequestedEvent> postGitSyncEvents) {
         this.postRepository = postRepository;
         this.postAccess = postAccess;
+        this.postPublicationService = postPublicationService;
         this.gitIntegrationTransaction = gitIntegrationTransaction;
         this.postUnpublishedEvents = postUnpublishedEvents;
         this.postGitSyncEvents = postGitSyncEvents;
@@ -42,6 +45,16 @@ public class PostManagementService {
         }
         gitIntegrationTransaction.runScheduledExport(post.getId(), GitSyncTrigger.DRAFT_SAVE);
         postRepository.delete(post.getId());
+    }
+
+    @Transactional
+    public void publishNow(long postId, LoggedUser user) {
+        var post = requireOwnedPost(postId, user);
+        if (post.isPublished()) {
+            throw new BadRequestException("Post is already published.");
+        }
+        postPublicationService.publish(post);
+        postGitSyncEvents.fire(new PostGitSyncRequestedEvent(post.getId(), GitSyncTrigger.PUBLISH));
     }
 
     public Post requireOwnedPost(long postId, LoggedUser user) {

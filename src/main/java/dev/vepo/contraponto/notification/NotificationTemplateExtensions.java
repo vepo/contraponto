@@ -73,6 +73,14 @@ public class NotificationTemplateExtensions {
                 String title = notification.getMessageThread() != null ? notification.getMessageThread().getTitle() : "a thread";
                 yield "%s replied in %s".formatted(actor, title);
             }
+            case SCHEDULE_PUBLISH_SUCCEEDED -> {
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                yield "Your scheduled post was published: %s".formatted(title);
+            }
+            case SCHEDULE_PUBLISH_FAILED -> {
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                yield "Your scheduled post failed to publish: %s".formatted(title);
+            }
         };
     }
 

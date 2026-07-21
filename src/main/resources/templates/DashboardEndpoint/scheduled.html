@@ -1,0 +1,19 @@
+{#if !scheduledPosts.isEmpty()}
+<div class="recent-section scheduled">
+    <h3 data-i18n="dashboard.upcomingScheduled">Próximas publicações agendadas</h3>
+    <ul class="recent-list">
+        {#for post in scheduledPosts}
+        <li class="recent-list__item">
+            <a href="/write/draft/{post.id}" data-hx-get="/write/draft/{post.id}"
+               hx-select="main"
+               hx-target="main"
+               hx-push-url="/write/draft/{post.id}"
+               class="recent-list__title">
+                {post.title ?: "Untitled"}
+            </a>
+            <span class="recent-list__meta" data-i18n="dashboard.scheduledMeta" data-i18n-params='{"date": "{post.scheduledAt.formatDate}"}'>Agendado para {post.scheduledAt.formatDate}</span>
+        </li>
+        {/for}
+    </ul>
+</div>
+{/if}

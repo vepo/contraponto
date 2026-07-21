@@ -7,6 +7,12 @@
      hx-swap="outerHTML">
 </div>
 
+<div id="dashboardScheduled"
+     hx-trigger="load"
+     hx-get="/manage/dashboard/components/scheduled"
+     hx-swap="outerHTML">
+</div>
+
 <div class="dashboard-stats">
     <div class="stat-card">
         <div class="stat-card__value">{page.draftsCount}</div>

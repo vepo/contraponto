@@ -119,4 +119,14 @@ public class NotificationService {
     public void notifyPublicHighlightNote(User recipient, Post post, User actor) {
         create(recipient, NotificationType.PUBLIC_HIGHLIGHT_NOTE, post.getBlog(), post, null, null, actor);
     }
+
+    @Transactional
+    public void notifySchedulePublishFailed(User recipient, Post post) {
+        create(recipient, NotificationType.SCHEDULE_PUBLISH_FAILED, post.getBlog(), post, null, null, null);
+    }
+
+    @Transactional
+    public void notifySchedulePublishSucceeded(User recipient, Post post) {
+        create(recipient, NotificationType.SCHEDULE_PUBLISH_SUCCEEDED, post.getBlog(), post, null, null, null);
+    }
 }

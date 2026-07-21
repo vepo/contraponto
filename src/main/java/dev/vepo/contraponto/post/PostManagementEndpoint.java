@@ -76,6 +76,27 @@ public class PostManagementEndpoint {
     }
 
     @POST
+    @Path("publish")
+    @Produces(MediaType.TEXT_HTML)
+    public Response publishNow(@PathParam("postId") long postId) {
+        if (!loggedUser.isAuthenticated()) {
+            return forbidden();
+        }
+        try {
+            postManagementService.publishNow(postId, loggedUser);
+            return Toast.ok()
+                        .i18nKey(I18nKeys.TOAST_POST_PUBLISHED, I18nDefaults.POST_PUBLISHED)
+                        .type(Toast.Type.SUCCESS)
+                        .duration(Toast.TOAST_DEFAULT_DURATION_MS)
+                        .build();
+        } catch (NotFoundException e) {
+            return notFound();
+        } catch (BadRequestException e) {
+            return badRequest(I18nKeys.TOAST_POST_ALREADY_PUBLISHED, I18nDefaults.POST_ALREADY_PUBLISHED);
+        }
+    }
+
+    @POST
     @Path("unpublish")
     @Produces(MediaType.TEXT_HTML)
     public Response unpublish(@PathParam("postId") long postId) {

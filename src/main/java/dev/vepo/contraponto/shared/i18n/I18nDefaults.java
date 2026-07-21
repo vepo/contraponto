@@ -39,6 +39,11 @@ public final class I18nDefaults {
     public static final String POST_ALREADY_DRAFT = "Esta publicação já é um rascunho.";
     public static final String POST_FORBIDDEN = "Você não tem permissão para gerenciar esta publicação.";
     public static final String CANNOT_FEATURE_DRAFT = "Não é possível destacar um rascunho";
+    public static final String POST_SCHEDULED = "Publicação agendada!";
+    public static final String POST_SCHEDULE_CANCELLED = "Agendamento cancelado.";
+    public static final String POST_SCHEDULE_INVALID_TIME = "Escolha um horário futuro com folga suficiente antes do agendamento.";
+    public static final String POST_ALREADY_PUBLISHED = "Esta publicação já está publicada.";
+    public static final String POST_NOT_SCHEDULED = "Esta publicação não está agendada.";
     public static final String COMMENT_NOT_FOUND = "Comentário não encontrado.";
     public static final String HIGHLIGHT_CREATED = "Trecho destacado.";
     public static final String HIGHLIGHT_NOTE_PENDING = "Nota enviada para aprovação.";
@@ -66,6 +71,8 @@ public final class I18nDefaults {
     public static final String LIBRARY_UNPUBLISH = "Despublicar";
     public static final String LIBRARY_UNPUBLISH_CONFIRM = "Tem certeza de que deseja despublicar esta publicação?";
     public static final String LIBRARY_DELETE_DRAFT_CONFIRM = "Tem certeza de que deseja excluir este rascunho?";
+    public static final String WRITE_SCHEDULE_CANCEL = "Cancelar agendamento";
+    public static final String WRITE_SCHEDULE_CANCEL_CONFIRM = "Tem certeza de que deseja cancelar o agendamento? A publicação voltará a ser um rascunho.";
 
     public static final String MESSAGING_THREAD_SENT = "Conversa iniciada.";
     public static final String MESSAGING_REPLY_SENT = "Resposta enviada.";

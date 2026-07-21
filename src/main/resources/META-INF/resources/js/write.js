@@ -27,14 +27,42 @@ class WriteEditor {
         this.onLeaveSave = this.onLeaveSave.bind(this);
         this.onLeaveDiscard = this.onLeaveDiscard.bind(this);
         this.onLeaveCancel = this.onLeaveCancel.bind(this);
+        this.onScheduleToggleClick = this.onScheduleToggleClick.bind(this);
+        this.onScheduleConfigRequest = this.onScheduleConfigRequest.bind(this);
 
         document.addEventListener('htmx:beforeSwap', this.onBeforeSwap);
         document.body.addEventListener('htmx:afterSettle', this.onAfterSettle);
         document.body.addEventListener('htmx:confirm', this.onHtmxConfirm);
         document.body.addEventListener('htmx:afterRequest', this.onSaveDraftAfterRequest);
         document.addEventListener('click', this.onDocumentClick);
+        document.addEventListener('click', this.onScheduleToggleClick);
+        document.body.addEventListener('htmx:configRequest', this.onScheduleConfigRequest);
         window.addEventListener('beforeunload', this.onBeforeUnload);
         this.tryMount();
+    }
+
+    /* Scheduled publishing: toggle the inline picker and convert the
+       author's local datetime-local value to UTC before it is submitted. */
+    onScheduleToggleClick(e) {
+        if (e.target.closest('#scheduleToggleBtn')) {
+            document.getElementById('schedulePicker')?.classList.toggle('u-hidden');
+        }
+    }
+
+    onScheduleConfigRequest(evt) {
+        const path = (evt.detail?.path || '').split('?')[0];
+        if (path !== '/forms/write/schedule') {
+            return;
+        }
+        const input = document.getElementById('scheduleAtLocal') || document.getElementById('rescheduleAtLocal');
+        if (!input || !input.value) {
+            return;
+        }
+        const localDate = new Date(input.value);
+        if (Number.isNaN(localDate.getTime())) {
+            return;
+        }
+        evt.detail.parameters.scheduledAt = localDate.toISOString();
     }
 
     isMounted() {

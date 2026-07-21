@@ -83,6 +83,13 @@ public class ConfirmModalEndpoint {
     }
 
     @GET
+    @Path("post-schedule-cancel/{postId}")
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance postScheduleCancel(@PathParam("postId") long postId) {
+        return render(ConfirmModalAction.POST_SCHEDULE_CANCEL, postId);
+    }
+
+    @GET
     @Path("post-unpublish/{postId}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance postUnpublish(@PathParam("postId") long postId) {

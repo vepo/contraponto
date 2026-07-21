@@ -17,6 +17,13 @@
                 hx-swap="innerHTML"
                 hx-push-url="false"
                 hx-indicator="#library-htmx-indicator" data-i18n="library.tab.published">Publicados</button>
+        <button type="button" class="library-tab"
+                data-tab="scheduled"
+                hx-get="/writing/library/components/tab/scheduled"
+                hx-target="#libraryContent"
+                hx-swap="innerHTML"
+                hx-push-url="false"
+                hx-indicator="#library-htmx-indicator" data-i18n="library.tab.scheduled">Agendados</button>
     </div>
     {#include components/htmx-spinner id='library-htmx-indicator' /}
 </div>

@@ -192,6 +192,7 @@ public interface Given {
         private boolean published;
         private boolean featured;
         private LocalDateTime publishedAt;
+        private LocalDateTime scheduledAt;
         private java.util.List<String> tagLabels = new java.util.ArrayList<>();
         private String serieTitle;
 
@@ -243,6 +244,8 @@ public interface Given {
                 }
                 if (published) {
                     inject(PostPublicationService.class).publish(post);
+                } else if (scheduledAt != null) {
+                    post.setScheduledAt(scheduledAt);
                 }
                 return post;
             });
@@ -290,6 +293,11 @@ public interface Given {
 
         public PostBuilder withPublishedAt(LocalDateTime publishedAt) {
             this.publishedAt = publishedAt;
+            return this;
+        }
+
+        public PostBuilder withScheduledAt(LocalDateTime scheduledAt) {
+            this.scheduledAt = scheduledAt;
             return this;
         }
 

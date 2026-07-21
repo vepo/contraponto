@@ -594,6 +594,20 @@ Providers verify published pacts; consumers pin expectations per release train.'
         '2024-06-01 11:00:00', '2024-06-05 14:00:00', NULL, v_img8, NULL
     ) RETURNING id INTO v_post_draft;
 
+    -- Alice: scheduled (not yet due) — v2 scheduled publishing happy path
+    INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id, scheduled_at)
+    VALUES (
+        'scheduled-event-sourcing-notes',
+        'Event Sourcing Notes (Scheduled)',
+        v_alice_blog,
+        'Draft queued to publish automatically in a few days.',
+        '## Event sourcing
+
+Append-only event log as the source of truth, with projections rebuilt on demand.',
+        'MARKDOWN', FALSE, FALSE,
+        '2024-06-10 09:00:00', '2024-06-10 09:00:00', NULL, NULL, NULL, CURRENT_TIMESTAMP + INTERVAL '3 days'
+    );
+
     -- Bob: architecture blog
     INSERT INTO tb_posts (slug, title, blog_id, description, content, format, published, featured, created_at, updated_at, published_at, cover_id, serie_id)
     VALUES (

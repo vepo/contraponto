@@ -128,6 +128,29 @@ class PostPublicationServiceTest {
     }
 
     @Test
+    void publishClearsScheduledAtWhetherOrNotContentChanged() {
+        User author = Given.user()
+                           .withUsername("pubauthor7")
+                           .withEmail("pubauthor7@example.com")
+                           .withPassword("pw123456789")
+                           .withName("Pub Author Seven")
+                           .persist();
+        var post = Given.post()
+                        .withAuthor(author)
+                        .withTitle("Scheduled")
+                        .withContent("Body")
+                        .withSlug("publish-clears-schedule")
+                        .withPublished(false)
+                        .withScheduledAt(LocalDateTime.now().plusDays(1))
+                        .persist();
+
+        publicationService.publish(post);
+
+        assertThat(post.getScheduledAt()).isNull();
+        assertThat(post.isPublished()).isTrue();
+    }
+
+    @Test
     void republish_uses_current_time_even_when_post_published_at_is_older() {
         User author = Given.user()
                            .withUsername("pubauthor5")

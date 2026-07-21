@@ -166,6 +166,9 @@ public class Post {
     @Column(name = "published_at", nullable = true)
     private LocalDateTime publishedAt;
 
+    @Column(name = "scheduled_at", nullable = true)
+    private LocalDateTime scheduledAt;
+
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
@@ -228,6 +231,10 @@ public class Post {
         return publishedAt;
     }
 
+    public LocalDateTime getScheduledAt() {
+        return scheduledAt;
+    }
+
     public Serie getSerie() {
         return serie;
     }
@@ -259,6 +266,10 @@ public class Post {
 
     public boolean isPublished() {
         return published;
+    }
+
+    public boolean isScheduled() {
+        return !published && scheduledAt != null;
     }
 
     public void setBlog(Blog blog) {
@@ -303,6 +314,10 @@ public class Post {
 
     public void setPublishedAt(LocalDateTime publishedAt) {
         this.publishedAt = publishedAt;
+    }
+
+    public void setScheduledAt(LocalDateTime scheduledAt) {
+        this.scheduledAt = scheduledAt;
     }
 
     public void setSerie(Serie serie) {

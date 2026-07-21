@@ -108,7 +108,7 @@ public class PostPublicationService {
     public PostPublication publish(Post post) {
         PostPublication candidate = snapshotFrom(post);
         PostPublication live = post.getLivePublication();
-        if (live != null && isIdenticalSnapshot(post, live)) {
+        if (post.isPublished() && live != null && isIdenticalSnapshot(post, live)) {
             return live;
         }
         if (live != null && !Objects.equals(nullToEmpty(post.getSlug()), nullToEmpty(live.getSlug()))) {
@@ -124,6 +124,7 @@ public class PostPublicationService {
         publicationRepository.flush();
         postImageDependencyService.snapshotPublicationDependencies(candidate, post);
         post.setPublished(true);
+        post.setScheduledAt(null);
         if (post.getPublishedAt() == null) {
             post.setPublishedAt(candidate.getPublishedAt());
         }

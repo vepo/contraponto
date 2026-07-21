@@ -23,6 +23,9 @@
                             hx-select="main"
                             data-i18n="write.publish">Publicar</button>
                 </div>
+                {#if writePage.post.isPresent}
+                {#include ScheduleEndpoint/banner post=writePage.post.get() /}
+                {/if}
                 {#if writePage.hasUnpublishedChanges}
                 <div class="write-form__banner write-form__banner--warning" role="status">
                     data-i18n="write.unpublishedBanner">Há alterações não publicadas. Os leitores ainda veem a última versão publicada até você publicar novamente.

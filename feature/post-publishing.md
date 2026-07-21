@@ -1,7 +1,7 @@
 # Post publishing & version history
 
 **Feature version:** 2  
-**Status:** tasks-ready  
+**Status:** in-progress  
 **Production:** live (v1 — draft/publish/republish/unpublish); v2 (scheduled publishing) not shipped
 
 ## Changelog
@@ -9,7 +9,7 @@
 ### Scheduled publishing — 2026-07-20
 
 **Version:** 2  
-**Status:** tasks-ready
+**Status:** in-progress
 
 **Description:** Authors set a future date/time on a draft so it **publishes automatically** without a manual click — same publish semantics as today (immutable snapshot per [ADR-0012](../docs/adr/0012-post-publication-versioning.md), `PostPublishedEvent`, notifications, Git export, ActivityPub delivery). A background poller (same pattern as `ActivityPubDeliveryScheduler` / `GitRemotePollScheduler`) publishes due posts. Authors can reschedule, cancel (revert to draft), or publish immediately before it fires. Until it fires, a scheduled post stays invisible to readers, search, RSS, sitemap, and ActivityPub — identical visibility to an ordinary draft.
 
@@ -86,7 +86,7 @@
 | T12-htmx | htmx | T8-java | Dashboard: upcoming-scheduled widget fragment template, loaded like the existing analytics fragment | TC16 | ☐ |
 | Tdev | dev | T3-java, T7-java, T8-java | `dev-import.sql`: one scheduled-but-not-due post on an existing seed blog; [feature-catalog.md](../docs/feature-catalog.md) § Dev personas if the click path is new | TC17 | ☐ |
 
-**Stop for Development approval (phase 4)** — approve task IDs before implementation.
+**Development approval:** approved 2026-07-20 — tasks: T1-java, T2-java, T3-java, T4-java, T5-java, T6-java, T7-java, T8-java, T9-htmx, T10-js, T11-htmx, T12-htmx, Tdev (full scope).
 
 #### Test coverage (phase 3)
 

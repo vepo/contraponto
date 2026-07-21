@@ -7,6 +7,8 @@
        hx-target="main"
        hx-push-url="/write"
        class="btn btn--primary" data-i18n="dashboard.writeNew">✍️ Escrever nova história</a>
+    {#else if type == 'scheduled'}
+    <p data-i18n="library.emptyScheduled">Nenhuma publicação agendada.</p>
     {#else}
     <p data-i18n="library.emptyPublished">Nenhuma publicação publicada ainda.</p>
     {/if}
@@ -32,6 +34,9 @@
                 {#if post.published}
                 <span>· Published: {post.publishedAt.formatDate}</span>
                 {/if}
+                {#if post.scheduledAt??}
+                <span>· <span data-i18n="library.scheduledMeta" data-i18n-params='{"date": "{post.scheduledAt.formatDate}"}'>Agendado: {post.scheduledAt.formatDate}</span></span>
+                {/if}
                 {#if post.slug}
                 <span>· Slug: {post.slug}</span>
                 {/if}
@@ -50,6 +55,21 @@
                     hx-target="#modal-container"
                     hx-swap="innerHTML">
                 <span data-i18n="library.unpublish">Despublicar</span>
+            </button>
+            {#else if post.scheduledAt??}
+            <button type="button"
+                    class="btn btn--small btn--primary"
+                    hx-post="/forms/posts/{post.id}/publish"
+                    hx-target="[data-post-id='{post.id}']"
+                    hx-swap="outerHTML">
+                <span data-i18n="write.publish">Publicar</span>
+            </button>
+            <button type="button"
+                    class="btn btn--small btn--outline"
+                    hx-get="/components/confirm-modal/post-schedule-cancel/{post.id}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML">
+                <span data-i18n="write.schedule.cancel">Cancelar agendamento</span>
             </button>
             {#else}
             <button type="button"

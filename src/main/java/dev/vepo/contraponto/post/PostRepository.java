@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.post;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +76,18 @@ public class PostRepository {
                                          """, Long.class)
                             .setParameter("authorId", authorId)
                             .setParameter("published", published)
+                            .getSingleResult();
+    }
+
+    public long countByAuthorAndScheduled(long authorId) {
+        return entityManager.createQuery("""
+                                         SELECT COUNT(p)
+                                         FROM Post p
+                                         WHERE p.blog.owner.id = :authorId AND
+                                               p.published = false AND
+                                               p.scheduledAt IS NOT NULL
+                                         """, Long.class)
+                            .setParameter("authorId", authorId)
                             .getSingleResult();
     }
 
@@ -310,6 +323,19 @@ public class PostRepository {
                             .getResultList();
     }
 
+    public List<Post> findDueScheduled(LocalDateTime now) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         LEFT JOIN FETCH p.tags
+                                         WHERE p.published = false AND
+                                               p.scheduledAt IS NOT NULL AND
+                                               p.scheduledAt <= :now
+                                         ORDER BY p.scheduledAt ASC
+                                         """, Post.class)
+                            .setParameter("now", now)
+                            .getResultList();
+    }
+
     public Page<Post> findFeatured(PageQuery query) {
         return postFeaturedRepository.findFeatured(query);
     }
@@ -349,6 +375,24 @@ public class PostRepository {
                                              Post.class)
                                 .setParameter("authorId", authorId)
                                 .setParameter("published", published)
+                                .setFirstResult(query.skip())
+                                .setMaxResults(query.maxResults())
+                                .getResultList();
+        return new Page<>(data, query.page(), query.limit(), total);
+    }
+
+    public Page<Post> findPageByAuthorAndScheduled(long authorId, PageQuery query) {
+        long total = countByAuthorAndScheduled(authorId);
+        var data = entityManager.createQuery("""
+                                             SELECT DISTINCT p FROM Post p
+                                             LEFT JOIN FETCH p.tags
+                                             WHERE p.blog.owner.id = :authorId AND
+                                                   p.published = false AND
+                                                   p.scheduledAt IS NOT NULL
+                                             ORDER BY p.scheduledAt ASC
+                                             """,
+                                             Post.class)
+                                .setParameter("authorId", authorId)
                                 .setFirstResult(query.skip())
                                 .setMaxResults(query.maxResults())
                                 .getResultList();
@@ -621,6 +665,19 @@ public class PostRepository {
                                                           Comparator.nullsLast(Comparator.reverseOrder())))
                          .limit(limit)
                          .toList();
+    }
+
+    public List<Post> findUpcomingScheduledByAuthor(long authorId, int limit) {
+        return entityManager.createQuery("""
+                                         SELECT DISTINCT p FROM Post p
+                                         WHERE p.blog.owner.id = :authorId AND
+                                               p.published = false AND
+                                               p.scheduledAt IS NOT NULL
+                                         ORDER BY p.scheduledAt ASC
+                                         """, Post.class)
+                            .setParameter("authorId", authorId)
+                            .setMaxResults(limit)
+                            .getResultList();
     }
 
     public void flush() {

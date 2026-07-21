@@ -23,6 +23,15 @@ enum ConfirmModalAction {
             I18nKeys.COMMON_DELETE,
             I18nDefaults.COMMON_DELETE),
 
+    POST_SCHEDULE_CANCEL(
+            "POST",
+            I18nKeys.WRITE_SCHEDULE_CANCEL,
+            I18nDefaults.WRITE_SCHEDULE_CANCEL,
+            I18nKeys.WRITE_SCHEDULE_CANCEL_CONFIRM,
+            I18nDefaults.WRITE_SCHEDULE_CANCEL_CONFIRM,
+            I18nKeys.WRITE_SCHEDULE_CANCEL,
+            I18nDefaults.WRITE_SCHEDULE_CANCEL),
+
     MESSAGE_CLOSE(
             "POST",
             I18nKeys.MESSAGING_CLOSE_CONFIRM_TITLE,
@@ -78,6 +87,7 @@ enum ConfirmModalAction {
         return switch (this) {
             case POST_UNPUBLISH -> "/forms/posts/%s/unpublish".formatted(postId);
             case POST_DELETE -> "/forms/posts/%s".formatted(postId);
+            case POST_SCHEDULE_CANCEL -> "/forms/write/schedule/cancel/%s".formatted(postId);
             case MESSAGE_CLOSE -> "/forms/messages/threads/%s/close".formatted(postId);
             case MESSAGE_FLAG -> "/forms/messages/threads/%s/flag".formatted(postId);
             case MESSAGE_BLOCK -> "/forms/messages/blocks/%s".formatted(postId);

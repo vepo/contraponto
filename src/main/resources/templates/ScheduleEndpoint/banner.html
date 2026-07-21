@@ -1,0 +1,30 @@
+<div id="scheduleBanner" data-post-id="{post.id}" class="write-form__schedule">
+    {#if post.scheduledAt??}
+    <div class="write-form__banner write-form__banner--info" role="status">
+        <span data-i18n="write.schedule.pending" data-i18n-params='{"date": "{post.scheduledAt.formatDate}"}'>Agendado para publicar em {post.scheduledAt.formatDate}</span>
+        <div class="write-form__banner-actions">
+            <input type="datetime-local" id="rescheduleAtLocal" class="write-schedule-form__input"/>
+            <button type="button" id="rescheduleBtn" class="btn btn--small"
+                    hx-post="/forms/write/schedule" hx-include="#rescheduleAtLocal" hx-vals='{"postId": "{post.id}"}'
+                    hx-target="#scheduleBanner" hx-swap="outerHTML"
+                    data-i18n="write.schedule.reschedule">Reagendar</button>
+            <button type="button" class="btn btn--small btn--outline"
+                    hx-get="/components/confirm-modal/post-schedule-cancel/{post.id}"
+                    hx-target="#modal-container" hx-swap="innerHTML"
+                    data-i18n="write.schedule.cancel">Cancelar agendamento</button>
+            <button type="button" id="scheduledPublishNowBtn" class="btn btn--small btn--primary"
+                    hx-post="/forms/write/publish" hx-include="#postForm" hx-target="main" hx-select="main"
+                    data-i18n="write.publish">Publicar</button>
+        </div>
+    </div>
+    {#else}
+    <button type="button" id="scheduleToggleBtn" class="btn btn--secondary write-actions__btn" data-i18n="write.schedule.action">Agendar</button>
+    <div id="schedulePicker" class="write-schedule-form u-hidden">
+        <input type="datetime-local" id="scheduleAtLocal" class="write-schedule-form__input"/>
+        <button type="button" id="scheduleConfirmBtn" class="btn btn--small btn--primary"
+                hx-post="/forms/write/schedule" hx-include="#scheduleAtLocal" hx-vals='{"postId": "{post.id}"}'
+                hx-target="#scheduleBanner" hx-swap="outerHTML"
+                data-i18n="write.schedule.confirm">Confirmar agendamento</button>
+    </div>
+    {/if}
+</div>
