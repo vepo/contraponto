@@ -144,7 +144,7 @@ Shipped capabilities use a **single Production baseline** changelog entry contai
 |------------|------|--------|
 | Authentication & account access | [authentication.md](authentication.md) | done |
 | Multi-blog per author | [multi-blog.md](multi-blog.md) | done |
-| Post publishing & version history | [post-publishing.md](post-publishing.md) | done |
+| Post publishing & version history | [post-publishing.md](post-publishing.md) | done (v1); planned (v2 — scheduled publishing) |
 | Post comments & moderation | [post-comments.md](post-comments.md) | done |
 | Blog audience (follow, subscribe, delivery) | [blog-audience.md](blog-audience.md) | done |
 | Personal reading list | [reading-list.md](reading-list.md) | done |
