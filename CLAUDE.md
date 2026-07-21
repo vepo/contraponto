@@ -29,7 +29,7 @@ Always use the `./mvnw` wrapper, not a bare `mvn`.
 
 - Outbound ActivityPub HTTP Signature delivery needs the JVM flag `-Djdk.httpclient.allowRestrictedHeaders=host`. Maven (`quarkus:dev`, Surefire/Failsafe) and the Docker image already set it; add it yourself if launching outside Maven (e.g. a raw IDE run config).
 - Every schema or feature change must also update the seed data in `src/main/resources/dev-import.sql` — see `dev-import-sql-safety.mdc`.
-- Class members are auto-sorted and code is auto-formatted by Spotless (`resources/formatter.xml`, 4-space indent) — but CI's `spotless:check` runs before you'd notice a diff, so run `./mvnw spotless:apply` locally before finishing.
+- Class members are auto-sorted and code is auto-formatted by Spotless (`resources/formatter.xml`, 4-space indent) as part of `compile`/`test`/`verify`. CI's `code-style` job runs `spotless:check` standalone (no prior build phase), so it fails on unformatted code even if a full local `verify` would have fixed it silently — run `./mvnw spotless:apply` before finishing if you haven't run a full build.
 - Never call a method inside a log statement's arguments in production code — assign to a local first (SLF4J args are always evaluated).
 - No pass-through/wrapper methods around canonical builders (e.g. `*Paths` classes) — call them directly.
 

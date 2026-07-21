@@ -17,7 +17,7 @@ Follow this exact loop:
    <plugin>
        <groupId>org.jacoco</groupId>
        <artifactId>jacoco-maven-plugin</artifactId>
-       <version>0.8.14</version>
+       <version>0.8.15</version>
        <executions>
            <execution>
                <goals>
