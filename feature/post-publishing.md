@@ -34,7 +34,7 @@
 
 | ID | Criterion | Source | Done |
 |----|-----------|--------|------|
-| FC5 | Write editor offers **Schedule** alongside Save draft / Publish, with a future date+time picker | FQ3 | ☐ |
+| FC5 | Write editor offers **Schedule** alongside Save draft / Publish, with a future date+time picker in the author's local time (converted to UTC on save) | FQ3 | ☐ |
 | FC6 | Scheduled post auto-publishes at the target time with identical side effects to manual publish (snapshot, notifications, Git export, ActivityPub delivery) | — | ☐ |
 | FC7 | Author can reschedule, cancel (revert to draft), or publish immediately before the scheduled time fires | FQ7, FQ8 | ☐ |
 | FC8 | Writing library shows a distinct **Scheduled** view/tab (not merged into Drafts or Published) | — | ☐ |
@@ -96,8 +96,7 @@ Authors write posts in the **editor** (`/write`), **save drafts**, **publish** i
 |------|------------|
 | Identical republish spam | `isIdenticalSnapshot` skips new version + notifications |
 | Published post delete | Must unpublish first |
-| **(v2)** Missed schedule (server downtime spans the target time) | Poller catch-up publishes late on the next tick instead of silently dropping (FQ4) |
-| **(v2)** Timezone ambiguity between author and server | Resolve via FQ3 before architecture proceeds |
+| **(v2)** Missed schedule (server downtime spans the target time) | Poller catch-up publishes late on the next tick instead of silently dropping (FQ4 — confirmed) |
 | **(v2)** Scheduled-not-yet-due post leaks early via search/RSS/ActivityPub | Reuse the existing `published=false` visibility gate — no new read path bypasses it (FC10) |
 
 ### Feature questions (FQ*n*)
@@ -106,15 +105,17 @@ Authors write posts in the **editor** (`/write`), **save drafts**, **publish** i
 |---|----------|--------|--------|
 | FQ1 | Delete publication snapshots on unpublish? | answered | **No** — retained for history |
 | FQ2 | Featured curation in publish flow? | answered | **No** — separate editor-review feature |
-| FQ3 | What timezone governs the scheduled time — UTC/server, or the author's browser-local time converted on save? | open | |
-| FQ4 | If the scheduled time already passed before the poller catches up (e.g. server was down), publish immediately on the next tick, or require the author to notice and act? | open | |
+| FQ3 | What timezone governs the scheduled time — UTC/server, or the author's browser-local time converted on save? | answered | **Author's local time** — captured in the browser at save time, converted to UTC for storage. The picker and stored/scheduled instant are UTC internally; display converts back to the viewer's local time. |
+| FQ4 | If the scheduled time already passed before the poller catches up (e.g. server was down), publish immediately on the next tick, or require the author to notice and act? | answered | **Publish immediately, however late** — matches the existing ActivityPub delivery / Git sync catch-up pattern. No separate "expired schedule" state in v1. |
 | FQ5 | Can a scheduled post be marked **featured** (editor-review) before it goes live, so it's already featured the instant it publishes? | open | |
 | FQ6 | Does the author get an in-app notification confirming the scheduled publish succeeded or failed (e.g. a slug conflict introduced meanwhile)? | open | |
 | FQ7 | Minimum lead time — can an author schedule "5 minutes from now," or is there a floor tied to the poller interval? | open | |
 | FQ8 | Does Cancel/reschedule use the existing confirm-modal pattern ([contraponto-confirm-modals.mdc](../.cursor/rules/contraponto-confirm-modals.mdc)), same as unpublish/delete? | open | |
 | FQ9 | Should the dashboard surface an author's own upcoming scheduled posts, or is the Writing library's Scheduled tab sufficient? | open | |
 
-**Blocking for architecture:** FQ3, FQ4 — timezone and catch-up semantics shape the schema and scheduler design. FQ5–FQ9 informational, can close during phase 2.
+**Blocking for architecture:** none — FQ3/FQ4 answered. FQ5–FQ9 informational, can close during phase 2.
+
+**Impact review (2026-07-20):** FQ3 (author's local time, converted to UTC internally) and FQ4 (publish immediately on next poller tick, however late — no silent drop) answered. No changes to the delta Feature checklist or Wireframe beyond what FC5 (date+time picker) and FC9 (late catch-up) already specified.
 
 ## Architecture
 
