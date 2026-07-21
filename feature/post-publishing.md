@@ -1,7 +1,7 @@
 # Post publishing & version history
 
 **Feature version:** 2  
-**Status:** planned  
+**Status:** architecture-ready  
 **Production:** live (v1 — draft/publish/republish/unpublish); v2 (scheduled publishing) not shipped
 
 ## Changelog
@@ -9,11 +9,11 @@
 ### Scheduled publishing — 2026-07-20
 
 **Version:** 2  
-**Status:** planned
+**Status:** architecture-ready
 
 **Description:** Authors set a future date/time on a draft so it **publishes automatically** without a manual click — same publish semantics as today (immutable snapshot per [ADR-0012](../docs/adr/0012-post-publication-versioning.md), `PostPublishedEvent`, notifications, Git export, ActivityPub delivery). A background poller (same pattern as `ActivityPubDeliveryScheduler` / `GitRemotePollScheduler`) publishes due posts. Authors can reschedule, cancel (revert to draft), or publish immediately before it fires. Until it fires, a scheduled post stays invisible to readers, search, RSS, sitemap, and ActivityPub — identical visibility to an ordinary draft.
 
-**Domain model:** N/A yet — pending phase 1b (Domain Model agent) once blocking FQs are answered.
+**Domain model:** updated 2026-07-20 — see [domain-specification.md](../docs/domain-specification.md) § Posts & publishing (Scheduled post, Schedule, Reschedule, Cancel schedule, Schedule poller), Audience & notifications (`SCHEDULE_PUBLISH_*`), Author workspaces (Dashboard), and invariants 41–45.
 
 **Impact on other features:**
 
@@ -27,8 +27,8 @@
 | [seo.md](seo.md) | Scheduled posts excluded from sitemap/crawlable links until published |
 | [rss-syndication.md](rss-syndication.md) | Scheduled posts excluded from the feed until published |
 | [editor-review.md](editor-review.md) | None — featuring stays a post-publish action, unchanged (FQ5) |
-| [dashboard-analytics.md](dashboard-analytics.md) | **In scope for v2** — dashboard surfaces the author's upcoming scheduled posts (FQ9); needs dashboard-analytics' own review before phase 2 architecture covers it |
-| [notification-retention.md](notification-retention.md) | New in-app notification type: scheduled-publish outcome (success/failure) (FQ6) |
+| [dashboard-analytics.md](dashboard-analytics.md) | New fragment `GET /manage/dashboard/components/scheduled` designed here (Architecture § Routes, HTMX model, AQ5) — dashboard-analytics.md itself still needs its own changelog entry/review, not yet updated |
+| [notification-retention.md](notification-retention.md) | New `NotificationType` constants `SCHEDULE_PUBLISH_SUCCEEDED`/`FAILED`, reusing existing retention policy (ADR-0010) unchanged |
 | `dev-import.sql` | Seed at least one scheduled-but-not-due post for the happy path |
 
 #### Feature checklist
@@ -92,11 +92,11 @@ Authors write posts in the **editor** (`/write`), **save drafts**, **publish** i
 
 | Area | Effect |
 |------|--------|
-| Bounded contexts | `post`, `write`, `library` |
+| Bounded contexts | `post`, `write`, `library`; **v2 adds:** `dashboard`, `notification` (see Architecture § Bounded contexts (v2)) |
 | Schema (v1) | `tb_posts`, `tb_post_publications`, `tb_post_slug_aliases`, tag/image dependency tables |
-| Schema (v2) | Scheduled-publish target time on `tb_posts` (or a dedicated pending-schedule table, mirroring `tb_git_sync_runs`/ActivityPub delivery-queue patterns) — exact shape is an Architect decision (phase 2) |
+| Schema (v2) | `tb_posts.scheduled_at` (nullable, UTC) + partial index — no new table (see Architecture § Schema (Flyway, v2)) |
 | CDI (v1) | `PostPublishedEvent`, `PostUnpublishedEvent`, `PostGitSyncRequestedEvent` |
-| CDI (v2) | Same events, fired by the scheduler at actual publish time instead of a user request |
+| CDI (v2) | Same events, fired by the scheduler at actual publish time instead of a user request — no new event type |
 | Tests | `PostPublicationServiceTest`, `PublishEndpointTest`, `WriteTest`, `PostChangeHistoryTest`, `LibraryEndpoint` tests; **v2:** scheduler poll/catch-up, pre-publish visibility (search/RSS/ActivityPub) |
 
 ### Risks
@@ -122,7 +122,7 @@ Authors write posts in the **editor** (`/write`), **save drafts**, **publish** i
 | FQ8 | Does Cancel/reschedule use the existing confirm-modal pattern ([contraponto-confirm-modals.mdc](../.cursor/rules/contraponto-confirm-modals.mdc)), same as unpublish/delete? | answered | **Cancel only.** Cancel (reverts to draft) uses the confirm modal, same weight as unpublish/delete. Reschedule (just picking a new time) is a plain form edit, no modal |
 | FQ9 | Should the dashboard surface an author's own upcoming scheduled posts, or is the Writing library's Scheduled tab sufficient? | answered | **Both** — the dashboard also surfaces upcoming scheduled posts, in addition to the Writing library's Scheduled tab |
 
-**Blocking for architecture:** none. **All FQs (FQ1–FQ9) answered** — ready for phase 1b (Domain Model) and phase 2 (Architecture).
+**Blocking for architecture:** none (all FQs answered). Phase 1b (Domain Model) and phase 2 (Architecture) complete — see `## Architecture` below; blocking items for task break are **AQ2–AQ5**.
 
 **Impact review (2026-07-20, round 1):** FQ3 (author's local time, converted to UTC internally) and FQ4 (publish immediately on next poller tick, however late — no silent drop) answered. No changes to the delta Feature checklist or Wireframe beyond what FC5 (date+time picker) and FC9 (late catch-up) already specified.
 
@@ -132,21 +132,85 @@ Authors write posts in the **editor** (`/write`), **save drafts**, **publish** i
 
 ### ADRs aplicáveis
 
-| ADR | Relevância |
-|-----|------------|
-| [0002](../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Backend |
-| [0003](../docs/adr/0003-frontend-qute-htmx.md) | Write + library HTMX |
-| [0012](../docs/adr/0012-post-publication-versioning.md) | Snapshots |
-| [0013](../docs/adr/0013-cdi-events-cross-context.md) | Publish side effects |
+| ADR | Status | Relevância |
+|-----|--------|------------|
+| [0002](../docs/adr/0002-backend-java-quarkus-jakarta-ee.md) | Accepted | Backend |
+| [0003](../docs/adr/0003-frontend-qute-htmx.md) | Accepted | Write + library HTMX |
+| [0005](../docs/adr/0005-postgresql-database.md) | Accepted | Flyway migration for `scheduled_at` (v2) |
+| [0010](../docs/adr/0010-notification-retention.md) | Accepted | `SCHEDULE_PUBLISH_*` reuses existing notification retention (v2) |
+| [0012](../docs/adr/0012-post-publication-versioning.md) | Proposed | Snapshots — unchanged by scheduled publish (v2 reuses `publish()` as-is) |
+| [0013](../docs/adr/0013-cdi-events-cross-context.md) | Proposed | Publish side effects — `PostPublishedEvent` fired identically whether manual or scheduled (v2) |
 
-### Design específico da feature
+**No new ADR for v2.** The poll-scheduler shape (`@Scheduled` + `ConcurrentExecution.SKIP` + per-row iteration) already has two precedents in this codebase (`GitRemotePollScheduler`, `ActivityPubDeliveryScheduler`), neither of which required its own ADR — this is a feature-local application of an established pattern, not a new transversal decision.
+
+### Bounded contexts (v2)
+
+| Context | Role |
+|---------|------|
+| Content publishing (`post`, `write`) | `Post.scheduledAt`; `PostScheduleService`; `PostScheduleScheduler` |
+| Author workspace (`library`, `dashboard`) | Library **Scheduled** tab; Dashboard upcoming-scheduled widget |
+| Reader engagement (`notification`) | New `SCHEDULE_PUBLISH_*` constants on existing `NotificationType` — no new files (package is size-capped, not frozen; see Packages below) |
+| Discovery & syndication (`search`, `rss`, `seo`) / Integration (`activitypub`, `git`) | **No change** — already gated on `published = true`; `PostPublishedEvent` still fires only at actual publish time |
+
+### Packages / layers (v2)
+
+| Layer | Types |
+|-------|-------|
+| Entity | `Post.scheduledAt` — new nullable `LocalDateTime` (UTC) field; **no new entity/table** |
+| Repository | `PostRepository.findDueScheduled(LocalDateTime now)` (new query); `PostRepository.findPageByAuthorAndScheduled` (Library tab, new query) |
+| Service | `PostScheduleService` (new) — schedule/reschedule/cancel validation + persistence; delegates the actual publish to the existing `PostPublicationService.publish` unchanged |
+| Scheduler | `PostScheduleScheduler` (new) — mirrors `GitRemotePollScheduler` shape exactly |
+| Endpoint | `ScheduleEndpoint` (new) `@Path("/forms/write/schedule")` — schedule/reschedule + `.../cancel`; existing `PublishEndpoint` reused for "Publish now" (must also null `scheduledAt`) |
+| Library | `LibraryEndpoint.tab` — extend the existing `switch` with `case "scheduled"` |
+| Dashboard | `DashboardEndpoint` / `DashboardAnalyticsService` — add upcoming-scheduled query; extend `DashboardPage` |
+| Notification | `NotificationType` — add `SCHEDULE_PUBLISH_SUCCEEDED`, `SCHEDULE_PUBLISH_FAILED` constants + `linkUrl` switch case (reuses existing `postLink`) |
+
+**Package-size check** ([contraponto-bounded-contexts.mdc](../.cursor/rules/contraponto-bounded-contexts.mdc)): `post` is currently at 19 top-level types (cap 25); `PostScheduleService` + `PostScheduleScheduler` bring it to 21 — within cap. `notification` is **grandfathered/frozen** at its current count — v2 must add **zero new files** there, only new enum constants + a switch case in the existing `NotificationType.java`.
+
+### Schema (Flyway, v2)
+
+New migration `V0.0.15__post_scheduled_publish.sql`:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `scheduled_at` | `TIMESTAMP NULL` on `tb_posts` | UTC instant; set on Schedule/Reschedule; cleared on any publish (manual, "Publish now", or scheduler) or on Cancel |
+
+Partial index for the poll query: `CREATE INDEX idx_posts_scheduled_due ON tb_posts (scheduled_at) WHERE published = false AND scheduled_at IS NOT NULL;`
+
+**Invariant (spec #45):** `scheduled_at` is only meaningful while `published = false`.
+
+### Routes / templates (v2)
+
+| Method | Path | Notes |
+|--------|------|-------|
+| POST | `/forms/write/schedule` | New — schedule or reschedule; server validates target ≥ poll interval away (FQ7, AQ1) |
+| POST | `/forms/write/schedule/cancel` | New — confirm-modal gated (FQ8); reverts to draft |
+| POST | `/forms/write/publish` | Existing, reused for "Publish now" — must clear `scheduledAt` if set |
+| GET | `/writing/library/components/tab/scheduled` | New tab value on the existing `LibraryEndpoint.tab` route |
+| GET | `/write`, `/write/draft/{id}` | Extended — Scheduled banner when `scheduledAt != null` |
+| GET | dashboard route (existing) | Extended — upcoming-scheduled widget |
+
+### Cross-context (v2)
+
+| Mechanism | Change |
+|-----------|--------|
+| `PostPublishedEvent` | Fired identically whether `publish()` is called manually or by `PostScheduleScheduler` — **no new event type** |
+| Schedule outcome notification | `PostScheduleScheduler` calls `NotificationService` directly (author-only, not audience-wide) after each publish attempt on a due post — success or failure — reusing `Notification`/`NotificationService`; only `NotificationType` gains constants |
+
+### Design específico da feature (v2)
 
 | Area | Design |
 |------|--------|
-| Services | `PostPublicationService.publish`, `PostManagementService.unpublish/delete`, `PostChangeDiffService` |
-| Access | `PostAccess` → `BlogAccess.canEdit` |
-| Write | `PostWriteService` IDOR-safe resolution |
-| Images | `PostImageDependencyService` sync on draft; snapshot on publish |
+| Services (v1) | `PostPublicationService.publish`, `PostManagementService.unpublish/delete`, `PostChangeDiffService` |
+| Access (v1) | `PostAccess` → `BlogAccess.canEdit` |
+| Write (v1) | `PostWriteService` IDOR-safe resolution |
+| Images (v1) | `PostImageDependencyService` sync on draft; snapshot on publish |
+| Poll pattern (v2) | `@Scheduled(every = "${contraponto.post.schedule.poll-interval}", concurrentExecution = ConcurrentExecution.SKIP)`; iterate `PostRepository.findDueScheduled(now)`; call `PostPublicationService.publish(post)` per post in its own `@Transactional` unit so one failure doesn't block others — same shape as `GitRemotePollScheduler` |
+| Timezone (v2) | `scheduled_at` stored as UTC `LocalDateTime`, matching the existing `createdAt`/`updatedAt`/`publishedAt` convention — no new `ZonedDateTime`/`Instant` type. Browser JS converts the `datetime-local` picker value to UTC before submit; display converts back client-side (FQ3) |
+| Minimum lead time (v2) | Validated against `contraponto.post.schedule.poll-interval` — exact multiplier open (AQ1) |
+| Failure handling (v2) | If `publish()` throws inside the poll loop (e.g. a slug conflict introduced meanwhile), catch per-post, notify the author `SCHEDULE_PUBLISH_FAILED`, leave `scheduled_at` untouched so it retries next tick — no auto-cancel (AQ2 open: retry indefinitely vs. fall back to draft after N attempts) |
+| Publish now override (v2) | Reuses `PublishEndpoint` as-is; must additionally null `scheduledAt` so a leftover schedule can't refire |
+| Confirm modal (v2) | Cancel reuses `ConfirmModalEndpoint` / `confirm-modal.js` exactly like unpublish/delete (FQ8) |
 
 ### HTMX component model
 
@@ -157,12 +221,68 @@ Authors write posts in the **editor** (`/write`), **save drafts**, **publish** i
 | Library tabs | `GET /writing/library/components/tab/{type}` | Tab click | `#libraryContent` | — | — | none |
 | Unpublish/delete | confirm modal → forms | Row action | row or hub | toast | — | confirm modal |
 | History modal | `GET …/components/history/modal` | Version button | `#modal-container` | — | — | none |
+| **(v2)** Schedule | `POST /forms/write/schedule` | Toolbar **Schedule** button, inline picker | write page banner region | toast | — | `write.js` (local→UTC conversion, dirty-state guard) |
+| **(v2)** Reschedule | `POST /forms/write/schedule` | Banner form submit (no modal) | banner region (inline swap) | toast | — | `write.js` |
+| **(v2)** Cancel schedule | `POST /forms/write/schedule/cancel` | Confirm modal → submit | banner region / `main` | toast | — | `confirm-modal.js` |
+| **(v2)** Publish now (from schedule) | `POST /forms/write/publish` (existing) | Banner button | `main` | toast | — | `write.js` (existing) |
+| **(v2)** Library Scheduled tab | `GET /writing/library/components/tab/scheduled` | Tab click | `#libraryContent` | — | — | none |
+| **(v2)** Dashboard upcoming-scheduled | `GET /manage/dashboard/components/scheduled` (new fragment, mirrors existing `.../components/analytics`) | `load` | dashboard region | — | — | none |
+
+**Mechanism choice (v2):** Schedule / Reschedule / Cancel / Publish-now all resolve with inline/local swap + Toast (priority 1 per [htmx-events.md](../docs/htmx-events.md) §1) — same as Save draft / Publish today. No OOB broadcast needed; the affected UI (banner, tab, dashboard widget) is local to a page the author is already viewing or reloads on next visit.
+
+### HTMX interaction diagram (v2)
+
+```mermaid
+sequenceDiagram
+  participant Author
+  participant Write as Write editor
+  participant Svc as PostScheduleService
+  participant Poller as PostScheduleScheduler
+  participant Pub as PostPublicationService
+  participant Notif as NotificationService
+
+  Author->>Write: Schedule (date/time, local tz)
+  Write->>Svc: hx-post /forms/write/schedule
+  Svc-->>Author: Toast "Scheduled" + banner
+
+  Note over Poller: every poll-interval tick
+  Poller->>Poller: findDueScheduled(now)
+  Poller->>Pub: publish(post)
+  alt success
+    Pub-->>Poller: PostPublication (fires PostPublishedEvent)
+    Poller->>Notif: notify author SCHEDULE_PUBLISH_SUCCEEDED
+  else failure (e.g. slug conflict)
+    Poller->>Notif: notify author SCHEDULE_PUBLISH_FAILED
+    Note over Poller: scheduled_at left set — retries next tick
+  end
+```
+
+### `htmx-events.md` delta
+
+**None.** No new custom event type (§3), no auth-sensitive chrome (§2), no new scoped-refresh pattern (§1) — v2 reuses the existing Toast + local-swap mechanism already covered by §1's "smallest mechanism" rule, same as Save draft/Publish today. `write.js` already exists as a JS companion (§5); no new module.
+
+### Tests (v2)
+
+| Kind | Coverage |
+|------|----------|
+| Unit | `PostScheduleService` schedule/reschedule/cancel validation (lead-time floor, UTC conversion boundary); `PostRepository.findDueScheduled` query |
+| Quarkus | `PostScheduleScheduler` publishes due posts and fires `PostPublishedEvent` once; skips not-yet-due; catch-up publishes an overdue post on the next tick (FQ4) |
+| Web | Write editor Schedule/Reschedule/Cancel/Publish-now flows; Library Scheduled tab; Dashboard widget; confirm modal on Cancel only, not Reschedule (FQ8) |
+| Arch | `post`/`notification` package size within cap ([contraponto-bounded-contexts.mdc](../.cursor/rules/contraponto-bounded-contexts.mdc)); scheduled-not-due post excluded from search/RSS/sitemap/ActivityPub (reuse existing `published = false` visibility tests) |
 
 ### Architecture questions (AQ*n*)
 
 | # | Question | Status | Answer |
 |---|----------|--------|--------|
 | AQ1 | Publish response swaps full post page? | answered | **Yes** — `hx-target="main"` |
+| AQ2 *(v2)* | Minimum lead time: exactly one poll interval, or a safety multiple (e.g. 2×)? | answered | 1× `contraponto.post.schedule.poll-interval` |
+| AQ3 *(v2)* | If `publish()` fails repeatedly (e.g. a permanent slug conflict), does the schedule retry forever or fall back to a plain draft after N attempts? | answered | Retry indefinitely — matches FQ4's "no silent drop"; the author already gets a failure notification on every attempt (FQ6) to notice and fix it |
+| AQ4 *(v2)* | Default `contraponto.post.schedule.poll-interval`? | answered | `2m`, same as `contraponto.git.poll-interval`'s current default |
+| AQ5 *(v2)* | Dashboard upcoming-scheduled widget: new HTMX fragment, or inline in the existing dashboard render? | answered | New fragment `GET /manage/dashboard/components/scheduled`, consistent with the existing `.../components/analytics` fragment |
+
+**Blocking for task break:** none. All AQs (AQ1–AQ5) answered.
+
+**Impact review (2026-07-20, round 3):** AQ2–AQ5 accepted as proposed. No changes to schema, packages, routes, or HTMX model beyond what was already drafted above.
 
 #### Feature checklist
 

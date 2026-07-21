@@ -130,6 +130,12 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Content render plugin** | Pluggable handler registered via `ServiceLoader` that turns a **render tag** in post body into HTML (e.g. YouTube embed). | `ContentRenderPlugin` |
 | **Render tag** | Author syntax in post body: `{% renderIdentifier param1 param2 %}`. Built-in identifiers: `youtube`, `gist`, `github`, `twitter`. Unknown identifiers remain literal in output. | `ContentRenderTagProcessor` |
 | **Publish** | Action that marks the post published, creates a **publication snapshot**, sets **live publication**, fires `PostPublishedEvent`, and may trigger Git export and notifications. | `PostPublicationService.publish` |
+| **Scheduled post** *(v2, planned)* | A draft with a future **scheduled publish time** set (`Post.scheduledAt` non-null, `published = false`). Same read-visibility as an ordinary draft — invisible to readers, search, RSS, sitemap, and ActivityPub until it publishes. | `Post.scheduledAt` |
+| **Scheduled publish time** *(v2, planned)* | The future instant a scheduled post auto-publishes; captured in the author's local time and converted to UTC on save. | `Post.scheduledAt` (`LocalDateTime`, UTC) |
+| **Schedule** *(v2, planned)* | Author action that sets a **scheduled publish time** on a draft instead of publishing immediately; rejects a target closer than the schedule poll interval. | `PostScheduleService.schedule` |
+| **Reschedule** *(v2, planned)* | Change the **scheduled publish time** on a **scheduled post**; a plain form edit, no confirm modal. | `PostScheduleService.reschedule` |
+| **Cancel schedule** *(v2, planned)* | Clear a post's **scheduled publish time**, reverting it to an ordinary draft; requires the **confirm modal** (same weight as unpublish/delete). | `PostScheduleService.cancel` |
+| **Schedule poller** *(v2, planned)* | Background job that publishes every due **scheduled post** on a fixed interval, same side effects as a manual **publish**; a schedule missed while the app was down publishes on the next tick rather than being dropped. | `PostScheduleScheduler` |
 | **Unpublish** | Blog owner action: set `Post.published = false`, clear **featured**, keep **publication snapshots** and **live publication** for version history and republish. Public post URL returns 404 for readers; may trigger Git export. | `PostManagementService.unpublish` |
 | **Delete post** | Blog owner permanently removes a post with `published = false`. **Published** posts must be **unpublished** first. | `PostManagementService.delete` |
 | **Confirm modal** | In-app dialog in `#modal-container` for destructive confirmations; confirm control uses `data-confirm-submit` + HTMX. Never `hx-confirm` or native `confirm()`. | `ConfirmModalEndpoint`, `confirm-modal.js` |
@@ -182,7 +188,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Notification retention (unread)** | Purge unread notifications when `created_at` is older than configured days (default **30**). | `NotificationRetentionScheduler`, ADR-0010 |
 | **Close notification overlay** | Hide the dropdown without changing read state. | Close control (`data-notification-close`) |
 | **Notifications changed** | HTMX event; refreshes badge and open overlay. | `HtmxTriggers.NOTIFICATIONS_CHANGED_ON_BODY` |
-| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`, `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`, `GIT_SYNC_*`, `NEW_MESSAGE_THREAD`, `NEW_THREAD_MESSAGE`. | `NotificationType` |
+| **Notification type** | `NEW_POST`, `NEW_FOLLOW`, `NEW_SUBSCRIBE`, `NEW_COMMENT`, `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`, `GIT_SYNC_*`, `NEW_MESSAGE_THREAD`, `NEW_THREAD_MESSAGE`, `SCHEDULE_PUBLISH_*` *(v2, planned)*. | `NotificationType` |
 | **Follow after login** | Guest clicks Follow, signs in via modal, then clicks Follow again. | Post page / audience widget |
 | **Subscriptions page** | Authenticated list of blogs the user follows/subscribes to. | `SubscriptionEndpoint` |
 
@@ -349,7 +355,7 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Write** | Editor for creating or editing a post (`/write`, `/write/draft/{id}`). | `WriteEndpoint` |
 | **Image control** | Per-author image library (all owned blogs), usages, alt text, and search. Writing hub **Images** at `/writing/images` (`q`, `page`); legacy `/blogs/{id}/images` redirects to the hub. | `ImageControlEndpoint`, Writing hub `images` section |
 | **Library** | Author's drafts and published posts across owned blogs. | `LibraryEndpoint` |
-| **Dashboard** | Author overview per selected blog: analytics (daily views, daily reading time, new followers, new email subscribers by month), counts, and recent drafts/published. | `DashboardEndpoint` |
+| **Dashboard** | Author overview per selected blog: analytics (daily views, daily reading time, new followers, new email subscribers by month), counts, recent drafts/published, and upcoming **scheduled posts** *(v2, planned)*. | `DashboardEndpoint` |
 | **Dashboard analytics** | Time-series metrics for one blog: daily views (with optional comparison to the previous calendar month), daily reading time, daily new follows, daily new email subscribes. | `DashboardAnalyticsService` |
 | **Account security** | Update email (with verification) and password. | `AccountSecurityEndpoint`, `AccountSecurityUpdateEndpoint` |
 | **Author appearance** | Update display name, **author profile description**, **author social links**, profile picture, and default blog banner. | `AuthorAppearanceEndpoint`, `AuthorAppearanceUpdateEndpoint` |
@@ -552,7 +558,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 
 | Event | When fired | Typical reaction |
 |-------|------------|------------------|
-| `PostPublishedEvent` | After a new or changed publication snapshot is committed | Notify followers; email subscribers |
+| `PostPublishedEvent` | After a new or changed publication snapshot is committed — manually or by the **schedule poller** *(v2, planned)* | Notify followers; email subscribers |
 | `PostGitSyncRequestedEvent` | After draft save or publish when blog has **Git integration** and **Automatic sync** on | Export post to remote; record **Git sync run** |
 | `CustomPageChangedEvent` | After custom page create/update/delete | Refresh `CustomPageCache` |
 | `notificationsChanged` (HTMX) | After dismiss notification or mark all read | Refresh notification bell badge; reload open overlay |
@@ -602,6 +608,11 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 38. Inbound **`Like`** / **`Undo` Like** on a post are processed only when the post owner has **Fediverse opt-in** on and federation is globally enabled; unsigned activities are rejected (ADR-0007).
 39. A **Fediverse favourite** is unique per **(post, remote actor)**; duplicate **`Like`** from the same remote is idempotent; **`Undo` Like** removes the row.
 40. **Fediverse favourite count** is public on the post page; the **Fediverse favourite list** (who liked) is visible only to the post author.
+41. *(v2, planned)* A **scheduled post** (`scheduledAt` non-null, `published = false`) has identical read-visibility to an ordinary **draft** — invisible to readers, search, RSS, sitemap, and ActivityPub until the **schedule poller** publishes it.
+42. *(v2, planned)* **Schedule** and **reschedule** require a target time at least one **schedule poll interval** in the future, captured in the author's local time and converted to UTC on save. The **schedule poller** publishes every due scheduled post on each tick — a schedule missed while the app was unavailable publishes late on the next tick rather than being dropped.
+43. *(v2, planned)* Only **cancel schedule** requires the **confirm modal**; **reschedule** is a plain form edit. **Publish now** on a scheduled post publishes immediately and clears `scheduledAt`.
+44. *(v2, planned)* **Featured** remains a post-publish-only action; a **scheduled post** cannot be marked featured before it publishes.
+45. *(v2, planned)* `scheduledAt` is only meaningful while `published = false`; any transition to published (manual or scheduled) or a **cancel schedule** always clears it.
 
 ---
 
