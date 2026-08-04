@@ -19,6 +19,8 @@ class ShareLinksTest {
         assertThat(share.blueskyUrl()).startsWith("https://bsky.app/intent/compose?text=");
         assertThat(share.blueskyUrl()).contains("My+Post+Title");
         assertThat(share.blueskyUrl()).contains("https%3A%2F%2Fexample.com%2Falice%2Fpost%2Fmy-slug");
+        assertThat(share.redditUrl()).isEqualTo(
+                                                "https://www.reddit.com/search/?q=url%3Ahttps%3A%2F%2Fexample.com%2Falice%2Fpost%2Fmy-slug");
     }
 
     @Test

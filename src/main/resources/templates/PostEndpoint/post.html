@@ -114,6 +114,18 @@
                             {view.render.raw}
                         </article>
 
+                        <section class="post-engagement">
+                            {#include components/discuss-widget share=share postId=view.post.id authenticated=user.isAuthenticated /}
+
+                            <div id="post-reactions"
+                                 class="reaction-bar--loading"
+                                 hx-get="{view.post.url}/components/reactions"
+                                 hx-trigger="load, {authRefreshTrigger}"
+                                 hx-target="#post-reactions"
+                                 hx-swap="innerHTML">
+                            </div>
+                        </section>
+
                         <div id="post-highlights"
                              class="post-highlights-section post-highlights-section--loading"
                              hx-get="{view.post.url}/components/highlights"

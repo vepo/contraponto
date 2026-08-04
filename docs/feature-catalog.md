@@ -168,6 +168,10 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Reply to comment | signed in | `POST …/comments/{parentId}/replies` | 4 | Post → **Reply** on comment → submit. |
 | Version history modal | author | `GET …/components/history/modal` | 4 | Home → own published post → **Version N** control. |
 | Approve/reject comment (on post) | post owner | `POST /forms/posts/…/comments/…` | — | Post page pending section (author viewing own post). |
+| Discuss prompt (comment / Reddit) | anyone | — (client + external) | 3 | Home → blog → post → end-of-post widget → **Comentar aqui** (jumps to comments) or **Discutir no Reddit** (external search). |
+| React to post | signed in, non-author | `POST /forms/posts/{postId}/reactions/{type}` | 3 | Home → blog → post → end-of-post reaction bar → click an emoji (toggles on). |
+| React to post (guest) | guest | via login modal | 4 | Post → reaction bar → click an emoji → **Sign in**. |
+| Remove reaction | signed in, non-author | `POST /forms/posts/{postId}/reactions/{type}` | 3 | Post → reaction bar → click an already-active emoji (toggles off). |
 
 ---
 
@@ -208,8 +212,8 @@ Use [dev-import.sql](../src/main/resources/dev-import.sql) — all dev users sha
 | `alice`, `bob`, `carol` | `USER` | Write, Library, Blogs, Dashboard, own posts |
 | `alice` | `USER` | Secondary blog `lab-notes` (Fediverse multi-blog Creates / outbox); main posts + ActivityPub actor |
 | `bob` | `USER` | Secondary blog `architecture-notes`, multi-blog URLs |
-| `dave` | `USER` | Follower, notifications |
-| `eve` | `USER` | Email subscriber |
+| `dave` | `USER` | Follower, notifications, post reaction (`LIKE`) |
+| `eve` | `USER` | Email subscriber, post reactions (`ROCKET` + `LOVE`) |
 | `editor` | `USER`, `EDITOR` | `/review`, `/tags/manage`, featured toggle on posts |
 | `admin` | `ADMIN`, `USER_ADMINISTRATOR` | `/users`, platform admin |
 

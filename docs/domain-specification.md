@@ -41,7 +41,7 @@ Contraponto is a **modular monolith**: one deployable, many bounded contexts und
 | **Shared kernel** | `shared` | JDK/Jakarta only (after kernel cleanup) |
 | **Identity & access** | `auth`, `user` | shared |
 | **Content publishing** | `blog`, `post`, `write`, `tag`, `serie`, `renderer`, `content` | shared, identity, media |
-| **Reader engagement** | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse`, `messaging` | shared, identity, publishing |
+| **Reader engagement** | `notification`, `comment`, `readinglist`, `readingtime`, `highlight`, `postresponse`, `messaging`, `reaction` *(planned)* | shared, identity, publishing |
 | **Discovery & syndication** | `home`, `search`, `directory`, `rss`, `seo`, `view` | shared, publishing |
 | **Media** | `image` | shared, identity |
 | **Customization** | `custompage` | shared, identity, media |
@@ -269,6 +269,20 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Respostas** | Section on **source post** for approved link-backs. | `postResponse.sectionTitle` |
 
 **Notification types (highlights):** `COMMON_HIGHLIGHT_PROPOSAL`, `PUBLIC_HIGHLIGHT_NOTE`, `POST_RESPONSE`.
+
+### Post reactions
+
+| Term | Meaning | Code / notes |
+|------|---------|--------------|
+| **Post reaction** | A signed-in reader's emoji reaction on a **published post**; one row per `(post, reader, reaction type)`. | `PostReaction` — `tb_post_reactions` |
+| **Reaction type** | Fixed set of 8, GitHub-issue-reaction style: **LIKE** 👍, **DISLIKE** 👎, **SMILE** 😄, **PARTY** 🎉, **SAD** 😢, **LOVE** ❤️, **ROCKET** 🚀, **WORRIED** 😟. Each type toggles independently — a reader may hold several at once. | `ReactionType` |
+| **React** | Signed-in, non-author reader adds a **reaction type** on a post. | `POST /forms/posts/{postId}/reactions/{type}` |
+| **Unreact** | Reader removes a previously given **reaction type** (same toggle action). | `PostReactionService.toggle` |
+| **Reaction bar** | Widget at the end of the post showing all 8 **reaction types** with live counts. Anonymous readers see counts read-only; a signed-in reader's own active reactions are highlighted; the post's own author sees counts only (cannot react to their own post). | Post page, end of article |
+| **Reaction like count** | Displayed count for **LIKE** = stored **post reaction** rows of type LIKE **plus** the post's **Fediverse favourite count** — a remote Fediverse Like counts as a like reaction. | View-assembly layer (`PostEndpoint`), not a schema link |
+| **Discuss prompt** | Static call-to-action next to the **reaction bar** inviting the reader to comment on the post (jumps to the comments section) or search Reddit for discussion of the post's canonical URL. | `ShareLinks.redditUrl`; no persistence |
+
+**Notification types (reactions):** `NEW_REACTION` — sent to the post author when a reader **reacts** (add only, not on **unreact**).
 
 ### Git sync
 
@@ -613,6 +627,10 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 43. *(v2, planned)* Only **cancel schedule** requires the **confirm modal**; **reschedule** is a plain form edit. **Publish now** on a scheduled post publishes immediately and clears `scheduledAt`.
 44. *(v2, planned)* **Featured** remains a post-publish-only action; a **scheduled post** cannot be marked featured before it publishes.
 45. *(v2, planned)* `scheduledAt` is only meaningful while `published = false`; any transition to published (manual or scheduled) or a **cancel schedule** always clears it.
+46. *(planned)* A **post reaction** is unique per **(post, reader, reaction type)**; toggling the same type again removes it (idempotent add/remove, no duplicate rows).
+47. *(planned)* The post's own author cannot **react** to their own post.
+48. *(planned)* Anonymous readers may view **reaction bar** counts but cannot **react** — the toggle endpoint requires sign-in.
+49. *(planned)* The displayed **like** reaction count always equals stored `LIKE` rows plus the post's **Fediverse favourite count**; the two remain separate storage with no schema link.
 
 ---
 
@@ -642,6 +660,7 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 | Custom pages | `dev.vepo.contraponto.custompage` |
 | Notifications & audience | `dev.vepo.contraponto.notification` |
 | Comments | `dev.vepo.contraponto.comment` |
+| Post reactions | `dev.vepo.contraponto.reaction` *(planned)* |
 | Git sync | `dev.vepo.contraponto.git` |
 | ActivityPub federation | `dev.vepo.contraponto.activitypub` |
 | Auth (tokens, account email, recovery) | `dev.vepo.contraponto.auth` |

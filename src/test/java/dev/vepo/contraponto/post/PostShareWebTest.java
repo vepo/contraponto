@@ -15,6 +15,15 @@ class PostShareWebTest {
     private Post post;
 
     @Test
+    void publishedPostDiscussWidgetLinksToCommentsAndReddit(App app) {
+        app.access()
+           .goTo(post)
+           .assertDiscussWidgetCommentHereHrefIsCommentsAnchor()
+           .assertDiscussWidgetRedditHrefContains("reddit.com/search/?q=url%3A")
+           .assertDiscussWidgetRedditHrefContains("shareable-post-title");
+    }
+
+    @Test
     void publishedPostShareActionsWork(App app) {
         app.access()
            .goTo(post)

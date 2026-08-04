@@ -149,6 +149,7 @@ Shipped capabilities use a **single Production baseline** changelog entry contai
 | Blog audience (follow, subscribe, delivery) | [blog-audience.md](blog-audience.md) | done |
 | Personal reading list | [reading-list.md](reading-list.md) | done |
 | Post text highlights & responses | [post-text-highlight.md](post-text-highlight.md) | done |
+| Post reactions (end-of-post engagement widget) | [post-reactions.md](post-reactions.md) | review-ready |
 | Git ↔ Jekyll sync | [git-sync.md](git-sync.md) | done |
 | Custom pages | [custom-pages.md](custom-pages.md) | done |
 | Home & discovery | [home-discovery.md](home-discovery.md) | done |

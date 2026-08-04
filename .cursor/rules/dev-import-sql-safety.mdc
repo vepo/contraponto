@@ -40,6 +40,7 @@ Keep aligned with [feature/](../../feature/) and [docs/feature-catalog.md](../..
 | Notifications / audience | Covered | `tb_notifications`, `tb_blog_audience` samples |
 | Custom pages | Covered | Migration footer pages + dev examples |
 | Comments moderation | Covered | Sample comments on seed posts |
+| Post reactions | Covered | Mixed emoji reactions + `NEW_REACTION` notification on a seed post |
 | Series / tags / RSS / search | Covered | Tagged posts, series membership, pagination volume |
 | ActivityPub / Fediverse | Covered | `alice` actor + keys; sample accepted remote follow |
 

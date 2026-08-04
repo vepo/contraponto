@@ -47,6 +47,14 @@ public class NotificationTemplateExtensions {
                 }
                 yield "%s commented on %s".formatted(actor, title);
             }
+            case NEW_REACTION -> {
+                String actor = notification.getActor() != null ? notification.getActor().getName() : DEFAULT_ACTOR_NAME;
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                if (title == null || title.isBlank()) {
+                    title = notification.getPost() != null ? notification.getPost().getSlug() : DEFAULT_POST_TITLE;
+                }
+                yield "%s reacted to %s".formatted(actor, title);
+            }
             case COMMON_HIGHLIGHT_PROPOSAL -> {
                 String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
                 yield "Readers often highlighted a passage on %s".formatted(title);

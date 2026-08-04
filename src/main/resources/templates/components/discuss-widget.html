@@ -1,0 +1,34 @@
+<div class="discuss-widget">
+    <p class="discuss-widget__text" data-i18n="discuss.prompt">Gostou do que leu? Comente aqui ou continue a conversa no Reddit.</p>
+    <div class="discuss-widget__actions">
+        <a href="#comments"
+           class="btn btn--outline btn--small discuss-widget__action"
+           data-i18n="discuss.commentHere">Comentar aqui</a>
+        <a href="{share.redditUrl}"
+           class="btn btn--outline btn--small discuss-widget__action"
+           target="_blank"
+           rel="noopener noreferrer"
+           data-i18n="discuss.reddit">Discutir no Reddit</a>
+        {#if authenticated}
+        <a href="/write?respondsTo={postId}" data-hx-get="/write?respondsTo={postId}"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/write?respondsTo={postId}"
+           class="btn btn--outline btn--small discuss-widget__action"
+           data-i18n="postResponse.create">Responder com post</a>
+        <a href="/reading/highlights" data-hx-get="/reading/highlights"
+           hx-select="main"
+           hx-target="main"
+           hx-push-url="/reading/highlights"
+           class="btn btn--outline btn--small discuss-widget__action"
+           data-i18n="reading.myHighlights">Meus destaques</a>
+        {#else}
+        <button type="button"
+                class="btn btn--outline btn--small discuss-widget__action"
+                hx-get="/auth/modal?mode=login"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                data-i18n="postResponse.create">Responder com post</button>
+        {/if}
+    </div>
+</div>

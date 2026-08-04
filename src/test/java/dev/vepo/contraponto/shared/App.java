@@ -1291,6 +1291,18 @@ public class App {
             return this;
         }
 
+        public PostPage assertDiscussWidgetCommentHereHrefIsCommentsAnchor() {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".discuss-widget__action[href='#comments']")));
+            assertThat(link.getAttribute("href")).endsWith("#comments");
+            return this;
+        }
+
+        public PostPage assertDiscussWidgetRedditHrefContains(String fragment) {
+            var link = wait.until(visibilityOfElementLocated(cssSelector(".discuss-widget__action[target='_blank']")));
+            assertThat(link.getAttribute("href")).contains(fragment);
+            return this;
+        }
+
         public PostPage assertFeaturedButtonIsNotPresent() {
             var elements = driver.findElements(By.cssSelector("#post-featured-toggle"));
             assertThat(elements).isEmpty();

@@ -7,6 +7,7 @@ public final class ShareLinks {
 
     private static final String LINKEDIN_SHARE_BASE = "https://www.linkedin.com/sharing/share-offsite/?url=";
     private static final String BLUESKY_COMPOSE_BASE = "https://bsky.app/intent/compose?text=";
+    private static final String REDDIT_SEARCH_BASE = "https://www.reddit.com/search/?q=";
     private static final int BLUESKY_TEXT_LIMIT = 300;
 
     private static String encode(String value) {
@@ -20,7 +21,8 @@ public final class ShareLinks {
         var blueskyText = truncateForBluesky(shareText);
         return new ShareView(shareText,
                              LINKEDIN_SHARE_BASE + encode(trimmedUrl),
-                             BLUESKY_COMPOSE_BASE + encode(blueskyText));
+                             BLUESKY_COMPOSE_BASE + encode(blueskyText),
+                             REDDIT_SEARCH_BASE + encode("url:" + trimmedUrl));
     }
 
     private static String truncateForBluesky(String text) {

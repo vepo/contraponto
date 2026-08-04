@@ -101,6 +101,11 @@ public class NotificationService {
     }
 
     @Transactional
+    public void notifyNewReaction(User recipient, Post post, User actor) {
+        create(recipient, NotificationType.NEW_REACTION, post.getBlog(), post, null, null, actor);
+    }
+
+    @Transactional
     public void notifyNewSubscribe(User recipient, Blog blog, User actor) {
         create(recipient, NotificationType.NEW_SUBSCRIBE, blog, null, null, null, actor);
     }

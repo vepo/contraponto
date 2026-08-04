@@ -1,0 +1,37 @@
+<div class="reaction-bar">
+    {#for r in view.reactions}
+    {#if view.canReact}
+    <form class="reaction-bar__form"
+          hx-post="/forms/posts/{view.postId}/reactions/{r.type}"
+          hx-target="#post-reactions"
+          hx-swap="innerHTML">
+        <button type="submit"
+                class="reaction-bar__button {#if r.active}reaction-bar__button--active{/if}"
+                data-i18n="{r.type.i18nKey}"
+                data-i18n-attr="aria-label,title"
+                aria-label="{r.type.defaultLabel}"
+                title="{r.type.defaultLabel}">
+            <span class="reaction-bar__emoji" aria-hidden="true">{r.type.emoji}</span>
+            <span class="reaction-bar__count">{r.count}</span>
+        </button>
+    </form>
+    {#else}
+    <span class="reaction-bar__button reaction-bar__button--static {#if r.active}reaction-bar__button--active{/if}"
+          data-i18n="{r.type.i18nKey}"
+          data-i18n-attr="aria-label,title"
+          aria-label="{r.type.defaultLabel}"
+          title="{r.type.defaultLabel}">
+        <span class="reaction-bar__emoji" aria-hidden="true">{r.type.emoji}</span>
+        <span class="reaction-bar__count">{r.count}</span>
+    </span>
+    {/if}
+    {/for}
+    {#if !view.authenticated}
+    <button type="button"
+            class="reaction-bar__sign-in"
+            hx-get="/auth/modal?mode=login"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
+            data-i18n="reaction.signInHint">Entre para reagir</button>
+    {/if}
+</div>

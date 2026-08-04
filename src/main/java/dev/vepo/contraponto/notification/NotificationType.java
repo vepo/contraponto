@@ -9,6 +9,7 @@ public enum NotificationType {
     NEW_FOLLOW,
     NEW_SUBSCRIBE,
     NEW_COMMENT,
+    NEW_REACTION,
     COMMON_HIGHLIGHT_PROPOSAL,
     PUBLIC_HIGHLIGHT_NOTE,
     POST_RESPONSE,
@@ -57,6 +58,7 @@ public enum NotificationType {
             case GIT_SYNC_SUCCEEDED, GIT_SYNC_FAILED -> gitSyncLink(notification);
             case NEW_POST -> postLink(notification);
             case NEW_COMMENT -> commentLink(notification);
+            case NEW_REACTION -> postLink(notification);
             case COMMON_HIGHLIGHT_PROPOSAL, PUBLIC_HIGHLIGHT_NOTE, POST_RESPONSE -> "/writing/highlights";
             case NEW_FOLLOW, NEW_SUBSCRIBE -> BlogPaths.extractUrl(notification.getBlog());
             case NEW_MESSAGE_THREAD, NEW_THREAD_MESSAGE -> messageThreadLink(notification);

@@ -3,7 +3,8 @@
 --
 -- Highlights: multi-blog URLs, version history, comments (/comments moderation),
 -- custom pages (/page/..., /{user}/page/..., /{user}/{blog}/page/...), git on alice's blog,
--- follow/subscribe, notifications, email log, featured/review, drafts, series (home → post → serie), tags, RSS/search.
+-- follow/subscribe, notifications, email log, featured/review, drafts, series (home → post → serie), tags, RSS/search,
+-- post reactions (emoji reaction bar + Reddit/comment discuss prompt).
 
 -- ============================================
 -- 1. Reset content (keep schema seed: admin user + blog + footer pages)
@@ -16,6 +17,7 @@ TRUNCATE TABLE tb_official_highlights CASCADE;
 TRUNCATE TABLE tb_common_highlight_proposals CASCADE;
 TRUNCATE TABLE tb_post_responses CASCADE;
 TRUNCATE TABLE tb_reading_list_items CASCADE;
+TRUNCATE TABLE tb_post_reactions CASCADE;
 TRUNCATE TABLE tb_post_comments CASCADE;
 TRUNCATE TABLE tb_email_notification_log CASCADE;
 TRUNCATE TABLE tb_account_email_outbox CASCADE;
@@ -1130,6 +1132,29 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     SELECT owner.id, 'NEW_COMMENT', b.id, v_post_intro, pub.id, e.id, FALSE, '2024-05-05 09:05:00', v_comment_eve_pending
     FROM tb_users owner, tb_users e, tb_blogs b, tb_post_publications pub
     WHERE owner.username = 'alice' AND e.username = 'eve'
+      AND b.owner_id = owner.id AND b.main
+      AND pub.post_id = v_post_intro
+      AND pub.version = (SELECT MAX(p2.version) FROM tb_post_publications p2 WHERE p2.post_id = v_post_intro);
+
+    -- ============================================
+    -- 13b. Post reactions (emoji reaction bar)
+    -- ============================================
+    INSERT INTO tb_post_reactions (post_id, user_id, reaction_type, created_at)
+    SELECT v_post_intro, (SELECT id FROM tb_users WHERE username = 'dave'), 'LIKE', '2024-05-04 10:05:00';
+
+    INSERT INTO tb_post_reactions (post_id, user_id, reaction_type, created_at)
+    SELECT v_post_intro, (SELECT id FROM tb_users WHERE username = 'bob'), 'LIKE', '2024-05-04 12:00:00';
+
+    INSERT INTO tb_post_reactions (post_id, user_id, reaction_type, created_at)
+    SELECT v_post_intro, (SELECT id FROM tb_users WHERE username = 'eve'), 'ROCKET', '2024-05-05 09:10:00';
+
+    INSERT INTO tb_post_reactions (post_id, user_id, reaction_type, created_at)
+    SELECT v_post_intro, (SELECT id FROM tb_users WHERE username = 'eve'), 'LOVE', '2024-05-05 09:11:00';
+
+    INSERT INTO tb_notifications (recipient_user_id, type, blog_id, post_id, publication_id, actor_user_id, read, created_at)
+    SELECT owner.id, 'NEW_REACTION', b.id, v_post_intro, pub.id, d.id, TRUE, '2024-05-04 10:05:00'
+    FROM tb_users owner, tb_users d, tb_blogs b, tb_post_publications pub
+    WHERE owner.username = 'alice' AND d.username = 'dave'
       AND b.owner_id = owner.id AND b.main
       AND pub.post_id = v_post_intro
       AND pub.version = (SELECT MAX(p2.version) FROM tb_post_publications p2 WHERE p2.post_id = v_post_intro);
