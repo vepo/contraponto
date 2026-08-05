@@ -31,7 +31,8 @@ public class ActivityPubAppearanceService {
 
     public ActivityPubFederationView buildView(User user) {
         var actorOptional = actorRepository.findByUserId(user.getId());
-        var federationEnabled = actorOptional.map(ActivityPubActor::isFederationEnabled).orElse(false);
+        var federationEnabled = actorOptional.map(ActivityPubActor::isFederationEnabled)
+                                             .orElse(false);
         var handle = "@%s@%s".formatted(user.getUsername(), federationDomain());
         var actorUrl = ActivityPubPaths.actorId(user, subdomainConfig);
         long followerCount = 0;

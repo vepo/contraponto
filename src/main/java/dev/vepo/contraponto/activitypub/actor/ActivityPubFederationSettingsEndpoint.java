@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -41,7 +42,8 @@ public class ActivityPubFederationSettingsEndpoint {
         if (!loggedUser.isAuthenticated()) {
             return Response.status(Status.FORBIDDEN).build();
         }
-        var user = userRepository.findById(loggedUser.getId()).orElseThrow(() -> new jakarta.ws.rs.NotFoundException());
+        var user = userRepository.findById(loggedUser.getId())
+                                 .orElseThrow(() -> new NotFoundException("User not found: userId=%d".formatted(loggedUser.getId())));
         if ("true".equalsIgnoreCase(federationEnabled) || "on".equalsIgnoreCase(federationEnabled)) {
             actorService.enableFederation(user);
             return Response.ok("<div class=\"success-message\">Fediverse publishing enabled.</div>").build();

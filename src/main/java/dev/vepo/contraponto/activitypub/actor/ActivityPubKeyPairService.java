@@ -11,14 +11,17 @@ import java.security.SecureRandom;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Random;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import dev.vepo.contraponto.activitypub.ActivityPubSettings;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
-import dev.vepo.contraponto.activitypub.ActivityPubSettings;
 
 @ApplicationScoped
 public class ActivityPubKeyPairService {
@@ -30,6 +33,7 @@ public class ActivityPubKeyPairService {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
 
     private final ActivityPubSettings settings;
+    private static final Random RANDOM = new SecureRandom();
 
     @Inject
     public ActivityPubKeyPairService(ActivityPubSettings settings) {
@@ -67,7 +71,7 @@ public class ActivityPubKeyPairService {
         try {
             var keyBytes = deriveAesKey(secret);
             var iv = new byte[GCM_IV_BYTES];
-            new SecureRandom().nextBytes(iv);
+            RANDOM.nextBytes(iv);
             var cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, keyBytes, new GCMParameterSpec(GCM_TAG_BITS, iv));
             var encrypted = cipher.doFinal(privateKey.getEncoded());
@@ -112,7 +116,11 @@ public class ActivityPubKeyPairService {
     }
 
     public String toPublicKeyPem(PublicKey publicKey) {
-        var encoded = Base64.getMimeEncoder(64, "\n".getBytes(StandardCharsets.US_ASCII)).encodeToString(publicKey.getEncoded());
-        return "-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----".formatted(encoded);
+        return """
+               -----BEGIN PUBLIC KEY-----
+               %s
+               -----END PUBLIC KEY-----
+               """.formatted(Base64.getMimeEncoder(64, "\n".getBytes(StandardCharsets.US_ASCII))
+                                   .encodeToString(publicKey.getEncoded()));
     }
 }

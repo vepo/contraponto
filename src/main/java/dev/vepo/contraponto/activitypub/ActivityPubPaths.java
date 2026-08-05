@@ -59,10 +59,13 @@ public final class ActivityPubPaths {
         if (resource == null || resource.isBlank()) {
             return false;
         }
+
         if (resource.equalsIgnoreCase(acctHandle(user, config))) {
             return true;
         }
-        return actorHostAcctHandle(user, config).map(alias -> resource.equalsIgnoreCase(alias)).orElse(false);
+
+        return actorHostAcctHandle(user, config).map(resource::equalsIgnoreCase)
+                                                .orElse(false);
     }
 
     public static String outbox(User user, BlogSubdomainConfig config) {
