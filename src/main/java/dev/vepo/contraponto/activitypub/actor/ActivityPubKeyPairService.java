@@ -31,9 +31,9 @@ public class ActivityPubKeyPairService {
     private static final int GCM_TAG_BITS = 128;
     private static final int RSA_KEY_SIZE = 2048;
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
+    private static final Random RANDOM = new SecureRandom();
 
     private final ActivityPubSettings settings;
-    private static final Random RANDOM = new SecureRandom();
 
     @Inject
     public ActivityPubKeyPairService(ActivityPubSettings settings) {
