@@ -25,6 +25,7 @@ public class RobotsEndpoint {
         var lines = new StringBuilder();
         lines.append("User-agent: *\n");
         lines.append("Allow: /\n");
+        lines.append("Allow: /api/images/\n");
         for (String rule : CrawlerPrivatePaths.disallowRules()) {
             lines.append("Disallow: ").append(rule).append('\n');
         }

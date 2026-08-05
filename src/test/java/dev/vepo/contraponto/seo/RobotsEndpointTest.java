@@ -18,6 +18,18 @@ class RobotsEndpointTest {
     URL baseUrl;
 
     @Test
+    void robotsAllowsImagesSoLinkPreviewCrawlersCanFetchOgImage() {
+        String body = given().when()
+                             .get("/robots.txt")
+                             .then()
+                             .statusCode(200)
+                             .extract()
+                             .asString();
+        org.assertj.core.api.Assertions.assertThat(body).contains("Allow: /api/images/");
+        org.assertj.core.api.Assertions.assertThat(body).contains("Disallow: /api/");
+    }
+
+    @Test
     void robotsDisallowsComponentsAndPrivatePaths() {
         String body = given().when()
                              .get("/robots.txt")
