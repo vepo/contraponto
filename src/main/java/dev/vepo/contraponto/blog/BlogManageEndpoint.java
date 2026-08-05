@@ -8,6 +8,7 @@ import dev.vepo.contraponto.custompage.CustomPageRepository;
 import dev.vepo.contraponto.custompage.Links;
 import dev.vepo.contraponto.navigation.BreadcrumbService;
 import dev.vepo.contraponto.navigation.BreadcrumbTrail;
+import dev.vepo.contraponto.reddit.RedditSettings;
 import dev.vepo.contraponto.reddit.account.UserRedditAccountRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.user.LoggedUser;
@@ -47,7 +48,8 @@ public class BlogManageEndpoint {
                                             Links links,
                                             LoggedUser user,
                                             BreadcrumbTrail breadcrumb,
-                                            boolean redditAccountLinked);
+                                            boolean redditAccountLinked,
+                                            boolean redditSyndicationAvailable);
 
         static native TemplateInstance panel(Page<BlogRow> blogs,
                                              BlogHubContext hubContext,
@@ -64,6 +66,7 @@ public class BlogManageEndpoint {
     private final LoggedUser loggedUser;
     private final BreadcrumbService breadcrumbService;
     private final UserRedditAccountRepository redditAccountRepository;
+    private final RedditSettings redditSettings;
 
     @Inject
     public BlogManageEndpoint(BlogRepository blogRepository,
@@ -71,13 +74,15 @@ public class BlogManageEndpoint {
                               CustomPageRepository customPageRepository,
                               LoggedUser loggedUser,
                               BreadcrumbService breadcrumbService,
-                              UserRedditAccountRepository redditAccountRepository) {
+                              UserRedditAccountRepository redditAccountRepository,
+                              RedditSettings redditSettings) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.customPageRepository = customPageRepository;
         this.loggedUser = loggedUser;
         this.breadcrumbService = breadcrumbService;
         this.redditAccountRepository = redditAccountRepository;
+        this.redditSettings = redditSettings;
     }
 
     private BreadcrumbTrail breadcrumbForEdit(Blog blog, BlogHubContext hubContext, boolean full) {
@@ -119,7 +124,8 @@ public class BlogManageEndpoint {
                                           customPageRepository.loadLinks(blog.getId()),
                                           loggedUser,
                                           breadcrumbForEdit(blog, hubContext, full),
-                                          redditAccountLinked))
+                                          redditAccountLinked,
+                                          redditSettings.enabled()))
                        .build();
     }
 
@@ -164,7 +170,8 @@ public class BlogManageEndpoint {
                                           customPageRepository.loadLinks(),
                                           loggedUser,
                                           breadcrumbService.writingBlogNew(),
-                                          false))
+                                          false,
+                                          redditSettings.enabled()))
                        .build();
     }
 

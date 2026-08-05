@@ -1,4 +1,4 @@
-{#if blog.isPresent}
+{#if blog.isPresent && redditSyndicationAvailable}
 <fieldset class="fediverse reddit-account">
     <legend class="fediverse__legend" data-i18n="blog.redditSectionTitle">Reddit</legend>
     <p class="fediverse__intro form-group__hint" data-i18n="blog.redditIntro">
