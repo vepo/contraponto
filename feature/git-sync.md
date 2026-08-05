@@ -6,6 +6,23 @@
 
 ## Changelog
 
+### Production fix — conflicting remote history crashed sync — 2026-08-04
+
+**Version:** 1  
+**Status:** done
+
+**Production:** live — deployed fix
+
+**Description:** `BlogGitIntegrationService.fetchAndPull` discarded the `PullResult` returned by JGit's `pull()`. When two machines (or a machine and a manual push) diverge on the same blog repository, the merge conflicts, but nothing detected this — the code proceeded to write/add/commit as if the pull had succeeded, and `git.commit()` then threw (`WrongRepositoryStateException`/`UnmergedPathsException` while the repo was mid-conflict), surfacing as an unhandled 500 from the "Ver histórico de sincronização" / Sync now paths. Fixed: after a pull, check `PullResult.isSuccessful()`; on a conflicting/failed merge, hard-reset the local workspace to the just-fetched remote branch tip (`refs/remotes/origin/{branch}`) and let the existing export logic re-derive the post's file from the database on top of that reset. Safe because the local Git workspace is a **generated export of the database**, never an independently authored source of truth — nothing DB-authored is lost by discarding a conflicted local merge.
+
+**Domain model:** N/A — no vocabulary change; existing invariant "Git sync run" outcome semantics unchanged (now reaches `SUCCESS` in a case that previously threw).
+
+**Impact on other features:** None — same export/import call sites, same public behavior on the non-conflicting path; conflicting-pull path now succeeds instead of 500ing.
+
+**Implementation notes:** `BlogGitIntegrationService.fetchAndPull` / `recoverFromConflictingPull`. Regression test: `BlogGitIntegrationServiceTest#exportRecoversFromConflictingRemoteHistoryInsteadOfFailing` (two-machine divergence on the same file, asserts export succeeds and reconciled DB content is written).
+
+**Review approval:** N/A — user-directed emergency production fix, verified via automated regression test and full `-Ptest-quarkus` suite green.
+
 ### Per-blog credentials, auto-sync toggle, manual Sync — 2026-07-10
 
 **Version:** 2  

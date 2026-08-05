@@ -110,6 +110,58 @@ class BlogGitIntegrationServiceTest {
     ContrapontoGitSettings contrapontoGitSettings;
 
     @Test
+    void exportRecoversFromConflictingRemoteHistoryInsteadOfFailing() throws Exception {
+        Path upstream = Files.createTempDirectory("git-conflict-");
+        String branch = bootstrapUpstreamRepo(upstream);
+        User user = persistUserLinkedToUpstream(upstream, branch);
+
+        Post post = Given.post()
+                         .withAuthor(user)
+                         .withSlug("conflict-post")
+                         .withTitle("Original Title")
+                         .withContent("Original body")
+                         .withPublished(true)
+                         .withPublishedAt(LocalDateTime.of(2026, 6, 1, 10, 0))
+                         .persist();
+
+        // Machine A exports and pushes the post file.
+        integrationTransaction.exportPost(post.getId());
+        Path workspace = workspaceDir(blogId(user));
+        Path file = workspace.resolve("custom/posts/2026-06-01-conflict-post.md");
+        assertThat(file).exists();
+
+        // Machine A's local workspace has an unpushed local commit touching that same
+        // file
+        // (e.g. a sync that ran but never got to push before this machine went
+        // offline).
+        try (Git git = Git.open(workspace.toFile())) {
+            Files.writeString(file, "---\ntitle: Locally Edited\n---\nLocal only body", StandardCharsets.UTF_8);
+            git.add().addFilepattern("custom/posts/2026-06-01-conflict-post.md").call();
+            git.commit().setMessage("local-only edit").call();
+        }
+
+        // Machine B pushed a conflicting edit to the same file directly to the remote.
+        addUpstreamMarkdown(upstream,
+                            "custom/posts/2026-06-01-conflict-post.md",
+                            "---\ntitle: Remote Edited\n---\nRemote only body");
+
+        Given.transaction(() -> {
+            EntityManager em = Given.inject(EntityManager.class);
+            Post managed = em.find(Post.class, post.getId());
+            managed.setTitle("Reconciled Title");
+            managed.getLivePublication().setTitle("Reconciled Title");
+        });
+
+        // Must not throw despite the diverged, conflicting histories.
+        integrationTransaction.exportPost(post.getId());
+
+        assertThat(Files.readString(file, StandardCharsets.UTF_8)).contains("Reconciled Title");
+        try (Git git = Git.open(workspace.toFile())) {
+            assertThat(git.getRepository().getRepositoryState().canCommit()).isTrue();
+        }
+    }
+
+    @Test
     void exportRemovesStaleDatedFileWhenPublishDateDayChanges() throws Exception {
         Path upstream = Files.createTempDirectory("git-export-date-");
         String branch = bootstrapUpstreamRepo(upstream);

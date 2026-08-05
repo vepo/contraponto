@@ -231,7 +231,7 @@ public class BlogGitIntegrationService {
 
             var credentials = credentialsOrNull();
             try (Git git = Git.open(workspace.toFile())) {
-                fetchAndPull(git, credentials);
+                fetchAndPull(git, credentials, resolveBranch(postBlog));
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                GitSyncPhase.PULL, "Remote changes pulled."));
 
@@ -313,7 +313,7 @@ public class BlogGitIntegrationService {
         }
     }
 
-    private void fetchAndPull(Git git, CredentialsProvider credentials) throws GitAPIException {
+    private void fetchAndPull(Git git, CredentialsProvider credentials, String branch) throws GitAPIException {
         int depth = gitSettings.cloneDepth();
         var fetchCmd = git.fetch();
         if (credentials != null) {
@@ -329,7 +329,10 @@ public class BlogGitIntegrationService {
         if (credentials != null) {
             pullCmd.setCredentialsProvider(credentials);
         }
-        pullCmd.call();
+        var pullResult = pullCmd.call();
+        if (!pullResult.isSuccessful()) {
+            recoverFromConflictingPull(git, branch, pullResult);
+        }
     }
 
     private void finalizeRun(GitSyncOutcome outcome,
@@ -526,9 +529,28 @@ public class BlogGitIntegrationService {
         }
 
         try (Git git = Git.open(workspace.toFile())) {
-            fetchAndPull(git, credentials);
+            fetchAndPull(git, credentials, resolveBranch(blog));
             return true;
         }
+    }
+
+    /**
+     * Contraponto's local workspace is a generated export of the database, not an
+     * independently authored repository — so on a non-fast-forward/conflicting pull
+     * (e.g. two machines both exporting to the same blog), the safe resolution is
+     * to discard the local merge attempt entirely and hard-reset to what was just
+     * fetched from the remote; the caller then re-derives this post's file from the
+     * database on top of that, so nothing DB-authored is ever lost.
+     */
+    private void recoverFromConflictingPull(Git git, String branch, org.eclipse.jgit.api.PullResult pullResult) throws GitAPIException {
+        var remoteRef = Constants.R_REMOTES + "origin/" + branch;
+        git.reset().setMode(org.eclipse.jgit.api.ResetCommand.ResetType.HARD).setRef(remoteRef).call();
+        var mergeStatus = pullResult.getMergeResult() != null ? pullResult.getMergeResult().getMergeStatus() : null;
+        gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.warn(
+                                                                       GitSyncPhase.PULL,
+                                                                       "Remote history diverged (%s); discarded local merge and reset to remote before re-exporting."
+                                                                                                                                                                     .formatted(mergeStatus),
+                                                                       "Another machine pushed conflicting changes to this blog's repository; Contraponto reset the local workspace to the remote and re-applied this post's current content on top."));
     }
 
     private void removeObsoleteGitPostPaths(Git git,
