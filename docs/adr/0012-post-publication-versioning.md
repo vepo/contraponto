@@ -41,6 +41,16 @@ Out of scope.
 
 Keep **working copy + `PostPublication` snapshots** with `PostChangeDiffService` for history modal.
 
+### Exception — legacy link reprocess (v3, planned; [feature/git-sync.md](../../feature/git-sync.md))
+
+Git sync's **legacy link reprocess** (rewriting self-links matched by a blog's **legacy link pattern**) is the **one sanctioned exception** to snapshot immutability: it may update `PostPublication.content` **in place** for existing snapshots, not just the working copy. Scope of the exception is narrow and mechanical:
+
+* Limited to substituting matched **legacy link** URL occurrences with the target post's canonical internal URL — never any other content change.
+* Deterministic and idempotent — the same pattern applied to the same post state always produces the same output.
+* Does **not** create a new `PostPublication` version, does not change `publishedAt` / `livePublication`, and does not fire `PostPublishedEvent` (no notification/email/ActivityPub side effects) — it is corrective rewriting of existing content, not new authored content.
+
+This exists so readers see corrected internal links immediately after an author fixes their **legacy link pattern**, without an artificial republish cluttering version history (domain-specification invariant 50).
+
 ### Consequences
 
 * Pro: Aligns with Git Jekyll export (`published_at` per publication).
@@ -56,6 +66,8 @@ Keep **working copy + `PostPublication` snapshots** with `PostChangeDiffService`
 | Data | Evento | Detalhe |
 |------|--------|---------|
 | 2026-07-07 | proposed | Retroactive ADR documenting shipped publish model. |
+| 2026-08-05 | proposed | Added narrow exception for Git sync's legacy link reprocess (in-place snapshot content rewrite, no new version) — see [feature/git-sync.md](../../feature/git-sync.md) v3. |
+| 2026-08-05 | accepted | User accepted the legacy-link-reprocess exception specifically. Overall ADR status remains **Proposed** — the original 2026-07-07 baseline recommendation has not itself been put to the user for acceptance; only the 2026-08-05 exception was. |
 
 ## More Information
 

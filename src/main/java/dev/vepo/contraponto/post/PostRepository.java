@@ -244,6 +244,27 @@ public class PostRepository {
                             .getResultList();
     }
 
+    public Optional<Post> findByAuthorAndSlug(long authorId, String slug) {
+        return entityManager.createQuery("""
+                                         FROM Post p
+                                         WHERE p.blog.owner.id = :authorId AND
+                                               p.slug = :slug
+                                         """, Post.class)
+                            .setParameter("authorId", authorId)
+                            .setParameter("slug", slug)
+                            .getResultStream()
+                            .findFirst();
+    }
+
+    public List<Post> findByBlogId(long blogId) {
+        return entityManager.createQuery("""
+                                         FROM Post p
+                                         WHERE p.blog.id = :blogId
+                                         """, Post.class)
+                            .setParameter("blogId", blogId)
+                            .getResultList();
+    }
+
     public Optional<Post> findByBlogIdAndSlugWithTags(Long blogId, String slug) {
         return entityManager.createQuery("""
                                          SELECT DISTINCT p FROM Post p
@@ -741,6 +762,13 @@ public class PostRepository {
     }
 
     @Transactional
+    public void updateContent(long id, String content) {
+        entityManager.createQuery("UPDATE Post p SET p.content = :content WHERE p.id = :id")
+                     .setParameter("content", content)
+                     .setParameter("id", id)
+                     .executeUpdate();
+    }
+
     public void updateSlug(long id, String slug) {
         entityManager.createQuery("UPDATE Post p SET p.slug = :slug WHERE p.id = :id")
                      .setParameter("slug", slug)

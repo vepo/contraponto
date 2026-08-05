@@ -36,6 +36,22 @@ public class BlogRepository {
                             .getSingleResult();
     }
 
+    public boolean existsGitRemoteAndConfigPath(long ownerId, String gitRemoteUrl, String gitConfigPath, Long excludeBlogId) {
+        String normalizedConfigPath = gitConfigPath == null ? "" : gitConfigPath;
+        var cb = entityManager.getCriteriaBuilder();
+        var criteria = cb.createQuery(Long.class);
+        var root = criteria.from(Blog.class);
+        var predicates = cb.and(cb.equal(root.get("owner").get("id"), ownerId),
+                                cb.equal(root.get("gitRemoteUrl"), gitRemoteUrl),
+                                cb.equal(cb.coalesce(root.get("gitConfigPath"), ""), normalizedConfigPath));
+        if (excludeBlogId != null) {
+            predicates = cb.and(predicates, cb.notEqual(root.get("id"), excludeBlogId));
+        }
+        criteria.select(cb.count(root));
+        criteria.where(predicates);
+        return entityManager.createQuery(criteria).getSingleResult() > 0;
+    }
+
     public boolean existsSlug(long ownerId, String slug, Long excludeBlogId) {
         var cb = entityManager.getCriteriaBuilder();
         var criteria = cb.createQuery(Long.class);

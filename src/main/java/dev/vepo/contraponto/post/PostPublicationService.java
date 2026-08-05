@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import dev.vepo.contraponto.image.PostImageDependencyService;
@@ -136,6 +137,31 @@ public class PostPublicationService {
                                                         post.getBlog().getId(),
                                                         authorUserId));
         return published;
+    }
+
+    /**
+     * Legacy link reprocess (ADR-0012 exception, domain-spec invariant 50):
+     * rewrites matched legacy links in the working copy and every publication
+     * snapshot in place. Never creates a new version, never changes
+     * {@code publishedAt}/live publication, never fires {@link PostPublishedEvent}
+     * — this is corrective rewriting of existing content, not new authored content.
+     */
+    @Transactional
+    public void reprocessLegacyLinks(Post post, UnaryOperator<String> contentRewriter) {
+        String newContent = contentRewriter.apply(post.getContent());
+        if (!Objects.equals(newContent, post.getContent())) {
+            post.setContent(newContent);
+            postRepository.updateContent(post.getId(), newContent);
+        }
+        for (PostPublication snapshot : publicationRepository.findByPostIdOrderByVersionDesc(post.getId())) {
+            String newSnapshotContent = contentRewriter.apply(snapshot.getContent());
+            if (!Objects.equals(newSnapshotContent, snapshot.getContent())) {
+                String renderedHtml = postContentRenderer.renderBody(newSnapshotContent, snapshot.getFormat());
+                snapshot.setContent(newSnapshotContent);
+                snapshot.setRenderedHtml(renderedHtml);
+                publicationRepository.updateContent(snapshot.getId(), newSnapshotContent, renderedHtml);
+            }
+        }
     }
 
     private LocalDateTime resolvePublicationTimestamp(Post post, PostPublication live) {

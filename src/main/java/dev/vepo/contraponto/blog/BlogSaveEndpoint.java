@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.blog;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -7,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.custompage.CustomPagePaths;
 import dev.vepo.contraponto.git.BlogGitIntegrationService;
+import dev.vepo.contraponto.git.legacylink.BlogGitLegacyLinkPatternChangedEvent;
+import dev.vepo.contraponto.git.legacylink.LegacyLinkPattern;
 import dev.vepo.contraponto.navigation.NavigationHub;
 import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.git.GitSyncTrigger;
@@ -19,6 +22,7 @@ import dev.vepo.contraponto.shared.i18n.I18nKeys;
 import dev.vepo.contraponto.shared.toast.Toast;
 import dev.vepo.contraponto.user.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
@@ -39,6 +43,16 @@ public class BlogSaveEndpoint {
     private static final Logger logger = LoggerFactory.getLogger(BlogSaveEndpoint.class);
     private static final String SLUG_ALREADY_EXISTS_MESSAGE = "A blog with this slug already exists.";
     private static final String SLUG_MATCHES_USERNAME_MESSAGE = "Secondary blog slug cannot match your username.";
+    private static final String GIT_CONFIG_PATH_DUPLICATE_MESSAGE = "Another of your blogs already uses this repository with this same config path.";
+    private static final String GIT_LEGACY_LINK_PATTERN_INVALID_MESSAGE = "Legacy link pattern must be a host/path with exactly one {slug} placeholder.";
+
+    private static String normalizeBlank(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
 
     private static String normalizeSlug(String slug) {
         return slug.trim().toLowerCase();
@@ -73,6 +87,7 @@ public class BlogSaveEndpoint {
     private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
     private final UserRedditAccountRepository redditAccountRepository;
+    private final Event<BlogGitLegacyLinkPatternChangedEvent> legacyLinkPatternChangedEvents;
 
     @Inject
     public BlogSaveEndpoint(BlogRepository blogRepository,
@@ -83,7 +98,8 @@ public class BlogSaveEndpoint {
                             BlogBannerService blogBannerService,
                             NavigationHubService navigationHubService,
                             LoggedUser loggedUser,
-                            UserRedditAccountRepository redditAccountRepository) {
+                            UserRedditAccountRepository redditAccountRepository,
+                            Event<BlogGitLegacyLinkPatternChangedEvent> legacyLinkPatternChangedEvents) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
@@ -93,6 +109,7 @@ public class BlogSaveEndpoint {
         this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
         this.redditAccountRepository = redditAccountRepository;
+        this.legacyLinkPatternChangedEvents = legacyLinkPatternChangedEvents;
     }
 
     private Optional<String> applyGitIntegrationFields(Blog blog, BlogForm form) {
@@ -102,9 +119,21 @@ public class BlogSaveEndpoint {
                 return gitError;
             }
         }
+        String remoteUrl = normalizeBlank(form.getGitRemoteUrl());
+        String configPath = normalizeBlank(form.getGitConfigPath());
+        if (remoteUrl != null
+                && blogRepository.existsGitRemoteAndConfigPath(blog.getOwner().getId(), remoteUrl, configPath, blog.getId())) {
+            return Optional.of(GIT_CONFIG_PATH_DUPLICATE_MESSAGE);
+        }
+        String legacyLinkPattern = normalizeBlank(form.getGitLegacyLinkPattern());
+        if (legacyLinkPattern != null && LegacyLinkPattern.parse(legacyLinkPattern).isEmpty()) {
+            return Optional.of(GIT_LEGACY_LINK_PATTERN_INVALID_MESSAGE);
+        }
         blog.setGitEnabled(form.isGitEnabled());
         blog.setGitRemoteUrl(form.getGitRemoteUrl());
         blog.setGitBranch(form.getGitBranch());
+        blog.setGitConfigPath(form.getGitConfigPath());
+        blog.setGitLegacyLinkPattern(form.getGitLegacyLinkPattern());
         return Optional.empty();
     }
 
@@ -157,7 +186,8 @@ public class BlogSaveEndpoint {
         blogRepository.save(blog);
         logger.info("Created blog {}", blog);
         triggerGitWarmupIfConfigured(blog);
-        return successList(form.getHub());
+        boolean reprocessing = maybeFireLegacyLinkPatternChanged(blog, null);
+        return successList(form.getHub(), reprocessing);
     }
 
     @DELETE
@@ -212,6 +242,22 @@ public class BlogSaveEndpoint {
                 && (form.getGitRemoteUrl() == null || form.getGitRemoteUrl().isBlank());
     }
 
+    /**
+     * Fires {@link BlogGitLegacyLinkPatternChangedEvent} when the blog's legacy
+     * link pattern actually changed (including first-time set or clearing) — never
+     * on an unrelated field-only save. Returns whether it fired, so the caller can
+     * show an immediate "Reprocessing started" toast alongside the async run (AQ9).
+     */
+    private boolean maybeFireLegacyLinkPatternChanged(Blog blog, String oldPattern) {
+        String previous = normalizeBlank(oldPattern);
+        String current = normalizeBlank(blog.getGitLegacyLinkPattern());
+        if (Objects.equals(previous, current)) {
+            return false;
+        }
+        legacyLinkPatternChangedEvents.fire(new BlogGitLegacyLinkPatternChangedEvent(blog.getId(), previous, current));
+        return true;
+    }
+
     private Response notFound() {
         return Toast.response(Response.Status.NOT_FOUND)
                     .i18nKey(I18nKeys.TOAST_BLOG_NOT_FOUND, I18nDefaults.BLOG_NOT_FOUND)
@@ -249,13 +295,21 @@ public class BlogSaveEndpoint {
     }
 
     private Response successList(String hubParam) {
+        return successList(hubParam, false);
+    }
+
+    private Response successList(String hubParam, boolean reprocessingLegacyLinks) {
         var hubContext = resolveSuccessHub(hubParam);
         boolean platform = hubContext == BlogHubContext.MANAGE;
         var navigationHub = platform ? NavigationHub.MANAGE : NavigationHub.WRITING;
         var hubPath = platform ? "/manage/blogs" : "/writing/blogs";
-        return Toast.ok()
-                    .i18nKey(I18nKeys.TOAST_BLOG_SAVED, I18nDefaults.BLOG_SAVED)
-                    .type(Toast.Type.SUCCESS)
+        var toast = Toast.ok();
+        if (reprocessingLegacyLinks) {
+            toast.message("Blog saved. Reprocessing legacy links…");
+        } else {
+            toast.i18nKey(I18nKeys.TOAST_BLOG_SAVED, I18nDefaults.BLOG_SAVED);
+        }
+        return toast.type(Toast.Type.SUCCESS)
                     .duration(Toast.TOAST_DEFAULT_DURATION_MS)
                     .url(hubPath)
                     .page(navigationHubService.shell(navigationHub, "blogs", 1))
@@ -276,6 +330,7 @@ public class BlogSaveEndpoint {
         if (!blogAccess.canEdit(blog, loggedUser)) {
             return forbidden();
         }
+        String oldLegacyLinkPattern = blog.getGitLegacyLinkPattern();
         var updateError = updateExisting(blog, form);
         if (updateError != null) {
             return badRequest(updateError);
@@ -291,7 +346,8 @@ public class BlogSaveEndpoint {
         blogRepository.save(blog);
         logger.info("Updated blog {}", blog);
         triggerGitWarmupIfConfigured(blog);
-        return successList(form.getHub());
+        boolean reprocessing = maybeFireLegacyLinkPatternChanged(blog, oldLegacyLinkPattern);
+        return successList(form.getHub(), reprocessing);
     }
 
     private String updateExisting(Blog blog, BlogForm form) {

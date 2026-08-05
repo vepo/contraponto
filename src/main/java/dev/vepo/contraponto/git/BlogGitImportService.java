@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.git.legacylink.LegacyLinkPattern;
+import dev.vepo.contraponto.git.legacylink.LegacyLinkRewriteService;
 import dev.vepo.contraponto.image.ImageRepository;
 import dev.vepo.contraponto.image.PostImageDependencyService;
 import dev.vepo.contraponto.post.Post;
@@ -174,6 +176,8 @@ public class BlogGitImportService {
 
     private final GitImportFailureMapper gitImportFailureMapper;
 
+    private final LegacyLinkRewriteService legacyLinkRewriteService;
+
     @Inject
     public BlogGitImportService(PostRepository postRepository,
                                 PostPublicationService publicationService,
@@ -186,7 +190,8 @@ public class BlogGitImportService {
                                 ImageRepository imageRepository,
                                 PostImageDependencyService postImageDependencyService,
                                 GitSyncRunService gitSyncRunService,
-                                GitImportFailureMapper gitImportFailureMapper) {
+                                GitImportFailureMapper gitImportFailureMapper,
+                                LegacyLinkRewriteService legacyLinkRewriteService) {
         this.postRepository = postRepository;
         this.publicationService = publicationService;
         this.tagService = tagService;
@@ -199,6 +204,7 @@ public class BlogGitImportService {
         this.postImageDependencyService = postImageDependencyService;
         this.gitSyncRunService = gitSyncRunService;
         this.gitImportFailureMapper = gitImportFailureMapper;
+        this.legacyLinkRewriteService = legacyLinkRewriteService;
     }
 
     private void applyCoverFromFrontMatter(Post post,
@@ -221,6 +227,12 @@ public class BlogGitImportService {
         imageRepository.findByUuid(uuid).ifPresent(post::setCover);
     }
 
+    private String applyLegacyLinkRewrite(String body, Blog blog) {
+        return LegacyLinkPattern.parse(blog.getGitLegacyLinkPattern())
+                                .map(pattern -> legacyLinkRewriteService.rewriteBody(body, blog, pattern))
+                                .orElse(body);
+    }
+
     private void applyPostFields(IngestedPostDraft draft,
                                  PostGitMarkdownCodec.ParsedFrontMatterMarkdown doc,
                                  Blog blog,
@@ -235,6 +247,7 @@ public class BlogGitImportService {
         Format format = GitFrontMatterResolver.resolveFormat(doc.frontMatter(), postFile);
         gitImageSyncService.importImagesForPost(blog, workspace, convention, coverPath, rawBody, format);
         String body = gitImageSyncService.prepareBodyForImport(rawBody.stripTrailing(), blog, workspace, convention, format);
+        body = applyLegacyLinkRewrite(body, blog);
 
         serieService.applySerieTitleToPost(post, GitFrontMatterResolver.resolveSerieTitle(doc.frontMatter()));
 

@@ -59,6 +59,42 @@
                 </p>
             </div>
         </div>
+        <div class="git-sync__fields-row">
+            <div class="form-group">
+                <label for="gitConfigPath">Git config path (optional)</label>
+                <input type="text"
+                       id="gitConfigPath"
+                       name="git_config_path"
+                       placeholder="blog-b/_contraponto.yml"
+                       {#if blog.get().gitConfigPath}
+                       value="{blog.get().gitConfigPath}"
+                       {/if}
+                       maxlength="2048"
+                       autocomplete="off"/>
+                <p class="form-group__hint">
+                    Leave blank to use <code>_contraponto.yml</code> at the repository root.
+                    Set this when two blogs share the same repository, so each reads its own
+                    config and stays within its own subdirectory.
+                </p>
+            </div>
+            <div class="form-group">
+                <label for="gitLegacyLinkPattern">Legacy link pattern (optional)</label>
+                <input type="text"
+                       id="gitLegacyLinkPattern"
+                       name="git_legacy_link_pattern"
+                       placeholder="blog.vepo.dev/posts/&#123;slug&#125;"
+                       {#if blog.get().gitLegacyLinkPattern}
+                       value="{blog.get().gitLegacyLinkPattern}"
+                       {/if}
+                       maxlength="2048"
+                       autocomplete="off"/>
+                <p class="form-group__hint">
+                    A link to <code>https://blog.vepo.dev/posts/hello-world</code> in an imported
+                    post's body becomes an internal link to your post with that slug.
+                    Changing this reprocesses every already-imported post on this blog.
+                </p>
+            </div>
+        </div>
         <p class="git-sync__history-link">
             <a href="/blogs/{blog.get().id}/git-sync" data-hx-get="/blogs/{blog.get().id}/git-sync"
                hx-select="main"

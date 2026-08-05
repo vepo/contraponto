@@ -79,6 +79,25 @@ public class BlogGitIntegrationTransaction {
         return Optional.of(runId);
     }
 
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public Optional<Long> openReprocessRun(long blogId) {
+        Optional<Blog> blogOpt = blogRepository.findById(blogId);
+        if (blogOpt.isEmpty() || !blogOpt.get().isActive()) {
+            return Optional.empty();
+        }
+        long runId = gitSyncRunService.beginRunForBlog(blogId, GitSyncOperation.REPROCESS, GitSyncTrigger.PATTERN_CHANGED, null);
+        return Optional.of(runId);
+    }
+
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void reprocessBlog(long blogId) {
+        try {
+            integrationService.reprocessLegacyLinksTransactional(blogId);
+        } catch (Exception e) {
+            throw new IllegalStateException("Legacy link reprocess failed blogId=%d".formatted(blogId), e);
+        }
+    }
+
     @ActivateRequestContext
     public void runScheduledExport(long postId, GitSyncTrigger trigger) {
         try {
@@ -106,6 +125,22 @@ public class BlogGitIntegrationTransaction {
             self.get().syncBlogFromGit(blogId);
         } catch (RuntimeException e) {
             logger.error("Git import failed blogId={}", blogId, e);
+        } finally {
+            GitSyncRunContext.clear();
+        }
+    }
+
+    @ActivateRequestContext
+    public void runScheduledReprocess(long blogId) {
+        try {
+            Optional<Long> runId = self.get().openReprocessRun(blogId);
+            if (runId.isEmpty()) {
+                return;
+            }
+            GitSyncRunContext.setRunId(runId.get());
+            self.get().reprocessBlog(blogId);
+        } catch (RuntimeException e) {
+            logger.error("Legacy link reprocess failed blogId={}", blogId, e);
         } finally {
             GitSyncRunContext.clear();
         }

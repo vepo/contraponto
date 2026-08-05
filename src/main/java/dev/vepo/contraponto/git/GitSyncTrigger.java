@@ -4,5 +4,6 @@ public enum GitSyncTrigger {
     DRAFT_SAVE,
     PUBLISH,
     REMOTE_POLL,
-    BLOG_SAVE_WARMUP
+    BLOG_SAVE_WARMUP,
+    PATTERN_CHANGED
 }

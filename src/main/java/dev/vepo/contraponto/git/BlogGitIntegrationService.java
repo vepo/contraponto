@@ -39,8 +39,11 @@ import org.slf4j.LoggerFactory;
 
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.git.legacylink.LegacyLinkPattern;
+import dev.vepo.contraponto.git.legacylink.LegacyLinkRewriteService;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostPublication;
+import dev.vepo.contraponto.post.PostPublicationService;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.renderer.Format;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -165,6 +168,8 @@ public class BlogGitIntegrationService {
     private final BlogGitIntegrationTransaction integrationTransaction;
     private final GitSyncRunService gitSyncRunService;
     private final GitSyncErrorClassifier errorClassifier;
+    private final PostPublicationService postPublicationService;
+    private final LegacyLinkRewriteService legacyLinkRewriteService;
 
     @Inject
     public BlogGitIntegrationService(ContrapontoGitSettings gitSettings,
@@ -175,7 +180,9 @@ public class BlogGitIntegrationService {
                                      GitImageSyncService gitImageSyncService,
                                      BlogGitIntegrationTransaction integrationTransaction,
                                      GitSyncRunService gitSyncRunService,
-                                     GitSyncErrorClassifier errorClassifier) {
+                                     GitSyncErrorClassifier errorClassifier,
+                                     PostPublicationService postPublicationService,
+                                     LegacyLinkRewriteService legacyLinkRewriteService) {
         this.gitSettings = gitSettings;
         this.blogRepository = blogRepository;
         this.postRepository = postRepository;
@@ -185,6 +192,8 @@ public class BlogGitIntegrationService {
         this.integrationTransaction = integrationTransaction;
         this.gitSyncRunService = gitSyncRunService;
         this.errorClassifier = errorClassifier;
+        this.postPublicationService = postPublicationService;
+        this.legacyLinkRewriteService = legacyLinkRewriteService;
     }
 
     private CredentialsProvider credentialsOrNull() {
@@ -235,7 +244,7 @@ public class BlogGitIntegrationService {
                 gitSyncRunService.appendEntryCurrent(GitSyncRunEntryDraft.info(
                                                                                GitSyncPhase.PULL, "Remote changes pulled."));
 
-                ConventionLoad loaded = loadConvention(workspace);
+                ConventionLoad loaded = loadConvention(workspace, postBlog);
                 repositoryReadable = true;
                 conventionSnapshot = gitSyncRunService.buildConventionSnapshot(
                                                                                loaded.convention(), loaded.configSource(), loaded.parseWarning());
@@ -470,14 +479,16 @@ public class BlogGitIntegrationService {
         return files;
     }
 
-    private ConventionLoad loadConvention(Path workspace) {
-        Path cfg = workspace.resolve(JekyllLayoutConvention.CONFIG_FILENAME);
+    private ConventionLoad loadConvention(Path workspace, Blog blog) {
+        String configPath = blog.getGitConfigPath();
+        String relativeConfigPath = configPath != null && !configPath.isBlank() ? configPath : JekyllLayoutConvention.CONFIG_FILENAME;
+        Path cfg = workspace.resolve(relativeConfigPath);
         try {
             if (Files.isReadable(cfg)) {
                 Map<String, Object> map = markdownCodec.readYamlObjectMap(cfg);
                 return new ConventionLoad(
                                           JekyllLayoutConvention.fromYaml(Optional.ofNullable(map).orElseGet(LinkedHashMap::new)),
-                                          "_contraponto.yml",
+                                          relativeConfigPath,
                                           null);
             }
         } catch (IOException | IllegalArgumentException e) {
@@ -592,6 +603,48 @@ public class BlogGitIntegrationService {
         }
     }
 
+    /**
+     * Legacy link reprocess (domain-spec invariant 50, ADR-0012 exception):
+     * re-applies the blog's current legacy link pattern to every already-imported
+     * post's working copy and every publication snapshot. Pure DB operation — no
+     * clone/pull, no export.
+     */
+    void reprocessLegacyLinksTransactional(long blogId) {
+        Optional<Blog> blogOpt = blogRepository.findById(blogId);
+        if (blogOpt.isEmpty()) {
+            finalizeSkipped("Blog was not found.");
+            return;
+        }
+        Blog blog = blogOpt.get();
+        Optional<LegacyLinkPattern> pattern = LegacyLinkPattern.parse(blog.getGitLegacyLinkPattern());
+        if (!blog.isActive() || pattern.isEmpty()) {
+            finalizeSkipped("Legacy link pattern is not configured for this blog.");
+            return;
+        }
+
+        var rewriter = legacyLinkRewriteService.rewriterFor(blog, pattern.get());
+        List<Post> posts = postRepository.findByBlogId(blogId);
+        List<GitSyncPostResult> results = new ArrayList<>();
+        for (Post post : posts) {
+            GitSyncPostResult result;
+            try {
+                postPublicationService.reprocessLegacyLinks(post, rewriter);
+                result = GitSyncPostResult.success(post.getId(), null, "Reprocessed post \"%s\".".formatted(post.getSlug()));
+            } catch (Exception e) {
+                result = GitSyncPostResult.failed(null, "Could not reprocess post \"%s\".".formatted(post.getSlug()), null, e.toString());
+            }
+            results.add(result);
+            gitSyncRunService.appendPostResult(GitSyncPhase.POST_IMPORT, result);
+        }
+
+        GitSyncOutcome outcome = aggregatePostOutcomes(results);
+        GitErrorKind errorKind = outcome == GitSyncOutcome.FAILED || outcome == GitSyncOutcome.PARTIAL
+                                                                                                       ? GitErrorKind.POST
+                                                                                                       : GitErrorKind.NONE;
+        finalizeRun(outcome, errorKind, true, true, null, null,
+                    "Legacy link reprocess: %s post(s) processed.".formatted(results.size()));
+    }
+
     private String resolveBranch(Blog blog) {
         String b = Objects.requireNonNullElse(blog.getGitBranch(), "").strip();
         return b.isEmpty() ? "main" : b;
@@ -644,6 +697,10 @@ public class BlogGitIntegrationService {
 
     public void scheduleExportPost(long postId, GitSyncTrigger trigger) {
         CompletableFuture.runAsync(() -> integrationTransaction.runScheduledExport(postId, trigger));
+    }
+
+    public void scheduleLegacyLinkReprocess(long blogId) {
+        CompletableFuture.runAsync(() -> integrationTransaction.runScheduledReprocess(blogId));
     }
 
     private void stageGitDelete(Git git, Path repoRoot, Path file) throws GitAPIException, IOException {
@@ -711,7 +768,7 @@ public class BlogGitIntegrationService {
                 return;
             }
 
-            ConventionLoad loaded = loadConvention(workspace);
+            ConventionLoad loaded = loadConvention(workspace, blog);
             repositoryReadable = true;
             conventionSnapshot = gitSyncRunService.buildConventionSnapshot(
                                                                            loaded.convention(), loaded.configSource(), loaded.parseWarning());

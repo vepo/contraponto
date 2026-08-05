@@ -306,6 +306,10 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Git sync log entry** | One step or per-post result within a run (phase, message, remediation). | `GitSyncRunEntry` |
 | **Legacy Jekyll front matter** | Import-only YAML aliases (`permalink`, `image`, `publish_date`, `series`) mapped to slug, cover, publish time, and serie; native keys win when both are set. | `GitFrontMatterResolver` |
 | **Git publish date alignment** | On import, when only `published_at` / `publish_date` (or the dated filename) changes, Contraponto updates both the post and the **live publication** timestamp without creating a new version. On export, filename date and front matter `published_at` use the same live snapshot timestamp; stale dated files for the same slug are removed from the repo. | `PostPublicationService.alignPublicationTimestampFromGit`, `BlogGitIntegrationService` |
+| **Legacy link pattern** | Optional per-blog host+path **template** with a literal `{slug}` token (e.g. `blog.vepo.dev/posts/{slug}`) describing the URL shape of that blog's pre-migration self-links. One per blog; blank = no rewrite. | `Blog.gitLegacyLinkPattern`, `LegacyLinkPattern` |
+| **Legacy link rewrite** | During **Git import**, a body link matching the blog's **legacy link pattern** has its `{slug}` extracted and looked up against posts owned by the **same author across all their blogs** (post slug is unique per author — invariant 3). A match rewrites the link to that post's canonical internal URL (`BlogPublicUrlService`/`PostPaths`); no match leaves the link unchanged. | `BlogGitImportService.applyLegacyLinkRewrite`, `LegacyLinkRewriteService`, `LegacyLinkTargetRewriter` |
+| **Legacy link reprocess** | Re-application of the current **legacy link pattern** to every already-imported post's working-copy body **and** every publication snapshot on that blog, triggered whenever the pattern is set or changed. Runs async, recorded as a `GitSyncRun` (`operation=REPROCESS`, `trigger=PATTERN_CHANGED`). See invariant 50. | `BlogGitLegacyLinkPatternChangedEvent`, `GitLegacyLinkPatternChangedObserver`, `BlogGitIntegrationService.reprocessLegacyLinksTransactional`, `PostPublicationService.reprocessLegacyLinks` |
+| **Git config path** | Optional per-blog setting: the full repo-relative path to that blog's `_contraponto.yml` (e.g. `blog-b/_contraponto.yml`). Blank = default `_contraponto.yml` at repository root (unchanged today's behaviour). Lets two blogs share one **Git remote**, each reading its own config and, via that config's directory overrides, its own subtree. | `Blog.gitConfigPath`; `BlogGitIntegrationService.loadConvention` |
 
 ### ActivityPub federation
 
@@ -641,6 +645,8 @@ Toast messages and validation errors should describe the domain action (e.g. "Ca
 47. *(planned)* The post's own author cannot **react** to their own post.
 48. *(planned)* Anonymous readers may view **reaction bar** counts but cannot **react** — the toggle endpoint requires sign-in.
 49. *(planned)* The displayed **like** reaction count always equals stored `LIKE` rows plus the post's **Fediverse favourite count**; the two remain separate storage with no schema link.
+50. A **legacy link reprocess** may update `PostPublication.content` in place for existing publication snapshots — the sole exception to publication snapshots otherwise being immutable after creation (**ADR-0012**). It is scoped strictly to substituting matched **legacy link** occurrences with canonical internal URLs, is idempotent (same pattern and same post state → same output), and never creates a new version, changes `publishedAt`/`livePublication`, or fires `PostPublishedEvent`.
+51. A blog's `gitRemoteUrl` combined with its **Git config path** (blank counts as the default root path) must be unique among blogs owned by the same **author**; saving a duplicate is rejected rather than allowed to silently double-import the same content into two blogs.
 
 ---
 

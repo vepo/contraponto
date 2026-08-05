@@ -151,9 +151,21 @@ WHERE b.owner_id = u.id AND u.username = 'alice' AND b.main;
 UPDATE tb_blogs b
 SET git_enabled = TRUE,
     git_remote_url = 'https://github.com/vepo/vepo.github.io.git',
-    git_branch = 'source'
+    git_branch = 'source',
+    git_config_path = 'notas/_contraponto.yml',
+    git_legacy_link_pattern = 'vepo.github.io/posts/{slug}'
 FROM tb_users u
 WHERE b.owner_id = u.id AND u.username = 'vepo' AND b.slug = 'notas';
+
+-- Shared-repository demo (v4): vepo's main blog reads a different config path
+-- from the same remote used by 'notas', so both can coexist in one repository.
+UPDATE tb_blogs b
+SET git_enabled = TRUE,
+    git_remote_url = 'https://github.com/vepo/vepo.github.io.git',
+    git_branch = 'source',
+    git_config_path = 'main/_contraponto.yml'
+FROM tb_users u
+WHERE b.owner_id = u.id AND u.username = 'vepo' AND b.main;
 
 -- ============================================
 -- 3b. Custom pages (footer pages come from Flyway migration)

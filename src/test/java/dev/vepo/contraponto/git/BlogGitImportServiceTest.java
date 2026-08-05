@@ -22,6 +22,7 @@ import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.user.User;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 @QuarkusIntegrationTest
 class BlogGitImportServiceTest {
@@ -54,6 +55,9 @@ class BlogGitImportServiceTest {
 
     @Inject
     PostRepository postRepository;
+
+    @Inject
+    EntityManager entityManager;
 
     private long authoredPostCount(long authorUserId) {
         return postRepository.countByAuthorAndPublished(authorUserId, false)
@@ -135,6 +139,31 @@ class BlogGitImportServiceTest {
         ingest(blogGitImportService, Long.MAX_VALUE, md, SourceKind.POSTS_FOLDER);
         assertThat(postRepository.count()).isEqualTo(before);
         assertThat(Files.readString(md)).contains("title: X");
+    }
+
+    @Test
+    void ingestLeavesLegacyLinkUnchangedWhenTargetSlugDoesNotExist() throws Exception {
+        User user = baselineUser();
+        Blog blog = user.getDefaultBlog();
+        Given.transaction(() -> entityManager.find(Blog.class, blog.getId()).setGitLegacyLinkPattern("blog.vepo.dev/posts/{slug}"));
+
+        Path md = ingestDir().resolve("2026-06-10-no-target.md");
+        Files.writeString(md,
+                          """
+                          ---
+                          title: No Target
+                          published: true
+                          ---
+
+                          See [my old post](https://blog.vepo.dev/posts/does-not-exist-yet) for details.
+                          """,
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), md, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "no-target");
+        assertThat(found).isPresent();
+        assertThat(found.get().getContent()).contains("https://blog.vepo.dev/posts/does-not-exist-yet");
     }
 
     @Test
@@ -277,6 +306,40 @@ class BlogGitImportServiceTest {
         assertThat(post.getDescription()).hasSize(PostPublicationDescriptions.MAX_LENGTH);
         assertThat(post.getLivePublication()).isNotNull();
         assertThat(post.getLivePublication().getDescription()).isEqualTo(post.getDescription());
+    }
+
+    @Test
+    void ingestRewritesLegacySelfLinkToCanonicalInternalUrl() throws Exception {
+        User user = baselineUser();
+        Blog blog = user.getDefaultBlog();
+        Given.transaction(() -> entityManager.find(Blog.class, blog.getId()).setGitLegacyLinkPattern("blog.vepo.dev/posts/{slug}"));
+
+        Post target = Given.post()
+                           .withAuthor(user)
+                           .withBlog(blog)
+                           .withSlug("hello-world")
+                           .withContent("Target body")
+                           .withPublished(true)
+                           .persist();
+
+        Path md = ingestDir().resolve("2026-06-11-linking-post.md");
+        Files.writeString(md,
+                          """
+                          ---
+                          title: Linking Post
+                          published: true
+                          ---
+
+                          See [my old post](https://blog.vepo.dev/posts/hello-world) for details.
+                          """,
+                          StandardCharsets.UTF_8);
+
+        ingest(blogGitImportService, blog.getId(), md, SourceKind.POSTS_FOLDER);
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blog.getId(), "linking-post");
+        assertThat(found).isPresent();
+        assertThat(found.get().getContent()).doesNotContain("blog.vepo.dev");
+        assertThat(found.get().getContent()).contains("/post/" + target.getSlug());
     }
 
     @Test

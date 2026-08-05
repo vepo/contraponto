@@ -4,6 +4,18 @@ Contraponto mirrors each configured blog against a Git repository shaped like a 
 
 Enable Git sync on the blog **Edit** form (default/main blog at `/{username}`) or under **Settings** for any blog. This is a common setup for a personal site repo (e.g. GitHub Pages at `username.github.io`).
 
+## Sharing one repository across multiple blogs
+
+By default Contraponto reads `_contraponto.yml` from the **repository root**. Set **Git config path** (blog settings, Git section) to a different repo-relative file — e.g. `blog-b/_contraponto.yml` — to point that blog at its own config instead. Because `posts_directory` / `drafts_directory` / `assets_directory` inside `_contraponto.yml` are always resolved **relative to the repository root** (not to the config file's own location), pointing two blogs' config paths at two different files, each declaring its own subtree (`blog-a/_posts`, `blog-b/_posts`, …), lets them coexist in the **same repository and remote URL** without importing each other's content.
+
+Saving a blog whose Git remote URL **and** config path (blank counts as the repository-root default) duplicate another blog you own is rejected — pick a different config path, or leave one of the two blank.
+
+## Legacy link rewrite on import
+
+Blogs migrated from an existing site often have old posts whose body links point at that old domain, including self-links to the blog's own other posts. Set **Legacy link pattern** (blog settings, Git section) to a host+path template with a literal `{slug}` placeholder, e.g. `blog.vepo.dev/posts/{slug}`. On import, a body link matching that pattern has its slug extracted and looked up against your posts (across **all** of your blogs, since slugs are unique per author); a match rewrites the link to that post's canonical internal URL, and no match leaves the link unchanged.
+
+Changing the pattern **reprocesses every already-imported post on that blog** — rewriting both the working copy and every published snapshot, so readers see corrected links without a republish. The reprocess runs asynchronously and shows up as a `REPROCESS` run in **Git sync history**.
+
 ## Defaults (convention)
 
 | Aspect | Convention |

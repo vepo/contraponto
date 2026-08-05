@@ -62,6 +62,12 @@ public class Blog {
     @Column(name = "git_last_known_commit", length = 64)
     private String gitLastKnownCommit;
 
+    @Column(name = "git_config_path", length = 2048)
+    private String gitConfigPath;
+
+    @Column(name = "git_legacy_link_pattern", length = 2048)
+    private String gitLegacyLinkPattern;
+
     @Column(name = "reddit_syndication_enabled", nullable = false)
     private boolean redditSyndicationEnabled;
 
@@ -118,8 +124,16 @@ public class Blog {
         return gitBranch;
     }
 
+    public String getGitConfigPath() {
+        return gitConfigPath;
+    }
+
     public String getGitLastKnownCommit() {
         return gitLastKnownCommit;
+    }
+
+    public String getGitLegacyLinkPattern() {
+        return gitLegacyLinkPattern;
     }
 
     public String getGitRemoteUrl() {
@@ -183,12 +197,30 @@ public class Blog {
         this.gitBranch = gitBranch == null || gitBranch.isBlank() ? "main" : gitBranch.trim();
     }
 
+    public void setGitConfigPath(String gitConfigPath) {
+        if (gitConfigPath == null) {
+            this.gitConfigPath = null;
+        } else {
+            String trimmed = gitConfigPath.trim();
+            this.gitConfigPath = trimmed.isEmpty() ? null : trimmed;
+        }
+    }
+
     public void setGitEnabled(boolean gitEnabled) {
         this.gitEnabled = gitEnabled;
     }
 
     public void setGitLastKnownCommit(String gitLastKnownCommit) {
         this.gitLastKnownCommit = gitLastKnownCommit;
+    }
+
+    public void setGitLegacyLinkPattern(String gitLegacyLinkPattern) {
+        if (gitLegacyLinkPattern == null) {
+            this.gitLegacyLinkPattern = null;
+        } else {
+            String trimmed = gitLegacyLinkPattern.trim();
+            this.gitLegacyLinkPattern = trimmed.isEmpty() ? null : trimmed;
+        }
     }
 
     public void setGitRemoteUrl(String gitRemoteUrl) {

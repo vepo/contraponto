@@ -124,6 +124,8 @@ Image JSON API (`/api/images`), email-only flows (`/account/verify-email`, `/acc
 | Git sync run detail | `USER` | `GET /blogs/{blogId}/git-sync/{runId}` | 6 | Sync history → run link. |
 | Git Sync now *(planned v2)* | `USER` | `POST /forms/blogs/{id}/git-sync` | 5 | Blog **Settings** Git section → **Sync now** (or history header). |
 | Git credentials / auto sync *(planned v2)* | `USER` | blog settings form | 4 | **Writing** → **Blogs** → **Settings** → HTTPS/SSH credentials + **Automatic sync**. |
+| Git config path *(v4, shared repository)* | `USER` | blog settings form | 4 | **Writing** → **Blogs** → **Settings** → Git section → **Git config path**; lets two blogs share one repository. |
+| Legacy link pattern / reprocess *(v3)* | `USER` | blog settings form | 4 | **Writing** → **Blogs** → **Settings** → Git section → **Legacy link pattern**; reprocess run appears in **Git sync history**. |
 | Custom pages list | `USER` | `GET /manage/pages` | 2 | Open user menu → **Manage** → **Custom Pages** in left nav. |
 | New custom page | `USER` | `GET /pages/new` | 4 | **Custom Pages** → **New Page**. |
 | Edit custom page | `USER` | `GET /pages/{id}/edit` | 4 | **Custom Pages** → **Edit** on row. |
@@ -216,6 +218,7 @@ Use [dev-import.sql](../src/main/resources/dev-import.sql) — all dev users sha
 | `eve` | `USER` | Email subscriber, post reactions (`ROCKET` + `LOVE`) |
 | `editor` | `USER`, `EDITOR` | `/review`, `/tags/manage`, featured toggle on posts |
 | `admin` | `ADMIN`, `USER_ADMINISTRATOR` | `/users`, platform admin |
+| `vepo` | `USER` | Main blog `vepo` and secondary blog `notas` share one Git remote with distinct **Git config path** values (v4); `notas` has a **Legacy link pattern** configured (v3) |
 
 Run `./mvnw quarkus:dev` → [http://localhost:8080](http://localhost:8080).
 

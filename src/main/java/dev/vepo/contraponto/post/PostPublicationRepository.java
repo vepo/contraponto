@@ -107,6 +107,14 @@ public class PostPublicationRepository {
         return publication;
     }
 
+    public void updateContent(long id, String content, String renderedHtml) {
+        entityManager.createQuery("UPDATE PostPublication p SET p.content = :content, p.renderedHtml = :renderedHtml WHERE p.id = :id")
+                     .setParameter("content", content)
+                     .setParameter("renderedHtml", renderedHtml)
+                     .setParameter("id", id)
+                     .executeUpdate();
+    }
+
     @Transactional
     public boolean updateRenderedHtmlIfNull(long publicationId, String renderedHtml) {
         int updated = entityManager.createQuery("""

@@ -28,6 +28,12 @@ public class BlogForm {
     @FormParam("git_branch")
     private String gitBranch;
 
+    @FormParam("git_config_path")
+    private String gitConfigPath;
+
+    @FormParam("git_legacy_link_pattern")
+    private String gitLegacyLinkPattern;
+
     @FormParam("reddit_enabled")
     private String redditEnabled;
 
@@ -47,6 +53,14 @@ public class BlogForm {
 
     public String getGitBranch() {
         return gitBranch;
+    }
+
+    public String getGitConfigPath() {
+        return gitConfigPath;
+    }
+
+    public String getGitLegacyLinkPattern() {
+        return gitLegacyLinkPattern;
     }
 
     public String getGitRemoteUrl() {

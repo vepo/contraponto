@@ -81,6 +81,30 @@ class BlogGitIntegrationServiceTest {
         }
     }
 
+    /** Returns the tracked default branch produced by {@code git init}. */
+    private static String bootstrapUpstreamRepoWithConfigAtSubpath(Path upstream, String subDir) throws Exception {
+        try (Git git = Git.init().setDirectory(upstream.toFile()).call()) {
+            StoredConfig cfg = git.getRepository().getConfig();
+            cfg.setString("user", null, "name", "fixture");
+            cfg.setString("user", null, "email", "fixture@fixture");
+            cfg.save();
+
+            Files.createDirectories(upstream.resolve(subDir).resolve("posts"));
+            Files.writeString(upstream.resolve(subDir).resolve("_contraponto.yml"),
+                              "posts_directory: %s/posts".formatted(subDir));
+            Files.writeString(upstream.resolve(subDir).resolve("posts/2026-12-01-subtree-post.md"),
+                              """
+                              ---
+                              title: Subtree Title
+                              ---
+                              Subtree body """);
+
+            git.add().addFilepattern(".").call();
+            git.commit().setMessage("seed").call();
+            return git.getRepository().getBranch();
+        }
+    }
+
     private static void deleteRecursively(Path root) throws Exception {
         if (!Files.exists(root)) {
             return;
@@ -226,6 +250,45 @@ class BlogGitIntegrationServiceTest {
         return Given.inject(EntityManager.class).find(User.class, u.getId());
     }
 
+    @Test
+    void reprocessLegacyLinksRewritesAlreadyImportedPostsAndSkipsWhenPatternBlank() throws Exception {
+        User user = Given.user()
+                         .withUsername("reprocessuser")
+                         .withEmail("reprocessuser@example.com")
+                         .withPassword("Password123!")
+                         .withName("Reprocess User")
+                         .persist();
+        Blog blog = user.getDefaultBlog();
+        Post target = Given.post()
+                           .withAuthor(user)
+                           .withBlog(blog)
+                           .withSlug("hello-world")
+                           .withContent("Target body")
+                           .withPublished(true)
+                           .persist();
+        Post linking = Given.post()
+                            .withAuthor(user)
+                            .withBlog(blog)
+                            .withSlug("linking-post")
+                            .withContent("See [old](https://blog.vepo.dev/posts/hello-world) for details.")
+                            .withPublished(true)
+                            .persist();
+
+        integrationTransaction.runScheduledReprocess(blog.getId());
+        Post reloadedBeforePattern = Given.transaction(() -> postRepository.findByIdWithTags(linking.getId())).orElseThrow();
+        assertThat(reloadedBeforePattern.getContent()).contains("blog.vepo.dev");
+
+        Given.transaction(() -> Given.inject(EntityManager.class)
+                                     .find(Blog.class, blog.getId())
+                                     .setGitLegacyLinkPattern("blog.vepo.dev/posts/{slug}"));
+
+        integrationTransaction.runScheduledReprocess(blog.getId());
+
+        Post reloaded = Given.transaction(() -> postRepository.findByIdWithTags(linking.getId())).orElseThrow();
+        assertThat(reloaded.getContent()).doesNotContain("blog.vepo.dev");
+        assertThat(reloaded.getContent()).contains("/post/" + target.getSlug());
+    }
+
     @BeforeEach
     void resetWorkspaceFilesystem() throws Exception {
         Given.cleanup();
@@ -306,6 +369,23 @@ class BlogGitIntegrationServiceTest {
         Blog managed = reloadBlog(blogId(user));
         assertThat(managed.getGitLastKnownCommit()).isNotNull();
         assertThat(managed.isGitEnabled()).isTrue();
+    }
+
+    @Test
+    void syncReadsCustomConfigPathWhenBlogHasOneConfigured() throws Exception {
+        Path upstream = Files.createTempDirectory("git-upstream-subpath-");
+        String branch = bootstrapUpstreamRepoWithConfigAtSubpath(upstream, "blog-a");
+        User user = persistUserLinkedToUpstream(upstream, branch);
+        Given.transaction(() -> {
+            EntityManager em = Given.inject(EntityManager.class);
+            em.find(Blog.class, blogId(user)).setGitConfigPath("blog-a/_contraponto.yml");
+        });
+
+        integrationTransaction.syncBlogFromGit(blogId(user));
+
+        Optional<Post> found = postRepository.findByBlogIdAndSlugWithTags(blogId(user), "subtree-post");
+        assertThat(found).isPresent();
+        assertThat(found.get().getTitle()).isEqualTo("Subtree Title");
     }
 
     @Test

@@ -3,6 +3,7 @@ package dev.vepo.contraponto.blog;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 import java.net.URL;
 
@@ -98,6 +99,160 @@ class BlogSaveEndpointTest {
         assertThat(reloaded.isGitEnabled()).isTrue();
         assertThat(reloaded.getGitRemoteUrl()).isEqualTo(remoteUrl);
         assertThat(reloaded.getGitBranch()).isEqualTo("main");
+    }
+
+    @Test
+    void rejectsInvalidLegacyLinkPatternSyntax() {
+        var mainBlog = owner.getDefaultBlog();
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", mainBlog.getId())
+                .formParam("name", "Main Blog")
+                .formParam("slug", mainBlog.getSlug())
+                .formParam("description", "Default blog bio")
+                .formParam("hub", "writing")
+                .formParam("git_legacy_link_pattern", "no-slug-token-here")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(400)
+                .header("X-Toast-Type", equalTo("Error"));
+
+        var reloaded = Given.transaction(() -> {
+            entityManager.clear();
+            return blogRepository.findById(mainBlog.getId()).orElseThrow();
+        });
+        assertThat(reloaded.getGitLegacyLinkPattern()).isNull();
+    }
+
+    @Test
+    void savingDuplicateGitRemoteAndConfigPathForSameOwnerIsRejected() {
+        var mainBlog = owner.getDefaultBlog();
+        var remoteUrl = "https://github.com/vepo/contraponto.git";
+        var secondary = Given.blog().withUser(owner).withSlug("secondary").persist();
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", mainBlog.getId())
+                .formParam("name", "Main Blog")
+                .formParam("slug", mainBlog.getSlug())
+                .formParam("hub", "writing")
+                .formParam("git_enabled", "on")
+                .formParam("git_remote_url", remoteUrl)
+                .formParam("git_branch", "main")
+                .formParam("git_config_path", "main/_contraponto.yml")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200);
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", secondary.getId())
+                .formParam("name", "Secondary Blog")
+                .formParam("slug", secondary.getSlug())
+                .formParam("hub", "writing")
+                .formParam("git_enabled", "on")
+                .formParam("git_remote_url", remoteUrl)
+                .formParam("git_branch", "main")
+                .formParam("git_config_path", "main/_contraponto.yml")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(400)
+                .header("X-Toast-Type", equalTo("Error"))
+                .header("X-Toast-Message", containsString("already uses this repository"));
+
+        var reloadedSecondary = Given.transaction(() -> {
+            entityManager.clear();
+            return blogRepository.findById(secondary.getId()).orElseThrow();
+        });
+        assertThat(reloadedSecondary.getGitRemoteUrl()).isNull();
+    }
+
+    @Test
+    void savingSameRemoteWithDifferentConfigPathsForSameOwnerSucceeds() {
+        var mainBlog = owner.getDefaultBlog();
+        var remoteUrl = "https://github.com/vepo/contraponto.git";
+        var secondary = Given.blog().withUser(owner).withSlug("secondary2").persist();
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", mainBlog.getId())
+                .formParam("name", "Main Blog")
+                .formParam("slug", mainBlog.getSlug())
+                .formParam("hub", "writing")
+                .formParam("git_enabled", "on")
+                .formParam("git_remote_url", remoteUrl)
+                .formParam("git_branch", "main")
+                .formParam("git_config_path", "main/_contraponto.yml")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200);
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", secondary.getId())
+                .formParam("name", "Secondary Blog")
+                .formParam("slug", secondary.getSlug())
+                .formParam("hub", "writing")
+                .formParam("git_enabled", "on")
+                .formParam("git_remote_url", remoteUrl)
+                .formParam("git_branch", "main")
+                .formParam("git_config_path", "secondary/_contraponto.yml")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200);
+
+        var reloadedSecondary = Given.transaction(() -> {
+            entityManager.clear();
+            return blogRepository.findById(secondary.getId()).orElseThrow();
+        });
+        assertThat(reloadedSecondary.getGitConfigPath()).isEqualTo("secondary/_contraponto.yml");
+    }
+
+    @Test
+    void savingWithoutChangingLegacyLinkPatternDoesNotShowReprocessingToast() {
+        var mainBlog = owner.getDefaultBlog();
+        Given.transaction(() -> {
+            entityManager.clear();
+            entityManager.find(Blog.class, mainBlog.getId()).setGitLegacyLinkPattern("blog.vepo.dev/posts/{slug}");
+        });
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", mainBlog.getId())
+                .formParam("name", "Main Blog Renamed")
+                .formParam("slug", mainBlog.getSlug())
+                .formParam("description", "Default blog bio")
+                .formParam("hub", "writing")
+                .formParam("git_legacy_link_pattern", "blog.vepo.dev/posts/{slug}")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200)
+                .header("X-Toast-Message", not(containsString("Reprocessing")));
+    }
+
+    @Test
+    void settingLegacyLinkPatternForTheFirstTimeShowsReprocessingToast() {
+        var mainBlog = owner.getDefaultBlog();
+
+        TestHttp.authenticated(owner)
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .formParam("id", mainBlog.getId())
+                .formParam("name", "Main Blog")
+                .formParam("slug", mainBlog.getSlug())
+                .formParam("description", "Default blog bio")
+                .formParam("hub", "writing")
+                .formParam("git_legacy_link_pattern", "blog.vepo.dev/posts/{slug}")
+                .post("/forms/blogs")
+                .then()
+                .statusCode(200)
+                .header("X-Toast-Message", containsString("Reprocessing"));
+
+        var reloaded = Given.transaction(() -> {
+            entityManager.clear();
+            return blogRepository.findById(mainBlog.getId()).orElseThrow();
+        });
+        assertThat(reloaded.getGitLegacyLinkPattern()).isEqualTo("blog.vepo.dev/posts/{slug}");
     }
 
     @BeforeEach
