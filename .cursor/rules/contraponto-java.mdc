@@ -36,7 +36,7 @@ alwaysApply: false
 
 ## Logging
 
-- Always **SLF4J** — never `System.out`, `System.err`, or `java.util.logging`.
+- Always **SLF4J** — never `System.out`, `System.err`, or `java.util.logging`. Enforced by `BoundedContextRulesTest#productionCodeMustNotUseStandardStreamsForLogging` (ArchUnit) — the build fails if `src/main/java/**` accesses `System.out`/`System.err`. If you add a `System.out`/`System.err` call while debugging, remove it before finishing — do not rely on catching it later.
 - One static logger per class:
 
 ```java

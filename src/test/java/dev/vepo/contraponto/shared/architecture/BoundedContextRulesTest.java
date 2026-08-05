@@ -58,6 +58,23 @@ class BoundedContextRulesTest {
         }
     };
 
+    private static final ArchCondition<JavaClass> NOT_USE_STANDARD_STREAMS_FOR_LOGGING = new ArchCondition<>(
+                                                                                                             "not access System.out or System.err (use SLF4J Logger — contraponto-java.mdc)") {
+        @Override
+        public void check(JavaClass item, ConditionEvents events) {
+            item.getFieldAccessesFromSelf().forEach(access -> {
+                String owner = access.getTarget().getOwner().getFullName();
+                String fieldName = access.getTarget().getName();
+                if ("java.lang.System".equals(owner) && ("out".equals(fieldName) || "err".equals(fieldName))) {
+                    events.add(SimpleConditionEvent.violated(item,
+                                                             "%s accesses System.%s at %s — use a SLF4J Logger instead"
+                                                                                                                       .formatted(item.getFullName(), fieldName,
+                                                                                                                                  access.getSourceCodeLocation())));
+                }
+            });
+        }
+    };
+
     private static final JavaClasses CLASSES = new ClassFileImporter()
                                                                       .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
                                                                       .importPackages(ROOT);
@@ -105,6 +122,16 @@ class BoundedContextRulesTest {
                                                      "..comment..", "..git..", "..user..", "..shared..",
                                                      "java..", "javax..", "jakarta..", "io..", "org..", "com..",
                                                      "net..");
+
+        rule.check(CLASSES);
+    }
+
+    @Test
+    void productionCodeMustNotUseStandardStreamsForLogging() {
+        ArchRule rule = classes()
+                                 .that()
+                                 .resideInAnyPackage(ROOT + "..")
+                                 .should(NOT_USE_STANDARD_STREAMS_FOR_LOGGING);
 
         rule.check(CLASSES);
     }
