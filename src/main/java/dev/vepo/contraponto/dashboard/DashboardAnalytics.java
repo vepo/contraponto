@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import dev.vepo.contraponto.blog.Blog;
+import dev.vepo.contraponto.view.ReferrerCount;
 
 public record DashboardAnalytics(Blog blog,
                                  List<Blog> ownedBlogs,
@@ -19,7 +20,8 @@ public record DashboardAnalytics(Blog blog,
                                  MonthSeries newFollowers,
                                  MonthSeries newSubscribers,
                                  long totalFollowers,
-                                 long totalSubscribers) {
+                                 long totalSubscribers,
+                                 List<ReferrerCount> topReferrers) {
 
     private static final DateTimeFormatter MONTH_LABEL = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
 

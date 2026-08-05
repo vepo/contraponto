@@ -141,4 +141,20 @@
             {/for}
         </div>
     </section>
+
+    <section class="dashboard-chart" aria-labelledby="dashboardTopSourcesTitle">
+        <h3 id="dashboardTopSourcesTitle" class="dashboard-chart__title" data-i18n="dashboard.topSources">Principais origens de acesso</h3>
+        {#if analytics.topReferrers.isEmpty}
+        <p class="dashboard-chart__summary" aria-label="Top sources for {analytics.monthLabel}" data-i18n="dashboard.topSourcesEmpty">Nenhuma origem de acesso registrada neste mês.</p>
+        {#else}
+        <ol class="dashboard-referrers" aria-label="Top sources for {analytics.monthLabel}">
+            {#for referrer in analytics.topReferrers}
+            <li class="dashboard-referrers__row">
+                <span class="dashboard-referrers__host">{referrer.host}</span>
+                <span class="dashboard-referrers__count" data-i18n="dashboard.topSourcesViews" data-i18n-params='{"n": "{referrer.views}"}'>{referrer.views} visualizações</span>
+            </li>
+            {/for}
+        </ol>
+        {/if}
+    </section>
 </div>

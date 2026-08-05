@@ -15,6 +15,7 @@ import dev.vepo.contraponto.notification.NotificationRepository;
 import dev.vepo.contraponto.notification.NotificationType;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.readingtime.ReadingTimeRepository;
+import dev.vepo.contraponto.view.ReferrerCount;
 import dev.vepo.contraponto.view.ViewRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -24,6 +25,8 @@ import jakarta.ws.rs.NotFoundException;
 public class DashboardAnalyticsService {
 
     private record MonthRange(LocalDateTime start, LocalDateTime end) {}
+
+    private static final int TOP_REFERRERS_LIMIT = 10;
 
     private final BlogRepository blogRepository;
     private final BlogAccess blogAccess;
@@ -69,6 +72,11 @@ public class DashboardAnalyticsService {
         return toMonthSeries(yearMonth, counts);
     }
 
+    private List<ReferrerCount> buildTopReferrers(long blogId, YearMonth yearMonth) {
+        var range = monthRange(yearMonth);
+        return viewRepository.topReferrersByBlogId(blogId, range.start(), range.end(), TOP_REFERRERS_LIMIT);
+    }
+
     private MonthSeries buildViewsSeries(long blogId, YearMonth yearMonth) {
         var range = monthRange(yearMonth);
         Map<LocalDate, Long> counts = viewRepository.countDailyByBlogId(blogId, range.start(), range.end());
@@ -110,7 +118,8 @@ public class DashboardAnalyticsService {
                                       newFollowers,
                                       newSubscribers,
                                       audienceRepository.countFollowersByBlogId(blog.getId()),
-                                      audienceRepository.countEmailSubscribersByBlogId(blog.getId()));
+                                      audienceRepository.countEmailSubscribersByBlogId(blog.getId()),
+                                      buildTopReferrers(blog.getId(), selected));
     }
 
     private MonthRange monthRange(YearMonth yearMonth) {

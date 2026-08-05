@@ -58,7 +58,7 @@ class PlatformInsightsTest {
     }
 
     @Test
-    void analyticsFragmentIncludesFourCharts() {
+    void analyticsFragmentIncludesFiveCharts() {
         var sessionId = Given.inject(LoggedUserProvider.class).login(adminUser).getSessionId();
 
         io.restassured.RestAssured.baseURI = baseUrl.getProtocol() + "://" + baseUrl.getHost();
@@ -73,7 +73,8 @@ class PlatformInsightsTest {
                .body(containsString("Daily post views"))
                .body(containsString("Daily unique visitors"))
                .body(containsString("Daily highlights"))
-               .body(containsString("Daily comments"));
+               .body(containsString("Daily comments"))
+               .body(containsString("Top sources"));
     }
 
     @Test
@@ -94,6 +95,24 @@ class PlatformInsightsTest {
                .get("/administration/insights/components/analytics")
                .then()
                .statusCode(403);
+    }
+
+    @Test
+    void analyticsFragmentShowsTopReferrerHostAcrossBlogs() {
+        var post = publishedPost();
+        seedViewWithReferrer(post, TestTimes.REFERENCE, "mastodon.social");
+        var sessionId = Given.inject(LoggedUserProvider.class).login(adminUser).getSessionId();
+
+        io.restassured.RestAssured.baseURI = baseUrl.getProtocol() + "://" + baseUrl.getHost();
+        io.restassured.RestAssured.port = baseUrl.getPort();
+        io.restassured.RestAssured.basePath = "";
+
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
+               .get("/administration/insights/components/analytics?year=%d&month=%d".formatted(TestTimes.REFERENCE_MONTH.getYear(),
+                                                                                               TestTimes.REFERENCE_MONTH.getMonthValue()))
+               .then()
+               .statusCode(200)
+               .body(containsString("mastodon.social"));
     }
 
     @Test
@@ -133,6 +152,21 @@ class PlatformInsightsTest {
                   .setParameter("viewedAt", viewedAt.plusMinutes(i))
                   .executeUpdate();
             }
+        });
+    }
+
+    private void seedViewWithReferrer(Post post, LocalDateTime viewedAt, String referrerHost) {
+        Given.transaction(() -> {
+            var em = Given.inject(EntityManager.class);
+            em.createNativeQuery("""
+                                 INSERT INTO tb_views (post_id, session_id, viewed_at, referrer_host)
+                                 VALUES (:postId, :sessionId, :viewedAt, :referrerHost)
+                                 """)
+              .setParameter("postId", post.getId())
+              .setParameter("sessionId", "insights-referrer-view")
+              .setParameter("viewedAt", viewedAt)
+              .setParameter("referrerHost", referrerHost)
+              .executeUpdate();
         });
     }
 

@@ -141,6 +141,29 @@ class DashboardAnalyticsTest {
     }
 
     @Test
+    void dashboardShowsTopReferrerHost() {
+        var post = Given.post()
+                        .withTitle("Referrer Post")
+                        .withContent("Content")
+                        .withAuthor(testUser)
+                        .withPublished(true)
+                        .persist();
+        seedViewWithReferrer(post, TestTimes.REFERENCE, "google.com");
+
+        var blogId = testUser.getDefaultBlog().getId();
+        var sessionId = Given.inject(LoggedUserProvider.class).login(testUser).getSessionId();
+
+        given().cookie(SessionConstants.SESSION_COOKIE_NAME, sessionId)
+               .get("/manage/dashboard/components/analytics?blogId=" + blogId
+                       + "&year=" + TestTimes.REFERENCE_MONTH.getYear()
+                       + "&month=" + TestTimes.REFERENCE_MONTH.getMonthValue())
+               .then()
+               .statusCode(200)
+               .body(containsString("Top sources"))
+               .body(containsString("google.com"));
+    }
+
+    @Test
     void dashboardShowsViewsThisMonth(App app) {
         var post = Given.post()
                         .withTitle("Analytics Post")
@@ -188,6 +211,21 @@ class DashboardAnalyticsTest {
                   .setParameter("viewedAt", viewedAt.plusMinutes(i))
                   .executeUpdate();
             }
+        });
+    }
+
+    private void seedViewWithReferrer(Post post, LocalDateTime viewedAt, String referrerHost) {
+        Given.transaction(() -> {
+            var em = Given.inject(EntityManager.class);
+            em.createNativeQuery("""
+                                 INSERT INTO tb_views (post_id, session_id, viewed_at, referrer_host)
+                                 VALUES (:postId, :sessionId, :viewedAt, :referrerHost)
+                                 """)
+              .setParameter("postId", post.getId())
+              .setParameter("sessionId", "test-referrer-view")
+              .setParameter("viewedAt", viewedAt)
+              .setParameter("referrerHost", referrerHost)
+              .executeUpdate();
         });
     }
 

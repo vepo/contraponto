@@ -15,6 +15,7 @@ import dev.vepo.contraponto.highlight.PostTextHighlightRepository;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.UserAccess;
 import dev.vepo.contraponto.view.DailyUniqueVisitors;
+import dev.vepo.contraponto.view.ReferrerCount;
 import dev.vepo.contraponto.view.ViewRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -24,6 +25,8 @@ import jakarta.ws.rs.ForbiddenException;
 public class PlatformInsightsService {
 
     private record MonthRange(LocalDateTime start, LocalDateTime end) {}
+
+    private static final int TOP_REFERRERS_LIMIT = 10;
 
     private final ViewRepository viewRepository;
     private final PostTextHighlightRepository highlightRepository;
@@ -84,6 +87,7 @@ public class PlatformInsightsService {
                                                        highlightRepository.countDailyPlatform(range.start(), range.end()));
         MonthSeries commentsCreated = buildCountSeries(selected,
                                                        commentRepository.countDailyPlatform(range.start(), range.end()));
+        List<ReferrerCount> topReferrers = viewRepository.topReferrersPlatform(range.start(), range.end(), TOP_REFERRERS_LIMIT);
 
         return new PlatformInsights(selected.getYear(),
                                     selected.getMonthValue(),
@@ -92,7 +96,8 @@ public class PlatformInsightsService {
                                     uniqueVisitors,
                                     monthlyUniqueVisitors,
                                     highlightsAdded,
-                                    commentsCreated);
+                                    commentsCreated,
+                                    topReferrers);
     }
 
     private MonthRange monthRange(YearMonth yearMonth) {

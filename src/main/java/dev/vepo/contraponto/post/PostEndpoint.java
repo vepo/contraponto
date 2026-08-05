@@ -1,5 +1,6 @@
 package dev.vepo.contraponto.post;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -81,6 +82,18 @@ public class PostEndpoint {
 
     private static final int RELATED_POST_LIMIT = 4;
 
+    private static String normalizeReferrerHost(String referer) {
+        if (referer == null || referer.isBlank()) {
+            return null;
+        }
+        try {
+            String host = URI.create(referer).getHost();
+            return host == null || host.isBlank() ? null : host;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     private final PostRepository postRepository;
     private final PostPublicationRepository publicationRepository;
     private final PostChangeDiffService changeDiffService;
@@ -88,8 +101,8 @@ public class PostEndpoint {
     private final LoggedUser loggedUser;
     private final ViewRepository viewRepository;
     private final ReadingTimeRepository readingTimeRepository;
-    private final PostEngagementService postEngagementService;
 
+    private final PostEngagementService postEngagementService;
     private final SessionIdProvider sessionIdProvider;
     private final BlogAudienceComponentEndpoint audienceComponentEndpoint;
     private final BreadcrumbService breadcrumbService;
@@ -98,6 +111,7 @@ public class PostEndpoint {
     private final PostSlugAliasRepository postSlugAliasRepository;
     private final ReadingListService readingListService;
     private final BlogPublicUrlService blogPublicUrlService;
+
     private final ActivityPubFavouriteService activityPubFavouriteService;
 
     @Inject
@@ -259,7 +273,8 @@ public class PostEndpoint {
         String sessionId = sessionIdProvider.getOrCreateSessionId(headers.getCookies().get(SessionIdProvider.VIEW_SESSION_COOKIE));
         Long viewerUserId = loggedUser.isAuthenticated() ? loggedUser.getId() : null;
         if (postEngagementService.shouldRecordReaderEngagement(post, viewerUserId)) {
-            viewRepository.recordView(post, viewerUserId, sessionId, LocalDateTime.now(ZoneId.systemDefault()));
+            String referrerHost = normalizeReferrerHost(headers.getHeaderString("Referer"));
+            viewRepository.recordView(post, viewerUserId, sessionId, LocalDateTime.now(ZoneId.systemDefault()), referrerHost);
         }
 
         long viewCount = viewRepository.countByPost(post);

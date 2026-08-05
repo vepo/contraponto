@@ -21,11 +21,12 @@ class ViewTest {
         User watcher = new User();
         watcher.setUsername("spectator");
 
-        View view = new View(post, watcher, "session-uuid", watched);
+        View view = new View(post, watcher, "session-uuid", watched, "google.com");
         assertThat(view.getPost()).isSameAs(post);
         assertThat(view.getUser()).isSameAs(watcher);
         assertThat(view.getSessionId()).isEqualTo("session-uuid");
         assertThat(view.getViewedAt()).isEqualTo(watched);
+        assertThat(view.getReferrerHost()).isEqualTo("google.com");
 
         view.setId(321L);
         assertThat(view.toString()).contains("321");
@@ -34,7 +35,9 @@ class ViewTest {
         view.setUser(null);
         view.setSessionId("anon-session");
         view.setViewedAt(watched.plusHours(3));
+        view.setReferrerHost(null);
         assertThat(view.getUser()).isNull();
         assertThat(view.getSessionId()).isEqualTo("anon-session");
+        assertThat(view.getReferrerHost()).isNull();
     }
 }

@@ -34,9 +34,9 @@ class ViewRepositoryTest {
     void countDailyPlatformAggregatesViewsByDay() {
         var post = publishedPost();
         var day = TestTimes.REFERENCE;
-        viewRepository.recordView(post, null, "platform-guest-1", day);
-        viewRepository.recordView(post, reader.getId(), "platform-user-1", day.plusHours(1));
-        viewRepository.recordView(post, null, "platform-guest-2", day.plusHours(2));
+        viewRepository.recordView(post, null, "platform-guest-1", day, null);
+        viewRepository.recordView(post, reader.getId(), "platform-user-1", day.plusHours(1), null);
+        viewRepository.recordView(post, null, "platform-guest-2", day.plusHours(2), null);
 
         var range = monthRange(TestTimes.REFERENCE_MONTH);
         var counts = viewRepository.countDailyPlatform(range.start(), range.end());
@@ -48,10 +48,10 @@ class ViewRepositoryTest {
     void countDailyUniqueVisitorsPlatformSplitsRegisteredAndGuest() {
         var post = publishedPost();
         var day = TestTimes.REFERENCE;
-        viewRepository.recordView(post, null, "unique-guest-a", day);
-        viewRepository.recordView(post, null, "unique-guest-a", day.plusMinutes(1));
-        viewRepository.recordView(post, null, "unique-guest-b", day.plusMinutes(2));
-        viewRepository.recordView(post, reader.getId(), "unique-user-a", day.plusMinutes(3));
+        viewRepository.recordView(post, null, "unique-guest-a", day, null);
+        viewRepository.recordView(post, null, "unique-guest-a", day.plusMinutes(1), null);
+        viewRepository.recordView(post, null, "unique-guest-b", day.plusMinutes(2), null);
+        viewRepository.recordView(post, reader.getId(), "unique-user-a", day.plusMinutes(3), null);
 
         var range = monthRange(TestTimes.REFERENCE_MONTH);
         var daily = viewRepository.countDailyUniqueVisitorsPlatform(range.start(), range.end());
@@ -70,8 +70,8 @@ class ViewRepositoryTest {
         var viewedAt = TestTimes.REFERENCE;
         var sessionId = "migrate-skip-session";
 
-        viewRepository.recordView(post, null, sessionId, viewedAt);
-        viewRepository.recordView(post, reader.getId(), "other-session", viewedAt);
+        viewRepository.recordView(post, null, sessionId, viewedAt, null);
+        viewRepository.recordView(post, reader.getId(), "other-session", viewedAt, null);
 
         viewRepository.migrateAnonymousViewsToUser(author.getId(), sessionId);
 
@@ -119,5 +119,51 @@ class ViewRepositoryTest {
                       .withName("View Reader")
                       .withPassword("Password123!")
                       .persist();
+    }
+
+    @Test
+    void topReferrersByBlogIdRanksByCountDescAndExcludesNulls() {
+        var post = publishedPost();
+        var day = TestTimes.REFERENCE;
+        viewRepository.recordView(post, null, "referrer-a", day, "google.com");
+        viewRepository.recordView(post, null, "referrer-b", day.plusMinutes(1), "google.com");
+        viewRepository.recordView(post, null, "referrer-c", day.plusMinutes(2), "t.co");
+        viewRepository.recordView(post, null, "referrer-d", day.plusMinutes(3), null);
+
+        var range = monthRange(TestTimes.REFERENCE_MONTH);
+        var top = viewRepository.topReferrersByBlogId(post.getBlog().getId(), range.start(), range.end(), 10);
+
+        assertThat(top).extracting(ReferrerCount::host).containsExactly("google.com", "t.co");
+        assertThat(top.get(0).views()).isEqualTo(2L);
+        assertThat(top.get(1).views()).isEqualTo(1L);
+    }
+
+    @Test
+    void topReferrersByBlogIdRespectsLimit() {
+        var post = publishedPost();
+        var day = TestTimes.REFERENCE;
+        viewRepository.recordView(post, null, "limit-a", day, "one.example");
+        viewRepository.recordView(post, null, "limit-b", day.plusMinutes(1), "two.example");
+        viewRepository.recordView(post, null, "limit-c", day.plusMinutes(2), "three.example");
+
+        var range = monthRange(TestTimes.REFERENCE_MONTH);
+        var top = viewRepository.topReferrersByBlogId(post.getBlog().getId(), range.start(), range.end(), 2);
+
+        assertThat(top).hasSize(2);
+    }
+
+    @Test
+    void topReferrersPlatformAggregatesAcrossBlogs() {
+        var post = publishedPost();
+        var day = TestTimes.REFERENCE;
+        viewRepository.recordView(post, null, "platform-referrer-a", day, "mastodon.social");
+        viewRepository.recordView(post, null, "platform-referrer-b", day.plusMinutes(1), "mastodon.social");
+        viewRepository.recordView(post, null, "platform-referrer-c", day.plusMinutes(2), null);
+
+        var range = monthRange(TestTimes.REFERENCE_MONTH);
+        var top = viewRepository.topReferrersPlatform(range.start(), range.end(), 10);
+
+        assertThat(top).extracting(ReferrerCount::host).containsExactly("mastodon.social");
+        assertThat(top.get(0).views()).isEqualTo(2L);
     }
 }

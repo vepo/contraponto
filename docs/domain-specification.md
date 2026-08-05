@@ -370,6 +370,8 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Sitemap** | Machine-readable list of public URLs for crawlers. | `GET /sitemap.xml`, `SitemapEndpoint` |
 | **Robots policy** | Crawl rules and sitemap reference for crawlers. | `GET /robots.txt`, `RobotsEndpoint` |
 | **View count** | Read metric per post load (one row per page GET per session). Author rows are not stored (see **Author self-access**). | `View`, `PostEngagementService` |
+| **Referrer host** *(v2, planned)* | Normalized host (scheme+host only — no path, query, or fragment) parsed from the request's `Referer` HTTP header at view time, or blank when absent/unparsable. Stored on the **View count** row. | `View.referrerHost`, `tb_views.referrer_host` |
+| **Top source** *(v2, planned)* | Ranking of **Referrer host** values by view count over a selected month, blog-scoped (Dashboard) or platform-wide (Platform insights). Rows with no **Referrer host** are excluded from the ranking, not shown as a "Direct" bucket. | `ViewRepository` top-referrer aggregate |
 | **Estimated read time** | Word-count hint on post cards (e.g. "5 min read"); not tracked engagement. | `TemplateExtensions.readTime` |
 | **Reading time** | Actual seconds a reader spends on a published post while the browser tab is **visible**; extended by 5-second client heartbeats. Author rows are not stored (see **Author self-access**). | `ReadingSession`, `PostEngagementService` |
 | **Reading session** | One post + `__view_session` (+ optional user) row accumulating `total_seconds`. Not persisted for **author self-access**. | `ReadingSession` |

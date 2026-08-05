@@ -36,14 +36,18 @@ public class View {
     @Column(name = "viewed_at", nullable = false)
     private LocalDateTime viewedAt;
 
+    @Column(name = "referrer_host")
+    private String referrerHost; // normalized host only, null when absent/unparsable
+
     // Required by JPA
     public View() {}
 
-    public View(Post post, User user, String sessionId, LocalDateTime viewedAt) {
+    public View(Post post, User user, String sessionId, LocalDateTime viewedAt, String referrerHost) {
         this.post = post;
         this.user = user;
         this.sessionId = sessionId;
         this.viewedAt = viewedAt;
+        this.referrerHost = referrerHost;
     }
 
     // Getters and setters
@@ -53,6 +57,10 @@ public class View {
 
     public Post getPost() {
         return post;
+    }
+
+    public String getReferrerHost() {
+        return referrerHost;
     }
 
     public String getSessionId() {
@@ -73,6 +81,10 @@ public class View {
 
     public void setPost(Post post) {
         this.post = post;
+    }
+
+    public void setReferrerHost(String referrerHost) {
+        this.referrerHost = referrerHost;
     }
 
     public void setSessionId(String sessionId) {

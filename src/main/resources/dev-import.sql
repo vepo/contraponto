@@ -1036,28 +1036,28 @@ First version: API Gateway and Eureka only.', 'ASCIIDOC', v_img2),
     -- ============================================
     -- 12. View counts
     -- ============================================
-    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-    SELECT p.id, NULL, 'anon-session-1', '2024-05-01 10:00:00'
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+    SELECT p.id, NULL, 'anon-session-1', '2024-05-01 10:00:00', 'www.google.com'
     FROM tb_posts p WHERE p.slug = 'introduction-to-distributed-systems-java';
 
-    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-    SELECT p.id, NULL, 'anon-session-2', '2024-05-02 11:00:00'
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+    SELECT p.id, NULL, 'anon-session-2', '2024-05-02 11:00:00', 'www.google.com'
     FROM tb_posts p WHERE p.slug = 'introduction-to-distributed-systems-java';
 
-    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-    SELECT p.id, (SELECT id FROM tb_users WHERE username = 'dave'), 'dave-session', '2024-05-03 12:00:00'
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+    SELECT p.id, (SELECT id FROM tb_users WHERE username = 'dave'), 'dave-session', '2024-05-03 12:00:00', NULL
     FROM tb_posts p WHERE p.slug = 'graphql-java-spring-boot';
 
-    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-    SELECT p.id, NULL, 'anon-session-3', '2024-05-18 09:00:00'
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+    SELECT p.id, NULL, 'anon-session-3', '2024-05-18 09:00:00', 't.co'
     FROM tb_posts p WHERE p.slug = 'consensus-raft-paxos-overview';
 
-    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-    SELECT p.id, NULL, 'anon-session-4', '2024-05-19 10:00:00'
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+    SELECT p.id, NULL, 'anon-session-4', '2024-05-19 10:00:00', 'news.ycombinator.com'
     FROM tb_posts p WHERE p.slug = 'dead-letter-queues-kafka';
 
-    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-    SELECT p.id, NULL, 'anon-session-5', '2024-05-20 11:00:00'
+    INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+    SELECT p.id, NULL, 'anon-session-5', '2024-05-20 11:00:00', NULL
     FROM tb_posts p WHERE p.slug = 'rest-api-versioning-strategies';
 
     -- ============================================

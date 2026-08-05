@@ -158,19 +158,20 @@ public class ViewRepository {
     }
 
     @Transactional
-    public void recordView(Post post, Long userId, String sessionId, LocalDateTime viewedAt) {
+    public void recordView(Post post, Long userId, String sessionId, LocalDateTime viewedAt, String referrerHost) {
         logger.debug("Creating view for post! userId={} post={}", userId, post);
         // Native: direct INSERT for view deduplication relies on unique constraint
         // handling.
         String sql = """
-                     INSERT INTO tb_views (post_id, user_id, session_id, viewed_at)
-                     VALUES (:postId, :userId, :sessionId, :viewedAt)
+                     INSERT INTO tb_views (post_id, user_id, session_id, viewed_at, referrer_host)
+                     VALUES (:postId, :userId, :sessionId, :viewedAt, :referrerHost)
                      """;
         entityManager.createNativeQuery(sql)
                      .setParameter("postId", post.getId())
                      .setParameter("userId", userId != null ? userId : null)
                      .setParameter("sessionId", sessionId)
                      .setParameter("viewedAt", viewedAt)
+                     .setParameter("referrerHost", referrerHost)
                      .executeUpdate();
     }
 
@@ -185,5 +186,55 @@ public class ViewRepository {
 
     private LocalDate toLocalDate(Object value) {
         return value instanceof java.sql.Date sqlDate ? sqlDate.toLocalDate() : LocalDate.parse(value.toString());
+    }
+
+    public List<ReferrerCount> topReferrersByBlogId(long blogId, LocalDateTime startInclusive, LocalDateTime endExclusive,
+                                                    int limit) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT v.referrer_host, COUNT(*)
+                                                              FROM tb_views v
+                                                              JOIN tb_posts p ON v.post_id = p.id
+                                                              WHERE p.blog_id = :blogId
+                                                                AND v.viewed_at >= :start
+                                                                AND v.viewed_at < :end
+                                                                AND v.referrer_host IS NOT NULL
+                                                              GROUP BY v.referrer_host
+                                                              ORDER BY 2 DESC
+                                                              LIMIT :limit
+                                                              """)
+                                           .setParameter("blogId", blogId)
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .setParameter("limit", limit)
+                                           .getResultList();
+
+        return toReferrerCounts(rows);
+    }
+
+    public List<ReferrerCount> topReferrersPlatform(LocalDateTime startInclusive, LocalDateTime endExclusive, int limit) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery("""
+                                                              SELECT referrer_host, COUNT(*)
+                                                              FROM tb_views
+                                                              WHERE viewed_at >= :start
+                                                                AND viewed_at < :end
+                                                                AND referrer_host IS NOT NULL
+                                                              GROUP BY referrer_host
+                                                              ORDER BY 2 DESC
+                                                              LIMIT :limit
+                                                              """)
+                                           .setParameter("start", startInclusive)
+                                           .setParameter("end", endExclusive)
+                                           .setParameter("limit", limit)
+                                           .getResultList();
+
+        return toReferrerCounts(rows);
+    }
+
+    private List<ReferrerCount> toReferrerCounts(List<Object[]> rows) {
+        return rows.stream()
+                   .map(row -> new ReferrerCount((String) row[0], ((Number) row[1]).longValue()))
+                   .toList();
     }
 }

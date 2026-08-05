@@ -2,10 +2,12 @@ package dev.vepo.contraponto.platforminsights;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 import dev.vepo.contraponto.dashboard.MonthSeries;
 import dev.vepo.contraponto.view.DailyUniqueVisitors;
+import dev.vepo.contraponto.view.ReferrerCount;
 
 public record PlatformInsights(int year,
                                int month,
@@ -14,7 +16,8 @@ public record PlatformInsights(int year,
                                VisitorSplitMonthSeries uniqueVisitors,
                                DailyUniqueVisitors monthlyUniqueVisitors,
                                MonthSeries highlightsAdded,
-                               MonthSeries commentsCreated) {
+                               MonthSeries commentsCreated,
+                               List<ReferrerCount> topReferrers) {
 
     private static final DateTimeFormatter MONTH_LABEL = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
 
