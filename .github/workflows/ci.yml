@@ -293,7 +293,7 @@ jobs:
         run: |
           mvn ${{ env.MAVEN_CLI_OPTS }} compile -DskipTests
           mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:merge@default-merge
-          mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:report@report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -DskipTests \
             -Dsonar.projectKey=vepo_contraponto
 
