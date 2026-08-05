@@ -28,6 +28,7 @@ public class NavigationHubRegistry {
                                        List.of(new HubSectionNav("users", "Users"),
                                                new HubSectionNav("message-reports", "Message reports", "administration.nav.messageReports"),
                                                new HubSectionNav("activitypub", "Fediverse", "administration.nav.activityPub"),
+                                               new HubSectionNav("reddit", "Reddit", "administration.nav.reddit"),
                                                new HubSectionNav("insights", "Platform insights", "administration.nav.insights"))));
     }
 

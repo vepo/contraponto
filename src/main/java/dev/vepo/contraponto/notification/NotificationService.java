@@ -126,6 +126,16 @@ public class NotificationService {
     }
 
     @Transactional
+    public void notifyRedditAccountDisconnected(User recipient) {
+        create(recipient, NotificationType.REDDIT_ACCOUNT_DISCONNECTED, null, null, null, null, null);
+    }
+
+    @Transactional
+    public void notifyRedditSyndicationFailed(User recipient, Post post) {
+        create(recipient, NotificationType.REDDIT_SYNDICATION_FAILED, post.getBlog(), post, null, null, null);
+    }
+
+    @Transactional
     public void notifySchedulePublishFailed(User recipient, Post post) {
         create(recipient, NotificationType.SCHEDULE_PUBLISH_FAILED, post.getBlog(), post, null, null, null);
     }

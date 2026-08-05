@@ -18,7 +18,9 @@ public enum NotificationType {
     NEW_MESSAGE_THREAD,
     NEW_THREAD_MESSAGE,
     SCHEDULE_PUBLISH_SUCCEEDED,
-    SCHEDULE_PUBLISH_FAILED;
+    SCHEDULE_PUBLISH_FAILED,
+    REDDIT_SYNDICATION_FAILED,
+    REDDIT_ACCOUNT_DISCONNECTED;
 
     private static String commentLink(Notification notification) {
         if (notification.getPost() != null) {
@@ -63,6 +65,8 @@ public enum NotificationType {
             case NEW_FOLLOW, NEW_SUBSCRIBE -> BlogPaths.extractUrl(notification.getBlog());
             case NEW_MESSAGE_THREAD, NEW_THREAD_MESSAGE -> messageThreadLink(notification);
             case SCHEDULE_PUBLISH_SUCCEEDED, SCHEDULE_PUBLISH_FAILED -> postLink(notification);
+            case REDDIT_SYNDICATION_FAILED -> postLink(notification);
+            case REDDIT_ACCOUNT_DISCONNECTED -> "/writing/appearance";
         };
     }
 }

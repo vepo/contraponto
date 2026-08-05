@@ -1554,6 +1554,35 @@
     margin-top: 1rem;
 }
 
+.reddit-account__status {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+}
+
+.reddit-account__status--disconnected {
+    color: var(--color-text-muted);
+}
+
+.reddit-account__label {
+    color: var(--color-text-muted);
+}
+
+.reddit-account__handle {
+    font-family: var(--font-mono, monospace);
+    color: var(--color-text);
+}
+
+.reddit-account__actions {
+    margin: 0.75rem 0 0;
+}
+
+.reddit-account__hint {
+    margin: 0.5rem 0 0;
+}
+
 .git-sync-history__row-head {
     display: flex;
     flex-wrap: wrap;

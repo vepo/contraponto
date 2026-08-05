@@ -1,0 +1,42 @@
+<h2 class="hub-panel__title" data-i18n="administration.reddit.title">Reddit</h2>
+<p class="hub-panel__subtitle" data-i18n="administration.reddit.subtitle">Platform-wide Reddit syndication settings.</p>
+
+<section class="profile-form__section">
+    <div id="redditPlatformMessage"></div>
+    {#if redditConfigEnabled}
+    <form class="profile-form profile-form--inline"
+          hx-post="/forms/administration/reddit"
+          hx-target="#redditPlatformMessage"
+          hx-swap="innerHTML">
+        <fieldset class="fediverse">
+            <legend class="fediverse__legend" data-i18n="administration.reddit.section">Syndication</legend>
+            <p class="fediverse__intro form-group__hint" data-i18n="administration.reddit.intro">
+                Platform-wide kill switch for Reddit syndication. When disabled, no new Reddit deliveries are sent for any author, even if their blog toggle is on.
+            </p>
+            <label class="fediverse__enable">
+                <input type="checkbox"
+                       class="fediverse__enable-input"
+                       name="platformSyndicationEnabled"
+                       value="true"
+                       {#if redditPlatformEnabled}checked{/if}>
+                <span class="fediverse__enable-card">
+                    <span class="fediverse__enable-title" data-i18n="administration.reddit.optInTitle">Enable Reddit syndication globally</span>
+                    <span class="fediverse__enable-desc" data-i18n="administration.reddit.optInDesc">
+                        Allow authors who opt in to syndicate posts to Reddit. Turn off to halt all Reddit deliveries immediately.
+                    </span>
+                </span>
+            </label>
+            <p class="fediverse__actions fediverse__actions--platform">
+                <button type="submit" class="btn btn--secondary" data-i18n="administration.reddit.save">Save Reddit settings</button>
+            </p>
+        </fieldset>
+    </form>
+    {#else}
+    <fieldset class="fediverse">
+        <legend class="fediverse__legend" data-i18n="administration.reddit.section">Syndication</legend>
+        <p class="fediverse__intro form-group__hint" data-i18n="administration.reddit.disabled">
+            Reddit syndication is disabled by server configuration (<code>contraponto.reddit.enabled=false</code>). Configure the client id/secret and redirect URI env vars and redeploy to use this panel.
+        </p>
+    </fieldset>
+    {/if}
+</section>

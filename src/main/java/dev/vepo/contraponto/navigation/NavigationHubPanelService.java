@@ -29,6 +29,7 @@ import dev.vepo.contraponto.platforminsights.PlatformInsightsEndpoint;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 import dev.vepo.contraponto.readinglist.ReadingListHubEndpoint;
+import dev.vepo.contraponto.reddit.admin.RedditPlatformManageEndpoint;
 import dev.vepo.contraponto.tag.TagManageEndpoint;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.UserManageEndpoint;
@@ -61,6 +62,7 @@ public class NavigationHubPanelService {
     private final AuthorAppearanceEndpoint authorAppearanceEndpoint;
     private final UserManageEndpoint userManageEndpoint;
     private final ActivityPubPlatformManageEndpoint activityPubPlatformManageEndpoint;
+    private final RedditPlatformManageEndpoint redditPlatformManageEndpoint;
     private final PlatformInsightsEndpoint platformInsightsEndpoint;
     private final NavigationHubRegistry registry;
 
@@ -89,6 +91,7 @@ public class NavigationHubPanelService {
                                      AuthorAppearanceEndpoint authorAppearanceEndpoint,
                                      UserManageEndpoint userManageEndpoint,
                                      ActivityPubPlatformManageEndpoint activityPubPlatformManageEndpoint,
+                                     RedditPlatformManageEndpoint redditPlatformManageEndpoint,
                                      PlatformInsightsEndpoint platformInsightsEndpoint,
                                      NavigationHubRegistry registry) {
         this.postRepository = postRepository;
@@ -115,6 +118,7 @@ public class NavigationHubPanelService {
         this.authorAppearanceEndpoint = authorAppearanceEndpoint;
         this.userManageEndpoint = userManageEndpoint;
         this.activityPubPlatformManageEndpoint = activityPubPlatformManageEndpoint;
+        this.redditPlatformManageEndpoint = redditPlatformManageEndpoint;
         this.platformInsightsEndpoint = platformInsightsEndpoint;
         this.registry = registry;
     }
@@ -182,6 +186,7 @@ public class NavigationHubPanelService {
                                                                                 registry.sectionPath(NavigationHub.ADMINISTRATION,
                                                                                                      sectionSlug));
             case "activitypub" -> activityPubPlatformManageEndpoint.renderHubPanel();
+            case "reddit" -> redditPlatformManageEndpoint.renderHubPanel();
             case "insights" -> platformInsightsEndpoint.renderHubPanel();
             default -> throw new NotFoundException("Unknown administration section: %s".formatted(sectionSlug));
         };

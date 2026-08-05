@@ -28,6 +28,9 @@ public class BlogForm {
     @FormParam("git_branch")
     private String gitBranch;
 
+    @FormParam("reddit_enabled")
+    private String redditEnabled;
+
     @FormParam("bannerId")
     private String bannerId;
 
@@ -72,5 +75,9 @@ public class BlogForm {
 
     public boolean isGitEnabled() {
         return gitEnabled != null;
+    }
+
+    public boolean isRedditEnabled() {
+        return redditEnabled != null;
     }
 }

@@ -11,6 +11,7 @@ import dev.vepo.contraponto.navigation.NavigationHub;
 import dev.vepo.contraponto.navigation.NavigationHubService;
 import dev.vepo.contraponto.git.GitSyncTrigger;
 import dev.vepo.contraponto.git.GitRemoteUrlValidator;
+import dev.vepo.contraponto.reddit.account.UserRedditAccountRepository;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
@@ -71,6 +72,7 @@ public class BlogSaveEndpoint {
     private final BlogBannerService blogBannerService;
     private final NavigationHubService navigationHubService;
     private final LoggedUser loggedUser;
+    private final UserRedditAccountRepository redditAccountRepository;
 
     @Inject
     public BlogSaveEndpoint(BlogRepository blogRepository,
@@ -80,7 +82,8 @@ public class BlogSaveEndpoint {
                             GitRemoteUrlValidator gitRemoteUrlValidator,
                             BlogBannerService blogBannerService,
                             NavigationHubService navigationHubService,
-                            LoggedUser loggedUser) {
+                            LoggedUser loggedUser,
+                            UserRedditAccountRepository redditAccountRepository) {
         this.blogRepository = blogRepository;
         this.blogAccess = blogAccess;
         this.userRepository = userRepository;
@@ -89,6 +92,7 @@ public class BlogSaveEndpoint {
         this.blogBannerService = blogBannerService;
         this.navigationHubService = navigationHubService;
         this.loggedUser = loggedUser;
+        this.redditAccountRepository = redditAccountRepository;
     }
 
     private Optional<String> applyGitIntegrationFields(Blog blog, BlogForm form) {
@@ -102,6 +106,17 @@ public class BlogSaveEndpoint {
         blog.setGitRemoteUrl(form.getGitRemoteUrl());
         blog.setGitBranch(form.getGitBranch());
         return Optional.empty();
+    }
+
+    /**
+     * A forged {@code reddit_enabled=true} for an owner with no linked Reddit
+     * account is silently ignored (kept {@code false}) rather than rejected — the
+     * toggle is a convenience opt-in, not a security boundary, and the UI already
+     * disables the checkbox in that state.
+     */
+    private void applyRedditSyndicationField(Blog blog, BlogForm form) {
+        var enabled = form.isRedditEnabled() && redditAccountRepository.findByUserId(blog.getOwner().getId()).isPresent();
+        blog.setRedditSyndicationEnabled(enabled);
     }
 
     private Response badRequest(String message) {
@@ -134,6 +149,7 @@ public class BlogSaveEndpoint {
             if (gitError.isPresent()) {
                 return badRequest(gitError.get());
             }
+            applyRedditSyndicationField(blog, form);
         }
         blogRepository.save(blog);
         blogBannerService.applyDefaultBannerOnCreate(blog);
@@ -269,6 +285,7 @@ public class BlogSaveEndpoint {
             if (gitError.isPresent()) {
                 return badRequest(gitError.get());
             }
+            applyRedditSyndicationField(blog, form);
         }
         blogBannerService.applyBannerFromForm(blog, form.getBannerId());
         blogRepository.save(blog);

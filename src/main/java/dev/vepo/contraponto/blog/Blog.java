@@ -62,6 +62,9 @@ public class Blog {
     @Column(name = "git_last_known_commit", length = 64)
     private String gitLastKnownCommit;
 
+    @Column(name = "reddit_syndication_enabled", nullable = false)
+    private boolean redditSyndicationEnabled;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "banner_id")
     private Image banner;
@@ -156,6 +159,10 @@ public class Blog {
         return main;
     }
 
+    public boolean isRedditSyndicationEnabled() {
+        return redditSyndicationEnabled;
+    }
+
     public void setActive(boolean active) {
         this.active = active;
     }
@@ -207,6 +214,10 @@ public class Blog {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public void setRedditSyndicationEnabled(boolean redditSyndicationEnabled) {
+        this.redditSyndicationEnabled = redditSyndicationEnabled;
     }
 
     public void setSlug(String slug) {

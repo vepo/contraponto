@@ -23,6 +23,7 @@ Decisões arquiteturais do **Contraponto** usam o template [GiG Cymru NHS Wales]
 | [0015](0015-federation-outbound-fetch-ssrf.md) | Federation outbound HTTPS fetch — SSRF controls | Accepted |
 | [0016](0016-account-deletion-audit-retention.md) | Account deletion — abuse audit retention (6 months) | Accepted |
 | [0017](0017-per-blog-git-credentials-ssh.md) | Per-blog Git credentials + SSH remotes | **Proposed** |
+| [0018](0018-reddit-account-linking-syndication.md) | Reddit account linking + outbound syndication (per-user OAuth) | **Accepted** |
 
 ## Quando criar um ADR
 

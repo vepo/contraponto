@@ -8,6 +8,8 @@ import dev.vepo.contraponto.activitypub.actor.ActivityPubAppearanceService;
 import dev.vepo.contraponto.activitypub.actor.ActivityPubFederationView;
 import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogRepository;
+import dev.vepo.contraponto.reddit.account.RedditAccountView;
+import dev.vepo.contraponto.reddit.account.RedditAppearanceService;
 import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.user.User;
@@ -19,7 +21,10 @@ public class AuthorAppearanceEndpoint {
 
     @CheckedTemplate
     public static class Templates {
-        public static native TemplateInstance panel(User user, long mainBlogId, ActivityPubFederationView federationView);
+        public static native TemplateInstance panel(User user,
+                                                    long mainBlogId,
+                                                    ActivityPubFederationView federationView,
+                                                    RedditAccountView redditView);
 
         private Templates() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -30,22 +35,26 @@ public class AuthorAppearanceEndpoint {
     private final UserRepository userRepository;
     private final BlogRepository blogRepository;
     private final ActivityPubAppearanceService activityPubAppearanceService;
+    private final RedditAppearanceService redditAppearanceService;
 
     @Inject
     public AuthorAppearanceEndpoint(LoggedUser loggedUser,
                                     UserRepository userRepository,
                                     BlogRepository blogRepository,
-                                    ActivityPubAppearanceService activityPubAppearanceService) {
+                                    ActivityPubAppearanceService activityPubAppearanceService,
+                                    RedditAppearanceService redditAppearanceService) {
         this.loggedUser = loggedUser;
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
         this.activityPubAppearanceService = activityPubAppearanceService;
+        this.redditAppearanceService = redditAppearanceService;
     }
 
     public TemplateInstance renderHubPanel() {
         var user = userRepository.findById(loggedUser.getId()).orElseThrow();
         var mainBlogId = blogRepository.findMainByOwnerId(user.getId()).map(Blog::getId).orElse(0L);
         var federationView = activityPubAppearanceService.buildView(user);
-        return Templates.panel(user, mainBlogId, federationView);
+        var redditView = redditAppearanceService.buildView(user);
+        return Templates.panel(user, mainBlogId, federationView, redditView);
     }
 }

@@ -45,7 +45,7 @@ Contraponto is a **modular monolith**: one deployable, many bounded contexts und
 | **Discovery & syndication** | `home`, `search`, `directory`, `rss`, `seo`, `view` | shared, publishing |
 | **Media** | `image` | shared, identity |
 | **Customization** | `custompage` | shared, identity, media |
-| **Integration** | `git`, `activitypub` | shared, publishing, media, identity |
+| **Integration** | `git`, `activitypub`, `reddit` *(planned)* | shared, publishing, media, identity |
 | **Author workspace** | `library`, `dashboard`, `admin`, `profile` | shared, identity, publishing |
 | **Presentation shell** | `components`, `navigation` | shared + all contexts (HTTP composition only) |
 | **Platform insights** | `platforminsights` | shared, view, identity |
@@ -334,6 +334,16 @@ Terms below are the **only** approved names for aggregates, entities, value obje
 | **Fediverse favourite count** | Number of stored **Fediverse favourites** on a post — shown on the **public post page** (count only; no public who-liked list). | Post template |
 | **Fediverse favourite list** | Author-only list of remote **`@handle`** rows who favourited a post — shown in a **popup** opened from the favourite count on the post page; not shown inline to guests. | Post page modal |
 | **ActivityPub global kill-switch** | Platform admin toggle that enables/disables ActivityPub federation for the whole instance. When disabled, user opt-in and delivery/inbox processing are blocked by guardrails. | `GET /administration/activitypub`, `POST /forms/administration/activitypub`, `ActivityPubSettings.enabled()` |
+
+### Reddit syndication *(planned — [feature/reddit-syndication.md](../feature/reddit-syndication.md))*
+
+| Term | Meaning | Code / notes |
+|------|---------|--------------|
+| **Reddit account link** | An author's personal Reddit account connected to Contraponto via OAuth from **Author appearance**; stores the Reddit username and an **encrypted** refresh token. **One per user**, distinct from the profile-only `blueskyUrl`/`mastodonUrl` links. | `UserRedditAccount` (planned), `AuthorAppearanceEndpoint` |
+| **Reddit syndication enabled** | Per-**blog** opt-in flag (off by default) that triggers a **Reddit syndication delivery** on publish. Shown **disabled** in blog edit until the blog owner has a **Reddit account link**. | `Blog.redditSyndicationEnabled` (planned) |
+| **Reddit syndication delivery** | Outbound Reddit **link post** (`sr=u_{redditUsername}`, title + canonical post URL) submitted to the author's own Reddit profile after **publish** on a blog with **Reddit syndication enabled**, using that author's **Reddit account link**. Async queue with retry, mirroring **ActivityPub delivery**. | `RedditDeliveryService` (planned) |
+| **Reddit post record** | Stored mapping from a Contraponto post to its Reddit submission id/permalink, used to **delete** the submission on unpublish. Retitling after first delivery does **not** re-sync (Reddit's API does not allow editing a link post's title/URL). | `RedditPostRecord` (planned) |
+| **Reddit account disconnect** | Author-initiated removal of their **Reddit account link**; auto-disables **Reddit syndication enabled** on every blog they own and sends an in-app notification confirming it. | Author appearance — Reddit section |
 
 ### Discovery & feeds
 

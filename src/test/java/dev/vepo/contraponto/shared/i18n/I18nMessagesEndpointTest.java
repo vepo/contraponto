@@ -36,7 +36,10 @@ class I18nMessagesEndpointTest {
                                                                "appearance.social.mastodon",
                                                                "appearance.social.twitter",
                                                                "share.bluesky",
-                                                               "share.linkedin");
+                                                               "share.linkedin",
+                                                               "administration.nav.reddit",
+                                                               "administration.reddit.title",
+                                                               "appearance.redditSection");
 
     @Test
     void shouldNotServeDefaultLocaleBundle() {

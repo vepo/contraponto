@@ -183,6 +183,19 @@ public class App {
             return this;
         }
 
+        public BlogManagePage assertRedditSectionDisabled() {
+            var checkbox = wait.until(visibilityOfElementLocated(cssSelector(".reddit-account .fediverse__enable-input")));
+            assertThat(checkbox.isEnabled()).isFalse();
+            assertThat(driver.findElements(cssSelector(".reddit-account__hint"))).isNotEmpty();
+            return this;
+        }
+
+        public BlogManagePage assertRedditSectionEnabled() {
+            var checkbox = wait.until(visibilityOfElementLocated(cssSelector(".reddit-account .fediverse__enable-input")));
+            assertThat(checkbox.isEnabled()).isTrue();
+            return this;
+        }
+
         public BlogManagePage assertSlugEmpty() {
             var input = wait.until(visibilityOfElementLocated(cssSelector("#blogSlug")));
             assertThat(input.getAttribute("value")).isBlank();
@@ -1876,10 +1889,32 @@ public class App {
             return this;
         }
 
+        public ProfilePage assertRedditConnectedAs(String redditUsername) {
+            var handle = wait.until(visibilityOfElementLocated(cssSelector(".reddit-account__handle")));
+            assertThat(handle.getText()).contains(redditUsername);
+            return this;
+        }
+
+        public ProfilePage assertRedditNotConnected() {
+            wait.until(visibilityOfElementLocated(cssSelector(".reddit-account__status--disconnected")));
+            return this;
+        }
+
+        public ProfilePage assertRedditSectionVisible() {
+            wait.until(visibilityOfElementLocated(cssSelector(".reddit-account")));
+            return this;
+        }
+
         public ProfilePage assertSuccessMessage(String expectedSubstring) {
             var successMsg =
                     wait.until(visibilityOfElementLocated(cssSelector("#securityMessage .success-message, #appearanceMessage .success-message, #profileMessage .success-message")));
             assertThat(successMsg.getText()).contains(expectedSubstring);
+            return this;
+        }
+
+        public ProfilePage clickRedditDisconnect() {
+            reliableClick(wait.until(elementToBeClickable(cssSelector(".reddit-account__actions button"))));
+            waitForReady();
             return this;
         }
 
@@ -3022,6 +3057,17 @@ public class App {
         return this;
     }
 
+    public App assertRedditPlatformMessage(String expectedSubstring) {
+        var message = wait.until(visibilityOfElementLocated(cssSelector("#redditPlatformMessage")));
+        assertThat(message.getText()).contains(expectedSubstring);
+        return this;
+    }
+
+    public App assertRedditPlatformPanelNotLoaded() {
+        assertThat(driver.findElements(cssSelector(".hub-panel__title"))).isEmpty();
+        return this;
+    }
+
     public App assertSidebarLinkVisible() {
         var link = wait.until(visibilityOfElementLocated(cssSelector("#sidebar .sidebar__link")));
         assertThat(link.isDisplayed()).isTrue();
@@ -3588,6 +3634,12 @@ public class App {
         return this;
     }
 
+    public App submitRedditPlatformSettings() {
+        reliableClick(wait.until(elementToBeClickable(cssSelector(".fediverse__actions--platform button[type='submit']"))));
+        waitForReady();
+        return this;
+    }
+
     private void syncCsrfCookieFromPage() {
         var token = (String) ((JavascriptExecutor) driver).executeScript("""
                                                                          var meta = document.querySelector('meta[name="csrf-token"]');
@@ -3610,6 +3662,11 @@ public class App {
     public TagManagePage tagsManage() {
         _goTo("/editor/tags");
         return new TagManagePage();
+    }
+
+    public App toggleRedditPlatformSyndication() {
+        reliableClick(wait.until(elementToBeClickable(cssSelector("input[name='platformSyndicationEnabled']"))));
+        return this;
     }
 
     public App useDesktopViewport() {

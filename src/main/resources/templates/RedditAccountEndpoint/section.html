@@ -1,0 +1,32 @@
+<div id="redditAccountSection">
+{#if configured}
+<fieldset class="fediverse reddit-account">
+    <legend class="fediverse__legend" data-i18n="appearance.redditSection">Reddit</legend>
+    <p class="fediverse__intro form-group__hint" data-i18n="appearance.redditIntro">
+        Connect your Reddit account to share new posts to your own Reddit profile when you publish.
+    </p>
+    {#if connected}
+    <div class="reddit-account__status reddit-account__status--connected">
+        <span class="reddit-account__label" data-i18n="appearance.redditConnectedAs">Connected as</span>
+        <code class="reddit-account__handle">u/{redditUsername}</code>
+    </div>
+    <p class="reddit-account__actions">
+        <button type="button"
+                class="btn btn--secondary btn--sm"
+                hx-post="/forms/writing/reddit/disconnect"
+                hx-target="#redditAccountSection"
+                hx-swap="outerHTML"
+                data-i18n="appearance.redditDisconnect">Disconnect</button>
+    </p>
+    <p class="reddit-account__hint form-group__hint" data-i18n="appearance.redditDisconnectHint">
+        Disconnecting turns off Reddit syndication on every blog you own.
+    </p>
+    {#else}
+    <p class="reddit-account__status reddit-account__status--disconnected" data-i18n="appearance.redditNotConnected">Not connected.</p>
+    <p class="reddit-account__actions">
+        <a class="btn btn--secondary btn--sm" href="/writing/reddit/connect" data-i18n="appearance.redditConnect">Connect Reddit account</a>
+    </p>
+    {/if}
+</fieldset>
+{/if}
+</div>

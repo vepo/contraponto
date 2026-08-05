@@ -89,6 +89,11 @@ public class NotificationTemplateExtensions {
                 String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
                 yield "Your scheduled post failed to publish: %s".formatted(title);
             }
+            case REDDIT_SYNDICATION_FAILED -> {
+                String title = notification.getPost() != null ? notification.getPost().getTitle() : DEFAULT_POST_TITLE;
+                yield "Reddit syndication failed for %s".formatted(title);
+            }
+            case REDDIT_ACCOUNT_DISCONNECTED -> "Your Reddit account was disconnected. Reddit syndication is now off on every blog you own.";
         };
     }
 

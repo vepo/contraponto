@@ -1,0 +1,34 @@
+{#if blog.isPresent}
+<fieldset class="fediverse reddit-account">
+    <legend class="fediverse__legend" data-i18n="blog.redditSectionTitle">Reddit</legend>
+    <p class="fediverse__intro form-group__hint" data-i18n="blog.redditIntro">
+        Share new posts on this blog to your own Reddit profile when you publish.
+    </p>
+    <label class="fediverse__enable">
+        <input type="checkbox"
+               class="fediverse__enable-input"
+               name="reddit_enabled"
+               {#if !redditAccountLinked}disabled{/if}
+               {#if blog.get().redditSyndicationEnabled}checked{/if}>
+        <span class="fediverse__enable-card">
+            <span class="fediverse__enable-title" data-i18n="blog.redditEnableTitle">Enable Reddit syndication for this blog</span>
+            <span class="fediverse__enable-desc" data-i18n="blog.redditEnableDesc">
+                Publish new posts as a link on your own Reddit profile.
+            </span>
+        </span>
+    </label>
+    {#if !redditAccountLinked}
+    <p class="reddit-account__hint form-group__hint" data-i18n="blog.redditConnectFirstHint">
+        Connect a Reddit account in Appearance settings to enable this.
+        <a href="/writing/appearance"
+           data-hx-get="/writing/appearance"
+           hx-select="main"
+           hx-target="main"
+           hx-swap="outerHTML"
+           hx-push-url="/writing/appearance"
+           data-nav
+           data-i18n="blog.redditGoToAppearance">Go to Appearance &rarr;</a>
+    </p>
+    {/if}
+</fieldset>
+{/if}
