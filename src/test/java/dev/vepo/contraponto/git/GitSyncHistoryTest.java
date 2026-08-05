@@ -44,6 +44,27 @@ class GitSyncHistoryTest {
     }
 
     @Test
+    void ownerCanViewGitSyncHistoryWithMultiplePages(App app) {
+        for (int i = 0; i < 21; i++) {
+            long runId = gitSyncRunService.beginRunForBlog(blog.getId(), GitSyncOperation.EXPORT, GitSyncTrigger.PUBLISH, null);
+            gitSyncRunService.finalizeRun(runId, new GitSyncRunResult(
+                                                                      GitSyncOutcome.SUCCESS,
+                                                                      GitErrorKind.NONE,
+                                                                      true,
+                                                                      true,
+                                                                      "abc",
+                                                                      "{\"config_source\":\"defaults\"}",
+                                                                      null,
+                                                                      "Git export succeeded for post \"demo\".",
+                                                                      null));
+        }
+
+        app.login(author);
+        app.goToGitSyncHistory(blog.getId())
+           .assertGitSyncHistoryTitle();
+    }
+
+    @Test
     void ownerCanViewGitSyncRunDetail(App app) {
         long runId = gitSyncRunService.beginRunForBlog(blog.getId(), GitSyncOperation.IMPORT, GitSyncTrigger.REMOTE_POLL, null);
         gitSyncRunService.finalizeRun(runId, new GitSyncRunResult(

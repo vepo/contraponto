@@ -57,7 +57,7 @@
                     </article>
                     {/for}
                 </div>
-                {#include components/manage-pagination page=runs basePath='/blogs/{blog.id}/git-sync' extraQuery='' /}
+                {#include components/manage-pagination page=runs basePath='/blogs/{blog.id}/git-sync' extraQuery='' fragmentTarget='' /}
                 {/if}
             </div>
         </main>
