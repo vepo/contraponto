@@ -81,6 +81,23 @@ class PostContentRendererTest {
     }
 
     @Test
+    void rendersAsciiDocSidebarBlockWithTitle() {
+        String content = """
+                         .O que são Filas e Pilhas?
+                         ****
+                         Fila e Pilha são diferenciadas pela ordem de remoção dos elementos.
+                         ****
+                         """;
+
+        String html = renderer.render(content, Format.ASCIIDOC);
+
+        assertThat(html).contains("sidebarblock");
+        assertThat(html).contains("class=\"title\"");
+        assertThat(html).contains("O que são Filas e Pilhas?");
+        assertThat(html).contains("Fila e Pilha são diferenciadas pela ordem de remoção dos elementos.");
+    }
+
+    @Test
     void rendersGithubLinkCardInAsciiDoc() {
         String content = "{% github https://github.com/vepo/contraponto %}";
         String html = renderer.render(content, Format.ASCIIDOC);

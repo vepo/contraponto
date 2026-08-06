@@ -2445,6 +2445,35 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   font-style: normal;
 }
 
+/* AsciiDoc sidebar blocks (Asciidoctor .sidebarblock) */
+.article-page__content .sidebarblock {
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.article-page__content .sidebarblock > .content {
+  display: block;
+}
+
+.article-page__content .sidebarblock .title {
+  margin-bottom: var(--spacing-sm);
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-light);
+}
+
+.article-page__content .sidebarblock .content > .paragraph:last-child p,
+.article-page__content .sidebarblock .content > .ulist:last-child,
+.article-page__content .sidebarblock .content > .olist:last-child {
+  margin-bottom: 0;
+}
+
 /* AsciiDoc tables (Asciidoctor .tableblock) */
 .article-page__content .sectionbody:has(> table.tableblock) {
   overflow-x: auto;
