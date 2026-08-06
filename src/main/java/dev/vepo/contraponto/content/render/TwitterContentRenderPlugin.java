@@ -52,16 +52,6 @@ public final class TwitterContentRenderPlugin implements ContentRenderPlugin {
         return Optional.of("https://twitter.com/%s/status/%s".formatted(username, statusId));
     }
 
-    private final TwitterOEmbedClient oembedClient;
-
-    public TwitterContentRenderPlugin() {
-        this(TwitterOEmbedClient.createDefault());
-    }
-
-    TwitterContentRenderPlugin(TwitterOEmbedClient oembedClient) {
-        this.oembedClient = oembedClient;
-    }
-
     @Override
     public String identifier() {
         return "twitter";
@@ -77,18 +67,11 @@ public final class TwitterContentRenderPlugin implements ContentRenderPlugin {
         if (canonicalUrl.isEmpty()) {
             return error("Twitter post URL must be https://twitter.com/{user}/status/{id} or https://x.com/{user}/status/{id}.");
         }
-        try {
-            Optional<String> embedHtml = oembedClient.fetchEmbedHtml(canonicalUrl.get());
-            if (embedHtml.isEmpty()) {
-                return error("Tweet could not be found.");
-            }
-            return """
-                   <div class="content-render content-render--twitter">
-                   %s
-                   </div>
-                   """.formatted(embedHtml.get());
-        } catch (TwitterOEmbedClient.TwitterOEmbedException ex) {
-            return error("Tweet could not be loaded.");
-        }
+        return """
+               <div class="content-render content-render--twitter">
+               <blockquote class="twitter-tweet"><a href="%1$s"></a></blockquote>
+               <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+               </div>
+               """.formatted(canonicalUrl.get());
     }
 }
