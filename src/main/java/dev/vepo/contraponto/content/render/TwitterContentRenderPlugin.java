@@ -8,8 +8,7 @@ import java.util.regex.Pattern;
 
 public final class TwitterContentRenderPlugin implements ContentRenderPlugin {
 
-    private static final Set<String> ALLOWED_HOSTS = Set.of(
-                                                            "twitter.com",
+    private static final Set<String> ALLOWED_HOSTS = Set.of("twitter.com",
                                                             "www.twitter.com",
                                                             "mobile.twitter.com",
                                                             "x.com",
