@@ -2123,6 +2123,21 @@ html.home-guest-masthead--dismissed #home-guest-masthead {
   color: var(--color-text);
 }
 
+.article-page__content .footnote:first-child {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.article-page__content .footnote {
+  font-size: 0.9rem;  
+  color: var(--color-text-muted);
+}
+
+.article-page__content .footnote a:first-child {
+  text-decoration: none;
+  color: var(--color-text-muted);
+}
+
 .article-page__content a:where(:not(:has(> img))) {
   color: var(--color-primary-dark);
   text-decoration: underline;
