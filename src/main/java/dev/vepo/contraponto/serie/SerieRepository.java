@@ -17,7 +17,6 @@ public class SerieRepository {
         this.entityManager = entityManager;
     }
 
-    @SuppressWarnings("unchecked")
     public List<Serie> findAllWithPublishedPosts() {
         return entityManager.createQuery("""
                                          SELECT DISTINCT s FROM Serie s

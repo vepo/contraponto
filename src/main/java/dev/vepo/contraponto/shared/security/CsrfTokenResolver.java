@@ -2,7 +2,6 @@ package dev.vepo.contraponto.shared.security;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.container.ContainerRequestContext;
 
 @RequestScoped
 public class CsrfTokenResolver {

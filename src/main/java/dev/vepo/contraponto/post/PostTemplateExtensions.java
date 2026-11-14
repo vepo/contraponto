@@ -3,7 +3,6 @@ package dev.vepo.contraponto.post;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import dev.vepo.contraponto.blog.Blog;
 import dev.vepo.contraponto.blog.BlogDescriptionRenderer;
 import dev.vepo.contraponto.blog.BlogPublicUrlService;
 import dev.vepo.contraponto.content.render.PostContentRenderer;

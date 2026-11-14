@@ -114,19 +114,15 @@ public class BlogGitImportService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static List<String> readYamlTags(Object rawYamlTags) {
         if (rawYamlTags == null) {
             return List.of();
         }
         if (rawYamlTags instanceof List<?> lst) {
-            List<String> out = new ArrayList<>();
-            for (Object o : lst) {
-                if (o != null && !o.toString().isBlank()) {
-                    out.add(o.toString().strip());
-                }
-            }
-            return out;
+            return lst.stream()
+                      .filter(value -> value != null && !value.toString().isBlank())
+                      .map(value -> value.toString().strip())
+                      .toList();
         }
         if (rawYamlTags instanceof String s) {
             if (s.isBlank()) {

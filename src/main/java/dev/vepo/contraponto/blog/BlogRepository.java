@@ -17,7 +17,6 @@ public class BlogRepository {
     private static final String PARAM_BLOG_ID = "blogId";
     private static final String PARAM_SLUG = "slug";
     private static final String PARAM_USERNAME = "username";
-    private static final String PARAM_EXCLUDE_BLOG_ID = "excludeBlogId";
 
     private final EntityManager entityManager;
 

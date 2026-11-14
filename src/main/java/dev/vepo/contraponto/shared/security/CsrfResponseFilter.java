@@ -8,15 +8,19 @@ import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.RuntimeDelegate;
+import jakarta.ws.rs.ext.RuntimeDelegate.HeaderDelegate;
 
 @Provider
 public class CsrfResponseFilter implements ContainerResponseFilter {
 
     private final SessionCookieSupport sessionCookieSupport;
+    private final HeaderDelegate<NewCookie> cookieSerializer;
 
     @Inject
     public CsrfResponseFilter(SessionCookieSupport sessionCookieSupport) {
         this.sessionCookieSupport = sessionCookieSupport;
+        this.cookieSerializer = RuntimeDelegate.getInstance().createHeaderDelegate(NewCookie.class);
     }
 
     @Override
@@ -24,15 +28,18 @@ public class CsrfResponseFilter implements ContainerResponseFilter {
         if (responseContext.getStatus() >= 400) {
             return;
         }
-        Object isNew = requestContext.getProperty(CsrfRequestSetupFilter.NEW_TOKEN_PROPERTY);
+
+        var isNew = requestContext.getProperty(CsrfRequestSetupFilter.NEW_TOKEN_PROPERTY);
         if (!Boolean.TRUE.equals(isNew)) {
             return;
         }
-        Object token = requestContext.getProperty(CsrfRequestSetupFilter.TOKEN_PROPERTY);
+
+        var token = requestContext.getProperty(CsrfRequestSetupFilter.TOKEN_PROPERTY);
         if (token == null || token.toString().isBlank()) {
             return;
         }
-        NewCookie cookie = sessionCookieSupport.buildCsrfNewCookie(token.toString());
-        responseContext.getHeaders().add("Set-Cookie", cookie.toString());
+
+        var cookie = sessionCookieSupport.buildCsrfNewCookie(token.toString());
+        responseContext.getHeaders().add("Set-Cookie", cookieSerializer.toString(cookie));
     }
 }

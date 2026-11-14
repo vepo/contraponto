@@ -10,7 +10,6 @@ import dev.vepo.contraponto.blog.BlogSubdomainConfig;
 import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.shared.Given;
 import dev.vepo.contraponto.shared.QuarkusIntegrationTest;
-import dev.vepo.contraponto.user.User;
 import jakarta.inject.Inject;
 
 @QuarkusIntegrationTest

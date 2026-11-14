@@ -5,6 +5,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.ext.RuntimeDelegate;
+import jakarta.ws.rs.ext.RuntimeDelegate.HeaderDelegate;
+
 import java.util.Optional;
 
 @ApplicationScoped
@@ -13,6 +16,7 @@ public class SessionCookieSupport {
     private final boolean secureCookies;
     private final long ttlSeconds;
     private final String cookieDomain;
+    private final HeaderDelegate<NewCookie> cookieSerializer;
 
     @Inject
     public SessionCookieSupport(@ConfigProperty(name = "app.secure-cookies", defaultValue = "false") boolean secureCookies,
@@ -25,20 +29,21 @@ public class SessionCookieSupport {
         this.secureCookies = secureCookies;
         this.ttlSeconds = ttlSeconds;
         this.cookieDomain = cookieDomain;
+        this.cookieSerializer = RuntimeDelegate.getInstance().createHeaderDelegate(NewCookie.class);
     }
 
     public String buildClearSessionCookie() {
-        return buildClearSessionNewCookie().toString();
+        return  cookieSerializer.toString(buildClearSessionNewCookie());
     }
 
     public NewCookie buildClearSessionNewCookie() {
         var builder = new NewCookie.Builder(SessionConstants.SESSION_COOKIE_NAME)
-                                                                                 .value("")
-                                                                                 .path("/")
-                                                                                 .maxAge(0)
-                                                                                 .httpOnly(true)
-                                                                                 .secure(secureCookies)
-                                                                                 .sameSite(NewCookie.SameSite.LAX);
+                                   .value("")
+                                   .path("/")
+                                   .maxAge(0)
+                                   .httpOnly(true)
+                                   .secure(secureCookies)
+                                   .sameSite(NewCookie.SameSite.LAX);
         if (cookieDomain != null) {
             builder.domain(cookieDomain);
         }
@@ -58,16 +63,17 @@ public class SessionCookieSupport {
     }
 
     public String buildSessionCookie(String sessionId) {
-        return buildSessionNewCookie(sessionId).toString();
+        return cookieSerializer.toString(buildSessionNewCookie(sessionId));
     }
 
     public NewCookie buildSessionNewCookie(String sessionId) {
-        var builder = new NewCookie.Builder(SessionConstants.SESSION_COOKIE_NAME).value(sessionId)
-                                                                                 .path("/")
-                                                                                 .maxAge(Math.toIntExact(ttlSeconds))
-                                                                                 .httpOnly(true)
-                                                                                 .secure(secureCookies)
-                                                                                 .sameSite(NewCookie.SameSite.LAX);
+        var builder = new NewCookie.Builder(SessionConstants.SESSION_COOKIE_NAME)
+                                   .value(sessionId)
+                                   .path("/")
+                                   .maxAge(Math.toIntExact(ttlSeconds))
+                                   .httpOnly(true)
+                                   .secure(secureCookies)
+                                   .sameSite(NewCookie.SameSite.LAX);
         if (cookieDomain != null) {
             builder.domain(cookieDomain);
         }

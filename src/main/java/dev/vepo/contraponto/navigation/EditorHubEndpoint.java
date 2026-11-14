@@ -1,11 +1,10 @@
 package dev.vepo.contraponto.navigation;
 
-import dev.vepo.contraponto.shared.infra.Logged;
-import dev.vepo.contraponto.user.LoggedUser;
 import dev.vepo.contraponto.shared.i18n.I18nDefaults;
 import dev.vepo.contraponto.shared.i18n.I18nKeys;
+import dev.vepo.contraponto.shared.infra.Logged;
 import dev.vepo.contraponto.shared.toast.Toast;
-import io.quarkus.qute.TemplateInstance;
+import dev.vepo.contraponto.user.LoggedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;

@@ -1,7 +1,6 @@
 package dev.vepo.contraponto.activitypub.inbox;
 
 import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URL;
