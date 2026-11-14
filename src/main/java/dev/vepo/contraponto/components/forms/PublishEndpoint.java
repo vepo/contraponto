@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -54,14 +53,6 @@ import dev.vepo.contraponto.user.LoggedUser;
 @Path("/forms/write/publish")
 public class PublishEndpoint {
 
-    // Constants for messages and durations
-    private static final String ERROR_MSG_CONTENT_REQUIRED = "Content is required!";
-    private static final String ERROR_MSG_TITLE_REQUIRED = "Title is required!";
-    private static final String ERROR_MSG_INVALID_SLUG = "Slug can only contain lowercase letters, numbers, and hyphens";
-    private static final String ERROR_MSG_SLUG_REQUIRED = "Provide a slug or a title that produces a valid slug.";
-    private static final String ERROR_MSG_SLUG_EXISTS = "Slug already exists!";
-    private static final String ERROR_MSG_BLOG_REQUIRED = "Blog selection is required!";
-    private static final String SUCCESS_MSG_PUBLISHED = "Post published!";
     private static final int TOAST_DURATION_SHORT = 10_000;
     private static final int TOAST_DURATION_LONG = 10_000;
 

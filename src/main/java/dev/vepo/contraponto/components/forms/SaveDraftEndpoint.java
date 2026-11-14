@@ -24,7 +24,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -35,11 +34,6 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 @Path("/forms/write/draft")
 public class SaveDraftEndpoint {
-
-    // Constants for messages and durations
-    private static final String ERROR_MSG_CONTENT_REQUIRED = "Content is required!";
-    private static final String ERROR_MSG_TITLE_REQUIRED = "Title is required!";
-    private static final String SUCCESS_MSG_DRAFT_SAVED = "Draft saved successfully!";
 
     private final PostRepository postRepository;
     private final PostWriteService postWriteService;

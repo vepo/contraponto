@@ -1,19 +1,17 @@
 package dev.vepo.contraponto.activitypub.discovery;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 
 @Path(ActivityPubIngressPaths.INTERNAL_PREFIX + "/well-known/host-meta")
 @ApplicationScoped
 public class ActivityPubHostMetaEndpoint {
-
-    private static final ObjectMapper JSON = new ObjectMapper();
 
     private final ActivityPubWebFingerService webFingerService;
 

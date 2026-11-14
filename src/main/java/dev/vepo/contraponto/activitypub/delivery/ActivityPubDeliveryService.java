@@ -28,7 +28,6 @@ import dev.vepo.contraponto.activitypub.inbox.ActivityPubFollowRepository;
 import dev.vepo.contraponto.activitypub.outbox.ActivityPubPostObjectMapper;
 import dev.vepo.contraponto.activitypub.security.ActivityPubHttpSignatureService;
 import dev.vepo.contraponto.blog.BlogSubdomainConfig;
-import dev.vepo.contraponto.post.Post;
 import dev.vepo.contraponto.post.PostRepository;
 
 @ApplicationScoped
